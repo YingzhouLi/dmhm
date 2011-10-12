@@ -1,0 +1,315 @@
+#
+#  Distributed-Memory Hierarchical Matrices (DMHM): a prototype implementation
+#  of distributed-memory H-matrix arithmetic. 
+#
+#  Copyright (C) 2011 Jack Poulson, Lexing Ying, and
+#  The University of Texas at Austin
+#
+#  This program is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+cmake_minimum_required(VERSION 2.8.5) # for the new FindMPI module
+project(DMHM)
+
+set(DMHM_VERSION_MAJOR 0)
+set(DMHM_VERSION_MINOR 2)
+
+option(RELEASE "Avoid unnecessary assertions." OFF)
+option(TIME_MULTIPLY "Instrument H-matrix multiply with timers." OFF)
+
+option(BUILD_TESTS "Build the test drivers" ON)
+option(AVOID_COMPLEX_MPI "Avoid complex MPI routines for robustness" ON)
+mark_as_advanced(AVOID_COMPLEX_MPI)
+
+if(RELEASE)
+    set(CXX_FLAGS "-O3" CACHE STRING "CXX flags")
+elseif(RELEASE)
+    set(CXX_FLAGS "-O0" CACHE STRING "CXX flags")
+endif(RELEASE)
+
+find_package(MPI)
+if(NOT MPI_CXX_FOUND)
+  message(FATAL_ERROR "MPI C++ compiler was not found and is required")
+endif(NOT MPI_CXX_FOUND)
+include_directories(${MPI_CXX_INCLUDE_PATH})
+set(CMAKE_CXX_FLAGS "${CXX_FLAGS} ${MPI_CXX_COMPILE_FLAGS}")
+
+# Query the size of a void pointer in order to determine whether or not this is
+# a 32-bit system
+if(${CMAKE_SIZEOF_VOID_P} MATCHES 4)
+  set(32_BIT_SYSTEM TRUE)
+  message(STATUS "Detected 32-bit system")
+else(${CMAKE_SIZEOF_VOID_P} MATCHES 4)
+  set(32_BIT_SYSTEM FALSE)    
+  message(STATUS "Detected 64-bit system")
+endif(${CMAKE_SIZEOF_VOID_P} MATCHES 4)
+
+if(MATH_LIBS)
+  set(NEED_MATH FALSE)
+else(MATH_LIBS)
+  set(NEED_MATH TRUE)
+endif(MATH_LIBS)
+
+if(NEED_MATH)
+  set(MATH_DESC "BLAS/LAPACK link flags")
+  # Look for the base Intel libs first
+  if(32_BIT_SYSTEM)
+    set(INTEL_ARCH_SUBDIRS lib/32)
+    set(MKL_ARCH_SUBDIRS lib/32)
+  else(32_BIT_SYSTEM)
+    set(INTEL_ARCH_SUBDIRS lib/em64t lib/intel64)
+    set(MKL_ARCH_SUBDIRS lib/em64t lib/intel64 mkl/lib/em64t)
+  endif(32_BIT_SYSTEM)
+  # There is a cyclic dependency between MKL_CORE and MKL_SEQUENTIAL with
+  # version 11.1/072, so we sandwich MKL_CORE between MKL_SEQUENTIALs
+  set(MKL_REQUIRED 
+      MKL_INTEL MKL_SEQUENTIAL MKL_CORE MKL_SEQUENTIAL GUIDE IOMP5 PTHREAD)
+  find_library(PTHREAD_LIB pthread)
+  find_library(IOMP5_LIB 
+               NAMES libiomp5.a iomp5.lib 
+               PATHS ${INTEL_ROOT} ${MKL_ROOT}
+               PATH_SUFFIXES ${INTEL_ARCH_SUBDIRS})
+  find_library(GUIDE_LIB 
+               NAMES libguide.a guide.lib
+               PATHS ${INTEL_ROOT} ${MKL_ROOT}
+               PATH_SUFFIXES ${INTEL_ARCH_SUBDIRS})
+  find_library(MKL_CORE_LIB 
+               NAMES libmkl_core.a mkl_core.lib
+               PATHS ${INTEL_ROOT} ${MKL_ROOT}
+               PATH_SUFFIXES ${MKL_ARCH_SUBDIRS})
+  find_library(MKL_SEQUENTIAL_LIB 
+               NAMES libmkl_sequential.a mkl_sequential.lib
+               PATHS ${INTEL_ROOT} ${MKL_ROOT}
+               PATH_SUFFIXES ${MKL_ARCH_SUBDIRS})
+  find_library(MKL_INTEL_LIB 
+               NAMES libmkl_intel_lp64.a mkl_intel_lp64.lib
+               PATHS ${INTEL_ROOT} ${MKL_ROOT}
+               PATH_SUFFIXES ${MKL_ARCH_SUBDIRS})
+  set(MKL_FOUND TRUE)
+  set(MATH_LIBS "")
+  foreach(NAME ${MKL_REQUIRED})
+    if( ${NAME}_LIB )
+      message(STATUS "Found ${NAME}_LIB: ${${NAME}_LIB}")
+      list(APPEND MATH_LIBS ${${NAME}_LIB})
+    else( ${NAME}_LIB )
+      message(STATUS "Could not find ${NAME}_LIB")
+      set(MKL_FOUND FALSE)
+    endif( ${NAME}_LIB )
+  endforeach(NAME)
+  if(MKL_FOUND)
+    set(NEED_MATH FALSE)
+    message(STATUS "Using MKL's math libraries.")
+  else(MKL_FOUND)
+    # Look for default BLAS/LAPACK
+    set(REFERENCE_REQUIRED LAPACK BLAS)
+    find_library(BLAS_LIB
+                 NAMES blas blas.a blas.lib
+                 PATHS ${REFERENCE_ROOT})
+    find_library(LAPACK_LIB
+                 NAMES lapack lapack.a lapack.lib
+                       reflapack reflapack.a reflapack.lib
+                 PATHS ${REFERENCE_ROOT})
+    set(REFERENCE_FOUND ON)
+    set(MATH_LIBS "")
+    foreach(NAME ${REFERENCE_REQUIRED})
+      if( ${NAME}_LIB )
+        message(STATUS "Found ${NAME}_LIB: ${${NAME}_LIB}")
+        list(APPEND MATH_LIBS ${${NAME}_LIB})
+      else( ${NAME}_LIB )
+        message(STATUS "Could not find ${NAME}_LIB")
+        set(REFERENCE_FOUND OFF)
+      endif( ${NAME}_LIB )
+    endforeach(NAME)
+    message(STATUS "REFERENCE_FOUND=${REFERENCE_FOUND}")
+    if(REFERENCE_FOUND)
+      message(STATUS "WARNING: Using reference BLAS/LAPACK.")
+      message(STATUS "MATH_LIBS=${MATH_LIBS}")
+    else(REFERENCE_FOUND)
+      set(MATH_LIBS "" CACHE STRING ${MATH_DESC})
+      message(FATAL_ERROR 
+        "Could not find BLAS/LAPACK libs. Please provide the root directory of MKL with -DMKL_ROOT, the directory of reference implementations with -DREFERENCE_ROOT, or manually specify all math libraries with -DMATH_LIBS. There are numerous idiosyncratic library dependencies for BLAS/LAPACK, so you will almost certainly need to manually specify -DMATH_LIBS.")
+    endif(REFERENCE_FOUND)
+  endif(MKL_FOUND)
+  # Append the standard math libraries to the link list.
+  list(APPEND MATH_LIBS m)
+endif(NEED_MATH)
+
+# Attempt to detect the BLAS/LAPACK underscore conventions. 
+# We currently only handle whether or not there is an underscore appended.
+include(CheckFunctionExists)
+set(CMAKE_REQUIRED_LIBRARIES ${MATH_LIBS})
+check_function_exists(daxpy HAVE_DAXPY)
+if(HAVE_DAXPY)
+  set(BLAS_POST FALSE)
+else(HAVE_DAXPY)
+  check_function_exists(daxpy_ HAVE_DAXPY_POST)
+  if(HAVE_DAXPY_POST)
+    set(BLAS_POST TRUE)
+  else(HAVE_DAXPY_POST)
+    message(FATAL_ERROR "Could not determine BLAS format.")
+  endif(HAVE_DAXPY_POST)
+endif(HAVE_DAXPY)
+check_function_exists(dpotrf HAVE_DPOTRF)
+if(HAVE_DPOTRF)
+  set(LAPACK_POST FALSE)
+else(HAVE_DPOTRF)
+  check_function_exists(dpotrf_ HAVE_DPOTRF_POST)
+  if(HAVE_DPOTRF_POST)
+    set(LAPACK_POST TRUE)
+  else(HAVE_DPOTRF_POST)
+    message(FATAL_ERROR "Could not determine LAPACK format.")
+  endif(HAVE_DPOTRF_POST)
+endif(HAVE_DPOTRF)
+
+# Look for restrict support
+include(CheckCXXSourceCompiles)
+set(RESTRICT_CODE
+    "int main(void)
+     {
+         int* RESTRICT a;
+         return 0;
+     }
+    ")
+set(CMAKE_REQUIRED_DEFINITIONS "-DRESTRICT=__restrict__")
+check_cxx_source_compiles("${RESTRICT_CODE}" HAVE___restrict__)
+if(HAVE___restrict__)
+  set(RESTRICT "__restrict__")
+  message(STATUS "Using __restrict__ keyword.")
+else(HAVE___restrict__)
+  set(CMAKE_REQUIRED_DEFINITIONS "-DRESTRICT=__restrict")
+  check_cxx_source_compiles("${RESTRICT_CODE}" HAVE___restrict)
+  if(HAVE___restrict)
+    set(RESTRICT "__restrict")
+    message(STATUS "Using __restrict keyword.")
+  else(HAVE___restrict)
+    set(CMAKE_REQUIRED_DEFINITIONS "-DRESTRICT=restrict")
+    check_cxx_source_compiles("${RESTRICT_CODE}" HAVE_restrict)
+    if(HAVE_restrict)
+      set(RESTRICT "restrict")
+      message(STATUS "Using restrict keyword.")
+    else(HAVE_restrict)
+      set(RESTRICT "")
+      message(STATUS "Could not find a restrict keyword.")
+    endif(HAVE_restrict)
+  endif(HAVE___restrict)
+endif(HAVE___restrict__)
+
+# Store all of our system-specific definitions
+configure_file(${CMAKE_SOURCE_DIR}/include/dmhm/config.h.cmake
+               ${CMAKE_BINARY_DIR}/include/dmhm/config.h)
+install(FILES ${CMAKE_BINARY_DIR}/include/dmhm/config.h
+        DESTINATION include/dmhm)
+
+# Grab all of the .c, .cpp, .h, and .hpp DMHM files
+file(GLOB_RECURSE DMHM_CPP RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} 
+     "src/*.c" "src/*.cpp" "src/*-incl.hpp")
+file(GLOB_RECURSE DMHM_HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} 
+     "include/*.h" "include/*.hpp")
+set(DMHM_SRC "${DMHM_CPP};${DMHM_HEADERS}")
+
+# Copy the headers into the build directory
+foreach(HEADER ${DMHM_HEADERS})
+  add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${HEADER}
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/${HEADER}
+            ${CMAKE_CURRENT_BINARY_DIR}/${HEADER}
+  )
+  get_filename_component(HEADER_PATH ${HEADER} PATH)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${HEADER} DESTINATION ${HEADER_PATH})
+endforeach(HEADER)
+
+# Make sure the DMHM headers can be found
+include_directories("${PROJECT_BINARY_DIR}/include")
+
+# Build the DMHM source
+add_library(dmhm STATIC ${DMHM_SRC})
+install(TARGETS dmhm DESTINATION lib)
+
+# Create the lists of test executables and configure the compile flags
+# for the various build modes
+if(BUILD_TESTS)
+  set(TEST_DIR ${PROJECT_SOURCE_DIR}/tests)
+  set(BUILDING_BLOCKS_TESTS MemoryMap ParallelLcg Timer)
+  set(HMAT_TOOLS_TESTS MatrixAdd Compress ConvertSubmatrix PackedQR)
+  set(QUASI2D_TESTS Invert LowRankConstructor MultiplyHMat Pack)
+  set(DIST_QUASI2D_TESTS Ghost ImportSparse MultiplyHMat Pack 
+                         RandomMultiplyHMat RandomMultiplyVectors)
+endif(BUILD_TESTS)
+
+# Create a dummy library in order to be able to force the math libraries
+# to be linked last
+add_library(cmake-dummy-lib STATIC cmake/CMakeDummyFunction.cpp)
+list(APPEND EXTERNAL_LIBS "${MATH_LIBS} ${MPI_CXX_LIBRARIES}")
+target_link_libraries(cmake-dummy-lib ${EXTERNAL_LIBS})
+
+# Build the test drivers if necessary
+set(MPI_LINK_FLAGS "${MPI_CXX_LINK_FLAGS}")
+if(BUILD_TESTS)
+  # Build the building_blocks tests
+  set(OUTPUT_DIR "${PROJECT_BINARY_DIR}/bin/building_blocks")
+  foreach(TEST ${BUILDING_BLOCKS_TESTS}) 
+    add_executable(building_blocks-${TEST} 
+                   ${TEST_DIR}/building_blocks/${TEST}.cpp)
+    target_link_libraries(building_blocks-${TEST} dmhm cmake-dummy-lib)
+    set_target_properties(building_blocks-${TEST}
+                          PROPERTIES OUTPUT_NAME ${TEST}
+                          RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIR})
+    if(MPI_LINK_FLAGS)
+      set_target_properties(building_blocks-${TEST}
+                            PROPERTIES LINK_FLAGS ${MPI_LINK_FLAGS})
+    endif(MPI_LINK_FLAGS)
+    install(TARGETS building_blocks-${TEST} DESTINATION bin/building_blocks)
+  endforeach(TEST)
+  # Build the hmat_tools tests
+  set(OUTPUT_DIR "${PROJECT_BINARY_DIR}/bin/hmat_tools")
+  foreach(TEST ${HMAT_TOOLS_TESTS})
+    add_executable(hmat-${TEST} ${TEST_DIR}/hmat_tools/${TEST}.cpp)
+    target_link_libraries(hmat-${TEST} dmhm cmake-dummy-lib)
+    set_target_properties(hmat-${TEST} 
+                          PROPERTIES OUTPUT_NAME ${TEST}
+                          RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIR})
+    if(MPI_LINK_FLAGS)
+      set_target_properties(hmat-${TEST}
+                            PROPERTIES LINK_FLAGS ${MPI_LINK_FLAGS})
+    endif(MPI_LINK_FLAGS)
+    install(TARGETS hmat-${TEST} DESTINATION bin/hmat_tools)
+  endforeach(TEST)
+  # Build the Quasi2dHMat tests
+  set(OUTPUT_DIR "${PROJECT_BINARY_DIR}/bin/Quasi2dHMat")
+  foreach(TEST ${QUASI2D_TESTS})
+    add_executable(quasi2d-${TEST} ${TEST_DIR}/Quasi2dHMat/${TEST}.cpp)
+    target_link_libraries(quasi2d-${TEST} dmhm cmake-dummy-lib)
+    set_target_properties(quasi2d-${TEST}
+                          PROPERTIES OUTPUT_NAME ${TEST}
+                          RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIR})
+    if(MPI_LINK_FLAGS)
+      set_target_properties(quasi2d-${TEST}
+                            PROPERTIES LINK_FLAGS ${MPI_LINK_FLAGS})
+    endif(MPI_LINK_FLAGS)
+    install(TARGETS quasi2d-${TEST} DESTINATION bin/Quasi2dHMat)
+  endforeach(TEST)
+  set(OUTPUT_DIR "${PROJECT_BINARY_DIR}/bin/DistQuasi2dHMat")
+  foreach(TEST ${DIST_QUASI2D_TESTS})
+    add_executable(dist-quasi2d-${TEST} 
+                   ${TEST_DIR}/DistQuasi2dHMat/${TEST}.cpp)
+    target_link_libraries(dist-quasi2d-${TEST} dmhm cmake-dummy-lib)
+    set_target_properties(dist-quasi2d-${TEST}
+                          PROPERTIES OUTPUT_NAME ${TEST}
+                          RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIR})
+    if(MPI_LINK_FLAGS)
+      set_target_properties(dist-quasi2d-${TEST}
+                            PROPERTIES LINK_FLAGS ${MPI_LINK_FLAGS})
+    endif(MPI_LINK_FLAGS)
+    install(TARGETS dist-quasi2d-${TEST} DESTINATION bin/DistQuasi2dHMat)
+  endforeach(TEST)
+endif(BUILD_TESTS)
+
