@@ -26,28 +26,80 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompress()
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatCompress");
 #endif
-    MultiplyHMatCompressRandomSetup( 0 );
-    MultiplyHMatCompressRandomPrecompute( 0 );
 
     throw std::logic_error("This routine is in a state of flux.");
 
-    // HERE
+    //Wrote By Ryan
+    // Convert low-rank HH matrix into the UV' form.
+    
+    MultiplyHMatCompressHHSetup();
+
+    const int numLevels = _teams->NumLevels();
+    const int numReduces = numLevels-1;
+    std::vector<int> sizes( numReduces );
+    std::memset( &sizes[0], 0, numReduces*sizeof(int) );
+    MultiplyHMatCompressHHReducesCount( sizes );
+
+    int totalSize = 0;
+    for(int i=0; i<numReduces; ++i)
+        totalSize += sizes[i];
+    std::vector<Scalar> buffer( totalSize );
+    std::vector<int> offsets( numReduces );
+    for( int i=0, offset=0; i<numReduces; offset+=sizes[i], ++i )
+        offsets[i] = offset;
+    std::vector<int> offsetscopy = offsets;
+    MultiplyHMatCompressHHReducesPack( buffer, offsetscopy );
+    
+    MultiplyHMatCompressHHTreeReduces( buffer, sizes );
+    
+    MultiplyHMatCompressHHReducesUnpack( buffer, offsets );
+
+    MultiplyHMatCompressHHEigenDecomp();
+
+    Real zeroerror = (Real) 0.1;
+    MultiplyHMatCompressHHEigenTrunc( zeroerror );
+
+    const int numBroadcasts = numLevels-1;
+    sizes.resize( numBroadcasts );
+    std::memset( &sizes[0], 0, numBroadcasts*sizeof(int) );
+    MultiplyHMatCompressHHBroadcastsCount( sizes );
+
+    totalSize = 0;
+    for(int i=0; i<numBroadcasts; ++i)
+        totalSize += sizes[i];
+    buffer.resize( totalSize );
+    offsets.resize( numBroadcasts );
+    for( int i=0, offset=0; i<numBroadcasts; offset+=sizes[i], ++i )
+        offsets[i] = offset;
+    offsetscopy = offsets;
+    MultiplyHMatCompressHHBroadcastsPack( buffer, offsetscopy );
+
+    MultiplyHMatCompressHHTreeBroadcasts( buffer, sizes );
+    
+    MultiplyHMatCompressHHBroadcastsUnpack( buffer, offsets );
     /*
-    MultiplyHMatCompressRandomSummations();
-    MultiplyHMatCompressRandomExchangeCount();
-    MultiplyHMatCompressRandomExchangePack();
-    MultiplyHMatCompressRandomExchange();
-    MultiplyHMatCompressRandomExchangeUnpack();
-    MultiplyHMatCompressRandomBroadcasts();
-    MultiplyHMatCompressRandomPostcompute();
+    MultiplyHMatCompressHHPostcompute();
 
-    MultiplyHMatCompressLocalQR();
-    MultiplyHMatCompressParallelQR();
+    // Compress low-rank matrix with only UV' matrix
+    MultiplyHMatCompressFSetup();
+    MultiplyHMatCompressFPrecompute();
+    MultiplyHMatCompressFReducesCount();
+    MultiplyHMatCompressFReducesPack();
+    MultiplyHMatCompressFTreeReduces();
+    MultiplyHMatCompressFReducesUnpack();
 
-    MultiplyHMatCompressLastExchangeCount();
-    MultiplyHMatCompressLastExchangePack();
-    MultiplyHMatCompressLastExchange();
-    MultiplyHMatCompressFinalize();
+    MultiplyHMatCompressFEigenDecomp();
+
+    MultiplyHMatCompressFBroadcastsCount();
+    MultiplyHMatCompressFBroadcastsPack();
+    MultiplyHMatCompressFBroadcasts();
+    MultiplyHMatCompressFBroadcastsUnpack();
+    MultiplyHMatCompressFPostcompute();
+    */
+
+    /*
+    MultiplyHMatCompressRandomSetup( 0 );
+    MultiplyHMatCompressRandomPrecompute( 0 );
     */
 #ifndef RELEASE
     PopCallStack();
@@ -56,13 +108,12 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompress()
 
 template<typename Scalar,bool Conjugated>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressRandomSetup
-( int rank )
+dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressHHSetup()
 {
 #ifndef RELEASE
-    PushCallStack("DistQuasi2dHMat::MultiplyHMatCompressRandomSetup");
+    PushCallStack("DistQuasi2dHMat::MultiplyHMatCompressHHSetup");
 #endif
-    if( Height() == 0 || Width() == 0 || !_inSourceTeam )
+    if( Height() == 0 || Width() == 0 )
     {
 #ifndef RELEASE
         PopCallStack();
@@ -76,107 +127,96 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressRandomSetup
     case SPLIT_NODE:
     case NODE:
     {
-        const int numEntries = _VMap.Size();
-        _VMap.ResetIterator();
-        for( int i=0; i<numEntries; ++i,_VMap.Increment() )
-            rank += _VMap.CurrentEntry()->Width();
-
         Node& node = *_block.data.N;
         for( int t=0; t<4; ++t )
             for( int s=0; s<4; ++s )
-                node.Child(t,s).MultiplyHMatCompressRandomSetup( rank );
+                node.Child(t,s).MultiplyHMatCompressHHSetup();
         break;
     }
     case DIST_LOW_RANK:
     {
-        DistLowRank& DF = *_block.data.DF;
-
         // Add the F+=HH updates
+        const char option = (Conjugated ? 'C' : 'T' );
         int numEntries = _rowXMap.Size();
         _rowXMap.ResetIterator();
         for( int i=0; i<numEntries; ++i,_rowXMap.Increment() )
-            rank += _rowXMap.CurrentEntry()->Width();
+        {
+            int key = _rowXMap.CurrentKey();
+            Dense<Scalar>& rowX = _rowXMap.Get( key );
+            int Size= rowX.Width();
+            _rowSqrMap.Set
+            ( key, new Dense<Scalar>( Size, Size ) );
+            Dense<Scalar>& rowSqr = _rowSqrMap.Get( key );
 
-        // Add the low-rank updates
-        numEntries = _VMap.Size();
-        _VMap.ResetIterator();
-        for( int i=0; i<numEntries; ++i,_VMap.Increment() )
-            rank += _VMap.CurrentEntry()->Width();
+            blas::Gemm
+            (option, 'N', Size, rowX.Height(), Size, 
+             (Scalar)1, rowX.LockedBuffer(), rowX.LDim(),
+                        rowX.LockedBuffer(), rowX.LDim(),
+             (Scalar)0, rowSqr.Buffer(),      rowSqr.LDim() );
+        }
 
-        // Add the rank of the original low-rank matrix
-        rank += DF.VLocal.Width();
+        numEntries = _colXMap.Size();
+        _colXMap.ResetIterator();
+        for( int i=0; i<numEntries; ++i,_colXMap.Increment() )
+        {
+            int key = _colXMap.CurrentKey();
+            Dense<Scalar>& colX = _colXMap.Get( key );
+            int Size= colX.Width();
+            _colSqrMap.Set
+            ( key, new Dense<Scalar>( Size, Size ) );
+            Dense<Scalar>& colSqr = _colSqrMap.Get( key );
 
-        // Create space for Omega
-        const int localWidth = DF.VLocal.Height();
-        const int sampleRank = SampleRank( rank );
-        _colOmega.Resize( localWidth, sampleRank );
-        ParallelGaussianRandomVectors( _colOmega );
+            blas::Gemm
+            (option, 'N', Size, colX.Height(), Size, 
+             (Scalar)1, colX.LockedBuffer(), colX.LDim(),
+                        colX.LockedBuffer(), colX.LDim(),
+             (Scalar)0, colSqr.Buffer(),      colSqr.LDim() );
+        }
 
-        // Create space for the temporary product, V' Omega
-        _ZMap.Set( 0, new Dense<Scalar>(rank,sampleRank) );
         break;
     }
     case SPLIT_LOW_RANK:
-    {
-        SplitLowRank& SF = *_block.data.SF;
-
-        if( !_haveDenseUpdate )
-        {
-            // Add the F+=HH updates
-            int numEntries = _rowXMap.Size();
-            _rowXMap.ResetIterator();
-            for( int i=0; i<numEntries; ++i,_rowXMap.Increment() )
-                rank += _rowXMap.CurrentEntry()->Width();
-
-            // Add the regular updates
-            numEntries = _VMap.Size();
-            _VMap.ResetIterator();
-            for( int i=0; i<numEntries; ++i,_VMap.Increment() )
-                rank += _VMap.CurrentEntry()->Width();
-
-            // Add the original rank
-            rank += SF.D.Width();
-
-            // Create space for Omega
-            const int width = SF.D.Height();
-            const int sampleRank = SampleRank( rank );
-            _colOmega.Resize( width, sampleRank );
-            ParallelGaussianRandomVectors( _colOmega );
-
-            // Create space for the temporary product, V' Omega
-            _ZMap.Set( 0, new Dense<Scalar>(rank,sampleRank) );
-        }
-        break;
-    }
     case LOW_RANK:
     {
-        LowRank<Scalar,Conjugated>& F = *_block.data.F;
-        
         if( !_haveDenseUpdate )
-        {
+        {   
             // Add the F+=HH updates
+            const char option = (Conjugated ? 'C' : 'T' );
             int numEntries = _rowXMap.Size();
             _rowXMap.ResetIterator();
             for( int i=0; i<numEntries; ++i,_rowXMap.Increment() )
-                rank += _rowXMap.CurrentEntry()->Width();
-
-            // Add the regular updates
-            numEntries = _VMap.Size();
-            _VMap.ResetIterator();
-            for( int i=0; i<numEntries; ++i,_VMap.Increment() )
-                rank += _VMap.CurrentEntry()->Width();
-
-            // Add the original low-rank matrix
-            rank += F.Rank();
-
-            // Create space for Omega
-            const int width = F.V.Height();
-            const int sampleRank = SampleRank( rank );
-            _colOmega.Resize( width, sampleRank );
-            ParallelGaussianRandomVectors( _colOmega );
-
-            // Create space for the temporary product, V' Omega
-            _ZMap.Set( 0, new Dense<Scalar>(rank,sampleRank) );
+            {
+                int key = _rowXMap.CurrentKey();
+                Dense<Scalar>& rowX = _rowXMap.Get( key );
+                int Size= rowX.Width();
+                _rowSqrMap.Set
+                ( key, new Dense<Scalar>( Size, Size ) );
+                Dense<Scalar>& rowSqr = _rowSqrMap.Get( key );
+    
+                blas::Gemm
+                (option, 'N', Size, rowX.Height(), Size, 
+                 (Scalar)1, rowX.LockedBuffer(), rowX.LDim(),
+                            rowX.LockedBuffer(), rowX.LDim(),
+                 (Scalar)0, rowSqr.Buffer(),      rowSqr.LDim() );
+            }
+    
+            numEntries = _colXMap.Size();
+            _colXMap.ResetIterator();
+            for( int i=0; i<numEntries; ++i,_colXMap.Increment() )
+            {
+                int key = _colXMap.CurrentKey();
+                Dense<Scalar>& colX = _colXMap.Get( key );
+                int Size= colX.Width();
+                _colSqrMap.Set
+                ( key, new Dense<Scalar>( Size, Size ) );
+                Dense<Scalar>& colSqr = _colSqrMap.Get( key );
+    
+                blas::Gemm
+                (option, 'N', Size, colX.Height(), Size, 
+                 (Scalar)1, colX.LockedBuffer(), colX.LDim(),
+                            colX.LockedBuffer(), colX.LDim(),
+                 (Scalar)0, colSqr.Buffer(),      colSqr.LDim() );
+            }
         }
         break;
     }
@@ -190,13 +230,13 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressRandomSetup
 
 template<typename Scalar,bool Conjugated>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressRandomPrecompute
-( int rank )
+dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressHHReducesCount
+( std::vector<int>& sizes )
 {
 #ifndef RELEASE
-    PushCallStack("DistQuasi2dHMat::MultiplyHMatCompressRandomPrecompute");
+    PushCallStack("DistQuasi2dHMat::MultiplyHMatCompressHHReducesCount");
 #endif
-    if( Height() == 0 || Width() == 0 || !_inSourceTeam )
+    if( Height() == 0 || Width() == 0 )
     {
 #ifndef RELEASE
         PopCallStack();
@@ -207,175 +247,30 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressRandomPrecompute
     switch( _block.type )
     {
     case DIST_NODE:
-    case SPLIT_NODE:
-    case NODE:
     {
-        const int numEntries = _VMap.Size();
-        _VMap.ResetIterator();
-        for( int i=0; i<numEntries; ++i,_VMap.Increment() )
-        {
-            const Dense<Scalar>& V = *_VMap.CurrentEntry();
-            MultiplyHMatCompressRandomPrecomputeImport( rank, V );
-
-            rank += V.Width();
-            _VMap.EraseCurrentEntry();
-        }
-
         Node& node = *_block.data.N;
         for( int t=0; t<4; ++t )
             for( int s=0; s<4; ++s )
-                node.Child(t,s).MultiplyHMatCompressRandomPrecompute( rank );
+                node.Child(t,s).MultiplyHMatCompressHHReducesCount( sizes );
         break;
     }
     case DIST_LOW_RANK:
     {
-        DistLowRank& DF = *_block.data.DF;
-        Dense<Scalar>& Z = _ZMap.Get( 0 );
-        const Dense<Scalar>& Omega = _colOmega;
-        const char option = ( Conjugated ? 'C' : 'T' );
-
-        // Add the F+=HH updates
-        int numEntries = _rowXMap.Size();
-        _rowXMap.ResetIterator();
-        for( int i=0; i<numEntries; ++i,_rowXMap.Increment() )
+        // Count the size of square matrix
+        int numEntries = _rowSqrMap.Size();
+        _rowSqrMap.ResetIterator();
+        for( int i=0; i<numEntries; ++i,_rowSqrMap.Increment() )
         {
-            const Dense<Scalar>& X = *_rowXMap.CurrentEntry();
-            blas::Gemm
-            ( option, 'N', X.Width(), Omega.Width(), X.Height(),
-              (Scalar)1, X.LockedBuffer(),     X.LDim(),
-                         Omega.LockedBuffer(), Omega.LDim(),
-              (Scalar)0, Z.Buffer(rank,0),     Z.LDim() );
-
-            rank += X.Width();
-            _rowXMap.EraseCurrentEntry();
+            Dense<Scalar>& rowSqr = *_rowSqrMap.CurrentEntry();
+            sizes[_level] += rowSqr.Height()*rowSqr.Width();
         }
 
-        // Add the low-rank updates
-        numEntries = _VMap.Size();
-        _VMap.ResetIterator();
-        for( int i=0; i<numEntries; ++i,_VMap.Increment() )
+        numEntries = _colSqrMap.Size();
+        _colSqrMap.ResetIterator();
+        for( int i=0; i<numEntries; ++i,_colSqrMap.Increment() )
         {
-            const Dense<Scalar>& V = *_VMap.CurrentEntry();
-            blas::Gemm
-            ( option, 'N', V.Width(), Omega.Width(), V.Height(),
-              (Scalar)1, V.LockedBuffer(),     V.LDim(),
-                         Omega.LockedBuffer(), Omega.LDim(),
-              (Scalar)0, Z.Buffer(rank,0),     Z.LDim() );
-
-            rank += V.Width();
-            _VMap.EraseCurrentEntry();
-        }
-
-        // Add the rank of the original low-rank matrix
-        blas::Gemm
-        ( option, 'N', DF.VLocal.Width(), Omega.Width(), DF.VLocal.Height(),
-          (Scalar)1, DF.VLocal.LockedBuffer(), DF.VLocal.LDim(),
-                     Omega.LockedBuffer(),     Omega.LDim(),
-          (Scalar)0, Z.Buffer(rank,0),         Z.LDim() );
-        rank += DF.VLocal.Width();
-        break;
-    }
-    case SPLIT_LOW_RANK:
-    {
-        SplitLowRank& SF = *_block.data.SF;
-
-        if( !_haveDenseUpdate )
-        {
-            Dense<Scalar>& Z = _ZMap.Get( 0 );
-            const Dense<Scalar>& Omega = _colOmega;
-            const char option = ( Conjugated ? 'C' : 'T' );
-
-            // Add the F+=HH updates
-            int numEntries = _rowXMap.Size();
-            _rowXMap.ResetIterator();
-            for( int i=0; i<numEntries; ++i,_rowXMap.Increment() )
-            {
-                const Dense<Scalar>& X = *_rowXMap.CurrentEntry();
-                blas::Gemm
-                ( option, 'N', X.Width(), Omega.Width(), X.Height(),
-                  (Scalar)1, X.LockedBuffer(),     X.LDim(),
-                             Omega.LockedBuffer(), Omega.LDim(),
-                  (Scalar)0, Z.Buffer(rank,0),     Z.LDim() );
-
-                rank += X.Width();
-                _rowXMap.EraseCurrentEntry();
-            }
-
-            // Add the regular updates
-            numEntries = _VMap.Size();
-            _VMap.ResetIterator();
-            for( int i=0; i<numEntries; ++i,_VMap.Increment() )
-            {
-                const Dense<Scalar>& V = *_VMap.CurrentEntry();
-                blas::Gemm
-                ( option, 'N', V.Width(), Omega.Width(), V.Height(),
-                  (Scalar)1, V.LockedBuffer(),     V.LDim(),
-                             Omega.LockedBuffer(), Omega.LDim(),
-                  (Scalar)0, Z.Buffer(rank,0),     Z.LDim() );
-
-                rank += V.Width();
-                _VMap.EraseCurrentEntry();
-            }
-
-            // Add the original contribution
-            blas::Gemm
-            ( option, 'N', SF.D.Width(), Omega.Width(), SF.D.Height(),
-              (Scalar)1, SF.D.LockedBuffer(),  SF.D.LDim(),
-                         Omega.LockedBuffer(), Omega.LDim(),
-              (Scalar)0, Z.Buffer(rank,0),     Z.LDim() );
-            rank += SF.D.Width();
-        }
-        break;
-    }
-    case LOW_RANK:
-    {
-        LowRank<Scalar,Conjugated>& F = *_block.data.F;
-        
-        if( !_haveDenseUpdate )
-        {
-            Dense<Scalar>& Z = _ZMap.Get( 0 );
-            const Dense<Scalar>& Omega = _colOmega;
-            const char option = ( Conjugated ? 'C' : 'T' );
-
-            // Add the F+=HH updates
-            int numEntries = _rowXMap.Size();
-            _rowXMap.ResetIterator();
-            for( int i=0; i<numEntries; ++i,_rowXMap.Increment() )
-            {
-                const Dense<Scalar>& X = *_rowXMap.CurrentEntry();
-                blas::Gemm
-                ( option, 'N', X.Width(), Omega.Width(), X.Height(),
-                  (Scalar)1, X.LockedBuffer(),     X.LDim(),
-                             Omega.LockedBuffer(), Omega.LDim(),
-                  (Scalar)0, Z.Buffer(rank,0),     Z.LDim() );
-
-                rank += X.Width();
-                _rowXMap.EraseCurrentEntry();
-            }
-
-            // Add the regular updates
-            numEntries = _VMap.Size();
-            _VMap.ResetIterator();
-            for( int i=0; i<numEntries; ++i,_VMap.Increment() )
-            {
-                const Dense<Scalar>& V = *_VMap.CurrentEntry();
-                blas::Gemm
-                ( option, 'N', V.Width(), Omega.Width(), V.Height(),
-                  (Scalar)1, V.LockedBuffer(),     V.LDim(),
-                             Omega.LockedBuffer(), Omega.LDim(),
-                  (Scalar)0, Z.Buffer(rank,0),     Z.LDim() );
-
-                rank += V.Width();
-                _VMap.EraseCurrentEntry();
-            }
-
-            // Add the original low-rank matrix
-            blas::Gemm
-            ( option, 'N', F.V.Width(), Omega.Width(), F.V.Height(),
-              (Scalar)1, F.V.LockedBuffer(),   F.V.LDim(),
-                         Omega.LockedBuffer(), Omega.LDim(),
-              (Scalar)0, Z.Buffer(rank,0),     Z.LDim() );
-            rank += F.V.Width();
+            Dense<Scalar>& colSqr = *_colSqrMap.CurrentEntry();
+            sizes[_level] += colSqr.Height()*colSqr.Width();
         }
         break;
     }
@@ -387,16 +282,16 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressRandomPrecompute
 #endif
 }
 
+
 template<typename Scalar,bool Conjugated>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::
-MultiplyHMatCompressRandomPrecomputeImport( int rank, const Dense<Scalar>& V )
+dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressHHReducesPack
+( std::vector<Scalar>& buffer, std::vector<int>& offsets )
 {
 #ifndef RELEASE
-    PushCallStack
-    ("DistQuasi2dHMat::MultiplyHMatCompressRandomPrecomputeImport");
+    PushCallStack("DistQuasi2dHMat::MultiplyHMatCompressHHReducesPack");
 #endif
-    if( Height() == 0 || Width() == 0 || !_inSourceTeam )
+    if( Height() == 0 || Width() == 0 )
     {
 #ifndef RELEASE
         PopCallStack();
@@ -409,73 +304,119 @@ MultiplyHMatCompressRandomPrecomputeImport( int rank, const Dense<Scalar>& V )
     case DIST_NODE:
     {
         Node& node = *_block.data.N;
+        for( int t=0; t<4; ++t )
+            for( int s=0; s<4; ++s )
+                node.Child(t,s).MultiplyHMatCompressHHReducesPack( buffer, offsets );
+        break;
+    }
+    case DIST_LOW_RANK:
+    {
+        // Copy the square matrix to sending buffer
+        int numEntries = _rowSqrMap.Size();
+        _rowSqrMap.ResetIterator();
+        for( int i=0; i<numEntries; ++i,_rowSqrMap.Increment() )
+        {
+            Dense<Scalar>& rowSqr = *_rowSqrMap.CurrentEntry();
+            int Size = rowSqr.Height()*rowSqr.Width();
+            std::memcpy
+            ( &buffer[offsets[_level]], rowSqr.LockedBuffer(),
+              Size*sizeof(Scalar) );
+            offsets[_level] += Size;
+        }
+
+        numEntries = _colSqrMap.Size();
+        _colSqrMap.ResetIterator();
+        for( int i=0; i<numEntries; ++i,_colSqrMap.Increment() )
+        {
+            Dense<Scalar>& colSqr = *_colSqrMap.CurrentEntry();
+            int Size = colSqr.Height()*colSqr.Width();
+            std::memcpy
+            ( &buffer[offsets[_level]], colSqr.LockedBuffer(),
+              Size*sizeof(Scalar) );
+            offsets[_level] += Size;
+        }
+        break;
+    }
+    default:
+        break;
+    }
+#ifndef RELEASE
+    PopCallStack();
+#endif
+}
+
+template<typename Scalar, bool Conjugated>
+void
+dmhm::DistQuasi2dHMat<Scalar, Conjugated>::MultiplyHMatCompressHHTreeReduces
+( std::vector<Scalar>& buffer, std::vector<int>& sizes )
+{
+#ifndef RELEASE
+    PushCallStack("DistQuasi2dHMat::MultiplyHMatCompressHHTreeReduces");
+#endif
+
+    _teams->TreeSumToRoots( buffer, sizes );
+
+#ifndef RELEASE
+    PopCallStack();
+#endif
+}
+
+
+template<typename Scalar,bool Conjugated>
+void
+dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressHHReducesUnpack
+( std::vector<Scalar>& buffer, std::vector<int>& offsets )
+{
+#ifndef RELEASE
+    PushCallStack("DistQuasi2dHMat::MultiplyHMatCompressHHReducesUnpack");
+#endif
+    if( Height() == 0 || Width() == 0 )
+    {
+#ifndef RELEASE
+        PopCallStack();
+#endif
+        return;
+    }
+
+    switch( _block.type )
+    {
+    case DIST_NODE:
+    {
+        Node& node = *_block.data.N;
+        for( int t=0; t<4; ++t )
+            for( int s=0; s<4; ++s )
+                node.Child(t,s).MultiplyHMatCompressHHReducesUnpack( buffer, offsets );
+        break;
+    }
+    case DIST_LOW_RANK:
+    {
         MPI_Comm team = _teams->Team( _level );
-        const int teamSize = mpi::CommSize( team );
         const int teamRank = mpi::CommRank( team );
-
-        if( teamSize == 2 )
+        if( teamRank == 0 )
         {
-            const int sStart = (teamRank==0 ? 0 : 2);            
-            const int sStop = (teamRank==0 ? 2 : 4);
-            Dense<Scalar> VSub;
-            for( int s=sStart,sOffset=0; s<sStop; 
-                 sOffset+=node.sourceSizes[s],++s )
+            int numEntries = _rowSqrMap.Size();
+            _rowSqrMap.ResetIterator();
+            for( int i=0; i<numEntries; ++i,_rowSqrMap.Increment() )
             {
-                VSub.LockedView
-                ( V, sOffset, 0, node.sourceSizes[s], V.Width() );
-                for( int t=0; t<4; ++t )
-                    node.Child(t,s).MultiplyHMatCompressRandomPrecomputeImport
-                    ( rank, VSub );
+                Dense<Scalar>& rowSqr = *_rowSqrMap.CurrentEntry();
+                int Size = rowSqr.Height()*rowSqr.Width();
+                std::memcpy
+                ( rowSqr.Buffer(), &buffer[offsets[_level]],
+                  Size*sizeof(Scalar) );
+                offsets[_level] += Size;
             }
-        }
-        else  // teamSize >= 4
-        {
-            for( int t=0; t<4; ++t )
-                for( int s=0; s<4; ++s )
-                    node.Child(t,s).MultiplyHMatCompressRandomPrecomputeImport
-                    ( rank, V );
-        }
-        break;
-    }
-    case SPLIT_NODE:
-    case NODE:
-    {
-        Node& node = *_block.data.N;
-        Dense<Scalar> VSub;
-        for( int s=0,sOffset=0; s<4; sOffset+=node.sourceSizes[s],++s )
-        {
-            VSub.LockedView( V, sOffset, 0, node.sourceSizes[s], V.Width() );
-            for( int t=0; t<4; ++t )
-                node.Child(t,s).MultiplyHMatCompressRandomPrecomputeImport
-                ( rank, VSub );
-        }
-        break;
-    }
-    case DIST_LOW_RANK:
-    {
-        Dense<Scalar>& Z = _ZMap.Get( 0 );
-        const Dense<Scalar>& Omega = _colOmega;
-        const char option = ( Conjugated ? 'C' : 'T' );
-        blas::Gemm
-        ( option, 'N', V.Width(), Omega.Width(), V.Height(),
-          (Scalar)1, V.LockedBuffer(),     V.LDim(),
-                     Omega.LockedBuffer(), Omega.LDim(),
-          (Scalar)0, Z.Buffer(rank,0),     Z.LDim() );
-        break;
-    }
-    case SPLIT_LOW_RANK:
-    case LOW_RANK:
-    {
-        if( !_haveDenseUpdate )
-        {
-            Dense<Scalar>& Z = _ZMap.Get( 0 );
-            const Dense<Scalar>& Omega = _colOmega;
-            const char option = ( Conjugated ? 'C' : 'T' );
-            blas::Gemm
-            ( option, 'N', V.Width(), Omega.Width(), V.Height(),
-              (Scalar)1, V.LockedBuffer(),     V.LDim(),
-                         Omega.LockedBuffer(), Omega.LDim(),
-              (Scalar)0, Z.Buffer(rank,0),     Z.LDim() );
+                                                                     
+            numEntries = _colSqrMap.Size();
+            _colSqrMap.ResetIterator();
+            for( int i=0; i<numEntries; ++i,_colSqrMap.Increment() )
+            {
+                Dense<Scalar>& colSqr = *_colSqrMap.CurrentEntry();
+                int Size = colSqr.Height()*colSqr.Width();
+                std::memcpy
+                ( colSqr.Buffer(), &buffer[offsets[_level]], 
+                  Size*sizeof(Scalar) );
+                offsets[_level] += Size;
+            }
         }
         break;
     }
@@ -486,4 +427,539 @@ MultiplyHMatCompressRandomPrecomputeImport( int rank, const Dense<Scalar>& V )
     PopCallStack();
 #endif
 }
+
+
+template<typename Scalar,bool Conjugated>
+void
+dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressHHEigenDecomp()
+{
+#ifndef RELEASE
+    PushCallStack("DistQuasi2dHMat::MultiplyHMatCompressHHEigenDecomp");
+#endif
+    if( Height() == 0 || Width() == 0 )
+    {
+#ifndef RELEASE
+        PopCallStack();
+#endif
+        return;
+    }
+
+    switch( _block.type )
+    {
+    case DIST_NODE:
+    case SPLIT_NODE:
+    case NODE:
+    {
+        Node& node = *_block.data.N;
+        for( int t=0; t<4; ++t )
+            for( int s=0; s<4; ++s )
+                node.Child(t,s).MultiplyHMatCompressHHEigenDecomp();
+        break;
+    }
+    case DIST_LOW_RANK:
+    {
+        MPI_Comm team = _teams->Team( _level );
+        const int teamRank = mpi::CommRank( team );
+        if( teamRank == 0 )
+        {
+            // Calculate Eigenvalues of Squared Matrix               
+            int Sizemax=0;
+            int numEntries = _rowSqrMap.Size();
+            _rowSqrMap.ResetIterator();
+            for( int i=0; i<numEntries; ++i,_rowSqrMap.Increment() )
+            {
+                int key = _rowSqrMap.CurrentKey();
+                Dense<Scalar>& rowSqr = _rowSqrMap.Get( key );
+                int Size= rowSqr.Width();
+                _rowSqrEigMap.Set
+                ( key, new std::vector<Real>( Size ) );
+                if( Size > Sizemax )
+                    Sizemax=Size;
+            }
+                                                                     
+            numEntries = _colSqrMap.Size();
+            _colSqrMap.ResetIterator();
+            for( int i=0; i<numEntries; ++i,_colSqrMap.Increment() )
+            {
+                int key = _colSqrMap.CurrentKey();
+                Dense<Scalar>& colSqr = _colSqrMap.Get( key );
+                int Size= colSqr.Width();
+                _colSqrEigMap.Set
+                ( key, new std::vector<Real>( Size ) );
+                if( Size > Sizemax )
+                    Sizemax=Size;
+            }
+                                                                     
+            int lwork, lrwork, liwork;
+            lwork=lapack::EVDWorkSize( Sizemax );
+            lrwork=lapack::EVDRealWorkSize( Sizemax );
+            liwork=lapack::EVDIntWorkSize( Sizemax );
+                                                                     
+            std::vector<Scalar> evdWork(lwork);
+            std::vector<Real> evdRealWork(lrwork);
+            std::vector<int> evdIntWork(liwork);
+                                                                     
+            numEntries = _rowSqrMap.Size();
+            _rowSqrMap.ResetIterator();
+            for( int i=0; i<numEntries; ++i,_rowSqrMap.Increment() )
+            {
+                int key = _rowSqrMap.CurrentKey();
+                Dense<Scalar>& rowSqr = _rowSqrMap.Get( key );
+                int Size= rowSqr.Width();
+                std::vector<Real>& rowSqrEig = _rowSqrEigMap.Get( key );
+                
+                lapack::EVD
+                ('V', 'U', Size, rowSqr.Buffer(), rowSqr.LDim(),
+                                 &rowSqrEig[0],
+                                 &evdWork[0],     lwork,
+                                 &evdIntWork[0],  liwork,
+                                 &evdRealWork[0], lrwork );
+            }
+                                                                     
+            numEntries = _colSqrMap.Size();
+            _colSqrMap.ResetIterator();
+            for( int i=0; i<numEntries; ++i,_colSqrMap.Increment() )
+            {
+                int key = _colSqrMap.CurrentKey();
+                Dense<Scalar>& colSqr = _colSqrMap.Get( key );
+                int Size= colSqr.Width();
+                std::vector<Real>& colSqrEig = _colSqrEigMap.Get( key );
+                
+                lapack::EVD
+                ('V', 'U', Size, colSqr.Buffer(), colSqr.LDim(),
+                                 &colSqrEig[0],
+                                 &evdWork[0],     lwork,
+                                 &evdIntWork[0],  liwork,
+                                 &evdRealWork[0], lrwork );
+            }
+        }
+        break;
+    }
+    case SPLIT_LOW_RANK:
+    case LOW_RANK:
+    {
+        if( !_haveDenseUpdate )
+        {   
+            // Calculate Eigenvalues of Squared Matrix               
+            int Sizemax=0;
+            int numEntries = _rowSqrMap.Size();
+            _rowSqrMap.ResetIterator();
+            for( int i=0; i<numEntries; ++i,_rowSqrMap.Increment() )
+            {
+                int key = _rowSqrMap.CurrentKey();
+                Dense<Scalar>& rowSqr = _rowSqrMap.Get( key );
+                int Size= rowSqr.Width();
+                _rowSqrEigMap.Set
+                ( key, new std::vector<Real>( Size ) );
+                if( Size > Sizemax )
+                    Sizemax=Size;
+            }
+                                                                     
+            numEntries = _colSqrMap.Size();
+            _colSqrMap.ResetIterator();
+            for( int i=0; i<numEntries; ++i,_colSqrMap.Increment() )
+            {
+                int key = _colSqrMap.CurrentKey();
+                Dense<Scalar>& colSqr = _colSqrMap.Get( key );
+                int Size= colSqr.Width();
+                _colSqrEigMap.Set
+                ( key, new std::vector<Real>( Size ) );
+                if( Size > Sizemax )
+                    Sizemax=Size;
+            }
+                                                                     
+            int lwork, lrwork, liwork;
+            lwork=lapack::EVDWorkSize( Sizemax );
+            lrwork=lapack::EVDRealWorkSize( Sizemax );
+            liwork=lapack::EVDIntWorkSize( Sizemax );
+                                                                     
+            std::vector<Scalar> evdWork(lwork);
+            std::vector<Real> evdRealWork(lrwork);
+            std::vector<int> evdIntWork(liwork);
+                                                                     
+            numEntries = _rowSqrMap.Size();
+            _rowSqrMap.ResetIterator();
+            for( int i=0; i<numEntries; ++i,_rowSqrMap.Increment() )
+            {
+                int key = _rowSqrMap.CurrentKey();
+                Dense<Scalar>& rowSqr = _rowSqrMap.Get( key );
+                int Size= rowSqr.Width();
+                std::vector<Real>& rowSqrEig = _rowSqrEigMap.Get( key );
+                
+                lapack::EVD
+                ('V', 'U', Size, rowSqr.Buffer(), rowSqr.LDim(),
+                                 &rowSqrEig[0],
+                                 &evdWork[0],     lwork,
+                                 &evdIntWork[0],  liwork,
+                                 &evdRealWork[0], lrwork );
+            }
+                                                                     
+            numEntries = _colSqrMap.Size();
+            _colSqrMap.ResetIterator();
+            for( int i=0; i<numEntries; ++i,_colSqrMap.Increment() )
+            {
+                int key = _colSqrMap.CurrentKey();
+                Dense<Scalar>& colSqr = _colSqrMap.Get( key );
+                int Size= colSqr.Width();
+                std::vector<Real>& colSqrEig = _colSqrEigMap.Get( key );
+                
+                lapack::EVD
+                ('V', 'U', Size, colSqr.Buffer(), colSqr.LDim(),
+                                 &colSqrEig[0],
+                                 &evdWork[0],     lwork,
+                                 &evdIntWork[0],  liwork,
+                                 &evdRealWork[0], lrwork );
+            }
+        }
+        break;
+    }
+    default:
+        break;
+    }
+#ifndef RELEASE
+    PopCallStack();
+#endif
+}
+
+template<typename Scalar, bool Conjugated>
+void
+dmhm::DistQuasi2dHMat<Scalar, Conjugated>::EVDTrunc
+( Dense<Scalar>& Q, int ldq, std::vector<Real>& w, Real error )
+{
+#ifndef RELEASE
+    PushCallStack("DistQuasi2dHMat::EVDTrunc");
+    if( ldq ==0 )
+        throw std::logic_error("ldq was 0");
+#endif
+
+    int L;
+    for(L=0; L<ldq; ++L )
+        if( w[L]>error)
+            break;
+
+    w.erase( w.begin(), w.begin()+L );
+    Q.EraseCol(0, L-1);
+
+#ifndef RELEASE
+    PopCallStack();
+#endif
+}
+
+
+template<typename Scalar,bool Conjugated>
+void
+dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressHHEigenTrunc
+( Real error )
+{
+#ifndef RELEASE
+    PushCallStack("DistQuasi2dHMat::MultiplyHMatCompressHHEigenTrunc");
+#endif
+    if( Height() == 0 || Width() == 0 )
+    {
+#ifndef RELEASE
+        PopCallStack();
+#endif
+        return;
+    }
+
+    switch( _block.type )
+    {
+    case DIST_NODE:
+    case SPLIT_NODE:
+    case NODE:
+    {
+        Node& node = *_block.data.N;
+        for( int t=0; t<4; ++t )
+            for( int s=0; s<4; ++s )
+                node.Child(t,s).MultiplyHMatCompressHHEigenTrunc( error );
+        break;
+    }
+    case DIST_LOW_RANK:
+    {
+        MPI_Comm team = _teams->Team( _level );
+        const int teamRank = mpi::CommRank( team );
+        if( teamRank == 0 )
+        {
+            int numEntries = _rowSqrMap.Size();
+            _rowSqrMap.ResetIterator();
+            for( int i=0; i<numEntries; ++i,_rowSqrMap.Increment() )
+            {
+                int key = _rowSqrMap.CurrentKey();
+                Dense<Scalar>& rowSqr = _rowSqrMap.Get( key );
+                std::vector<Real>& rowSqrEig = _rowSqrEigMap.Get( key );
+                
+                EVDTrunc
+                ( rowSqr, rowSqr.LDim(), rowSqrEig, error );
+            }
+                                                                     
+            numEntries = _colSqrMap.Size();
+            _colSqrMap.ResetIterator();
+            for( int i=0; i<numEntries; ++i,_colSqrMap.Increment() )
+            {
+                int key = _colSqrMap.CurrentKey();
+                Dense<Scalar>& colSqr = _colSqrMap.Get( key );
+                std::vector<Real>& colSqrEig = _colSqrEigMap.Get( key );
+                
+                EVDTrunc
+                ( colSqr, colSqr.LDim(), colSqrEig, error );
+            }
+        }
+        break;
+    }
+    case SPLIT_LOW_RANK:
+    case LOW_RANK:
+    {
+        if( !_haveDenseUpdate )
+        {   
+            int numEntries = _rowSqrMap.Size();
+            _rowSqrMap.ResetIterator();
+            for( int i=0; i<numEntries; ++i,_rowSqrMap.Increment() )
+            {
+                int key = _rowSqrMap.CurrentKey();
+                Dense<Scalar>& rowSqr = _rowSqrMap.Get( key );
+                std::vector<Real>& rowSqrEig = _rowSqrEigMap.Get( key );
+                
+                EVDTrunc
+                ( rowSqr, rowSqr.LDim(), rowSqrEig, error );
+            }
+                                                                     
+            numEntries = _colSqrMap.Size();
+            _colSqrMap.ResetIterator();
+            for( int i=0; i<numEntries; ++i,_colSqrMap.Increment() )
+            {
+                int key = _colSqrMap.CurrentKey();
+                Dense<Scalar>& colSqr = _colSqrMap.Get( key );
+                std::vector<Real>& colSqrEig = _colSqrEigMap.Get( key );
+                
+                EVDTrunc
+                ( colSqr, colSqr.LDim(), colSqrEig, error );
+            }
+        }
+        break;
+    }
+    default:
+        break;
+    }
+#ifndef RELEASE
+    PopCallStack();
+#endif
+}
+
+
+template<typename Scalar,bool Conjugated>
+void
+dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressHHBroadcastsCount
+( std::vector<int>& sizes )
+{
+#ifndef RELEASE
+    PushCallStack("DistQuasi2dHMat::MultiplyHMatCompressHHBroadcastsCount");
+#endif
+    if( Height() == 0 || Width() == 0 )
+    {
+#ifndef RELEASE
+        PopCallStack();
+#endif
+        return;
+    }
+
+    switch( _block.type )
+    {
+    case DIST_NODE:
+    {
+        Node& node = *_block.data.N;
+        for( int t=0; t<4; ++t )
+            for( int s=0; s<4; ++s )
+                node.Child(t,s).MultiplyHMatCompressHHBroadcastsCount( sizes );
+        break;
+    }
+    case DIST_LOW_RANK:
+    {
+        // Count the size of square matrix
+        int numEntries = _rowSqrMap.Size();
+        _rowSqrMap.ResetIterator();
+        for( int i=0; i<numEntries; ++i,_rowSqrMap.Increment() )
+        {
+            Dense<Scalar>& rowSqr = *_rowSqrMap.CurrentEntry();
+            sizes[_level] += rowSqr.Height()*rowSqr.Width();
+        }
+
+        numEntries = _colSqrMap.Size();
+        _colSqrMap.ResetIterator();
+        for( int i=0; i<numEntries; ++i,_colSqrMap.Increment() )
+        {
+            Dense<Scalar>& colSqr = *_colSqrMap.CurrentEntry();
+            sizes[_level] += colSqr.Height()*colSqr.Width();
+        }
+        break;
+    }
+    default:
+        break;
+    }
+#ifndef RELEASE
+    PopCallStack();
+#endif
+}
+
+
+template<typename Scalar,bool Conjugated>
+void
+dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressHHBroadcastsPack
+( std::vector<Scalar>& buffer, std::vector<int>& offsets )
+{
+#ifndef RELEASE
+    PushCallStack("DistQuasi2dHMat::MultiplyHMatCompressHHBroadcastsPack");
+#endif
+    if( Height() == 0 || Width() == 0 )
+    {
+#ifndef RELEASE
+        PopCallStack();
+#endif
+        return;
+    }
+
+    switch( _block.type )
+    {
+    case DIST_NODE:
+    {
+        Node& node = *_block.data.N;
+        for( int t=0; t<4; ++t )
+            for( int s=0; s<4; ++s )
+                node.Child(t,s).MultiplyHMatCompressHHBroadcastsPack
+                ( buffer, offsets );
+        break;
+    }
+    case DIST_LOW_RANK:
+    {
+        MPI_Comm team = _teams->Team( _level );
+        const int teamRank = mpi::CommRank( team );
+        if( teamRank ==0 )
+        {
+            // Copy the square matrix to sending buffer                                       
+            int numEntries = _rowSqrMap.Size();
+            _rowSqrMap.ResetIterator();
+            _rowSqrEigMap.ResetIterator();
+            for( int i=0; i<numEntries; ++i,
+                _rowSqrMap.Increment(),_rowSqrEigMap.Increment())
+            {
+                Dense<Scalar>& rowSqr = *_rowSqrMap.CurrentEntry();
+                std::vector<Real>& rowSqrEig = *_rowSqrEigMap.CurrentEntry();
+                int Size = rowSqr.Height()*rowSqr.Width();
+                for(int j=0; j<rowSqr.Width(); ++j)
+                {
+                    Real tmp=sqrt(rowSqrEig[j]);
+                    for(int k=0; k<rowSqr.Height(); ++k)
+                        buffer[offsets[_level]+k+rowSqr.LDim()*j] = rowSqr.Get(k,j)/tmp;
+                }
+                offsets[_level] += Size;
+            }
+                                                                                              
+            numEntries = _colSqrMap.Size();
+            _colSqrMap.ResetIterator();
+            _colSqrEigMap.ResetIterator();
+            for( int i=0; i<numEntries; ++i,
+                _colSqrMap.Increment(),_colSqrEigMap.Increment())
+            {
+                Dense<Scalar>& colSqr = *_colSqrMap.CurrentEntry();
+                std::vector<Real>& colSqrEig = *_colSqrEigMap.CurrentEntry();
+                int Size = colSqr.Height()*colSqr.Width();
+                for(int j=0; j<colSqr.Width(); ++j)
+                {
+                    Real tmp=sqrt(colSqrEig[j]);
+                    for(int k=0; k<colSqr.Height(); ++k)
+                        buffer[offsets[_level]+k+colSqr.LDim()*j] = colSqr.Get(k,j)/tmp;
+                }
+                offsets[_level] += Size;
+            }
+        }
+        break;
+    }
+    default:
+        break;
+    }
+#ifndef RELEASE
+    PopCallStack();
+#endif
+}
+
+
+template<typename Scalar, bool Conjugated>
+void
+dmhm::DistQuasi2dHMat<Scalar, Conjugated>::MultiplyHMatCompressHHTreeBroadcasts
+( std::vector<Scalar>& buffer, std::vector<int>& sizes )
+{
+#ifndef RELEASE
+    PushCallStack("DistQuasi2dHMat::MultiplyHMatCompressHHTreeBreadcasts");
+#endif
+
+    _teams->TreeBroadcasts( buffer, sizes );
+
+#ifndef RELEASE
+    PopCallStack();
+#endif
+}
+
+
+template<typename Scalar,bool Conjugated>
+void
+dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressHHBroadcastsUnpack
+( std::vector<Scalar>& buffer, std::vector<int>& offsets )
+{
+#ifndef RELEASE
+    PushCallStack("DistQuasi2dHMat::MultiplyHMatCompressHHBroadcastsUnpack");
+#endif
+    if( Height() == 0 || Width() == 0 )
+    {
+#ifndef RELEASE
+        PopCallStack();
+#endif
+        return;
+    }
+
+    switch( _block.type )
+    {
+    case DIST_NODE:
+    {
+        Node& node = *_block.data.N;
+        for( int t=0; t<4; ++t )
+            for( int s=0; s<4; ++s )
+                node.Child(t,s).MultiplyHMatCompressHHBroadcastsUnpack
+                ( buffer, offsets );
+        break;
+    }
+    case DIST_LOW_RANK:
+    {
+        int numEntries = _rowSqrMap.Size();                       
+        _rowSqrMap.ResetIterator();                                  
+        for( int i=0; i<numEntries; ++i,_rowSqrMap.Increment() )     
+        {                                                            
+            Dense<Scalar>& rowSqr = *_rowSqrMap.CurrentEntry();      
+            int Size = rowSqr.Height()*rowSqr.Width();               
+            std::memcpy                                              
+            ( rowSqr.Buffer(), &buffer[offsets[_level]],             
+              Size*sizeof(Scalar) );                                 
+            offsets[_level] += Size;                                 
+        }                                                            
+                                                                     
+        numEntries = _colSqrMap.Size();                              
+        _colSqrMap.ResetIterator();                                  
+        for( int i=0; i<numEntries; ++i,_colSqrMap.Increment() )     
+        {                                                            
+            Dense<Scalar>& colSqr = *_colSqrMap.CurrentEntry();      
+            int Size = colSqr.Height()*colSqr.Width();               
+            std::memcpy                                              
+            ( colSqr.Buffer(), &buffer[offsets[_level]],             
+              Size*sizeof(Scalar) );                                 
+            offsets[_level] += Size;                                 
+        }                                                            
+        break;
+    }
+    default:
+        break;
+    }
+#ifndef RELEASE
+    PopCallStack();
+#endif
+}
+
+
 

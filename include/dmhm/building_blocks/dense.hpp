@@ -76,6 +76,9 @@ public:
     int LDim() const;
     void Resize( int height, int width );
     void Resize( int height, int width, int ldim );
+    void EraseCol( int first, int last );
+    void EraseRow( int first, int last );
+    void Erase( int colfirst, int collast, int rowfirst, int rowlast );
     void Clear();
 
     void Set( int i, int j, Scalar value );
@@ -309,6 +312,81 @@ dmhm::Dense<Scalar>::Resize( int height, int width, int ldim )
     _memory.resize( ldim*width );
     _buffer = &_memory[0];
 #ifndef RELEASE
+    PopCallStack();
+#endif
+}
+
+template<typename Scalar>
+inline void
+dmhm::Dense<Scalar>::EraseCol( int first, int last )
+{
+#ifndef RELEASE
+    PushCallStack("Dense::EraseCol");
+    if( _viewing )
+        throw std::logic_error("Cannot erase views");
+    if( first < 0 || last > _width )
+        throw std::logic_error("First and last must be in the range of matrix");
+    if( first > last )
+        throw std::logic_error("First must be smaller than last");
+    if( _type == SYMMETRIC )
+        throw std::logic_error("Destroyed symmetry of symmetric matrix");
+#endif
+    _width = _width-last+first-1;
+    _memory.erase( _memory.begin()+first*_ldim, _memory.begin()+(last+1)*_ldim );
+    _buffer = &_memory[0];
+#ifndef RELEASE
+    PopCallStack();
+#endif
+}
+
+template<typename Scalar>
+inline void
+dmhm::Dense<Scalar>::EraseRow( int first, int last )
+{
+#ifndef RELEASE
+    PushCallStack("Dense::EraseRow");
+    if( _viewing )
+        throw std::logic_error("Cannot erase views");
+    if( first < 0 || last > _height )
+        throw std::logic_error("First and last must be in the range of matrix");
+    if( first > last )
+        throw std::logic_error("First must be smaller than last");
+    if( _type == SYMMETRIC )
+        throw std::logic_error("Destroyed symmetry of symmetric matrix");
+#endif
+    _height = _height-last+first-1;
+    for( int i=_width-1; i>=0; --i)
+        _memory.erase( _memory.begin()+i*_ldim+first, _memory.begin()+i*_ldim+last+1 );
+    _buffer = &_memory[0];
+    _ldim = _ldim-last+first-1;
+#ifndef RELEASE
+    PopCallStack();
+#endif
+}
+
+template<typename Scalar>
+inline void
+dmhm::Dense<Scalar>::Erase( int colfirst, int collast, int rowfirst, int rowlast )
+{
+    MatrixType typetmp = _type;
+#ifndef RELEASE
+    PushCallStack("Dense::Erase");
+    if( _viewing )
+        throw std::logic_error("Cannot erase views");
+    if( rowfirst < 0 || rowlast > _height || colfirst<0 || collast > _width )
+        throw std::logic_error("First and last must be in the range of matrix");
+    if( colfirst > collast || rowfirst > rowlast )
+        throw std::logic_error("First must be smaller than last");
+    if( _type == SYMMETRIC && ( colfirst != rowfirst || collast != rowlast ) )
+        throw std::logic_error("Destroyed symmetry of symmetric matrix");
+    if( _type == SYMMETRIC )
+        _type = GENERAL;
+#endif
+        
+    EraseCol( colfirst, collast );
+    EraseRow( rowfirst, rowlast );
+#ifndef RELEASE
+    _type = typetmp;
     PopCallStack();
 #endif
 }

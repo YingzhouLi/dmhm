@@ -333,6 +333,44 @@ void LAPACK(zsytri)
   dcomplex* work,
   int* info );
 
+void LAPACK(ssyevd)
+( const char* jobz, const char* uplo, 
+  const int* n,
+  float* A, const int* lda,
+  float* w,
+  float* work, const int* lwork,
+  int* iwork, const int* liwork,
+  int* info );
+
+void LAPACK(dsyevd)
+( const char* jobz, const char* uplo,
+  const int* n,
+  double* A, const int* lda,
+  double* w,
+  double* work, const int* lwork,
+  int* iwork, const int* liwork,
+  int* info );
+
+void LAPACK(cheevd)
+( const char* jobz, const char* uplo,
+  const int* n,
+  scomplex* A, const int* lda,
+  float* w,
+  scomplex* work, const int* lwork,
+  float* rwork, const int* lrwork,
+  int* iwork, const int* liwork,
+  int* info );
+
+void LAPACK(zheevd)
+( const char* jobz, const char* uplo,
+  const int* n,
+  dcomplex* A, const int* lda,
+  double* w,
+  dcomplex* work, const int* lwork,
+  double* rwork, const int* lrwork,
+  int* iwork, const int* liwork,
+  int* info );
+
 } // extern "C"
 
 namespace dmhm {
@@ -1768,6 +1806,140 @@ inline void InvertLDLT
     PopCallStack();
 #endif
 }
+
+
+//----------------------------------------------------------------------------//
+// EVD                                                                        //
+//----------------------------------------------------------------------------//
+
+inline int EVDWorkSize( int n )
+{
+    // Return 5 times the minimum recommendation
+    return 5*std::max( 1, 1+6*n+2*n*n );
+}
+
+inline int EVDRealWorkSize( int n )
+{
+    return 5*std::max( 1, 1+5*n+2*n*n );
+}
+
+inline int EVDIntWorkSize( int n )
+{
+    return 5*std::max( 1, 3+5*n );
+}
+
+inline void EVD
+( char jobz, char uplo, int n, 
+  float* A, int lda,
+  float* w,
+  float* work, int lwork,
+  int* iwork, int liwork,
+  float* rwork=0, int lrwork=0 )
+{
+#ifndef RELEASE
+    PushCallStack("lapack::EVD");
+    if( lda == 0 )
+        throw std::logic_error("lda was 0");
+#endif
+    int info;
+    LAPACK(ssyevd)
+    ( &jobz, &uplo, &n, A, &lda, w, work, &lwork, iwork, &liwork,
+      &info );
+#ifndef RELEASE
+    if( info != 0 )
+    {
+        std::ostringstream s;
+        s << "EVD, ssyevd, failed with info=" << info;
+        throw std::runtime_error( s.str().c_str() );
+    }
+    PopCallStack();
+#endif
+}
+
+inline void EVD
+( char jobz, char uplo, int n, 
+  double* A, int lda,
+  double* w,
+  double* work, int lwork,
+  int* iwork, int liwork,
+  double* rwork=0, int lrwork=0 )
+{
+#ifndef RELEASE
+    PushCallStack("lapack::EVD");
+    if( lda == 0 )
+        throw std::logic_error("lda was 0");
+#endif
+    int info;
+    LAPACK(dsyevd)
+    ( &jobz, &uplo, &n, A, &lda, w, work, &lwork, iwork, &liwork,
+      &info );
+#ifndef RELEASE
+    if( info != 0 )
+    {
+        std::ostringstream s;
+        s << "EVD, dsyevd, failed with info=" << info;
+        throw std::runtime_error( s.str().c_str() );
+    }
+    PopCallStack();
+#endif
+}
+
+inline void EVD
+( char jobz, char uplo, int n, 
+  std::complex<float>* A, int lda,
+  float* w,
+  std::complex<float>* work, int lwork,
+  int* iwork, int liwork,
+  float* rwork, int lrwork )
+{
+#ifndef RELEASE
+    PushCallStack("lapack::EVD");
+    if( lda == 0 )
+        throw std::logic_error("lda was 0");
+#endif
+    int info;
+    LAPACK(cheevd)
+    ( &jobz, &uplo, &n, A, &lda, w, work, &lwork, rwork, &lrwork,
+      iwork, &liwork, &info );
+#ifndef RELEASE
+    if( info != 0 )
+    {
+        std::ostringstream s;
+        s << "EVD, cheevd, failed with info=" << info;
+        throw std::runtime_error( s.str().c_str() );
+    }
+    PopCallStack();
+#endif
+}
+
+inline void EVD
+( char jobz, char uplo, int n, 
+  std::complex<double>* A, int lda,
+  double* w, 
+  std::complex<double>* work, int lwork, 
+  int* iwork, int liwork,
+  double* rwork, int lrwork )
+{
+#ifndef RELEASE
+    PushCallStack("lapack::EVD");
+    if( lda == 0 )
+        throw std::logic_error("lda was 0");
+#endif
+    int info;
+    LAPACK(zheevd)
+    ( &jobz, &uplo, &n, A, &lda, w, work, &lwork, rwork, &lrwork,
+      iwork, &liwork, &info );
+#ifndef RELEASE
+    if( info != 0 )
+    {
+        std::ostringstream s;
+        s << "EVD, zheevd, failed with info=" << info;
+        throw std::runtime_error( s.str().c_str() );
+    }
+    PopCallStack();
+#endif
+}
+
 
 } // namespace lapack
 } // namespace dmhm 

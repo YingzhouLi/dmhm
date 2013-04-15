@@ -1101,10 +1101,27 @@ private:
       int startUpdate, int endUpdate, int update ) const;
 
     void MultiplyHMatCompress();
-    void MultiplyHMatCompressRandomSetup( int rank );
-    void MultiplyHMatCompressRandomPrecompute( int rank );
-    void MultiplyHMatCompressRandomPrecomputeImport
-    ( int rank, const Dense<Scalar>& V );
+    void MultiplyHMatCompressHHSetup();
+    void MultiplyHMatCompressHHReducesCount
+    ( std::vector<int>& sizes );
+    void MultiplyHMatCompressHHReducesPack
+    ( std::vector<Scalar>& buffer, std::vector<int>& offsets );
+    void MultiplyHMatCompressHHTreeReduces
+    ( std::vector<Scalar>& buffer, std::vector<int>& sizes );
+    void MultiplyHMatCompressHHReducesUnpack
+    ( std::vector<Scalar>& buffer, std::vector<int>& offsets );
+    void MultiplyHMatCompressHHEigenDecomp();
+    void EVDTrunc
+    ( Dense<Scalar>& Q, int ldq, std::vector<Real>& w, Real error);
+    void MultiplyHMatCompressHHEigenTrunc( Real error = (Real)0.1 );
+    void MultiplyHMatCompressHHBroadcastsCount
+    ( std::vector<int>& sizes );
+    void MultiplyHMatCompressHHBroadcastsPack
+    ( std::vector<Scalar>& buffer, std::vector<int>& offsets );
+    void MultiplyHMatCompressHHTreeBroadcasts
+    ( std::vector<Scalar>& buffer, std::vector<int>& sizes );
+    void MultiplyHMatCompressHHBroadcastsUnpack
+    ( std::vector<Scalar>& buffer, std::vector<int>& offsets );
     // TODO: The rest of the Compress routines
 
     /*
@@ -1132,6 +1149,13 @@ private:
     MemoryMap<int,MultiplyDenseContext> 
         _mainContextMap, _colFHHContextMap, _rowFHHContextMap;
     MemoryMap<int,Dense<Scalar> > _UMap, _VMap, _ZMap, _colXMap, _rowXMap;
+    MemoryMap<int,Dense<Scalar> > _HUMap, _HVMap, _HZMap;
+    // _colSqrMap stores (HHR)'(HHR), _rowSqrMap stores (L'HH)(L'HH)'
+    // Also they will be used to store low-rank square matrix.
+    MemoryMap<int,Dense<Scalar> > _colSqrMap, _rowSqrMap;
+    // _colSqrEigMap stores the eigenvalues of _colSqrMap
+    // _rowSqrEigMap stores the eigenvalues of _rowSqrMap
+    MemoryMap<int,std::vector<Real> > _colSqrEigMap, _rowSqrEigMap;
     bool _haveDenseUpdate, _storedDenseUpdate;
     Dense<Scalar> _D;
 
