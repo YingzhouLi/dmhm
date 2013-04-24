@@ -185,7 +185,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFullAccumulate
 #ifdef TIME_MULTIPLY
     timer.Start( 13 );
 #endif
-    C.MultiplyHMatCompress();
+    C.MultiplyHMatCompress( startLevel, endLevel );
 #ifdef TIME_MULTIPLY
     mpi::Barrier( MPI_COMM_WORLD );
     timer.Stop( 13 );
@@ -356,7 +356,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatSingleLevelAccumulate
 #ifdef TIME_MULTIPLY
         timer.Start( 13 );
 #endif
-        C.MultiplyHMatCompress();
+        C.MultiplyHMatCompress( startLevel, endLevel);
 #ifdef TIME_MULTIPLY
         mpi::Barrier( MPI_COMM_WORLD );
         timer.Stop( 13 );
@@ -530,7 +530,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatSingleUpdateAccumulate
 #ifdef TIME_MULTIPLY
             timer.Start( 13 );
 #endif
-            C.MultiplyHMatCompress();
+            C.MultiplyHMatCompress( startLevel, endLevel );
 #ifdef TIME_MULTIPLY
             mpi::Barrier( MPI_COMM_WORLD );
             timer.Stop( 13 );

@@ -60,6 +60,9 @@ public:
 
         void TreeBroadcasts
         ( std::vector<Scalar>& buffer, const std::vector<int>& sizes ) const;
+
+        void TreeBroadcasts
+        ( std::vector<int>& buffer, const std::vector<int>& sizes ) const;
     };
 
     /*
@@ -1100,8 +1103,103 @@ private:
       int startLevel, int endLevel,
       int startUpdate, int endUpdate, int update ) const;
 
-    void MultiplyHMatCompress();
-    void MultiplyHMatCompressHHSetup();
+    void EVDTrunc
+    ( Dense<Scalar>& Q, std::vector<Real>& w, Real error );
+    void SVDTrunc
+    ( Dense<Scalar>& U, std::vector<Real>& w,
+      Dense<Scalar>& VH,
+      Real error );
+
+    void MultiplyHMatCompress( int startLevel, int endLevel );
+    void MultiplyHMatCompressFPrecompute
+    ( int startLevel, int endLevel );
+    void MultiplyHMatCompressFReduces
+    ( int startLevel, int endLevel );
+    void MultiplyHMatCompressFReducesCount
+    ( std::vector<int>& sizes, int startLevel, int endLevel ) const;
+    void MultiplyHMatCompressFReducesPack
+    ( std::vector<Scalar>& buffer, std::vector<int>& offsets,
+      int startLevel, int endLevel ) const;
+    void MultiplyHMatCompressFTreeReduces
+    ( std::vector<Scalar>& buffer, std::vector<int>& sizes ) const;
+    void MultiplyHMatCompressFReducesUnpack
+    ( const std::vector<Scalar>& buffer, std::vector<int>& offsets,
+      int startLevel, int endLevel );
+    void MultiplyHMatCompressFEigenDecomp
+    ( int startLevel, int endLevel );
+    void MultiplyHMatCompressFPassData
+    ( int startLevel, int endLevel );
+    void MultiplyHMatCompressFPassDataCount
+    ( std::map<int,int>& sendSizes, std::map<int,int>& recvSizes,
+      int startLevel, int endLevel ) const;
+    void MultiplyHMatCompressFPassDataPack
+    ( std::vector<Scalar>& buffer, std::map<int,int>& offsets,
+      int startLevel, int endLevel ) const;
+    void MultiplyHMatCompressFPassDataUnpack
+    ( const std::vector<Scalar>& buffer, std::map<int,int>& offsets,
+      int startLevel, int endLevel );
+    void MultiplyHMatCompressFMidcompute
+    ( Real error, int startLevel, int endLevel );
+    // Did not used.
+    void MultiplyHMatCompressFEigenTrunc
+    ( Real error, int startLevel, int endLevel );
+    void MultiplyHMatCompressFPassbackNum
+    ( int startLevel, int endLevel );
+    void MultiplyHMatCompressFPassbackNumCount
+    ( std::map<int,int>& sendSizes, std::map<int,int>& recvSizes,
+      int startLevel, int endLevel ) const;
+    void MultiplyHMatCompressFPassbackNumPack
+    ( std::vector<int>& buffer, std::map<int,int>& offsets,
+      int startLevel, int endLevel ) const;
+    void MultiplyHMatCompressFPassbackNumUnpack
+    ( const std::vector<int>& buffer, std::map<int,int>& offsets,
+      int startLevel, int endLevel );
+    void MultiplyHMatCompressFPassbackData
+    ( int startLevel, int endLevel );
+    void MultiplyHMatCompressFPassbackDataCount
+    ( std::map<int,int>& sendSizes, std::map<int,int>& recvSizes,
+      int startLevel, int endLevel ) const;
+    void MultiplyHMatCompressFPassbackDataPack
+    ( std::vector<Scalar>& buffer, std::map<int,int>& offsets,
+      int startLevel, int endLevel ) const;
+    void MultiplyHMatCompressFPassbackDataUnpack
+    ( const std::vector<Scalar>& buffer, std::map<int,int>& offsets,
+      int startLevel, int endLevel );
+    void MultiplyHMatCompressFPostcompute
+    ( Real error, int startLevel, int endLevel );
+    void MultiplyHMatCompressFBroadcastsNum
+    ( int startLevel, int endLevel );
+    void MultiplyHMatCompressFBroadcastsNumCount
+    ( std::vector<int>& sizes, int startLevel, int endLevel ) const;
+    void MultiplyHMatCompressFBroadcastsNumPack
+    ( std::vector<int>& buffer, std::vector<int>& offsets,
+      int startLevel, int endLevel ) const;
+    void MultiplyHMatCompressFTreeBroadcastsNum
+    ( std::vector<int>& buffer, std::vector<int>& sizes ) const;
+    void MultiplyHMatCompressFBroadcastsNumUnpack
+    ( std::vector<int>& buffer, std::vector<int>& offsets,
+      int startLevel, int endLevel );
+    void MultiplyHMatCompressFBroadcasts
+    ( int startLevel, int endLevel );
+    void MultiplyHMatCompressFBroadcastsCount
+    ( std::vector<int>& sizes, int startLevel, int endLevel ) const;
+    void MultiplyHMatCompressFBroadcastsPack
+    ( std::vector<Scalar>& buffer, std::vector<int>& offsets,
+      int startLevel, int endLevel ) const;
+    void MultiplyHMatCompressFTreeBroadcasts
+    ( std::vector<Scalar>& buffer, std::vector<int>& sizes ) const;
+    void MultiplyHMatCompressFBroadcastsUnpack
+    ( std::vector<Scalar>& buffer, std::vector<int>& offsets,
+      int startLevel, int endLevel );
+    void MultiplyHMatCompressFFinalcompute
+    ( int startLevel, int endLevel );
+    void MultiplyHMatCompressFCleanup
+    ( int startLevel, int endLevel );
+
+
+    // The following group of routines are used for HH compress.
+    void MultiplyHMatHHCompress();
+    void MultiplyHMatCompressHHPrecompute();
     void MultiplyHMatCompressHHReducesCount
     ( std::vector<int>& sizes );
     void MultiplyHMatCompressHHReducesPack
@@ -1156,6 +1254,15 @@ private:
     // _colSqrEigMap stores the eigenvalues of _colSqrMap
     // _rowSqrEigMap stores the eigenvalues of _rowSqrMap
     MemoryMap<int,std::vector<Real> > _colSqrEigMap, _rowSqrEigMap;
+    // Tmp space for F compression
+    Dense<Scalar> _Utmp, _Vtmp;
+    Dense<Scalar> _USqr, _VSqr;
+    std::vector<Real> _USqrEig, _VSqrEig;
+    Dense<Scalar> _BSqr;
+    std::vector<Real> _BSqrEig;
+    Dense<Scalar> _BSqrU, _BSqrVH;
+    std::vector<Real> _BSigma;
+    Dense<Scalar> _BL, _BR;
     bool _haveDenseUpdate, _storedDenseUpdate;
     Dense<Scalar> _D;
 
@@ -1802,6 +1909,46 @@ DistQuasi2dHMat<Scalar,Conjugated>::Teams::TreeBroadcasts
     PopCallStack();
 #endif
 }
+
+template<typename Scalar,bool Conjugated>
+inline void
+DistQuasi2dHMat<Scalar,Conjugated>::Teams::TreeBroadcasts
+( std::vector<int>& buffer, const std::vector<int>& sizes ) const
+{
+#ifndef RELEASE
+    PushCallStack("DistQuasi2dHMat::Teams::TreeBroadcasts");
+#endif
+    const int numLevels = NumLevels();
+    const int numBroadcasts = numLevels-1;
+
+    int totalSize = 0;
+    for( int i=0; i<numBroadcasts; ++i )
+        totalSize += sizes[i];
+
+    if( totalSize == 0 )
+    {
+#ifndef RELEASE
+    PopCallStack();
+#endif
+        return;
+    }
+
+    // Use O(log(p)) custom method: 
+    // - Broadcast over each cross communicator
+    int partialSize = totalSize;
+    for( int i=0; i<numBroadcasts; ++i )
+    {
+        if( partialSize == 0 )
+            break;
+        MPI_Comm crossTeam = CrossTeam( i+1 );
+        mpi::Broadcast( &buffer[0], partialSize, 0, crossTeam );
+        partialSize -= sizes[numBroadcasts-1-i];
+    }
+#ifndef RELEASE
+    PopCallStack();
+#endif
+}
+
 
 } // namespace dmhm 
 

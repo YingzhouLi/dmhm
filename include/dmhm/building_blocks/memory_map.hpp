@@ -127,6 +127,38 @@ public:
 #endif
         return value;
     }
+    //CurrentWidth and TotalWidth only supported when T2 has function Width
+    const int CurrentWidth() const
+    {
+#ifndef RELEASE
+        PushCallStack("MemoryMap::CurrentSize");
+        if( _currentIndex >= _baseMap.size() )
+            throw std::logic_error("Traversed past end of map");
+#endif
+        if( _currentIndex == 0 )
+            _it = _baseMap.begin();
+
+        const T2* value = _it->second;
+#ifndef RELEASE
+        PopCallStack();
+#endif
+        return value->Width();
+    }
+
+    const int TotalWidth() const
+    {
+#ifndef RELEASE
+        PushCallStack("MemoryMap::TotalWidth");
+#endif
+        int width=0;
+        typename std::map<T1,T2*>::iterator it = _baseMap.begin();
+        for( int i=0; i<_baseMap.size(); ++i,++it)
+            width += it->second->Width();
+#ifndef RELEASE
+        PopCallStack();
+#endif
+        return width;
+    }
 
     void Increment()
     {
