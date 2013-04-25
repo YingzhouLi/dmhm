@@ -49,7 +49,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompress
         std::cout << startLevel << " " << endLevel << std::endl;
     }
     else
-        print = 0;
+        print = 1;
     if( print )
         std::cout << "Precompute" << std::endl;
     MultiplyHMatCompressFPrecompute( startLevel, endLevel);
@@ -165,7 +165,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPrecompute
         const char option = (Conjugated ? 'C' : 'T' );
         int totalrank=_colXMap.TotalWidth() + _UMap.TotalWidth();
         
-        if( totalrank > 0 )
+        if( totalrank > 0 && LH > 0 )
         {
             _USqr.Resize( totalrank, totalrank, totalrank );
             _USqrEig.resize( totalrank );
@@ -204,7 +204,7 @@ if(totalrank ==0 && _block.type == LOW_RANK)
 
         totalrank=_rowXMap.TotalWidth() + _VMap.TotalWidth();
         offset = 0;
-        if( totalrank > 0 )
+        if( totalrank > 0 && LW > 0 )
         {
             _VSqr.Resize( totalrank, totalrank, totalrank );
             _VSqrEig.resize( totalrank );
@@ -575,7 +575,6 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPassData
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatCompressFPassData");
 #endif
-
     // Compute send and recv sizes
     std::map<int,int> sendSizes, recvSizes;
     MultiplyHMatCompressFPassDataCount
@@ -808,17 +807,17 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPassDataUnpack
         const int teamRank = mpi::CommRank( team );
         if( teamRank ==0 && _USqr.Height() > 0 )
         {
-            _VSqr.Resize( _USqr.LDim(), _USqr.LDim(), _USqr.LDim() );
+            _VSqr.Resize( _USqr.Height(), _USqr.Width(), _USqr.LDim() );
             _VSqrEig.resize( _USqrEig.size() );
             std::memcpy
             ( _VSqr.Buffer(), &buffer[offsets[_sourceRoot]],
               _VSqr.Height()*_VSqr.Width()*sizeof(Scalar) );
-            offsets[_sourceRoot] += _VSqr.LDim()*_VSqr.LDim();
+            offsets[_sourceRoot] += _VSqr.Height()*_VSqr.Width();
 
             std::memcpy
             ( &_VSqrEig[0], &buffer[offsets[_sourceRoot]],
-              _VSqrEig.size()*sizeof(Scalar) );
-            offsets[_sourceRoot] += _VSqr.LDim();
+              _VSqrEig.size()*sizeof(Real) );
+            offsets[_sourceRoot] += _VSqrEig.size();
         }
         break;
     }
@@ -1556,22 +1555,29 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPostcompute
             break;
         MPI_Comm team = _teams->Team( _level );
         const int teamRank = mpi::CommRank( team );
+MPI_Comm teamp = _teams->Team( 0 );
+const int teamRankp = mpi::CommRank( teamp );
+int print;
+if(teamRankp==1)
+print=0;
+else
+print=0;
         if( teamRank == 0 )
         {
             const char option = ( Conjugated ? 'C' : 'T' );
 //print
+if(print)
 std::cout << "Run until here 1" << std::endl;
-            if( _inSourceTeam )
+            if( _inTargetTeam )
             {
-//print
-std::cout << _block.type << _USqrEig.size() << std::endl;
-//print
-std::cout << _USqr.Height() << " " << _USqr.Width() << std::endl;
+//Print
+if(print)
+std::cout << _USqrEig.size() << " " << _VSqrEig.size() << " " << _block.type << std::endl;
                 Real Eigmax=_USqrEig[_USqrEig.size()-1];
                 for(int j=0; j<_USqr.Width(); ++j)
                     if(_USqrEig[j] > error*Eigmax )
                     {
-                        Scalar sqrteig=sqrt(_USqrEig[j]);
+                        Real sqrteig=sqrt(_USqrEig[j]);
                         for(int i=0; i<_USqr.LDim(); ++i)
                             _USqr.Set(i,j,_USqr.Get(i,j)/sqrteig);
                     }
@@ -1582,6 +1588,7 @@ std::cout << _USqr.Height() << " " << _USqr.Width() << std::endl;
                     }
 
 //print
+if(print)
 std::cout << "Run until here 1.5" << std::endl;
                 for(int j=0; j<_BSqrU.Width(); ++j)
                     for(int i=0; i<_BSqrU.LDim(); ++i)
@@ -1590,6 +1597,7 @@ std::cout << "Run until here 1.5" << std::endl;
                 _BL.Resize(_USqr.Height(), _BSqrU.Width(), _USqr.Height());
 
 //print
+if(print)
 std::cout << "Run until here 1.8" << std::endl;
                 blas::Gemm
                 ( 'N', 'N', _USqr.Height(), _BSqrU.Width(), _USqr.Width(), 
@@ -1600,14 +1608,15 @@ std::cout << "Run until here 1.8" << std::endl;
             }
 
 //print
+if(print)
 std::cout << "Run until here 2" << std::endl;
-            if(_inTargetTeam)
+            if(_inSourceTeam)
             {
                 Real Eigmax=_VSqrEig[_VSqrEig.size()-1];
                 for(int j=0; j<_VSqr.Width(); ++j)
                     if(_VSqrEig[j] > error*Eigmax )
                     {
-                        Scalar sqrteig=sqrt(_VSqrEig[j]);
+                        Real sqrteig=sqrt(_VSqrEig[j]);
                         for(int i=0; i<_VSqr.LDim(); ++i)
                             _VSqr.Set(i,j,_VSqr.Get(i,j)/sqrteig);
                     }
