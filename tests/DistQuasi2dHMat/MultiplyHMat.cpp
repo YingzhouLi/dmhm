@@ -335,7 +335,6 @@ main( int argc, char* argv[] )
         const int localWidth = A.LocalWidth();
         if( localHeight != localWidth )
             throw std::logic_error("A was not locally square");
-
         dmhm::Dense<Scalar> XLocal;
         if( multiplyIdentity )
         {

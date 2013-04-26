@@ -76,7 +76,6 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::Multiply
 #endif
     RequireRoot();
     hmat_tools::Scale( beta, yLocal );
-
     MultiplyVectorContext context;
     MultiplyVectorInitialize( context );
     MultiplyVectorPrecompute( context, alpha, xLocal, yLocal );

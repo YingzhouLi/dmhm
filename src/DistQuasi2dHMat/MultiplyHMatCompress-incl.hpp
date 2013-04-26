@@ -1626,7 +1626,7 @@ std::cout << "Run until here 2" << std::endl;
                             _VSqr.Set(i,j, (Scalar)0);
                     }
 
-                _BR.Resize(_VSqr.Height(), _BSqrVH.Width(), _VSqr.Height());
+                _BR.Resize(_VSqr.Height(), _BSqrVH.Height(), _VSqr.Height());
 
                 blas::Gemm
                 ( 'N', option, _VSqr.Height(), _BSqrVH.Height(), _VSqr.Width(),
