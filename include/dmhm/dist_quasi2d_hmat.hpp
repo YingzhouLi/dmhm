@@ -1127,16 +1127,27 @@ private:
       int startLevel, int endLevel );
     void MultiplyHMatCompressFEigenDecomp
     ( int startLevel, int endLevel );
-    void MultiplyHMatCompressFPassData
+    void MultiplyHMatCompressFPassMatrix
     ( int startLevel, int endLevel );
-    void MultiplyHMatCompressFPassDataCount
+    void MultiplyHMatCompressFPassMatrixCount
     ( std::map<int,int>& sendSizes, std::map<int,int>& recvSizes,
       int startLevel, int endLevel ) const;
-    void MultiplyHMatCompressFPassDataPack
+    void MultiplyHMatCompressFPassMatrixPack
     ( std::vector<Scalar>& buffer, std::map<int,int>& offsets,
       int startLevel, int endLevel ) const;
-    void MultiplyHMatCompressFPassDataUnpack
+    void MultiplyHMatCompressFPassMatrixUnpack
     ( const std::vector<Scalar>& buffer, std::map<int,int>& offsets,
+      int startLevel, int endLevel );
+    void MultiplyHMatCompressFPassVector
+    ( int startLevel, int endLevel );
+    void MultiplyHMatCompressFPassVectorCount
+    ( std::map<int,int>& sendSizes, std::map<int,int>& recvSizes,
+      int startLevel, int endLevel ) const;
+    void MultiplyHMatCompressFPassVectorPack
+    ( std::vector<Real>& buffer, std::map<int,int>& offsets,
+      int startLevel, int endLevel ) const;
+    void MultiplyHMatCompressFPassVectorUnpack
+    ( const std::vector<Real>& buffer, std::map<int,int>& offsets,
       int startLevel, int endLevel );
     void MultiplyHMatCompressFMidcompute
     ( Real error, int startLevel, int endLevel );
