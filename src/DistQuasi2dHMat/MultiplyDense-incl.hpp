@@ -85,15 +85,33 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::Multiply
         return;
     }
     hmat_tools::Scale( beta, YLocal );
-
+int print=0;
+//Print
+if(print)
+std::cout << "Initialize" << std::endl;
     MultiplyDenseContext context;
     MultiplyDenseInitialize( context, XLocal.Width() );
+//Print
+if(print)
+std::cout << "Precompute" << std::endl;
     MultiplyDensePrecompute( context, alpha, XLocal, YLocal );
 
+//Print
+if(print)
+std::cout << "Sums" << std::endl;
     MultiplyDenseSums( context );
+//Print
+if(print)
+std::cout << "PassData" << std::endl;
     MultiplyDensePassData( context );
+//Print
+if(print)
+std::cout << "Broadcasts" << std::endl;
     MultiplyDenseBroadcasts( context );
 
+//Print
+if(print)
+std::cout << "Postcompute" << std::endl;
     MultiplyDensePostcompute( context, alpha, XLocal, YLocal );
 #ifndef RELEASE
     PopCallStack();
@@ -1368,6 +1386,8 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyDensePassData
         recvOffsets[it->first] = totalRecvSize;
         totalRecvSize += it->second;
     }
+//Print
+//std::cout << totalSendSize << " " << totalRecvSize << std::endl;
 
     // Fill the send buffer
     std::vector<Scalar> sendBuffer( totalSendSize );

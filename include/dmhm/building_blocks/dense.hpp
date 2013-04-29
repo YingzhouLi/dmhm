@@ -357,7 +357,8 @@ dmhm::Dense<Scalar>::EraseRow( int first, int last )
     {
         _height = _height-last+first-1;                                                     
         for( int i=_width-1; i>=0; --i)
-            _memory.erase( _memory.begin()+i*_ldim+first, _memory.begin()+i*_ldim+last+1 );
+            _memory.erase
+            ( _memory.begin()+i*_ldim+first, _memory.begin()+i*_ldim+last+1 );
         _buffer = &_memory[0];
         _ldim = _ldim-last+first-1;
     }

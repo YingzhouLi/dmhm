@@ -927,7 +927,7 @@ inline int SVDWorkSize( int m, int n )
 
 inline int SVDRealWorkSize( int m, int n )
 {
-    return 5*std::min( m, n );
+    return 5*5*std::min( m, n );
 }
 
 inline void SVD

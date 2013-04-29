@@ -212,8 +212,8 @@ main( int argc, char* argv[] )
         {
             std::cout << "done: " << invertStopTime-invertStartTime 
                       << " seconds." << std::endl;
-            if( print )
-                ASerial.Print("ASerial");
+//            if( print )
+//                ASerial.Print("ASerial");
             if( printStructure )
             {
                 ASerial.LatexWriteStructure("ASerial_structure");
@@ -304,6 +304,50 @@ main( int argc, char* argv[] )
             A.MScriptWriteLocalStructure("A_structure");
         }
 
+        const int localHeight = A.LocalHeight();
+        const int localWidth = A.LocalWidth();
+        if( localHeight != localWidth )
+            throw std::logic_error("A was not locally square");
+        dmhm::Dense<Scalar> XLocal;
+        if( multiplyIdentity )
+        {
+            const int firstLocalRow = A.FirstLocalRow();
+            XLocal.Resize( localHeight, n );
+            dmhm::hmat_tools::Scale( (Scalar)0, XLocal );
+            for( int j=firstLocalRow; j<firstLocalRow+localHeight; ++j )
+                XLocal.Set( j-firstLocalRow, j, (Scalar)1 );
+        }
+        else
+        {
+            const int numRhs = 30;
+            XLocal.Resize( localHeight, numRhs );
+            dmhm::ParallelGaussianRandomVectors( XLocal );
+        }
+        
+        dmhm::Dense<Scalar> YLocal, ZLocal;
+        // Y := AZ := ABX
+        B.Multiply( (Scalar)1, XLocal, ZLocal );
+        if( print )
+        {
+            std::ostringstream sE;
+            sE << "BLocal_" << commRank << ".m";
+            std::ofstream EFile( sE.str().c_str() );
+
+            EFile << "BLocal{" << commRank+1 << "}=[\n";
+            ZLocal.Print( EFile, "" );
+            EFile << "];\n";
+        }
+        A.Multiply( (Scalar)1, XLocal, ZLocal );
+        if( print )
+        {
+            std::ostringstream sE;
+            sE << "ALocal_" << commRank << ".m";
+            std::ofstream EFile( sE.str().c_str() );
+
+            EFile << "ALocal{" << commRank+1 << "}=[\n";
+            ZLocal.Print( EFile, "" );
+            EFile << "];\n";
+        }
         // Attempt to multiply the two matrices
         if( commRank == 0 )
         {
@@ -331,7 +375,7 @@ main( int argc, char* argv[] )
         if( commRank == 0 )
             std::cout << "Checking consistency: " << std::endl;
         dmhm::mpi::Barrier( MPI_COMM_WORLD );
-        const int localHeight = A.LocalHeight();
+/*        const int localHeight = A.LocalHeight();
         const int localWidth = A.LocalWidth();
         if( localHeight != localWidth )
             throw std::logic_error("A was not locally square");
@@ -354,6 +398,29 @@ main( int argc, char* argv[] )
         dmhm::Dense<Scalar> YLocal, ZLocal;
         // Y := AZ := ABX
         B.Multiply( (Scalar)1, XLocal, ZLocal );
+        if( print )
+        {
+            std::ostringstream sE;
+            sE << "BLocal_" << commRank << ".m";
+            std::ofstream EFile( sE.str().c_str() );
+
+            EFile << "BLocal{" << commRank+1 << "}=[\n";
+            ZLocal.Print( EFile, "" );
+            EFile << "];\n";
+        }
+        A.Multiply( (Scalar)1, XLocal, ZLocal );
+        if( print )
+        {
+            std::ostringstream sE;
+            sE << "ALocal_" << commRank << ".m";
+            std::ofstream EFile( sE.str().c_str() );
+
+            EFile << "ALocal{" << commRank+1 << "}=[\n";
+            ZLocal.Print( EFile, "" );
+            EFile << "];\n";
+        }
+        */
+        B.Multiply( (Scalar)1, XLocal, ZLocal );
         A.Multiply( (Scalar)1, ZLocal, YLocal );
         // Z := CX
         C.Multiply( (Scalar)1, XLocal, ZLocal );
@@ -366,11 +433,11 @@ main( int argc, char* argv[] )
             std::ofstream YFile( sY.str().c_str() );
             std::ofstream ZFile( sZ.str().c_str() );
 
-            YFile << "YLocal" << commRank << "=[\n";
+            YFile << "YLocal{" << commRank+1 << "}=[\n";
             YLocal.Print( YFile, "" );
             YFile << "];\n";
 
-            ZFile << "ZLocal" << commRank << "=[\n";
+            ZFile << "ZLocal{" << commRank+1 << "}=[\n";
             ZLocal.Print( ZFile, "" );
             ZFile << "];\n";
         }
@@ -431,7 +498,7 @@ main( int argc, char* argv[] )
             sE << "ELocal_" << commRank << ".m";
             std::ofstream EFile( sE.str().c_str() );
 
-            EFile << "ELocal" << commRank << "=[\n";
+            EFile << "ELocal{" << commRank+1 << "}=[\n";
             ZLocal.Print( EFile, "" );
             EFile << "];\n";
         }

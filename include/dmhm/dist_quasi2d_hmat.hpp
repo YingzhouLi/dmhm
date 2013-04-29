@@ -1195,6 +1195,8 @@ private:
     ( int startLevel, int endLevel );
     void MultiplyHMatCompressFCleanup
     ( int startLevel, int endLevel );
+    void MultiplyHMatCompressFCompressless
+    ( int startLevel, int endLevel );
 
 
     // The following group of routines are used for HH compress.

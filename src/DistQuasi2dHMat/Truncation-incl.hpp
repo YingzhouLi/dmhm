@@ -64,9 +64,9 @@ dmhm::DistQuasi2dHMat<Scalar, Conjugated>::SVDTrunc
         if( w[L]>error*w[0])
             break;
 
-    w.resize(L);
-    U.Resize(ldu, L);
-    VH.EraseRow(L+1, ldvh);
+    w.resize(L+1);
+    U.Resize(ldu, L+1, ldu);
+    VH.EraseRow(L+1, ldvh-1);
 
 #ifndef RELEASE
     PopCallStack();
