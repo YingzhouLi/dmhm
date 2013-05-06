@@ -202,7 +202,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPrecompute
             }
 
             blas::Gemm
-            (option, 'N', totalrank, totalrank, LH,
+            ( 'C', 'N', totalrank, totalrank, LH,
              (Scalar)1, _Utmp.LockedBuffer(), _Utmp.LDim(),
                         _Utmp.LockedBuffer(), _Utmp.LDim(),
              (Scalar)0, _USqr.Buffer(),       _USqr.LDim() );
@@ -243,7 +243,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPrecompute
             }
 
             blas::Gemm
-            (option, 'N', totalrank, totalrank, LW,
+            ( 'C', 'N', totalrank, totalrank, LW,
              (Scalar)1, _Vtmp.LockedBuffer(), _Vtmp.LDim(),
                         _Vtmp.LockedBuffer(), _Vtmp.LDim(),
              (Scalar)0, _VSqr.Buffer(),       _VSqr.LDim() );
@@ -294,7 +294,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPrecompute
             }
 
             blas::Gemm
-            (option, 'N', totalrank, totalrank, LH,
+            ('C', 'N', totalrank, totalrank, LH,
              (Scalar)1, _Utmp.LockedBuffer(), _Utmp.LDim(),
                         _Utmp.LockedBuffer(), _Utmp.LDim(),
              (Scalar)0, _USqr.Buffer(),       _USqr.LDim() );
@@ -335,7 +335,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPrecompute
             }
 
             blas::Gemm
-            (option, 'N', totalrank, totalrank, LW,
+            ('C', 'N', totalrank, totalrank, LW,
              (Scalar)1, _Vtmp.LockedBuffer(), _Vtmp.LDim(),
                         _Vtmp.LockedBuffer(), _Vtmp.LDim(),
              (Scalar)0, _VSqr.Buffer(),       _VSqr.LDim() );
@@ -386,7 +386,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPrecompute
             }
 
             blas::Gemm
-            (option, 'N', totalrank, totalrank, LH,
+            ( 'C', 'N', totalrank, totalrank, LH,
              (Scalar)1, _Utmp.LockedBuffer(), _Utmp.LDim(),
                         _Utmp.LockedBuffer(), _Utmp.LDim(),
              (Scalar)0, _USqr.Buffer(),       _USqr.LDim() );
@@ -427,7 +427,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPrecompute
             }
 
             blas::Gemm
-            (option, 'N', totalrank, totalrank, LW,
+            ( 'C', 'N', totalrank, totalrank, LW,
              (Scalar)1, _Vtmp.LockedBuffer(), _Vtmp.LDim(),
                         _Vtmp.LockedBuffer(), _Vtmp.LDim(),
              (Scalar)0, _VSqr.Buffer(),       _VSqr.LDim() );
@@ -524,7 +524,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFReducesCount
         if( _level < startLevel )
             break;
         sizes[_level] += _USqr.Height()*_USqr.Width();
-        sizes[_level] += _USqr.Height()*_USqr.Width();
+        sizes[_level] += _VSqr.Height()*_VSqr.Width();
         break;
     }
     default:
@@ -1343,6 +1343,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFMidcompute
               (Scalar)1, _USqr.LockedBuffer(), _USqr.LDim(),
                          _VSqr.LockedBuffer(), _VSqr.LDim(),
               (Scalar)0, _BSqr.Buffer(),       _BSqr.LDim() );
+
+            if( !Conjugated )
+                hmat_tools::Conjugate(_BSqr);
 /*//Print
 MPI_Comm teamp = _teams->Team( 0 );
 const int teamRankp = mpi::CommRank( teamp );

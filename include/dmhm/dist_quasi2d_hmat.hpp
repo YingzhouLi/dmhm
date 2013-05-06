@@ -1211,28 +1211,48 @@ private:
 
 
     // The following group of routines are used for HH compress.
-    void MultiplyHMatHHCompress();
-    void MultiplyHMatCompressHHPrecompute();
-    void MultiplyHMatCompressHHReducesCount
-    ( std::vector<int>& sizes );
-    void MultiplyHMatCompressHHReducesPack
-    ( std::vector<Scalar>& buffer, std::vector<int>& offsets );
-    void MultiplyHMatCompressHHTreeReduces
-    ( std::vector<Scalar>& buffer, std::vector<int>& sizes );
-    void MultiplyHMatCompressHHReducesUnpack
-    ( std::vector<Scalar>& buffer, std::vector<int>& offsets );
-    void MultiplyHMatCompressHHEigenDecomp();
-    void EVDTrunc
-    ( Dense<Scalar>& Q, int ldq, std::vector<Real>& w, Real error);
-    void MultiplyHMatCompressHHEigenTrunc( Real error = (Real)0.1 );
-    void MultiplyHMatCompressHHBroadcastsCount
-    ( std::vector<int>& sizes );
-    void MultiplyHMatCompressHHBroadcastsPack
-    ( std::vector<Scalar>& buffer, std::vector<int>& offsets );
-    void MultiplyHMatCompressHHTreeBroadcasts
-    ( std::vector<Scalar>& buffer, std::vector<int>& sizes );
-    void MultiplyHMatCompressHHBroadcastsUnpack
-    ( std::vector<Scalar>& buffer, std::vector<int>& offsets );
+    void MultiplyHMatFHHCompress
+    ( const DistQuasi2dHMat<Scalar,Conjugated>& B,
+            DistQuasi2dHMat<Scalar,Conjugated>& C,
+      int startLevel, int endLevel, 
+      int startUpdate, int endUpdate);
+    void MultiplyHMatFHHCompressSum
+    ( int startLevel, int endLevel );
+    void MultiplyHMatFHHCompressPrecompute
+    ( const DistQuasi2dHMat<Scalar,Conjugated>& B,
+            DistQuasi2dHMat<Scalar,Conjugated>& C,
+      int startLevel, int endLevel, 
+      int startUpdate, int endUpdate, int update );
+    void MultiplyHMatFHHCompressReduces
+    ( int startLevel, int endLevel );
+    void MultiplyHMatFHHCompressReducesCount
+    ( std::vector<int>& sizes, int startLevel, int endLevel ) const;
+    void MultiplyHMatFHHCompressReducesPack
+    ( std::vector<Scalar>& buffer, std::vector<int>& offsets,
+      int startLevel, int endLevel ) const;
+    void MultiplyHMatFHHCompressTreeReduces
+    ( std::vector<Scalar>& buffer, std::vector<int>& sizes ) const;
+    void MultiplyHMatFHHCompressReducesUnpack
+    ( const std::vector<Scalar>& buffer, std::vector<int>& offsets,
+      int startLevel, int endLevel );
+    void MultiplyHMatFHHCompressMidcompute
+    ( Real error, int startLevel, int endLevel );
+    void MultiplyHMatFHHCompressBroadcasts
+    ( int startLevel, int endLevel );
+    void MultiplyHMatFHHCompressBroadcastsCount
+    ( std::vector<int>& sizes, int startLevel, int endLevel ) const;
+    void MultiplyHMatFHHCompressBroadcastsPack
+    ( std::vector<Scalar>& buffer, std::vector<int>& offsets,
+      int startLevel, int endLevel ) const;
+    void MultiplyHMatFHHCompressTreeBroadcasts
+    ( std::vector<Scalar>& buffer, std::vector<int>& sizes ) const;
+    void MultiplyHMatFHHCompressBroadcastsUnpack
+    ( std::vector<Scalar>& buffer, std::vector<int>& offsets,
+      int startLevel, int endLevel );
+    void MultiplyHMatFHHCompressPostcompute
+    ( int startLevel, int endLevel );
+    void MultiplyHMatFHHCompressCleanup
+    ( int startLevel, int endLevel );
     // TODO: The rest of the Compress routines
 
     /*
@@ -1286,6 +1306,10 @@ private:
     bool _beganRowSpaceComp, _finishedRowSpaceComp,
          _beganColSpaceComp, _finishedColSpaceComp;
     Dense<Scalar> _colOmega, _rowOmega, _colT, _rowT;
+    
+    Dense<Scalar> _colU, _rowU, _colPinv, _rowPinv;
+    Dense<Scalar> _colUSqr, _rowUSqr;
+    std::vector<Real> _colUSqrEig, _rowUSqrEig;
     MultiplyDenseContext _colContext, _rowContext;
 };
 

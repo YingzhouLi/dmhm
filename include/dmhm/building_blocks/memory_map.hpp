@@ -131,7 +131,7 @@ public:
     const int CurrentWidth() const
     {
 #ifndef RELEASE
-        PushCallStack("MemoryMap::CurrentSize");
+        PushCallStack("MemoryMap::CurrentWidth");
         if( _currentIndex >= _baseMap.size() )
             throw std::logic_error("Traversed past end of map");
 #endif
@@ -154,6 +154,23 @@ public:
         typename std::map<T1,T2*>::iterator it = _baseMap.begin();
         for( int i=0; i<_baseMap.size(); ++i,++it)
             width += it->second->Width();
+#ifndef RELEASE
+        PopCallStack();
+#endif
+        return width;
+    }
+
+    const int FirstWidth() const
+    {
+#ifndef RELEASE
+        PushCallStack("MemoryMap::FirstWidth");
+#endif
+        int width=0;
+        if( _baseMap.size() > 0 )
+        {
+            typename std::map<T1,T2*>::iterator it = _baseMap.begin();
+            width = it->second->Width();
+        }
 #ifndef RELEASE
         PopCallStack();
 #endif

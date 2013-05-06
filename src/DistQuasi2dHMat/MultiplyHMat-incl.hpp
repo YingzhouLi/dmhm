@@ -25,6 +25,7 @@
 #include "./MultiplyHMatMain-incl.hpp"
 #include "./MultiplyHMatFHH-incl.hpp"
 #include "./MultiplyHMatCompress-incl.hpp"
+#include "./MultiplyHMatFHHCompress-incl.hpp"
 
 // C := alpha A B
 template<typename Scalar,bool Conjugated>
@@ -177,6 +178,8 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFullAccumulate
 #endif
     A.MultiplyHMatFHHFinalize
     ( B, C, startLevel, endLevel, startUpdate, endUpdate );
+    //A.MultiplyHMatFHHCompress
+    //( B, C, startLevel, endLevel, startUpdate, endUpdate );
 #ifdef TIME_MULTIPLY
     mpi::Barrier( MPI_COMM_WORLD );
     timer.Stop( 12 );
@@ -346,7 +349,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatSingleLevelAccumulate
         timer.Stop( 11 );
         timer.Start( 12 );
 #endif
-        A.MultiplyHMatFHHFinalize
+        //A.MultiplyHMatFHHFinalize
+        //( B, C, startLevel, endLevel, startUpdate, endUpdate );
+        A.MultiplyHMatFHHCompress
         ( B, C, startLevel, endLevel, startUpdate, endUpdate );
 #ifdef TIME_MULTIPLY
         mpi::Barrier( MPI_COMM_WORLD );
@@ -520,7 +525,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatSingleUpdateAccumulate
             timer.Stop( 11 );
             timer.Start( 12 );
 #endif
-            A.MultiplyHMatFHHFinalize
+            //A.MultiplyHMatFHHFinalize
+            //( B, C, startLevel, endLevel, startUpdate, endUpdate );
+            A.MultiplyHMatFHHCompress
             ( B, C, startLevel, endLevel, startUpdate, endUpdate );
 #ifdef TIME_MULTIPLY
             mpi::Barrier( MPI_COMM_WORLD );
