@@ -1111,6 +1111,12 @@ private:
       Real error );
 
     void MultiplyHMatCompress( int startLevel, int endLevel );
+    void MultiplyHMatCompressLowRankCountAndResize( int rank );
+    void MultiplyHMatCompressLowRankImport( int rank );
+    void MultiplyHMatCompressImportU
+    ( int rank, const Dense<Scalar>& U );
+    void MultiplyHMatCompressImportV
+    ( int rank, const Dense<Scalar>& V );
     void MultiplyHMatCompressFPrecompute
     ( int startLevel, int endLevel );
     void MultiplyHMatCompressFReduces
@@ -1169,10 +1175,10 @@ private:
     ( int startLevel, int endLevel );
     void MultiplyHMatCompressFPassbackDataCount
     ( std::map<int,int>& sendSizes, std::map<int,int>& recvSizes,
-      int startLevel, int endLevel ) const;
+      int startLevel, int endLevel );
     void MultiplyHMatCompressFPassbackDataPack
     ( std::vector<Scalar>& buffer, std::map<int,int>& offsets,
-      int startLevel, int endLevel ) const;
+      int startLevel, int endLevel );
     void MultiplyHMatCompressFPassbackDataUnpack
     ( const std::vector<Scalar>& buffer, std::map<int,int>& offsets,
       int startLevel, int endLevel );
@@ -1297,7 +1303,7 @@ private:
     std::vector<Real> _BSigma;
     Dense<Scalar> _BL, _BR;
     bool _haveDenseUpdate, _storedDenseUpdate;
-    Dense<Scalar> _D;
+    Dense<Scalar> _D, _SFD;
 
     // For the reuse of the computation of T1 = H Omega1 and T2 = H' Omega2 in 
     // order to capture the column and row space, respectively, of H. These 

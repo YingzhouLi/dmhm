@@ -60,10 +60,9 @@ dmhm::DistQuasi2dHMat<Scalar, Conjugated>::SVDTrunc
     int ldvh=VH.LDim();
     int k=ldvh;
     int L;
-    for(L=k-1; L>=std::max(k-_maxRank, 0); --L )
+    for(L=std::min(k,_maxRank)-1; L>=0; --L )
         if( w[L]>error*w[0]*w.size() )
             break;
-
     w.resize(L+1);
     U.Resize(ldu, L+1, ldu);
     VH.EraseRow(L+1, ldvh-1);

@@ -81,6 +81,8 @@ public:
     void Erase( int colfirst, int collast, int rowfirst, int rowlast );
     void Clear();
 
+    bool IsEmpty() const;
+
     void Set( int i, int j, Scalar value );
     Scalar Get( int i, int j ) const;
     void Print( std::ostream& os, const std::string tag ) const;
@@ -390,6 +392,13 @@ dmhm::Dense<Scalar>::Erase( int colfirst, int collast, int rowfirst, int rowlast
     _type = typetmp;
     PopCallStack();
 #endif
+}
+
+template<typename Scalar>
+inline bool
+dmhm::Dense<Scalar>::IsEmpty() const
+{
+    return !(_height|_width);
 }
 
 template<typename Scalar>

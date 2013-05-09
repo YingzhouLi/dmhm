@@ -38,15 +38,24 @@ end
 % 
 % imagesc(Y);
 
-%%
-filename='./ZLocal_';
-Z=[];
-for i=0:0
-    run([filename int2str(i) '.m']);
-    Z=[Z;ZLocal{i+1}];
-end
+% %%
+% filename='./zlocal_';
+% z=[];
+% for i=0:0
+%     run([filename int2str(i) '.m']);
+%     z=[z;zlocal{i+1}];
+% end
+% 
+% %imagesc(z);
+% y=a*a;
+% e=abs(y-z);
+% imagesc(e);
 
-%imagesc(Z);
-Y=A*A;
-E=abs(Y-Z);
-imagesc(E);
+%%
+filename='./ELocal_';
+E=[];
+for i=0:1
+    run([filename int2str(i) '.m']);
+    E=[E;ELocal{i+1}];
+end
+imagesc(abs(E));
