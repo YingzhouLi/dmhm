@@ -254,7 +254,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHCompressPrecompute
                         C._BR.Resize(Trank, Omegarank, Trank );
 
                         blas::Gemm
-                        ( 'C', 'N', Trank, Trank, A.LocalWidth(),
+                        ( 'C', 'N', Trank, Trank, B.LocalWidth(),
                          (Scalar)1, C._rowU.LockedBuffer(), C._rowU.LDim(),
                                     C._rowU.LockedBuffer(), C._rowU.LDim(),
                          (Scalar)0, C._rowUSqr.Buffer(), C._rowUSqr.LDim() );

@@ -21,6 +21,8 @@
 
 #include "./Truncation-incl.hpp"
 
+int EVD_Count;
+
 template<typename Scalar,bool Conjugated>
 void
 dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompress
@@ -67,9 +69,12 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompress
         std::cout << teamRank << "Reduces" << std::endl;
     MultiplyHMatCompressFReduces( startLevel, endLevel );
 
+    EVD_Count=0;
     if( print )
         std::cout << teamRank << "EigenDecomp" << std::endl;
     MultiplyHMatCompressFEigenDecomp( startLevel, endLevel );
+    if( print )
+        std::cout << teamRank << " EVD_COUNT: " << EVD_Count << std::endl;
 
     if( print )
         std::cout << teamRank << "PassMatrix" << std::endl;
@@ -1612,6 +1617,9 @@ _VSqr.Print("_VSqr Before svd");*/
                            &evdWork[0],     lwork,
                            &evdIntWork[0],  liwork,
                            &evdRealWork[0], lrwork );
+//Print
+//std::cout << "Size: " << _USqr.Height() << std::endl;
+EVD_Count++;
             }
                                                                      
             if( !_VSqr.IsEmpty() )
@@ -1623,6 +1631,9 @@ _VSqr.Print("_VSqr Before svd");*/
                            &evdWork[0],     lwork,
                            &evdIntWork[0],  liwork,
                            &evdRealWork[0], lrwork );
+//Print
+//std::cout << "Size: " << _VSqr.Height() << std::endl;
+EVD_Count++;
             }
 /*//Print
 if(_level==3 && _block.type==LOW_RANK)

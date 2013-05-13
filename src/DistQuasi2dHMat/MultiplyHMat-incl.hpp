@@ -176,10 +176,10 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFullAccumulate
     timer.Stop( 11 );
     timer.Start( 12 );
 #endif
-    A.MultiplyHMatFHHFinalize
+//    A.MultiplyHMatFHHFinalize
+//    ( B, C, startLevel, endLevel, startUpdate, endUpdate );
+    A.MultiplyHMatFHHCompress
     ( B, C, startLevel, endLevel, startUpdate, endUpdate );
-    //A.MultiplyHMatFHHCompress
-    //( B, C, startLevel, endLevel, startUpdate, endUpdate );
 #ifdef TIME_MULTIPLY
     mpi::Barrier( MPI_COMM_WORLD );
     timer.Stop( 12 );

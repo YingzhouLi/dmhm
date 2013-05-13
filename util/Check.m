@@ -1,10 +1,10 @@
-%%
-filename='./ALocal_';
-A=[];
-for i=0:0
-    run([filename int2str(i) '.m']);
-    A=[A;ALocal{i+1}];
-end
+% %%
+% filename='./ALocal_';
+% A=[];
+% for i=0:0
+%     run([filename int2str(i) '.m']);
+%     A=[A;ALocal{i+1}];
+% end
 
 %imagesc(A);
 
@@ -54,7 +54,7 @@ end
 %%
 filename='./ELocal_';
 E=[];
-for i=0:1
+for i=0:31
     run([filename int2str(i) '.m']);
     E=[E;ELocal{i+1}];
 end
