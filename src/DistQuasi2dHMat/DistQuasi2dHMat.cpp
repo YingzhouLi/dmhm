@@ -20,13 +20,16 @@
 */
 #include "dmhm.hpp"
 
+#include "./Add-incl.hpp"
 #include "./Adjoint-incl.hpp"
 #include "./Conjugate-incl.hpp"
 #include "./Copy-incl.hpp"
 #include "./Ghost-incl.hpp"
+#include "./Invert-incl.hpp"
 #include "./MultiplyDense-incl.hpp"
 #include "./MultiplyHMat-incl.hpp"
 #include "./MultiplyVector-incl.hpp"
+#include "./Norm-incl.hpp"
 #include "./RedistQuasi2dHMat-incl.hpp"
 #include "./Scale-incl.hpp"
 #include "./SetToRandom-incl.hpp"

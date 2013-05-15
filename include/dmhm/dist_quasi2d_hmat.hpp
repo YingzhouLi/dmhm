@@ -27,6 +27,8 @@
 
 namespace dmhm {
 
+#define REALBASE(F) typename RealBase<F>::type
+
 // A distributed H-matrix class that assumes a quasi2d box domain and requires
 // a power of two number of processes. It does not yet support implicit 
 // symmetry.
@@ -181,6 +183,18 @@ public:
 
     // A := alpha A
     void Scale( Scalar alpha );
+
+    // A := alpha I + A
+    void AddConstantToDiagonal( Scalar alpha );
+
+    // estimate ||A||_2
+    REALBASE(Scalar) ParallelEstimateTwoNorm( Real theta, Real confidence);
+
+    // A := inv(A)
+    void SchulzInvert
+    ( int numIterations, 
+      typename RealBase<Scalar>::type theta=1.5,
+      typename RealBase<Scalar>::type confidence=6 );
 
     // A := conj(A)
     void Conjugate();
