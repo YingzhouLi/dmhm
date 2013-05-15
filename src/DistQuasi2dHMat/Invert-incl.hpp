@@ -53,13 +53,13 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::SchulzInvert
     {
         // Form Z := 2I - X_k A
         DistQuasi2dHMat<Scalar,Conjugated> Z;
-        X.Multiply( (Scalar)-1, *this, Z );
+        X.Multiply( (Scalar)-1, *this, Z, 2 );
         Z.AddConstantToDiagonal( (Scalar)2 );
 
         // Form X_k+1 := Z X_k = (2I - X_k A) X_k
         DistQuasi2dHMat<Scalar,Conjugated> XCopy;
         XCopy.CopyFrom( X );
-        Z.Multiply( (Scalar)1, XCopy, X );
+        Z.Multiply( (Scalar)1, XCopy, X, 2 );
     }
 
     CopyFrom( X );

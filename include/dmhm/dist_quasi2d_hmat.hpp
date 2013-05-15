@@ -216,6 +216,21 @@ public:
 
     // A := B^H
     void AdjointFrom( const DistQuasi2dHMat<Scalar,Conjugated>& B );
+    void AdjointCopy( const DistQuasi2dHMat<Scalar,Conjugated>& B );
+    void AdjointPassData
+    ( const DistQuasi2dHMat<Scalar,Conjugated>& B );
+    void AdjointPassDataCount
+    ( const DistQuasi2dHMat<Scalar,Conjugated>& B,
+      std::map<int,int>& sendSizes, 
+      std::map<int,int>& recvSizes ) const;
+    void AdjointPassDataPack
+    ( const DistQuasi2dHMat<Scalar,Conjugated>& B,
+      std::vector<Scalar>& buffer,
+      std::map<int,int>& offsets ) const;
+    void AdjointPassDataUnpack
+    ( const DistQuasi2dHMat<Scalar,Conjugated>& B,
+      const std::vector<Scalar>& buffer,
+      std::map<int,int>& offsets );
 
     // y := alpha H x
     void Multiply

@@ -38,7 +38,7 @@ MPI_Comm team = _teams->Team( _level );
 const int teamRank = mpi::CommRank( team );
 int print;
 if(teamRank==0)
-    print=1;
+    print=0;
 else
     print=0;
 

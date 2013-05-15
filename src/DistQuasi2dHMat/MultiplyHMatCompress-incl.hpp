@@ -48,11 +48,11 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompress
     int print;
     if(teamRank == 0)
     {
-        print = 1;
-        std::cout << startLevel << " " << endLevel << " " << error << std::endl;
+        print = 0;
+        //std::cout << startLevel << " " << endLevel << " " << error << std::endl;
     }
     else
-        print = 1;
+        print = 0;
     if( print )
         std::cout << teamRank << "CountAndResize" << std::endl;
     MultiplyHMatCompressLowRankCountAndResize(0);
@@ -4058,19 +4058,19 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFCleanup
     {
         if( _level < startLevel )
             break;
-        _Utmp.Resize(0,0,1);
-        _Vtmp.Resize(0,0,1);
-        _USqr.Resize(0,0,1);
-        _VSqr.Resize(0,0,1);
+        _Utmp.Clear();
+        _Vtmp.Clear();
+        _USqr.Clear();
+        _VSqr.Clear();
         _USqrEig.resize(0);
         _VSqrEig.resize(0);
-        _BSqr.Resize(0,0,1);
+        _BSqr.Clear();
         _BSqrEig.resize(0);
-        _BSqrU.Resize(0,0,1);
-        _BSqrVH.Resize(0,0,1);
+        _BSqrU.Clear();
+        _BSqrVH.Clear();
         _BSigma.resize(0);
-        _BL.Resize(0,0,1);
-        _BR.Resize(0,0,1);
+        _BL.Clear();
+        _BR.Clear();
         _UMap.Clear();
         _VMap.Clear();
         _ZMap.Clear();

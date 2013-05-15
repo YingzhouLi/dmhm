@@ -76,6 +76,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::CopyFrom
     }
     case DIST_LOW_RANK:
     {
+        A._block.data.DF = new DistLowRank;
         DistLowRank& DFA = *A._block.data.DF;
         const DistLowRank& DFB = *B._block.data.DF;
 
@@ -88,6 +89,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::CopyFrom
     }
     case SPLIT_LOW_RANK:
     {
+        A._block.data.SF = new SplitLowRank;
         SplitLowRank& SFA = *A._block.data.SF;
         const SplitLowRank& SFB = *B._block.data.SF;
 
@@ -97,6 +99,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::CopyFrom
     }
     case LOW_RANK:
     {
+        A._block.data.F = new LowRank<Scalar,Conjugated>;
         LowRank<Scalar,Conjugated>& FA = *A._block.data.F;
         const LowRank<Scalar,Conjugated>& FB = *B._block.data.F;
 
@@ -104,10 +107,12 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::CopyFrom
         break;
     }
     case SPLIT_DENSE:
+        A._block.data.SD = new SplitDense;
         if( B._inSourceTeam )
             hmat_tools::Copy( B._block.data.SD->D, A._block.data.SD->D );
         break;
     case DENSE:
+        A._block.data.D = new Dense<Scalar>;
         hmat_tools::Copy( *B._block.data.D, *A._block.data.D );
         break;
     default:
