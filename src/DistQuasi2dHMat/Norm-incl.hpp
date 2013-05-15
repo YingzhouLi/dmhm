@@ -21,7 +21,7 @@
 #include "dmhm.hpp"
 
 template<typename Scalar, bool Conjugated>
-dmhm::REALBASE(Scalar)
+REALBASE(Scalar)
 dmhm::DistQuasi2dHMat<Scalar,Conjugated>::ParallelEstimateTwoNorm
 ( Real theta, Real confidence )
 {

@@ -173,7 +173,8 @@ if(BUILD_TESTS)
   set(hmat_tools_TESTS MatrixAdd Compress ConvertSubmatrix PackedQR)
   set(Quasi2dHMat_TESTS Invert LowRankConstructor MultiplyHMat Pack)
   set(DistQuasi2dHMat_TESTS Ghost ImportSparse MultiplyHMat Pack 
-                            RandomMultiplyHMat RandomMultiplyVectors)
+                            RandomMultiplyHMat RandomMultiplyVectors
+                            InvertHMat)
   
   foreach(TYPE ${TEST_TYPES})
     set(OUTPUT_DIR "${PROJECT_BINARY_DIR}/bin/${TYPE}")

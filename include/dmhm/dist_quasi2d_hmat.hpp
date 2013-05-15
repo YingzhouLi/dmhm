@@ -25,9 +25,9 @@
 #include "dmhm/building_blocks/memory_map.hpp"
 #include "dmhm/quasi2d_hmat.hpp"
 
-namespace dmhm {
+#define REALBASE(F) typename dmhm::RealBase<F>::type
 
-#define REALBASE(F) typename RealBase<F>::type
+namespace dmhm {
 
 // A distributed H-matrix class that assumes a quasi2d box domain and requires
 // a power of two number of processes. It does not yet support implicit 
