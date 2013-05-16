@@ -20,7 +20,7 @@ DistHMat2d<Scalar>::PackedSizes
   const HMat2d<Scalar>& H, const Teams& teams )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::PackedSizes");
+    CallStackEntry entry("DistHMat2d::PackedSizes");
 #endif
     MPI_Comm comm = teams.Team(0);
     const unsigned p = mpi::CommSize( comm );
@@ -45,9 +45,6 @@ DistHMat2d<Scalar>::PackedSizes
     std::size_t totalSize = 0;
     for( unsigned i=0; i<p; ++i )
         totalSize += packedSizes[i];
-#ifndef RELEASE
-    PopCallStack();
-#endif
     return totalSize;
 }
 
@@ -58,7 +55,7 @@ DistHMat2d<Scalar>::Pack
   const HMat2d<Scalar>& H, const Teams& teams )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::Pack");
+    CallStackEntry entry("DistHMat2d::Pack");
 #endif
     MPI_Comm comm = teams.Team(0);
     const int p = mpi::CommSize( comm );
@@ -95,9 +92,6 @@ DistHMat2d<Scalar>::Pack
     std::size_t totalSize = 0;
     for( int i=0; i<p; ++i )
         totalSize += (*headPointers[i]-packedSubs[i]);
-#ifndef RELEASE
-    PopCallStack();
-#endif
     return totalSize;
 }
 
@@ -107,7 +101,7 @@ DistHMat2d<Scalar>::ComputeLocalHeight
 ( int p, int rank, const HMat2d<Scalar>& H )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::ComputeLocalHeight");
+    CallStackEntry entry("DistHMat2d::ComputeLocalHeight");
     if( !(p && !(p & (p-1))) )
         throw std::logic_error("Must use a power of two number of processes");
 #endif
@@ -115,9 +109,6 @@ DistHMat2d<Scalar>::ComputeLocalHeight
     int xSize = H.xSizeTarget_;
     int ySize = H.ySizeTarget_;
     ComputeLocalDimensionRecursion( localHeight, xSize, ySize, p, rank );
-#ifndef RELEASE
-    PopCallStack();
-#endif
     return localHeight;
 }
 
@@ -127,7 +118,7 @@ DistHMat2d<Scalar>::ComputeLocalWidth
 ( int p, int rank, const HMat2d<Scalar>& H )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::ComputeLocalWidth");
+    CallStackEntry entry("DistHMat2d::ComputeLocalWidth");
     if( !(p && !(p & (p-1))) )
         throw std::logic_error("Must use a power of two number of processes");
 #endif
@@ -135,9 +126,6 @@ DistHMat2d<Scalar>::ComputeLocalWidth
     int xSize = H.xSizeSource_;
     int ySize = H.ySizeSource_;
     ComputeLocalDimensionRecursion( localWidth, xSize, ySize, p, rank );
-#ifndef RELEASE
-    PopCallStack();
-#endif
     return localWidth;
 }
 
@@ -147,16 +135,13 @@ DistHMat2d<Scalar>::ComputeFirstLocalRow
 ( int p, int rank, const HMat2d<Scalar>& H )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::ComputeFirstLocalRow");
+    CallStackEntry entry("DistHMat2d::ComputeFirstLocalRow");
     if( !(p && !(p & (p-1))) )
         throw std::logic_error("Must use a power of two number of processes");
 #endif
     int firstLocalRow = 0;
     ComputeFirstLocalIndexRecursion
     ( firstLocalRow, H.xSizeTarget_, H.ySizeTarget_, p, rank );
-#ifndef RELEASE
-    PopCallStack();
-#endif
     return firstLocalRow;
 }
 
@@ -166,16 +151,13 @@ DistHMat2d<Scalar>::ComputeFirstLocalCol
 ( int p, int rank, const HMat2d<Scalar>& H )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::ComputeFirstLocalCol");
+    CallStackEntry entry("DistHMat2d::ComputeFirstLocalCol");
     if( !(p && !(p & (p-1))) )
         throw std::logic_error("Must use a power of two number of processes");
 #endif
     int firstLocalCol = 0;
     ComputeFirstLocalIndexRecursion
     ( firstLocalCol, H.xSizeSource_, H.ySizeSource_, p, rank );
-#ifndef RELEASE
-    PopCallStack();
-#endif
     return firstLocalCol;
 }
 
@@ -185,7 +167,7 @@ DistHMat2d<Scalar>::ComputeLocalSizes
 ( std::vector<int>& localSizes, const HMat2d<Scalar>& H )
 {
 #ifndef RELEASE    
-    PushCallStack("DistHMat2d::ComputeLocalSizes");
+    CallStackEntry entry("DistHMat2d::ComputeLocalSizes");
     const int p = localSizes.size();
     if( !(p && !(p & (p-1))) )
         throw std::logic_error("Must use a power of two number of processes");
@@ -195,9 +177,6 @@ DistHMat2d<Scalar>::ComputeLocalSizes
 #endif
     ComputeLocalSizesRecursion
     ( &localSizes[0], localSizes.size(), H.xSizeSource_, H.ySizeSource_ );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 //----------------------------------------------------------------------------//
@@ -799,12 +778,9 @@ DistHMat2d<Scalar>::DistHMat2d
   beganColSpaceComp_(false), finishedColSpaceComp_(false)
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::DistHMat2d");
+    CallStackEntry entry("DistHMat2d::DistHMat2d");
 #endif
     Unpack( packedSub, teams );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -813,7 +789,7 @@ DistHMat2d<Scalar>::Unpack
 ( const byte* packedDistHMat, const Teams& teams )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::Unpack");
+    CallStackEntry entry("DistHMat2d::Unpack");
 #endif
     teams_ = &teams;
     level_ = 0;
@@ -841,9 +817,6 @@ DistHMat2d<Scalar>::Unpack
     yTarget_            = Read<int>( head );
 
     UnpackRecursion( head );
-#ifndef RELEASE
-    PopCallStack();
-#endif
     return (head-packedDistHMat);
 }
 

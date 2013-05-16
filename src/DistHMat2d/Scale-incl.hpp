@@ -14,7 +14,7 @@ void
 DistHMat2d<Scalar>::Scale( Scalar alpha )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::Scale");
+    CallStackEntry entry("DistHMat2d::Scale");
 #endif
     switch( block_.type )
     {
@@ -79,9 +79,6 @@ DistHMat2d<Scalar>::Scale( Scalar alpha )
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 } // namespace dmhm

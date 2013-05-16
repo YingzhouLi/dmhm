@@ -434,7 +434,7 @@ inline void QR
   float* work, int lwork )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::QR");
+    CallStackEntry entry("lapack::QR");
     if( lda < std::max(1,m) )
         throw std::logic_error("lda was too small");
     if( lwork < std::max(1,n) )
@@ -449,7 +449,6 @@ inline void QR
         s << "QR factorization, sgeqrf, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 
@@ -460,7 +459,7 @@ inline void QR
   double* work, int lwork )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::QR");
+    CallStackEntry entry("lapack::QR");
     if( lda < std::max(1,m) )
         throw std::logic_error("lda was too small");
     if( lwork < std::max(1,n) )
@@ -475,7 +474,6 @@ inline void QR
         s << "QR factorization, dgeqrf, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 
@@ -486,7 +484,7 @@ inline void QR
   std::complex<float>* work, int lwork )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::QR");
+    CallStackEntry entry("lapack::QR");
     if( lda < std::max(1,m) )
         throw std::logic_error("lda was too small");
     if( lwork < std::max(1,n) )
@@ -501,7 +499,6 @@ inline void QR
         s << "QR factorization, cgeqrf, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 
@@ -512,7 +509,7 @@ inline void QR
   std::complex<double>* work, int lwork )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::QR");
+    CallStackEntry entry("lapack::QR");
     if( lda < std::max(1,m) )
         throw std::logic_error("lda was too small");
     if( lwork < std::max(1,n) )
@@ -527,7 +524,6 @@ inline void QR
         s << "QR factorization, zgeqrf, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 
@@ -554,7 +550,7 @@ inline void PivotedQR
   float* work, int lwork )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::PivotedQR");
+    CallStackEntry entry("lapack::PivotedQR");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
 #endif
@@ -567,7 +563,6 @@ inline void PivotedQR
         s << "QR factorization, sgeqp3, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 
@@ -579,7 +574,7 @@ inline void PivotedQR
   double* work, int lwork )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::PivotedQR");
+    CallStackEntry entry("lapack::PivotedQR");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
 #endif
@@ -592,7 +587,6 @@ inline void PivotedQR
         s << "QR factorization, dgeqp3, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 
@@ -605,7 +599,7 @@ inline void PivotedQR
   float* rwork )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::PivotedQR");
+    CallStackEntry entry("lapack::PivotedQR");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
 #endif
@@ -618,7 +612,6 @@ inline void PivotedQR
         s << "QR factorization, cgeqp3, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 
@@ -631,7 +624,7 @@ inline void PivotedQR
   double* rwork )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::PivotedQR");
+    CallStackEntry entry("lapack::PivotedQR");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
 #endif
@@ -644,7 +637,6 @@ inline void PivotedQR
         s << "QR factorization, zgeqp3, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 
@@ -655,7 +647,7 @@ inline void PivotedQR
 inline int ApplyQWorkSize( char side, int m, int n )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::ApplyQWorkSize");
+    CallStackEntry entry("lapack::ApplyQWorkSize");
 #endif
     int worksize;
     if( side == 'L' )
@@ -665,7 +657,6 @@ inline int ApplyQWorkSize( char side, int m, int n )
 #ifndef RELEASE
     else
         throw std::logic_error("Invalid side for ApplyQ worksize query.");
-    PopCallStack();
 #endif
     return worksize;
 }
@@ -678,7 +669,7 @@ inline void ApplyQ
         float* work, int lwork )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::ApplyQ");
+    CallStackEntry entry("lapack::ApplyQ");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
     if( ldc == 0 )
@@ -698,7 +689,6 @@ inline void ApplyQ
         s << "Q application, sormqr, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 
@@ -710,7 +700,7 @@ inline void ApplyQ
         double* work, int lwork )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::ApplyQ");
+    CallStackEntry entry("lapack::ApplyQ");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
     if( ldc == 0 )
@@ -730,7 +720,6 @@ inline void ApplyQ
         s << "Q application, dormqr, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 
@@ -742,7 +731,7 @@ inline void ApplyQ
         std::complex<float>* work, int lwork )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::ApplyQ");
+    CallStackEntry entry("lapack::ApplyQ");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
     if( ldc == 0 )
@@ -758,7 +747,6 @@ inline void ApplyQ
         s << "Q application, cunmqr, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 
@@ -770,7 +758,7 @@ inline void ApplyQ
         std::complex<double>* work, int lwork )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::ApplyQ");
+    CallStackEntry entry("lapack::ApplyQ");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
     if( ldc == 0 )
@@ -786,7 +774,6 @@ inline void ApplyQ
         s << "Q application, zunmqr, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 
@@ -807,7 +794,7 @@ inline void FormQ
         float* work, int lwork ) 
 {
 #ifndef RELEASE
-    PushCallStack("lapack::FormQ");
+    CallStackEntry entry("lapack::FormQ");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
 #endif
@@ -820,7 +807,6 @@ inline void FormQ
         s << "Q application, sorgqr, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 
@@ -831,7 +817,7 @@ inline void FormQ
         double* work, int lwork )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::FormQ");
+    CallStackEntry entry("lapack::FormQ");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
 #endif
@@ -844,7 +830,6 @@ inline void FormQ
         s << "Q application, dorgqr, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 
@@ -855,7 +840,7 @@ inline void FormQ
         std::complex<float>* work, int lwork )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::FormQ");
+    CallStackEntry entry("lapack::FormQ");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
 #endif
@@ -868,7 +853,6 @@ inline void FormQ
         s << "Q application, cungqr, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 
@@ -879,7 +863,7 @@ inline void FormQ
         std::complex<double>* work, int lwork )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::FormQ");
+    CallStackEntry entry("lapack::FormQ");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
 #endif
@@ -892,7 +876,6 @@ inline void FormQ
         s << "Q application, zungqr, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 
@@ -920,7 +903,7 @@ inline void SVD
   float* work, int lwork, float* rwork=0 )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::SVD");
+    CallStackEntry entry("lapack::SVD");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
     if( ldu == 0 )
@@ -947,7 +930,6 @@ inline void SVD
         s << "SVD, sgesvd, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 
@@ -960,7 +942,7 @@ inline void SVD
   double* work, int lwork, double* rwork=0 )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::SVD");
+    CallStackEntry entry("lapack::SVD");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
     if( ldu == 0 )
@@ -987,7 +969,6 @@ inline void SVD
         s << "SVD, dgesvd, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 
@@ -1001,7 +982,7 @@ inline void SVD
   float* rwork )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::SVD");
+    CallStackEntry entry("lapack::SVD");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
     if( ldu == 0 )
@@ -1028,7 +1009,6 @@ inline void SVD
         s << "SVD, cgesvd, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 
@@ -1042,7 +1022,7 @@ inline void SVD
   double* rwork )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::SVD");
+    CallStackEntry entry("lapack::SVD");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
     if( ldu == 0 )
@@ -1069,7 +1049,6 @@ inline void SVD
         s << "SVD, zgesvd, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 
@@ -1087,7 +1066,7 @@ inline void AdjointPseudoInverse
   float* realWork=0 )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::AdjointPseudoInverse");
+    CallStackEntry entry("lapack::AdjointPseudoInverse");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
     if( ldu == 0 )
@@ -1164,9 +1143,6 @@ inline void AdjointPseudoInverse
     blas::Gemm
     ( 'N', 'N', m, n, k, 1, U, ldu, VH, ldvh, 0, A, lda );
 #endif // PACK_DURING_PSEUDO_INVERSE
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void AdjointPseudoInverse
@@ -1179,7 +1155,7 @@ inline void AdjointPseudoInverse
   double* realWork=0 )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::AdjointPseudoInverse");
+    CallStackEntry entry("lapack::AdjointPseudoInverse");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
     if( ldu == 0 )
@@ -1256,9 +1232,6 @@ inline void AdjointPseudoInverse
     blas::Gemm
     ( 'N', 'N', m, n, k, 1, U, ldu, VH, ldvh, 0, A, lda );
 #endif // PACK_DURING_PSEUDO_INVERSE
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void AdjointPseudoInverse
@@ -1271,7 +1244,7 @@ inline void AdjointPseudoInverse
   float* rwork )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::AdjointPseudoInverse");
+    CallStackEntry entry("lapack::AdjointPseudoInverse");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
     if( ldu == 0 )
@@ -1350,9 +1323,6 @@ inline void AdjointPseudoInverse
     blas::Gemm
     ( 'N', 'N', m, n, k, 1, U, ldu, VH, ldvh, 0, A, lda );
 #endif // PACK_DURING_PSEUDO_INVERSE
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void AdjointPseudoInverse
@@ -1365,7 +1335,7 @@ inline void AdjointPseudoInverse
   double* rwork )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::AdjointPseudoInverse");
+    CallStackEntry entry("lapack::AdjointPseudoInverse");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
     if( ldu == 0 )
@@ -1402,9 +1372,6 @@ inline void AdjointPseudoInverse
     // Form A := U V^H, where U has been scaled
     blas::Gemm
     ( 'N', 'N', m, n, k, 1, U, ldu, VH, ldvh, 0, A, lda );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 //----------------------------------------------------------------------------//
@@ -1414,7 +1381,7 @@ inline void AdjointPseudoInverse
 inline void LU( int m, int n, float* A, int lda, int* ipiv )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::LU");
+    CallStackEntry entry("lapack::LU");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
 #endif
@@ -1427,14 +1394,13 @@ inline void LU( int m, int n, float* A, int lda, int* ipiv )
         s << "LU, sgetrf, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 
 inline void LU( int m, int n, double* A, int lda, int* ipiv )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::LU");
+    CallStackEntry entry("lapack::LU");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
 #endif
@@ -1447,14 +1413,13 @@ inline void LU( int m, int n, double* A, int lda, int* ipiv )
         s << "LU, dgetrf, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 
 inline void LU( int m, int n, std::complex<float>* A, int lda, int* ipiv )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::LU");
+    CallStackEntry entry("lapack::LU");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
 #endif
@@ -1467,14 +1432,13 @@ inline void LU( int m, int n, std::complex<float>* A, int lda, int* ipiv )
         s << "LU, cgetrf, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 
 inline void LU( int m, int n, std::complex<double>* A, int lda, int* ipiv )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::LU");
+    CallStackEntry entry("lapack::LU");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
 #endif
@@ -1487,7 +1451,6 @@ inline void LU( int m, int n, std::complex<double>* A, int lda, int* ipiv )
         s << "LU, zgetrf, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 
@@ -1505,7 +1468,7 @@ inline void InvertLU
 ( int n, float* A, int lda, int* ipiv, float* work, int lwork )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::InvertLU");
+    CallStackEntry entry("lapack::InvertLU");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
 #endif
@@ -1518,7 +1481,6 @@ inline void InvertLU
         s << "InvertLU, sgetri, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 
@@ -1526,7 +1488,7 @@ inline void InvertLU
 ( int n, double* A, int lda, int* ipiv, double* work, int lwork )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::InvertLU");
+    CallStackEntry entry("lapack::InvertLU");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
 #endif
@@ -1539,7 +1501,6 @@ inline void InvertLU
         s << "InvertLU, dgetri, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 
@@ -1548,7 +1509,7 @@ inline void InvertLU
   std::complex<float>* work, int lwork )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::InvertLU");
+    CallStackEntry entry("lapack::InvertLU");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
 #endif
@@ -1561,7 +1522,6 @@ inline void InvertLU
         s << "InvertLU, cgetri, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 
@@ -1570,7 +1530,7 @@ inline void InvertLU
   std::complex<double>* work, int lwork )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::InvertLU");
+    CallStackEntry entry("lapack::InvertLU");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
 #endif
@@ -1583,7 +1543,6 @@ inline void InvertLU
         s << "InvertLU, zgetri, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 
@@ -1602,7 +1561,7 @@ inline void LDLT
   float* work, int lwork )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::LDLT");
+    CallStackEntry entry("lapack::LDLT");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
 #endif
@@ -1615,7 +1574,6 @@ inline void LDLT
         s << "LDL^T, ssytrf, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 
@@ -1624,7 +1582,7 @@ inline void LDLT
   double* work, int lwork )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::LDLT");
+    CallStackEntry entry("lapack::LDLT");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
 #endif
@@ -1637,7 +1595,6 @@ inline void LDLT
         s << "LDL^T, dsytrf, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 
@@ -1646,7 +1603,7 @@ inline void LDLT
   std::complex<float>* work, int lwork )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::LDLT");
+    CallStackEntry entry("lapack::LDLT");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
 #endif
@@ -1659,7 +1616,6 @@ inline void LDLT
         s << "LDL^T, csytrf, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 
@@ -1668,7 +1624,7 @@ inline void LDLT
   std::complex<double>* work, int lwork )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::LDLT");
+    CallStackEntry entry("lapack::LDLT");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
 #endif
@@ -1681,7 +1637,6 @@ inline void LDLT
         s << "LDL^T, zsytrf, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 
@@ -1698,7 +1653,7 @@ inline void InvertLDLT
 ( char uplo, int n, float* A, int lda, int* ipiv, float* work )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::InvertLDLT");
+    CallStackEntry entry("lapack::InvertLDLT");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
 #endif
@@ -1711,7 +1666,6 @@ inline void InvertLDLT
         s << "InvertLDL^T, ssytri, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 
@@ -1719,7 +1673,7 @@ inline void InvertLDLT
 ( char uplo, int n, double* A, int lda, int* ipiv, double* work )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::InvertLDLT");
+    CallStackEntry entry("lapack::InvertLDLT");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
 #endif
@@ -1732,7 +1686,6 @@ inline void InvertLDLT
         s << "InvertLDL^T, dsytri, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 
@@ -1741,7 +1694,7 @@ inline void InvertLDLT
   std::complex<float>* work )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::InvertLDLT");
+    CallStackEntry entry("lapack::InvertLDLT");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
 #endif
@@ -1754,7 +1707,6 @@ inline void InvertLDLT
         s << "InvertLDL^T, csytri, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 
@@ -1763,7 +1715,7 @@ inline void InvertLDLT
   std::complex<double>* work )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::InvertLDLT");
+    CallStackEntry entry("lapack::InvertLDLT");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
 #endif
@@ -1776,7 +1728,6 @@ inline void InvertLDLT
         s << "InvertLDL^T, zsytri, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 
@@ -1809,7 +1760,7 @@ inline void EVD
   float* rwork=0, int lrwork=0 )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::EVD");
+    CallStackEntry entry("lapack::EVD");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
 #endif
@@ -1824,7 +1775,6 @@ inline void EVD
         s << "EVD, ssyevd, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 
@@ -1837,7 +1787,7 @@ inline void EVD
   double* rwork=0, int lrwork=0 )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::EVD");
+    CallStackEntry entry("lapack::EVD");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
 #endif
@@ -1852,7 +1802,6 @@ inline void EVD
         s << "EVD, dsyevd, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 
@@ -1865,7 +1814,7 @@ inline void EVD
   float* rwork, int lrwork )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::EVD");
+    CallStackEntry entry("lapack::EVD");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
 #endif
@@ -1880,7 +1829,6 @@ inline void EVD
         s << "EVD, cheevd, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 
@@ -1893,7 +1841,7 @@ inline void EVD
   double* rwork, int lrwork )
 {
 #ifndef RELEASE
-    PushCallStack("lapack::EVD");
+    CallStackEntry entry("lapack::EVD");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
 #endif
@@ -1908,7 +1856,6 @@ inline void EVD
         s << "EVD, zheevd, failed with info=" << info;
         throw std::runtime_error( s.str().c_str() );
     }
-    PopCallStack();
 #endif
 }
 

@@ -17,7 +17,7 @@ void ConvertSubmatrix
   int iStart, int jStart, int height, int width )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::ConvertSubmatrix (Dense,Sparse)");
+    CallStackEntry entry("hmat_tools::ConvertSubmatrix (Dense,Sparse)");
 #endif
     // Initialize the dense matrix to all zeros
     if( S.symmetric && iStart == jStart )
@@ -52,9 +52,6 @@ void ConvertSubmatrix
             }
         }
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -63,7 +60,7 @@ void ConvertSubmatrix
   int iStart, int jStart, int height, int width )
 {
 #ifndef RELEASE
-    PushCallStack
+    CallStackEntry entry
     ("hmat_tools::ConvertSubmatrix (LowRank,Sparse)");
 #endif
     // Figure out the matrix sizes
@@ -118,7 +115,6 @@ void ConvertSubmatrix
 #ifndef RELEASE
     if( F.Rank() > std::min(height,width) )
         std::logic_error("Rank is larger than minimum dimension");
-    PopCallStack();
 #endif
 }
 

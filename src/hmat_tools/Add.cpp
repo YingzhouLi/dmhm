@@ -19,7 +19,7 @@ void Add
                       Dense<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Add (D := D + D)");
+    CallStackEntry entry("hmat_tools::Add (D := D + D)");
     if( A.Height() != B.Height() || A.Width() != B.Width() )
         throw std::logic_error("Tried to add nonconforming matrices.");
     // TODO: Allow for A and B to have different types
@@ -54,9 +54,6 @@ void Add
                 CCol[i] = alpha*ACol[i] + beta*BCol[i];
         }
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Low-rank C := alpha A + beta B
@@ -67,7 +64,7 @@ void Add
                       LowRank<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Add (F := F + F)");
+    CallStackEntry entry("hmat_tools::Add (F := F + F)");
     if( A.Height() != B.Height() || A.Width() != B.Width() )
         throw std::logic_error("Tried to add nonconforming matrices.");
 #endif
@@ -105,10 +102,6 @@ void Add
     for( int j=0; j<Br; ++j )
         std::memcpy
         ( C.V.Buffer(0,j+Ar), B.V.LockedBuffer(0,j), n*sizeof(Scalar) );
-
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Dense from sum of low-rank and dense:  C := alpha A + beta B
@@ -119,7 +112,7 @@ void Add
                       Dense<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Add (D := F + D)");
+    CallStackEntry entry("hmat_tools::Add (D := F + D)");
     if( A.Height() != B.Height() || A.Width() != B.Width()  )
         throw std::logic_error("Tried to add nonconforming matrices.");
 #endif
@@ -180,9 +173,6 @@ void Add
                  A.V.LockedBuffer(), A.V.LDim(),
           1,     C.Buffer(),         C.LDim() );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Dense from sum of dense and low-rank:  C := alpha A + beta B
@@ -194,12 +184,9 @@ void Add
                       Dense<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Add (D := D + F)");
+    CallStackEntry entry("hmat_tools::Add (D := D + F)");
 #endif
     Add( beta, B, alpha, A, C );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Dense as sum of two low-rank matrices
@@ -210,7 +197,7 @@ void Add
                       Dense<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Add (D := F + F)");
+    CallStackEntry entry("hmat_tools::Add (D := F + F)");
     if( A.Height() != B.Height() || A.Width() != B.Width() )
         throw std::logic_error("Tried to add nonconforming matrices.");
 #endif
@@ -234,9 +221,6 @@ void Add
       beta, B.U.LockedBuffer(), B.U.LDim(), 
             B.V.LockedBuffer(), B.V.LDim(),
       1,    C.Buffer(),         C.LDim() );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Dense C := alpha A + beta B

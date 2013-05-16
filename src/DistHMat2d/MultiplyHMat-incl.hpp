@@ -26,7 +26,7 @@ DistHMat2d<Scalar>::Multiply
   int multType )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::Multiply");
+    CallStackEntry entry("DistHMat2d::Multiply");
     if( multType < 0 || multType > 2 )
         throw std::logic_error("Invalid multiplication type");
 #endif
@@ -38,9 +38,6 @@ DistHMat2d<Scalar>::Multiply
         A.MultiplyHMatSingleLevelAccumulate( alpha, B, C );
     else
         A.MultiplyHMatFullAccumulate( alpha, B, C );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -50,7 +47,7 @@ DistHMat2d<Scalar>::MultiplyHMatFullAccumulate
                 DistHMat2d<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatFullAccumulate");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatFullAccumulate");
     if( Width() != B.Height() )
         throw std::logic_error("Attempted nonconformal matrix-matrix multiply");
     if( numLevels_ != B.numLevels_ )
@@ -205,10 +202,6 @@ DistHMat2d<Scalar>::MultiplyHMatFullAccumulate
          << std::endl;
     file.close();
 #endif
-
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -218,7 +211,7 @@ DistHMat2d<Scalar>::MultiplyHMatSingleLevelAccumulate
                 DistHMat2d<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatSingleLevelAccumulate");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatSingleLevelAccumulate");
     if( Width() != B.Height() )
         throw std::logic_error("Attempted nonconformal matrix-matrix multiply");
     if( numLevels_ != B.numLevels_ )
@@ -377,10 +370,6 @@ DistHMat2d<Scalar>::MultiplyHMatSingleLevelAccumulate
          << std::endl;
     file.close();
 #endif
-
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -390,7 +379,7 @@ DistHMat2d<Scalar>::MultiplyHMatSingleUpdateAccumulate
                 DistHMat2d<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatSingleUpdateAccumulate");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatSingleUpdateAccumulate");
     if( Width() != B.Height() )
         throw std::logic_error("Attempted nonconformal matrix-matrix multiply");
     if( numLevels_ != B.numLevels_ )
@@ -551,10 +540,6 @@ DistHMat2d<Scalar>::MultiplyHMatSingleUpdateAccumulate
          << "Compress:          " << timer.GetTime( 13 ) << " seconds.\n"
          << std::endl;
     file.close();
-#endif
-
-#ifndef RELEASE
-    PopCallStack();
 #endif
 }
 

@@ -294,16 +294,13 @@ inline void AllGather
         unsigned* recvBuf, int recvCount, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::AllGather");
+    CallStackEntry entry("mpi::AllGather");
 #endif
     SafeMpi(
         MPI_Allgather
         ( const_cast<unsigned*>(sendBuf), sendCount, MPI_UNSIGNED,
           recvBuf,                        recvCount, MPI_UNSIGNED, comm )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void AllGather
@@ -311,16 +308,13 @@ inline void AllGather
         int* recvBuf, int recvCount, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::AllGather");
+    CallStackEntry entry("mpi::AllGather");
 #endif
     SafeMpi(
         MPI_Allgather
         ( const_cast<int*>(sendBuf), sendCount, MPI_INT,
           recvBuf,                   recvCount, MPI_INT, comm )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void AllGather
@@ -328,16 +322,13 @@ inline void AllGather
         float* recvBuf, int recvCount, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::AllGather");
+    CallStackEntry entry("mpi::AllGather");
 #endif
     SafeMpi(
         MPI_Allgather
         ( const_cast<float*>(sendBuf), sendCount, MPI_FLOAT,
           recvBuf,                     recvCount, MPI_FLOAT, comm )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void AllGather
@@ -345,16 +336,13 @@ inline void AllGather
         double* recvBuf, int recvCount, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::AllGather");
+    CallStackEntry entry("mpi::AllGather");
 #endif
     SafeMpi(
         MPI_Allgather
         ( const_cast<double*>(sendBuf), sendCount, MPI_DOUBLE,
           recvBuf,                      recvCount, MPI_DOUBLE, comm )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void AllGather
@@ -362,7 +350,7 @@ inline void AllGather
         std::complex<float>* recvBuf, int recvCount, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::AllGather");
+    CallStackEntry entry("mpi::AllGather");
 #endif
     SafeMpi(
         MPI_Allgather
@@ -371,9 +359,6 @@ inline void AllGather
           recvBuf,  
           recvCount, MPI_COMPLEX, comm )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void AllGather
@@ -381,7 +366,7 @@ inline void AllGather
         std::complex<double>* recvBuf, int recvCount, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::AllGather");
+    CallStackEntry entry("mpi::AllGather");
 #endif
     SafeMpi(
         MPI_Allgather
@@ -390,41 +375,32 @@ inline void AllGather
           recvBuf,  
           recvCount, MPI_DOUBLE_COMPLEX, comm )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void AllReduce
 ( const int* sendBuf, int* recvBuf, int count, MPI_Op op, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::AllReduce");
+    CallStackEntry entry("mpi::AllReduce");
 #endif
     SafeMpi( 
         MPI_Allreduce
         ( const_cast<int*>(sendBuf), recvBuf, count, 
           MPI_INT, op, comm )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void AllReduce
 ( const float* sendBuf, float* recvBuf, int count, MPI_Op op, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::AllReduce");
+    CallStackEntry entry("mpi::AllReduce");
 #endif
     SafeMpi( 
         MPI_Allreduce
         ( const_cast<float*>(sendBuf), recvBuf, count, 
           MPI_FLOAT, op, comm )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void AllReduce
@@ -432,16 +408,13 @@ inline void AllReduce
   MPI_Op op, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::AllReduce");
+    CallStackEntry entry("mpi::AllReduce");
 #endif
     SafeMpi( 
         MPI_Allreduce
         ( const_cast<double*>(sendBuf), recvBuf, count, 
           MPI_DOUBLE, op, comm )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void AllReduce
@@ -449,7 +422,7 @@ inline void AllReduce
   MPI_Op op, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::AllReduce");
+    CallStackEntry entry("mpi::AllReduce");
 #endif
     if( op == MPI_SUM )
     {
@@ -467,9 +440,6 @@ inline void AllReduce
               MPI_COMPLEX, op, comm )
         );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void AllReduce
@@ -477,7 +447,7 @@ inline void AllReduce
   MPI_Op op, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::AllReduce");
+    CallStackEntry entry("mpi::AllReduce");
 #endif
     if( op == MPI_SUM )
     {
@@ -495,9 +465,6 @@ inline void AllReduce
               MPI_DOUBLE_COMPLEX, op, comm )
         );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void AllToAll
@@ -505,16 +472,13 @@ inline void AllToAll
         byte* recvBuf, int recvCount, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::AllToAll");
+    CallStackEntry entry("mpi::AllToAll");
 #endif
     SafeMpi( 
         MPI_Alltoall
         ( const_cast<byte*>(sendBuf), sendCount, MPI_UNSIGNED_CHAR,
                             recvBuf,  recvCount, MPI_UNSIGNED_CHAR, comm )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void AllToAll
@@ -522,16 +486,13 @@ inline void AllToAll
         int* recvBuf, int recvCount, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::AllToAll");
+    CallStackEntry entry("mpi::AllToAll");
 #endif
     SafeMpi( 
         MPI_Alltoall
         ( const_cast<int*>(sendBuf), sendCount, MPI_INT,
                            recvBuf,  recvCount, MPI_INT, comm )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void AllToAll
@@ -539,16 +500,13 @@ inline void AllToAll
         float* recvBuf, int recvCount, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::AllToAll");
+    CallStackEntry entry("mpi::AllToAll");
 #endif
     SafeMpi( 
         MPI_Alltoall
         ( const_cast<float*>(sendBuf), sendCount, MPI_FLOAT,
                              recvBuf,  recvCount, MPI_FLOAT, comm )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void AllToAll
@@ -556,16 +514,13 @@ inline void AllToAll
         double* recvBuf, int recvCount, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::AllToAll");
+    CallStackEntry entry("mpi::AllToAll");
 #endif
     SafeMpi( 
         MPI_Alltoall
         ( const_cast<double*>(sendBuf), sendCount, MPI_DOUBLE,
                               recvBuf,  recvCount, MPI_DOUBLE, comm )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void AllToAll
@@ -573,7 +528,7 @@ inline void AllToAll
         std::complex<float>* recvBuf, int recvCount, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::AllToAll");
+    CallStackEntry entry("mpi::AllToAll");
 #endif
     /*
     SafeMpi( 
@@ -587,9 +542,6 @@ inline void AllToAll
         ( const_cast<std::complex<float>*>(sendBuf), 2*sendCount, MPI_FLOAT,
           recvBuf, 2*recvCount, MPI_FLOAT, comm )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void AllToAll
@@ -597,7 +549,7 @@ inline void AllToAll
         std::complex<double>* recvBuf, int recvCount, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::AllToAll");
+    CallStackEntry entry("mpi::AllToAll");
 #endif
     /*
     SafeMpi( 
@@ -613,9 +565,6 @@ inline void AllToAll
           2*sendCount, MPI_DOUBLE,
           recvBuf, 2*recvCount, MPI_DOUBLE, comm )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void AllToAllV
@@ -624,7 +573,7 @@ inline void AllToAllV
   MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::AllToAllV");
+    CallStackEntry entry("mpi::AllToAllV");
 #endif
     SafeMpi(
         MPI_Alltoallv
@@ -638,9 +587,6 @@ inline void AllToAllV
           MPI_UNSIGNED_CHAR,
           comm )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
     
 inline void AllToAllV
@@ -649,7 +595,7 @@ inline void AllToAllV
   MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::AllToAllV");
+    CallStackEntry entry("mpi::AllToAllV");
 #endif
     SafeMpi(
         MPI_Alltoallv
@@ -663,9 +609,6 @@ inline void AllToAllV
           MPI_INT,
           comm )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
     
 inline void AllToAllV
@@ -674,7 +617,7 @@ inline void AllToAllV
   MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::AllToAllV");
+    CallStackEntry entry("mpi::AllToAllV");
 #endif
     SafeMpi(
         MPI_Alltoallv
@@ -688,9 +631,6 @@ inline void AllToAllV
           MPI_FLOAT,
           comm )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
     
 inline void AllToAllV
@@ -699,7 +639,7 @@ inline void AllToAllV
   MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::AllToAllV");
+    CallStackEntry entry("mpi::AllToAllV");
 #endif
     SafeMpi(
         MPI_Alltoallv
@@ -713,9 +653,6 @@ inline void AllToAllV
           MPI_DOUBLE,
           comm )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void AllToAllV
@@ -726,7 +663,7 @@ inline void AllToAllV
   MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::AllToAllV");
+    CallStackEntry entry("mpi::AllToAllV");
 #endif
     /*
     SafeMpi(
@@ -763,9 +700,6 @@ inline void AllToAllV
           &doubledRecvCounts[0], &doubledRecvDispls[0], MPI_FLOAT, 
           comm )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
     
 inline void AllToAllV
@@ -776,7 +710,7 @@ inline void AllToAllV
   MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::AllToAllV");
+    CallStackEntry entry("mpi::AllToAllV");
 #endif
     /*
     SafeMpi(
@@ -813,69 +747,54 @@ inline void AllToAllV
           &doubledRecvCounts[0], &doubledRecvDispls[0], MPI_DOUBLE, 
           comm )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Barrier( MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::Barrier");
+    CallStackEntry entry("mpi::Barrier");
 #endif
     SafeMpi( MPI_Barrier( comm ) );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Broadcast
 ( int* buf, int count, int root, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::Broadcast");
+    CallStackEntry entry("mpi::Broadcast");
 #endif
     SafeMpi(
         MPI_Bcast( buf, count, MPI_INT, root, comm )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Broadcast
 ( float* buf, int count, int root, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::Broadcast");
+    CallStackEntry entry("mpi::Broadcast");
 #endif
     SafeMpi(
         MPI_Bcast( buf, count, MPI_FLOAT, root, comm )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Broadcast
 ( double* buf, int count, int root, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::Broadcast");
+    CallStackEntry entry("mpi::Broadcast");
 #endif
     SafeMpi(
         MPI_Bcast( buf, count, MPI_DOUBLE, root, comm )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Broadcast
 ( std::complex<float>* buf, int count, int root, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::Broadcast");
+    CallStackEntry entry("mpi::Broadcast");
 #endif
     /*
     SafeMpi(
@@ -885,16 +804,13 @@ inline void Broadcast
     SafeMpi(
         MPI_Bcast( buf, 2*count, MPI_FLOAT, root, comm )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Broadcast
 ( std::complex<double>* buf, int count, int root, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::Broadcast");
+    CallStackEntry entry("mpi::Broadcast");
 #endif
     /*
     SafeMpi(
@@ -904,56 +820,41 @@ inline void Broadcast
     SafeMpi(
         MPI_Bcast( buf, 2*count, MPI_DOUBLE, root, comm )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void CommDup( MPI_Comm comm, MPI_Comm& commDup )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::CommDup");
+    CallStackEntry entry("mpi::CommDup");
 #endif
     SafeMpi( MPI_Comm_dup( comm, &commDup ) );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void CommFree( MPI_Comm& comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::CommFree");
+    CallStackEntry entry("mpi::CommFree");
 #endif
     SafeMpi( MPI_Comm_free( &comm ) );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline int CommRank( MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::CommRank");
+    CallStackEntry entry("mpi::CommRank");
 #endif
     int rank;
     SafeMpi( MPI_Comm_rank( comm, &rank ) );
-#ifndef RELEASE
-    PopCallStack();
-#endif
     return rank;
 }
 
 inline int CommSize( MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::CommSize");
+    CallStackEntry entry("mpi::CommSize");
 #endif
     int size;
     SafeMpi( MPI_Comm_size( comm, &size ) );
-#ifndef RELEASE
-    PopCallStack();
-#endif
     return size;
 }
 
@@ -961,12 +862,9 @@ inline void CommSplit
 ( MPI_Comm comm, int color, int key, MPI_Comm& newComm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::CommSplit");
+    CallStackEntry entry("mpi::CommSplit");
 #endif
     SafeMpi( MPI_Comm_split( comm, color, key, &newComm ) );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Gather
@@ -974,16 +872,13 @@ inline void Gather
         int* recvBuf, int recvCount, int root, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::Gather");
+    CallStackEntry entry("mpi::Gather");
 #endif
     SafeMpi(
         MPI_Gather
         ( const_cast<int*>(sendBuf), sendCount, MPI_INT,
           recvBuf,                   recvCount, MPI_INT, root, comm )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Gather
@@ -991,16 +886,13 @@ inline void Gather
         float* recvBuf, int recvCount, int root, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::Gather");
+    CallStackEntry entry("mpi::Gather");
 #endif
     SafeMpi(
         MPI_Gather
         ( const_cast<float*>(sendBuf), sendCount, MPI_FLOAT,
           recvBuf,                     recvCount, MPI_FLOAT, root, comm )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Gather
@@ -1008,16 +900,13 @@ inline void Gather
         double* recvBuf, int recvCount, int root, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::Gather");
+    CallStackEntry entry("mpi::Gather");
 #endif
     SafeMpi(
         MPI_Gather
         ( const_cast<double*>(sendBuf), sendCount, MPI_DOUBLE,
           recvBuf,                      recvCount, MPI_DOUBLE, root, comm )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Gather
@@ -1025,7 +914,7 @@ inline void Gather
         std::complex<float>* recvBuf, int recvCount, int root, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::Gather");
+    CallStackEntry entry("mpi::Gather");
 #endif
     SafeMpi(
         MPI_Gather
@@ -1034,9 +923,6 @@ inline void Gather
           recvBuf,  
           recvCount, MPI_COMPLEX, root, comm )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Gather
@@ -1045,7 +931,7 @@ inline void Gather
   int root, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::Gather");
+    CallStackEntry entry("mpi::Gather");
 #endif
     SafeMpi(
         MPI_Gather
@@ -1054,76 +940,61 @@ inline void Gather
           recvBuf,  
           recvCount, MPI_DOUBLE_COMPLEX, root, comm )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Send
 ( const byte* buf, int count, int dest, int tag, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::Send");
+    CallStackEntry entry("mpi::Send");
 #endif
     SafeMpi(
         MPI_Send
         ( const_cast<byte*>(buf), count, MPI_UNSIGNED_CHAR, dest, tag, comm )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Send
 ( const int* buf, int count, int dest, int tag, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::Send");
+    CallStackEntry entry("mpi::Send");
 #endif
     SafeMpi(
         MPI_Send
         ( const_cast<int*>(buf), count, MPI_INT, dest, tag, comm )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Send
 ( const float* buf, int count, int dest, int tag, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::Send");
+    CallStackEntry entry("mpi::Send");
 #endif
     SafeMpi(
         MPI_Send
         ( const_cast<float*>(buf), count, MPI_FLOAT, dest, tag, comm )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Send
 ( const double* buf, int count, int dest, int tag, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::Send");
+    CallStackEntry entry("mpi::Send");
 #endif
     SafeMpi(
         MPI_Send
         ( const_cast<double*>(buf), count, MPI_DOUBLE, dest, tag, comm )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Send
 ( const std::complex<float>* buf, int count, int dest, int tag, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::Send");
+    CallStackEntry entry("mpi::Send");
 #endif
     /*
     SafeMpi(
@@ -1137,16 +1008,13 @@ inline void Send
         ( const_cast<std::complex<float>*>(buf),
           2*count, MPI_FLOAT, dest, tag, comm )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Send
 ( const std::complex<double>* buf, int count, int dest, int tag, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::Send");
+    CallStackEntry entry("mpi::Send");
 #endif
     /*
     SafeMpi(
@@ -1160,9 +1028,6 @@ inline void Send
         ( const_cast<std::complex<double>*>(buf),
           2*count, MPI_DOUBLE, dest, tag, comm )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void ISend
@@ -1170,16 +1035,13 @@ inline void ISend
   int dest, int tag, MPI_Comm comm, MPI_Request& request )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::ISend");
+    CallStackEntry entry("mpi::ISend");
 #endif
     SafeMpi(
         MPI_Isend
         ( const_cast<byte*>(buf), count, 
           MPI_UNSIGNED_CHAR, dest, tag, comm, &request )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void ISend
@@ -1187,16 +1049,13 @@ inline void ISend
   int dest, int tag, MPI_Comm comm, MPI_Request& request )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::ISend");
+    CallStackEntry entry("mpi::ISend");
 #endif
     SafeMpi(
         MPI_Isend
         ( const_cast<int*>(buf), count, 
           MPI_INT, dest, tag, comm, &request )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void ISend
@@ -1204,16 +1063,13 @@ inline void ISend
   int dest, int tag, MPI_Comm comm, MPI_Request& request )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::ISend");
+    CallStackEntry entry("mpi::ISend");
 #endif
     SafeMpi(
         MPI_Isend
         ( const_cast<float*>(buf), count, 
           MPI_FLOAT, dest, tag, comm, &request )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void ISend
@@ -1221,16 +1077,13 @@ inline void ISend
   int dest, int tag, MPI_Comm comm, MPI_Request& request )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::ISend");
+    CallStackEntry entry("mpi::ISend");
 #endif
     SafeMpi(
         MPI_Isend
         ( const_cast<double*>(buf), count, 
           MPI_DOUBLE, dest, tag, comm, &request )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void ISend
@@ -1238,7 +1091,7 @@ inline void ISend
   int dest, int tag, MPI_Comm comm, MPI_Request& request )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::ISend");
+    CallStackEntry entry("mpi::ISend");
 #endif
     /*
     SafeMpi(
@@ -1252,9 +1105,6 @@ inline void ISend
         ( const_cast<std::complex<float>*>(buf), 2*count,
           MPI_FLOAT, dest, tag, comm, &request )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void ISend
@@ -1262,7 +1112,7 @@ inline void ISend
   int dest, int tag, MPI_Comm comm, MPI_Request& request )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::ISend");
+    CallStackEntry entry("mpi::ISend");
 #endif
     /*
     SafeMpi(
@@ -1276,80 +1126,65 @@ inline void ISend
         ( const_cast<std::complex<double>*>(buf), 2*count,
           MPI_DOUBLE, dest, tag, comm, &request )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Recv
 ( byte* buf, int count, int source, int tag, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::Recv");
+    CallStackEntry entry("mpi::Recv");
 #endif
     MPI_Status status;
     SafeMpi(
         MPI_Recv
         ( buf, count, MPI_UNSIGNED_CHAR, source, tag, comm, &status )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Recv
 ( int* buf, int count, int source, int tag, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::Recv");
+    CallStackEntry entry("mpi::Recv");
 #endif
     MPI_Status status;
     SafeMpi(
         MPI_Recv
         ( buf, count, MPI_INT, source, tag, comm, &status )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Recv
 ( float* buf, int count, int source, int tag, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::Recv");
+    CallStackEntry entry("mpi::Recv");
 #endif
     MPI_Status status;
     SafeMpi(
         MPI_Recv
         ( buf, count, MPI_FLOAT, source, tag, comm, &status )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Recv
 ( double* buf, int count, int source, int tag, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::Recv");
+    CallStackEntry entry("mpi::Recv");
 #endif
     MPI_Status status;
     SafeMpi(
         MPI_Recv
         ( buf, count, MPI_DOUBLE, source, tag, comm, &status )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Recv
 ( std::complex<float>* buf, int count, int source, int tag, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::Recv");
+    CallStackEntry entry("mpi::Recv");
 #endif
     MPI_Status status;
     /*
@@ -1362,16 +1197,13 @@ inline void Recv
         MPI_Recv
         ( buf, 2*count, MPI_FLOAT, source, tag, comm, &status )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Recv
 ( std::complex<double>* buf, int count, int source, int tag, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::Recv");
+    CallStackEntry entry("mpi::Recv");
 #endif
     MPI_Status status;
     /*
@@ -1384,9 +1216,6 @@ inline void Recv
         MPI_Recv
         ( buf, 2*count, MPI_DOUBLE, source, tag, comm, &status )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void IRecv
@@ -1394,15 +1223,12 @@ inline void IRecv
   int source, int tag, MPI_Comm comm, MPI_Request& request )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::IRecv");
+    CallStackEntry entry("mpi::IRecv");
 #endif
     SafeMpi(
         MPI_Irecv
         ( buf, count, MPI_UNSIGNED_CHAR, source, tag, comm, &request )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void IRecv
@@ -1410,14 +1236,11 @@ inline void IRecv
   int source, int tag, MPI_Comm comm, MPI_Request& request )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::IRecv");
+    CallStackEntry entry("mpi::IRecv");
 #endif
     SafeMpi(
         MPI_Irecv( buf, count, MPI_INT, source, tag, comm, &request )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void IRecv
@@ -1425,14 +1248,11 @@ inline void IRecv
   int source, int tag, MPI_Comm comm, MPI_Request& request )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::IRecv");
+    CallStackEntry entry("mpi::IRecv");
 #endif
     SafeMpi(
         MPI_Irecv( buf, count, MPI_FLOAT, source, tag, comm, &request )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void IRecv
@@ -1440,14 +1260,11 @@ inline void IRecv
   int source, int tag, MPI_Comm comm, MPI_Request& request )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::IRecv");
+    CallStackEntry entry("mpi::IRecv");
 #endif
     SafeMpi(
         MPI_Irecv( buf, count, MPI_DOUBLE, source, tag, comm, &request )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void IRecv
@@ -1455,7 +1272,7 @@ inline void IRecv
   int source, int tag, MPI_Comm comm, MPI_Request& request )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::IRecv");
+    CallStackEntry entry("mpi::IRecv");
 #endif
     /*
     SafeMpi(
@@ -1465,9 +1282,6 @@ inline void IRecv
     SafeMpi(
         MPI_Irecv( buf, 2*count, MPI_FLOAT, source, tag, comm, &request )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void IRecv
@@ -1475,7 +1289,7 @@ inline void IRecv
   int source, int tag, MPI_Comm comm, MPI_Request& request )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::IRecv");
+    CallStackEntry entry("mpi::IRecv");
 #endif
     /*
     SafeMpi(
@@ -1485,9 +1299,6 @@ inline void IRecv
     SafeMpi(
         MPI_Irecv( buf, 2*count, MPI_DOUBLE, source, tag, comm, &request )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void SendRecv
@@ -1496,7 +1307,7 @@ inline void SendRecv
   MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::SendRecv");
+    CallStackEntry entry("mpi::SendRecv");
 #endif
     MPI_Status status;
     SafeMpi(
@@ -1507,9 +1318,6 @@ inline void SendRecv
           recvCount, MPI_UNSIGNED_CHAR, source, recvTag,
           comm, &status )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void SendRecv
@@ -1518,7 +1326,7 @@ inline void SendRecv
   MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::SendRecv");
+    CallStackEntry entry("mpi::SendRecv");
 #endif
     MPI_Status status;
     SafeMpi(
@@ -1529,9 +1337,6 @@ inline void SendRecv
           recvCount, MPI_INT, source, recvTag, 
           comm, &status )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void SendRecv
@@ -1540,7 +1345,7 @@ inline void SendRecv
   MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::SendRecv");
+    CallStackEntry entry("mpi::SendRecv");
 #endif
     MPI_Status status;
     SafeMpi(
@@ -1551,9 +1356,6 @@ inline void SendRecv
           recvCount, MPI_FLOAT, source, recvTag,
           comm, &status )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void SendRecv
@@ -1562,7 +1364,7 @@ inline void SendRecv
   MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::SendRecv");
+    CallStackEntry entry("mpi::SendRecv");
 #endif
     MPI_Status status;
     SafeMpi(
@@ -1573,9 +1375,6 @@ inline void SendRecv
           recvCount, MPI_DOUBLE, source, recvTag,
           comm, &status )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void SendRecv
@@ -1584,7 +1383,7 @@ inline void SendRecv
   MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::SendRecv");
+    CallStackEntry entry("mpi::SendRecv");
 #endif
     MPI_Status status;
     SafeMpi(
@@ -1595,9 +1394,6 @@ inline void SendRecv
           2*recvCount, MPI_FLOAT, source, recvTag,
           comm, &status )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void SendRecv
@@ -1606,7 +1402,7 @@ inline void SendRecv
   MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::SendRecv");
+    CallStackEntry entry("mpi::SendRecv");
 #endif
     MPI_Status status;
     SafeMpi(
@@ -1617,9 +1413,6 @@ inline void SendRecv
           2*recvCount, MPI_DOUBLE, source, recvTag,
           comm, &status )
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Reduce
@@ -1627,16 +1420,13 @@ inline void Reduce
   int count, int root, MPI_Op op, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::Reduce");
+    CallStackEntry entry("mpi::Reduce");
 #endif
     SafeMpi( 
         MPI_Reduce
         ( const_cast<int*>(sendBuf), recvBuf, count, 
           MPI_INT, op, root, comm ) 
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Reduce
@@ -1644,16 +1434,13 @@ inline void Reduce
   int count, int root, MPI_Op op, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::Reduce");
+    CallStackEntry entry("mpi::Reduce");
 #endif
     SafeMpi( 
         MPI_Reduce
         ( const_cast<float*>(sendBuf), recvBuf, count, 
           MPI_FLOAT, op, root, comm ) 
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Reduce
@@ -1661,16 +1448,13 @@ inline void Reduce
   int count, int root, MPI_Op op, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::Reduce");
+    CallStackEntry entry("mpi::Reduce");
 #endif
     SafeMpi( 
         MPI_Reduce
         ( const_cast<double*>(sendBuf), recvBuf, count, 
           MPI_DOUBLE, op, root, comm ) 
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Reduce
@@ -1678,7 +1462,7 @@ inline void Reduce
   int count, int root, MPI_Op op, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::Reduce");
+    CallStackEntry entry("mpi::Reduce");
 #endif
     if( op == MPI_SUM )
     {
@@ -1696,9 +1480,6 @@ inline void Reduce
               MPI_COMPLEX, op, root, comm ) 
         );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Reduce
@@ -1706,7 +1487,7 @@ inline void Reduce
   int count, int root, MPI_Op op, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::Reduce");
+    CallStackEntry entry("mpi::Reduce");
 #endif
     if( op == MPI_SUM )
     {
@@ -1724,9 +1505,6 @@ inline void Reduce
               MPI_DOUBLE_COMPLEX, op, root, comm ) 
         );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void ReduceScatter
@@ -1734,7 +1512,7 @@ inline void ReduceScatter
   MPI_Op op, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::ReduceScatter");
+    CallStackEntry entry("mpi::ReduceScatter");
 #endif
     SafeMpi( 
         MPI_Reduce_scatter
@@ -1745,9 +1523,6 @@ inline void ReduceScatter
           op, 
           comm ) 
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void ReduceScatter
@@ -1755,7 +1530,7 @@ inline void ReduceScatter
   MPI_Op op, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::ReduceScatter");
+    CallStackEntry entry("mpi::ReduceScatter");
 #endif
     SafeMpi( 
         MPI_Reduce_scatter
@@ -1766,9 +1541,6 @@ inline void ReduceScatter
           op, 
           comm ) 
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void ReduceScatter
@@ -1776,7 +1548,7 @@ inline void ReduceScatter
   MPI_Op op, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::ReduceScatter");
+    CallStackEntry entry("mpi::ReduceScatter");
 #endif
     SafeMpi( 
         MPI_Reduce_scatter
@@ -1787,9 +1559,6 @@ inline void ReduceScatter
           op, 
           comm ) 
     );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void ReduceScatter
@@ -1797,7 +1566,7 @@ inline void ReduceScatter
   const int* recvCounts, MPI_Op op, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::ReduceScatter");
+    CallStackEntry entry("mpi::ReduceScatter");
 #endif
     if( op == MPI_SUM )
     {
@@ -1823,9 +1592,6 @@ inline void ReduceScatter
               comm ) 
         );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void ReduceScatter
@@ -1833,7 +1599,7 @@ inline void ReduceScatter
   const int* recvCounts, MPI_Op op, MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::ReduceScatter");
+    CallStackEntry entry("mpi::ReduceScatter");
 #endif
     if( op == MPI_SUM )
     {
@@ -1859,21 +1625,15 @@ inline void ReduceScatter
               comm ) 
         );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Wait( MPI_Request& request )
 {
 #ifndef RELEASE
-    PushCallStack("mpi::Wait");
+    CallStackEntry entry("mpi::Wait");
 #endif
     MPI_Status status;
     SafeMpi( MPI_Wait( &request, &status ) );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline double WallTime()

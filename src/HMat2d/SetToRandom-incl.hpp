@@ -14,7 +14,7 @@ void
 HMat2d<Scalar>::SetToRandom()
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::SetToRandom");
+    CallStackEntry entry("HMat2d::SetToRandom");
 #endif
     switch( block_.type )
     {
@@ -50,9 +50,6 @@ HMat2d<Scalar>::SetToRandom()
         break;
     }
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 } // namespace dmhm

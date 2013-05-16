@@ -19,14 +19,11 @@ void TransposeMultiply
                       Dense<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::TransposeMultiply (D := D^T D)");
+    CallStackEntry entry("hmat_tools::TransposeMultiply (D := D^T D)");
 #endif
     C.SetType( GENERAL );
     C.Resize( A.Width(), B.Width() );
     TransposeMultiply( alpha, A, B, Scalar(0), C );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Dense C := alpha A^T B + beta C
@@ -37,7 +34,7 @@ void TransposeMultiply
   Scalar beta,        Dense<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::TransposeMultiply (D := D^T D + D)");
+    CallStackEntry entry("hmat_tools::TransposeMultiply (D := D^T D + D)");
     if( A.Height() != B.Height() )
         throw std::logic_error("Cannot multiply nonconformal matrices.");
     if( B.Symmetric() )
@@ -57,9 +54,6 @@ void TransposeMultiply
           alpha, A.LockedBuffer(), A.LDim(), B.LockedBuffer(), B.LDim(),
           beta, C.Buffer(), C.LDim() );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Form a dense matrix from a dense matrix times a low-rank matrix
@@ -70,14 +64,11 @@ void TransposeMultiply
                       Dense<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::TransposeMultiply (D := D^T F)");
+    CallStackEntry entry("hmat_tools::TransposeMultiply (D := D^T F)");
 #endif
     C.SetType( GENERAL );
     C.Resize( A.Width(), B.Width() );
     TransposeMultiply( alpha, A, B, Scalar(0), C );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Form a dense matrix from a dense matrix times a low-rank matrix
@@ -88,7 +79,7 @@ void TransposeMultiply
   Scalar beta,        Dense<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::TransposeMultiply (D := D^T F + D)");
+    CallStackEntry entry("hmat_tools::TransposeMultiply (D := D^T F + D)");
     if( A.Height() != B.Height() )
         throw std::logic_error("Cannot multiply nonconformal matrices.");
     if( C.Symmetric() )
@@ -116,9 +107,6 @@ void TransposeMultiply
     ( 'N', option, C.Height(), C.Width(), B.Rank(),
       alpha, W.LockedBuffer(), W.LDim(), B.V.LockedBuffer(), B.V.LDim(), 
       beta,  C.Buffer(), C.LDim() );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Form a dense matrix from a low-rank matrix times a dense matrix
@@ -129,14 +117,11 @@ void TransposeMultiply
                       Dense<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::TransposeMultiply (D := F^T D)");
+    CallStackEntry entry("hmat_tools::TransposeMultiply (D := F^T D)");
 #endif
     C.SetType( GENERAL );
     C.Resize( A.Width(), B.Width() );
     TransposeMultiply( alpha, A, B, Scalar(0), C );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Form a dense matrix from a low-rank matrix times a dense matrix
@@ -147,7 +132,7 @@ void TransposeMultiply
   Scalar beta,        Dense<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::TransposeMultiply (D := F D + D)");
+    CallStackEntry entry("hmat_tools::TransposeMultiply (D := F D + D)");
     if( A.Height() != B.Height() )
         throw std::logic_error("Cannot multiply nonconformal matrices.");
     if( C.Symmetric() )
@@ -192,9 +177,6 @@ void TransposeMultiply
           alpha, A.V.LockedBuffer(), A.V.LDim(), W.LockedBuffer(), W.LDim(),
           beta,  C.Buffer(), C.LDim() );
     }
-#ifndef RELEASE  
-    PopCallStack();
-#endif
 }
 
 // Form a dense matrix from the product of two low-rank matrices
@@ -205,13 +187,10 @@ void TransposeMultiply
                       Dense<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::TransposeMultiply (D := F^T F)");
+    CallStackEntry entry("hmat_tools::TransposeMultiply (D := F^T F)");
 #endif
     C.SetType( GENERAL ); C.Resize( A.Width(), B.Width() );
     TransposeMultiply( alpha, A, B, Scalar(0), C );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Update a dense matrix from the product of two low-rank matrices
@@ -222,7 +201,7 @@ void TransposeMultiply
   Scalar beta,        Dense<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::TransposeMultiply (D := F^T F + D)");
+    CallStackEntry entry("hmat_tools::TransposeMultiply (D := F^T F + D)");
 #endif
     Dense<Scalar> W( A.Rank(), B.Rank() );
     blas::Gemm
@@ -238,9 +217,6 @@ void TransposeMultiply
     ( 'N', 'T', C.Height(), C.Width(), B.Rank(),
       alpha, X.LockedBuffer(), X.LDim(), B.V.LockedBuffer(), B.V.LDim(),
       beta,  C.Buffer(), C.LDim() );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Low-rank C := alpha A^T B
@@ -251,7 +227,7 @@ void TransposeMultiply
                       LowRank<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::TransposeMultiply (F := F^T F)");
+    CallStackEntry entry("hmat_tools::TransposeMultiply (F := F^T F)");
     if( A.Height() != B.Height() )
         throw std::logic_error("Cannot multiply nonconformal matrices.");
 #endif
@@ -313,9 +289,6 @@ void TransposeMultiply
           0,     C.U.Buffer(),       C.U.LDim() );
         Copy( B.V, C.V );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Form a low-rank matrix from a dense matrix times a low-rank matrix
@@ -326,7 +299,7 @@ void TransposeMultiply
                       LowRank<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::TransposeMultiply (F := D^T F)");
+    CallStackEntry entry("hmat_tools::TransposeMultiply (F := D^T F)");
     if( A.Height() != B.Height() )
         throw std::logic_error("Cannot multiply nonconformal matrices.");
 #endif
@@ -357,9 +330,6 @@ void TransposeMultiply
 
     // Form C.V := B.V
     Copy( B.V, C.V );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Form a low-rank matrix from a low-rank matrix times a dense matrix
@@ -370,7 +340,7 @@ void TransposeMultiply
                       LowRank<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::TransposeMultiply (F := F^T D)");
+    CallStackEntry entry("hmat_tools::TransposeMultiply (F := F^T D)");
     if( A.Height() != B.Height() )
         throw std::logic_error("Cannot multiply nonconformal matrices.");
 #endif
@@ -412,9 +382,6 @@ void TransposeMultiply
                  A.U.LockedBuffer(), A.U.LDim(), 
           0,     C.V.Buffer(),       C.V.LDim() );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Form a low-rank matrix from the product of two dense matrices
@@ -426,7 +393,7 @@ void TransposeMultiply
         LowRank<Real>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::TransposeMultiply (F := D^T D)");
+    CallStackEntry entry("hmat_tools::TransposeMultiply (F := D^T D)");
 #endif
     const int m = A.Width();
     const int n = B.Width();
@@ -462,9 +429,6 @@ void TransposeMultiply
         for( int i=0; i<n; ++i )
             VCol[i] = sigma*VTRow[i*VTLDim];
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Form a low-rank matrix from the product of two dense matrices
@@ -476,7 +440,7 @@ void TransposeMultiply
         LowRank<std::complex<Real> >& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::TransposeMultiply (F := D^T D)");
+    CallStackEntry entry("hmat_tools::TransposeMultiply (F := D^T D)");
 #endif
     typedef std::complex<Real> Scalar;
 
@@ -515,9 +479,6 @@ void TransposeMultiply
         for( int i=0; i<n; ++i )
             VCol[i] = sigma*VHRow[i*VHLDim];
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Update a low-rank matrix from the product of two dense matrices
@@ -530,7 +491,7 @@ void TransposeMultiply
   LowRank<Real>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::TransposeMultiply (F := D^T D + F)");
+    CallStackEntry entry("hmat_tools::TransposeMultiply (F := D^T D + F)");
 #endif
     // D := alpha A^T B + beta C
     Dense<Real> D;
@@ -539,9 +500,6 @@ void TransposeMultiply
 
     // Force D to be a low-rank matrix of rank 'maxRank'
     Compress( maxRank, D, C );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Update a low-rank matrix from the product of two dense matrices
@@ -554,7 +512,7 @@ void TransposeMultiply
         LowRank<std::complex<Real> >& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::TransposeMultiply (F := D^T D + F)");
+    CallStackEntry entry("hmat_tools::TransposeMultiply (F := D^T D + F)");
 #endif
     typedef std::complex<Real> Scalar;
 
@@ -565,9 +523,6 @@ void TransposeMultiply
 
     // Force D to be a low-rank matrix of rank 'maxRank'
     Compress( maxRank, D, C );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Dense C := alpha A^T B

@@ -14,7 +14,7 @@ void
 DistHMat2d<Scalar>::FormTargetGhostNodes()
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::FormTargetGhostNodes");
+    CallStackEntry entry("DistHMat2d::FormTargetGhostNodes");
 #endif
     RequireRoot();
 
@@ -25,9 +25,6 @@ DistHMat2d<Scalar>::FormTargetGhostNodes()
     
     // Fill in the local ghosted structure (but without the ghosts' ranks)
     FindTargetGhostNodesRecursion( targetStructure, 0, 0 );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -35,7 +32,7 @@ void
 DistHMat2d<Scalar>::FormSourceGhostNodes()
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::FormSourceGhostNodes");
+    CallStackEntry entry("DistHMat2d::FormSourceGhostNodes");
 #endif
     RequireRoot();
 
@@ -46,9 +43,6 @@ DistHMat2d<Scalar>::FormSourceGhostNodes()
     
     // Fill in the local ghosted structure (but without the ghosts' ranks)
     FindSourceGhostNodesRecursion( sourceStructure, 0, 0 );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -56,7 +50,7 @@ void
 DistHMat2d<Scalar>::PruneGhostNodes()
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::PruneGhostNodes");
+    CallStackEntry entry("DistHMat2d::PruneGhostNodes");
 #endif
     switch( block_.type )
     {
@@ -85,9 +79,6 @@ DistHMat2d<Scalar>::PruneGhostNodes()
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -96,7 +87,7 @@ DistHMat2d<Scalar>::FillTargetStructureRecursion
 ( std::vector<std::set<int> >& targetStructure ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::FillTargetStructureRecursion");
+    CallStackEntry entry("DistHMat2d::FillTargetStructureRecursion");
 #endif
     switch( block_.type )
     {
@@ -173,9 +164,6 @@ DistHMat2d<Scalar>::FillTargetStructureRecursion
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -184,7 +172,7 @@ DistHMat2d<Scalar>::FillSourceStructureRecursion
 ( std::vector<std::set<int> >& sourceStructure ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::FillSourceStructureRecursion");
+    CallStackEntry entry("DistHMat2d::FillSourceStructureRecursion");
 #endif
     switch( block_.type )
     {
@@ -261,9 +249,6 @@ DistHMat2d<Scalar>::FillSourceStructureRecursion
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -273,7 +258,7 @@ DistHMat2d<Scalar>::FindTargetGhostNodesRecursion
   int sourceRoot, int targetRoot )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::FindTargetGhostNodesRecursion");
+    CallStackEntry entry("DistHMat2d::FindTargetGhostNodesRecursion");
 #endif
     switch( block_.type )
     {
@@ -407,9 +392,6 @@ DistHMat2d<Scalar>::FindTargetGhostNodesRecursion
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -419,7 +401,7 @@ DistHMat2d<Scalar>::FindSourceGhostNodesRecursion
   int sourceRoot, int targetRoot )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::FindSourceGhostNodesRecursion");
+    CallStackEntry entry("DistHMat2d::FindSourceGhostNodesRecursion");
 #endif
     switch( block_.type )
     {
@@ -552,9 +534,6 @@ DistHMat2d<Scalar>::FindSourceGhostNodesRecursion
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 } // namespace dmhm

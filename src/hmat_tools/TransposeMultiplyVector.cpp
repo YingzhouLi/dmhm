@@ -19,7 +19,7 @@ void TransposeMultiply
   Scalar beta,        Vector<Scalar>& y )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::TransposeMultiply (y := D^T x + y)");
+    CallStackEntry entry("hmat_tools::TransposeMultiply (y := D^T x + y)");
 #endif
     if( A.Symmetric() )
     {
@@ -37,9 +37,6 @@ void TransposeMultiply
                  x.LockedBuffer(), 1, 
           beta,  y.Buffer(),       1 );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Dense y := alpha A^T x
@@ -50,7 +47,7 @@ void TransposeMultiply
                       Vector<Scalar>& y )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::TransposeMultiply (y := D^T x)");
+    CallStackEntry entry("hmat_tools::TransposeMultiply (y := D^T x)");
 #endif
     y.Resize( A.Width() );
     if( A.Symmetric() )
@@ -69,9 +66,6 @@ void TransposeMultiply
                  x.LockedBuffer(), 1, 
           0,     y.Buffer(),       1 );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Low-rank y := alpha A^T x + beta y
@@ -82,7 +76,7 @@ void TransposeMultiply
   Scalar beta,        Vector<Scalar>& y )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::TransposeMultiply (y := F^T x + y)");
+    CallStackEntry entry("hmat_tools::TransposeMultiply (y := F^T x + y)");
 #endif
     const int r = A.Rank();
 
@@ -100,9 +94,6 @@ void TransposeMultiply
       1,    A.V.LockedBuffer(), A.V.LDim(), 
             t.LockedBuffer(),   1, 
       beta, y.Buffer(),         1 );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Low-rank y := alpha A^T x
@@ -113,7 +104,7 @@ void TransposeMultiply
                       Vector<Scalar>& y )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::TransposeMultiply (y := F^T x)");
+    CallStackEntry entry("hmat_tools::TransposeMultiply (y := F^T x)");
 #endif
     const int r = A.Rank();
 
@@ -132,9 +123,6 @@ void TransposeMultiply
       1, A.V.LockedBuffer(), A.V.LDim(), 
          t.LockedBuffer(),   1, 
       0, y.Buffer(),         1 );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template void TransposeMultiply

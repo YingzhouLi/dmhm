@@ -14,7 +14,7 @@ void
 DistHMat2d<Scalar>::Conjugate()
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::Conjugate");
+    CallStackEntry entry("DistHMat2d::Conjugate");
 #endif
     switch( block_.type )
     {
@@ -47,9 +47,6 @@ DistHMat2d<Scalar>::Conjugate()
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -57,7 +54,7 @@ void
 DistHMat2d<Scalar>::ConjugateFrom( const DistHMat2d<Scalar>& B )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::ConjugateFrom");
+    CallStackEntry entry("DistHMat2d::ConjugateFrom");
 #endif
     DistHMat2d<Scalar>& A = *this;
 
@@ -143,9 +140,6 @@ DistHMat2d<Scalar>::ConjugateFrom( const DistHMat2d<Scalar>& B )
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 } // namespace dmhm

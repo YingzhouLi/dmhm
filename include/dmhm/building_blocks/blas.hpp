@@ -257,14 +257,11 @@ inline void Ger
                      float* A, int lda )
 {
 #ifndef RELEASE
-    PushCallStack("blas::Ger");
+    CallStackEntry entry("blas::Ger");
     if( lda == 0 )
         throw std::logic_error("lda = 0");
 #endif
     BLAS(sger)( &m, &n, &alpha, x, &incx, y, &incy, A, &lda );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Ger
@@ -274,14 +271,11 @@ inline void Ger
                       double* A, int lda )
 {
 #ifndef RELEASE
-    PushCallStack("blas::Ger");
+    CallStackEntry entry("blas::Ger");
     if( lda == 0 )
         throw std::logic_error("lda = 0");
 #endif
     BLAS(dger)( &m, &n, &alpha, x, &incx, y, &incy, A, &lda );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Ger
@@ -291,14 +285,11 @@ inline void Ger
                                    std::complex<float>* A, int lda )
 {
 #ifndef RELEASE
-    PushCallStack("blas::Ger");
+    CallStackEntry entry("blas::Ger");
     if( lda == 0 )
         throw std::logic_error("lda = 0");
 #endif
     BLAS(cgerc)( &m, &n, &alpha, x, &incx, y, &incy, A, &lda );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Ger
@@ -308,14 +299,11 @@ inline void Ger
                                     std::complex<double>* A, int lda )
 {
 #ifndef RELEASE
-    PushCallStack("blas::Ger");
+    CallStackEntry entry("blas::Ger");
     if( lda == 0 )
         throw std::logic_error("lda = 0");
 #endif
     BLAS(zgerc)( &m, &n, &alpha, x, &incx, y, &incy, A, &lda );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 //----------------------------------------------------------------------------//
@@ -329,7 +317,7 @@ inline void Gemv
   float beta,        float* y, int incy )
 {
 #ifndef RELEASE
-    PushCallStack("blas::Gemv");
+    CallStackEntry entry("blas::Gemv");
     if( lda == 0 )
         throw std::logic_error("lda = 0");
 #endif
@@ -373,9 +361,6 @@ inline void Gemv
                     y[i*incy] *= beta;
         }
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Gemv
@@ -385,7 +370,7 @@ inline void Gemv
   double beta,        double* y, int incy )
 {
 #ifndef RELEASE
-    PushCallStack("blas::Gemv");
+    CallStackEntry entry("blas::Gemv");
     if( lda == 0 )
         throw std::logic_error("lda = 0");
 #endif
@@ -429,9 +414,6 @@ inline void Gemv
                     y[i*incy] *= beta;
         }
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Gemv
@@ -441,7 +423,7 @@ inline void Gemv
   std::complex<float> beta,        std::complex<float>* y, int incy )
 {
 #ifndef RELEASE
-    PushCallStack("blas::Gemv");
+    CallStackEntry entry("blas::Gemv");
     if( lda == 0 )
         throw std::logic_error("lda = 0");
 #endif
@@ -485,9 +467,6 @@ inline void Gemv
                     y[i*incy] *= beta;
         }
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Gemv
@@ -497,7 +476,7 @@ inline void Gemv
   std::complex<double> beta,        std::complex<double>* y, int incy )
 {
 #ifndef RELEASE
-    PushCallStack("blas::Gemv");
+    CallStackEntry entry("blas::Gemv");
     if( lda == 0 )
         throw std::logic_error("lda = 0");
 #endif
@@ -541,9 +520,6 @@ inline void Gemv
                     y[i*incy] *= beta;
         }
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 //----------------------------------------------------------------------------//
@@ -557,14 +533,11 @@ inline void Symv
   float beta,        float* y, int incy )
 {
 #ifndef RELEASE
-    PushCallStack("blas::Symv");
+    CallStackEntry entry("blas::Symv");
     if( lda == 0 )
         throw std::logic_error("lda = 0");
 #endif
     BLAS(ssymv)( &uplo, &n, &alpha, A, &lda, x, &incx, &beta, y, &incy );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Symv
@@ -574,14 +547,11 @@ inline void Symv
   double beta,        double* y, int incy )
 {
 #ifndef RELEASE
-    PushCallStack("blas::Symv");
+    CallStackEntry entry("blas::Symv");
     if( lda == 0 )
         throw std::logic_error("lda = 0");
 #endif
     BLAS(dsymv)( &uplo, &n, &alpha, A, &lda, x, &incx, &beta, y, &incy );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Symv
@@ -591,14 +561,11 @@ inline void Symv
   std::complex<float> beta,        std::complex<float>* y, int incy )
 {
 #ifndef RELEASE
-    PushCallStack("blas::Symv");
+    CallStackEntry entry("blas::Symv");
     if( lda == 0 )
         throw std::logic_error("lda = 0");
 #endif
     BLAS(csymv)( &uplo, &n, &alpha, A, &lda, x, &incx, &beta, y, &incy );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Symv
@@ -608,14 +575,11 @@ inline void Symv
   std::complex<double> beta,        std::complex<double>* y, int incy )
 {
 #ifndef RELEASE
-    PushCallStack("blas::Symv");
+    CallStackEntry entry("blas::Symv");
     if( lda == 0 )
         throw std::logic_error("lda = 0");
 #endif
     BLAS(zsymv)( &uplo, &n, &alpha, A, &lda, x, &incx, &beta, y, &incy );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 //----------------------------------------------------------------------------//
@@ -629,7 +593,7 @@ inline void Gemm
   float beta,        float* C, int ldc )
 {
 #ifndef RELEASE
-    PushCallStack("blas::Gemm");
+    CallStackEntry entry("blas::Gemm");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
     if( ldb == 0 )
@@ -661,9 +625,6 @@ inline void Gemm
                 for( int i=0; i<m; ++i )
                     C[j*ldc+i] *= beta;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Gemm
@@ -673,7 +634,7 @@ inline void Gemm
   double beta,        double* C, int ldc )
 {
 #ifndef RELEASE
-    PushCallStack("blas::Gemm");
+    CallStackEntry entry("blas::Gemm");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
     if( ldb == 0 )
@@ -705,9 +666,6 @@ inline void Gemm
                 for( int i=0; i<m; ++i )
                     C[j*ldc+i] *= beta;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Gemm
@@ -717,7 +675,7 @@ inline void Gemm
   std::complex<float> beta,        std::complex<float>* C, int ldc )
 {
 #ifndef RELEASE
-    PushCallStack("blas::Gemm");
+    CallStackEntry entry("blas::Gemm");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
     if( ldb == 0 )
@@ -749,9 +707,6 @@ inline void Gemm
                 for( int i=0; i<m; ++i )
                     C[j*ldc+i] *= beta;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Gemm
@@ -761,7 +716,7 @@ inline void Gemm
   std::complex<double> beta,        std::complex<double>* C, int ldc )
 {
 #ifndef RELEASE
-    PushCallStack("blas::Gemm");
+    CallStackEntry entry("blas::Gemm");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
     if( ldb == 0 )
@@ -793,9 +748,6 @@ inline void Gemm
                 for( int i=0; i<m; ++i )
                     C[j*ldc+i] *= beta;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 //----------------------------------------------------------------------------//
@@ -809,7 +761,7 @@ inline void Symm
   float beta,        float* C, int ldc )
 {
 #ifndef RELEASE
-    PushCallStack("blas::Symm");
+    CallStackEntry entry("blas::Symm");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
     if( ldb == 0 )
@@ -819,9 +771,6 @@ inline void Symm
 #endif
     BLAS(ssymm)
     ( &side, &uplo, &m, &n, &alpha, A, &lda, B, &ldb, &beta, C, &ldc );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Symm
@@ -831,7 +780,7 @@ inline void Symm
   double beta,        double* C, int ldc )
 {
 #ifndef RELEASE
-    PushCallStack("blas::Symm");
+    CallStackEntry entry("blas::Symm");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
     if( ldb == 0 )
@@ -841,9 +790,6 @@ inline void Symm
 #endif
     BLAS(dsymm)
     ( &side, &uplo, &m, &n, &alpha, A, &lda, B, &ldb, &beta, C, &ldc );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Symm
@@ -853,7 +799,7 @@ inline void Symm
   std::complex<float> beta,        std::complex<float>* C, int ldc )
 {
 #ifndef RELEASE
-    PushCallStack("blas::Symm");
+    CallStackEntry entry("blas::Symm");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
     if( ldb == 0 )
@@ -863,9 +809,6 @@ inline void Symm
 #endif
     BLAS(csymm)
     ( &side, &uplo, &m, &n, &alpha, A, &lda, B, &ldb, &beta, C, &ldc );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Symm
@@ -875,7 +818,7 @@ inline void Symm
   std::complex<double> beta,        std::complex<double>* C, int ldc )
 {
 #ifndef RELEASE
-    PushCallStack("blas::Symm");
+    CallStackEntry entry("blas::Symm");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
     if( ldb == 0 )
@@ -885,9 +828,6 @@ inline void Symm
 #endif
     BLAS(zsymm)
     ( &side, &uplo, &m, &n, &alpha, A, &lda, B, &ldb, &beta, C, &ldc );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 //----------------------------------------------------------------------------//
@@ -900,7 +840,7 @@ inline void Trmm
                      float* B, int ldb )
 {
 #ifndef RELEASE
-    PushCallStack("blas::Trmm");
+    CallStackEntry entry("blas::Trmm");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
     if( ldb == 0 )
@@ -908,9 +848,6 @@ inline void Trmm
 #endif
     BLAS(strmm)
     ( &side, &uplo, &transa, &diag, &m, &n, &alpha, A, &lda, B, &ldb );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Trmm
@@ -919,7 +856,7 @@ inline void Trmm
                       double* B, int ldb )
 {
 #ifndef RELEASE
-    PushCallStack("blas::Trmm");
+    CallStackEntry entry("blas::Trmm");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
     if( ldb == 0 )
@@ -927,9 +864,6 @@ inline void Trmm
 #endif
     BLAS(dtrmm)
     ( &side, &uplo, &transa, &diag, &m, &n, &alpha, A, &lda, B, &ldb );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Trmm
@@ -938,7 +872,7 @@ inline void Trmm
                                    std::complex<float>* B, int ldb )
 {
 #ifndef RELEASE
-    PushCallStack("blas::Trmm");
+    CallStackEntry entry("blas::Trmm");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
     if( ldb == 0 )
@@ -946,9 +880,6 @@ inline void Trmm
 #endif
     BLAS(ctrmm)
     ( &side, &uplo, &transa, &diag, &m, &n, &alpha, A, &lda, B, &ldb );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline void Trmm
@@ -957,7 +888,7 @@ inline void Trmm
                                     std::complex<double>* B, int ldb )
 {
 #ifndef RELEASE
-    PushCallStack("blas::Trmm");
+    CallStackEntry entry("blas::Trmm");
     if( lda == 0 )
         throw std::logic_error("lda was 0");
     if( ldb == 0 )
@@ -965,9 +896,6 @@ inline void Trmm
 #endif
     BLAS(ztrmm)
     ( &side, &uplo, &transa, &diag, &m, &n, &alpha, A, &lda, B, &ldb );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 } // namespace blas

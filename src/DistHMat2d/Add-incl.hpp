@@ -15,7 +15,7 @@ void
 DistHMat2d<Scalar>::AddConstantToDiagonal( Scalar alpha )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::AddConstantToDiagonal");
+    CallStackEntry entry("DistHMat2d::AddConstantToDiagonal");
 #endif
     switch( block_.type )
     {
@@ -57,9 +57,6 @@ DistHMat2d<Scalar>::AddConstantToDiagonal( Scalar alpha )
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 } // namespace dmhm

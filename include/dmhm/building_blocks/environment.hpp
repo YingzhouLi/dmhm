@@ -174,13 +174,19 @@ void PushCallStack( const std::string s );
 void PopCallStack();
 void DumpCallStack();
 
+class CallStackEntry
+{
+public:
+    CallStackEntry( std::string s ) { PushCallStack(s); }
+    ~CallStackEntry() { PopCallStack(); }
+};
+
 inline unsigned Log2( unsigned N )
 {
 #ifndef RELEASE
-    PushCallStack("Log2");
+    CallStackEntry entry("Log2");
     if( N == 0 )
         throw std::logic_error("Cannot take integer log2 of 0");
-    PopCallStack();
 #endif
     int result = 0;
     if( N >= (1<<16)) { N >>= 16; result += 16; }

@@ -18,17 +18,12 @@ DistHMat2d<Scalar>::MultiplyHMatFHHPrecompute
   int startUpdate, int endUpdate, int update )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatFHHPrecompute");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatFHHPrecompute");
 #endif
     DistHMat2d<Scalar>& A = *this;
     if(( !A.inTargetTeam_ && !A.inSourceTeam_ && !B.inSourceTeam_) ||
         A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     const int key = A.sourceOffset_;
     const int sampleRank = SampleRank( C.MaxRank() );
@@ -103,9 +98,6 @@ DistHMat2d<Scalar>::MultiplyHMatFHHPrecompute
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -117,7 +109,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHSums
   int startUpdate, int endUpdate )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatFHHSums");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatFHHSums");
 #endif
     DistHMat2d<Scalar>& A = *this;
 
@@ -148,9 +140,6 @@ DistHMat2d<Scalar>::MultiplyHMatFHHSums
     // Unpack the reduced buffers (only roots of communicators have data)
     A.MultiplyHMatFHHSumsUnpack
     ( B, C, buffer, offsets, startLevel, endLevel, startUpdate, endUpdate, 0 );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -163,17 +152,12 @@ DistHMat2d<Scalar>::MultiplyHMatFHHSumsCount
   int startUpdate, int endUpdate, int update ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatFHHSumsCount");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatFHHSumsCount");
 #endif
     const DistHMat2d<Scalar>& A = *this;
     if( (!A.inTargetTeam_ && !A.inSourceTeam_ && !B.inSourceTeam_) ||
         A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     const int sampleRank = SampleRank( C.MaxRank() );
     const bool admissibleC = C.Admissible();
@@ -216,9 +200,6 @@ DistHMat2d<Scalar>::MultiplyHMatFHHSumsCount
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -231,17 +212,12 @@ DistHMat2d<Scalar>::MultiplyHMatFHHSumsPack
   int startUpdate, int endUpdate, int update )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatFHHSumsPack");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatFHHSumsPack");
 #endif
     DistHMat2d<Scalar>& A = *this;
     if( (!A.inTargetTeam_ && !A.inSourceTeam_ && !B.inSourceTeam_) ||
         A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     const int key = A.sourceOffset_;
     const bool admissibleC = C.Admissible();
@@ -287,9 +263,6 @@ DistHMat2d<Scalar>::MultiplyHMatFHHSumsPack
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -302,17 +275,12 @@ DistHMat2d<Scalar>::MultiplyHMatFHHSumsUnpack
   int startUpdate, int endUpdate, int update )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatFHHSumsUnpack");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatFHHSumsUnpack");
 #endif
     DistHMat2d<Scalar>& A = *this;
     if( (!A.inTargetTeam_ && !A.inSourceTeam_ && !B.inSourceTeam_) ||
         A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     const int key = A.sourceOffset_;
     const bool admissibleC = C.Admissible();
@@ -358,9 +326,6 @@ DistHMat2d<Scalar>::MultiplyHMatFHHSumsUnpack
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -372,7 +337,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHPassData
   int startUpdate, int endUpdate )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatFHHPassData");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatFHHPassData");
 #endif
     DistHMat2d<Scalar>& A = *this;
 
@@ -442,9 +407,6 @@ DistHMat2d<Scalar>::MultiplyHMatFHHPassData
     // Don't exit until we know that the data was sent
     for( int i=0; i<numSends; ++i )
         mpi::Wait( sendRequests[i] );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -457,17 +419,12 @@ DistHMat2d<Scalar>::MultiplyHMatFHHPassDataCount
   int startUpdate, int endUpdate, int update ) const 
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatFHHPassDataCount");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatFHHPassDataCount");
 #endif
     const DistHMat2d<Scalar>& A = *this;
     if( (!A.inTargetTeam_ && !A.inSourceTeam_ && !B.inSourceTeam_) ||
         A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     const int sampleRank = SampleRank( C.MaxRank() );
     const bool admissibleC = C.Admissible();
@@ -521,9 +478,6 @@ DistHMat2d<Scalar>::MultiplyHMatFHHPassDataCount
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -536,17 +490,12 @@ DistHMat2d<Scalar>::MultiplyHMatFHHPassDataPack
   int startUpdate, int endUpdate, int update )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatFHHPassDataPack");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatFHHPassDataPack");
 #endif
     DistHMat2d<Scalar>& A = *this;
     if( (!A.inTargetTeam_ && !A.inSourceTeam_ && !B.inSourceTeam_) ||
         A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     const int key = A.sourceOffset_;
     const bool admissibleC = C.Admissible();
@@ -602,9 +551,6 @@ DistHMat2d<Scalar>::MultiplyHMatFHHPassDataPack
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -617,17 +563,12 @@ DistHMat2d<Scalar>::MultiplyHMatFHHPassDataUnpack
   int startUpdate, int endUpdate, int update )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatFHHPassDataUnpack");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatFHHPassDataUnpack");
 #endif
     DistHMat2d<Scalar>& A = *this;
     if( (!A.inTargetTeam_ && !A.inSourceTeam_ && !B.inSourceTeam_) ||
         A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     const int key = A.sourceOffset_;
     const bool admissibleC = C.Admissible();
@@ -682,9 +623,6 @@ DistHMat2d<Scalar>::MultiplyHMatFHHPassDataUnpack
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -696,7 +634,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHBroadcasts
   int startUpdate, int endUpdate )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatFHHBroadcasts");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatFHHBroadcasts");
 #endif
     DistHMat2d<Scalar>& A = *this;
 
@@ -728,9 +666,6 @@ DistHMat2d<Scalar>::MultiplyHMatFHHBroadcasts
     // Unpack the broadcasted buffers
     A.MultiplyHMatFHHBroadcastsUnpack
     ( B, C, buffer, offsets, startLevel, endLevel, startUpdate, endUpdate, 0 );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -743,17 +678,12 @@ DistHMat2d<Scalar>::MultiplyHMatFHHBroadcastsCount
   int startUpdate, int endUpdate, int update ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatFHHBroadcastsCount");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatFHHBroadcastsCount");
 #endif
     const DistHMat2d<Scalar>& A = *this;
     if( (!A.inTargetTeam_ && !A.inSourceTeam_ && !B.inSourceTeam_) ||
         A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     const int sampleRank = SampleRank( C.MaxRank() );
     const bool admissibleC = C.Admissible();
@@ -797,9 +727,6 @@ DistHMat2d<Scalar>::MultiplyHMatFHHBroadcastsCount
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -812,17 +739,12 @@ DistHMat2d<Scalar>::MultiplyHMatFHHBroadcastsPack
   int startUpdate, int endUpdate, int update ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatFHHBroadcastsPack");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatFHHBroadcastsPack");
 #endif
     const DistHMat2d<Scalar>& A = *this;
     if( (!A.inTargetTeam_ && !A.inSourceTeam_ && !B.inSourceTeam_) ||
         A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     const int key = A.sourceOffset_;
     const bool admissibleC = C.Admissible();
@@ -868,9 +790,6 @@ DistHMat2d<Scalar>::MultiplyHMatFHHBroadcastsPack
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -883,17 +802,12 @@ DistHMat2d<Scalar>::MultiplyHMatFHHBroadcastsUnpack
   int startUpdate, int endUpdate, int update )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatFHHBroadcastsUnpack");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatFHHBroadcastsUnpack");
 #endif
     DistHMat2d<Scalar>& A = *this;
     if( (!A.inTargetTeam_ && !A.inSourceTeam_ && !B.inSourceTeam_) ||
         A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     const int key = A.sourceOffset_;
     const bool admissibleC = C.Admissible();
@@ -939,9 +853,6 @@ DistHMat2d<Scalar>::MultiplyHMatFHHBroadcastsUnpack
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -953,16 +864,13 @@ DistHMat2d<Scalar>::MultiplyHMatFHHPostcompute
   int startUpdate, int endUpdate )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatFHHPostcompute");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatFHHPostcompute");
 #endif
     DistHMat2d<Scalar>& A = *this;
 
     A.MultiplyHMatFHHPostcomputeC
     ( alpha, B, C, startLevel, endLevel, startUpdate, endUpdate, 0 );
     C.MultiplyHMatFHHPostcomputeCCleanup( startLevel, endLevel );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -974,17 +882,12 @@ DistHMat2d<Scalar>::MultiplyHMatFHHPostcomputeC
   int startUpdate, int endUpdate, int update ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatFHHPostcomputeC");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatFHHPostcomputeC");
 #endif
     const DistHMat2d<Scalar>& A = *this;
     if( (!A.inTargetTeam_ && !A.inSourceTeam_ && !B.inSourceTeam_) ||
         A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     const int key = A.sourceOffset_;
     const bool admissibleC = C.Admissible();
@@ -1044,9 +947,6 @@ DistHMat2d<Scalar>::MultiplyHMatFHHPostcomputeC
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1055,7 +955,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHPostcomputeCCleanup
 ( int startLevel, int endLevel )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatFHHPostcomputeCCleanup");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatFHHPostcomputeCCleanup");
 #endif
     DistHMat2d<Scalar>& C = *this;
     C.colFHHContextMap_.Clear();
@@ -1083,9 +983,6 @@ DistHMat2d<Scalar>::MultiplyHMatFHHPostcomputeCCleanup
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1097,7 +994,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHFinalize
   int startUpdate, int endUpdate ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatFHHFinalize");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatFHHFinalize");
 #endif
     const DistHMat2d<Scalar>& A = *this;
 
@@ -1351,9 +1248,6 @@ DistHMat2d<Scalar>::MultiplyHMatFHHFinalize
     ( B, C, allReduceBuffer, leftOffsets, middleOffsets, rightOffsets,
       singularValues, U, VH, svdWork, svdRealWork, 
       startLevel, endLevel, startUpdate, endUpdate, 0 );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1364,15 +1258,10 @@ DistHMat2d<Scalar>::MultiplyHMatFHHFinalizeCounts
   int startLevel, int endLevel )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatFHHFinalizeCounts");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatFHHFinalizeCounts");
 #endif
     if( Height() == 0 || Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -1416,9 +1305,6 @@ DistHMat2d<Scalar>::MultiplyHMatFHHFinalizeCounts
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1432,17 +1318,12 @@ DistHMat2d<Scalar>::MultiplyHMatFHHFinalizeMiddleUpdates
   int startUpdate, int endUpdate, int update ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatFHHFinalizeMiddleUpdates");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatFHHFinalizeMiddleUpdates");
 #endif
     const DistHMat2d<Scalar>& A = *this;
     if( (!A.inTargetTeam_ && !A.inSourceTeam_ && !B.inSourceTeam_) ||
         A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
     const int rank = SampleRank( C.MaxRank() );
     switch( A.block_.type )
     {
@@ -1503,9 +1384,6 @@ DistHMat2d<Scalar>::MultiplyHMatFHHFinalizeMiddleUpdates
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1517,15 +1395,10 @@ DistHMat2d<Scalar>::MultiplyHMatFHHFinalizeLocalQR
   int startLevel, int endLevel )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatFHHFinalizeLocalQR");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatFHHFinalizeLocalQR");
 #endif
     if( Height() == 0 || Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -1593,9 +1466,6 @@ DistHMat2d<Scalar>::MultiplyHMatFHHFinalizeLocalQR
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1610,17 +1480,12 @@ DistHMat2d<Scalar>::MultiplyHMatFHHFinalizeOuterUpdates
   int startUpdate, int endUpdate, int update ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatFHHFinalizeOuterUpdates");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatFHHFinalizeOuterUpdates");
 #endif
     const DistHMat2d<Scalar>& A = *this;
     if( (!A.inTargetTeam_ && !A.inSourceTeam_ && !B.inSourceTeam_) ||
         A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
     const int rank = SampleRank( C.MaxRank() );
     switch( A.block_.type )
     {
@@ -1698,9 +1563,6 @@ DistHMat2d<Scalar>::MultiplyHMatFHHFinalizeOuterUpdates
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1721,17 +1583,12 @@ DistHMat2d<Scalar>::MultiplyHMatFHHFinalizeFormLowRank
   int startUpdate, int endUpdate, int update ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatFHHFinalizeFormLowRank");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatFHHFinalizeFormLowRank");
 #endif
     const DistHMat2d<Scalar>& A = *this;
     if( (!A.inTargetTeam_ && !A.inSourceTeam_ && !B.inSourceTeam_) ||
         A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
     const int rank = SampleRank( C.MaxRank() );
     switch( A.block_.type )
     {
@@ -1847,9 +1704,6 @@ DistHMat2d<Scalar>::MultiplyHMatFHHFinalizeFormLowRank
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 } // namespace dmhm

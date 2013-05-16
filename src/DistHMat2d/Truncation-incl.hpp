@@ -16,7 +16,7 @@ DistHMat2d<Scalar>::EVDTrunc
 {
     int ldq=Q.LDim();
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::EVDTrunc");
+    CallStackEntry entry("DistHMat2d::EVDTrunc");
     if( ldq ==0 )
         throw std::logic_error("ldq was 0");
 #endif
@@ -27,10 +27,6 @@ DistHMat2d<Scalar>::EVDTrunc
 
     w.erase( w.begin(), w.begin()+L );
     Q.EraseCol(0, L-1);
-
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 
@@ -42,7 +38,7 @@ DistHMat2d<Scalar>::SVDTrunc
 {
     int ldq=w.size();
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::EVDTrunc");
+    CallStackEntry entry("DistHMat2d::EVDTrunc");
     if( ldq ==0 )
         throw std::logic_error("ldq was 0");
 #endif
@@ -56,10 +52,6 @@ DistHMat2d<Scalar>::SVDTrunc
     w.resize(L+1);
     U.Resize(ldu, L+1, ldu);
     VH.EraseRow(L+1, ldvh-1);
-
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 } // namespace dmhm

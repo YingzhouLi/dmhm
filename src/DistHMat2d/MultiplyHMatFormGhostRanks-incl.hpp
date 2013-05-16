@@ -15,7 +15,7 @@ DistHMat2d<Scalar>::MultiplyHMatFormGhostRanks
 ( DistHMat2d<Scalar>& B ) 
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatFormGhostRanks");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatFormGhostRanks");
 #endif
     DistHMat2d<Scalar>& A = *this;
 
@@ -89,9 +89,6 @@ DistHMat2d<Scalar>::MultiplyHMatFormGhostRanks
     // Don't exit until we know that the data was sent
     for( int i=0; i<numSends; ++i )
         mpi::Wait( sendRequests[i] );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -101,7 +98,7 @@ DistHMat2d<Scalar>::MultiplyHMatFormGhostRanksCount
   std::map<int,int>& sendSizes, std::map<int,int>& recvSizes ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatFormGhostRanksCount");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatFormGhostRanksCount");
 #endif
     const DistHMat2d<Scalar>& A = *this;
     if( A.sourceRoot_ != B.targetRoot_ )
@@ -112,12 +109,7 @@ DistHMat2d<Scalar>::MultiplyHMatFormGhostRanksCount
         throw std::logic_error( s.str().c_str() );
     }
     if( !A.inTargetTeam_ && !A.inSourceTeam_ && !B.inSourceTeam_ )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     MPI_Comm team = A.teams_->Team( A.level_ );
     const int teamRank = mpi::CommRank( team );
@@ -271,9 +263,6 @@ DistHMat2d<Scalar>::MultiplyHMatFormGhostRanksCount
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -283,16 +272,11 @@ DistHMat2d<Scalar>::MultiplyHMatFormGhostRanksPack
   std::vector<int>& sendBuffer, std::map<int,int>& offsets ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatFormGhostRanksPack");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatFormGhostRanksPack");
 #endif
     const DistHMat2d<Scalar>& A = *this;
     if( !A.inTargetTeam_ && !A.inSourceTeam_ && !B.inSourceTeam_ )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     MPI_Comm team = A.teams_->Team( A.level_ );
     const int teamRank = mpi::CommRank( team );
@@ -425,9 +409,6 @@ DistHMat2d<Scalar>::MultiplyHMatFormGhostRanksPack
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -437,16 +418,11 @@ DistHMat2d<Scalar>::MultiplyHMatFormGhostRanksUnpack
   const std::vector<int>& recvBuffer, std::map<int,int>& offsets )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatFormGhostRanksUnpack");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatFormGhostRanksUnpack");
 #endif
     DistHMat2d<Scalar>& A = *this;
     if( !A.inTargetTeam_ && !A.inSourceTeam_ && !B.inSourceTeam_ )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     MPI_Comm team = A.teams_->Team( A.level_ );
     const int teamRank = mpi::CommRank( team );
@@ -546,9 +522,6 @@ DistHMat2d<Scalar>::MultiplyHMatFormGhostRanksUnpack
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 } // namespace dmhm

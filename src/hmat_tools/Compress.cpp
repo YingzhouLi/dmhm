@@ -16,7 +16,7 @@ template<typename Real>
 void Compress( int maxRank, Dense<Real>& D, LowRank<Real>& F )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Compress (Dense,LowRank)");
+    CallStackEntry entry("hmat_tools::Compress (Dense,LowRank)");
 #endif
     const int m = D.Height();
     const int n = D.Width();
@@ -50,9 +50,6 @@ void Compress( int maxRank, Dense<Real>& D, LowRank<Real>& F )
         for( int i=0; i<n; ++i )
             VCol[i] = sigma*VTRow[i*VTLDim];
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Real>
@@ -62,7 +59,7 @@ void Compress
   LowRank<std::complex<Real> >& F )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Compress (Dense,LowRank)");
+    CallStackEntry entry("hmat_tools::Compress (Dense,LowRank)");
 #endif
     typedef std::complex<Real> Scalar;
 
@@ -99,9 +96,6 @@ void Compress
         for( int i=0; i<n; ++i )
             VCol[i] = sigma*VHRow[i*VHLDim];
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // A :~= A
@@ -111,19 +105,14 @@ template<typename Real>
 void Compress( int maxRank, LowRank<Real>& A )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Compress (LowRank)");
+    CallStackEntry entry("hmat_tools::Compress (LowRank)");
 #endif
     const int m = A.Height();
     const int n = A.Width();
     const int r = A.Rank();
     const int roundedRank = std::min( r, maxRank );
     if( roundedRank == r )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     // Grab enough workspace for our entire rounded addition
     const int leftPanelSize = std::max(1,std::max(1,m)*r);
@@ -237,9 +226,6 @@ void Compress( int maxRank, LowRank<Real>& A )
     ( 'L', 'N', n, roundedRank, r, &buffer[2*blockSize], n, &tauV[0],
       A.V.Buffer(), A.V.LDim(), &buffer[0], blockSize );
 #endif // PIVOTED_QR
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // A :~= A
@@ -249,7 +235,7 @@ template<typename Real>
 void Compress( int maxRank, LowRank<std::complex<Real> >& A )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Compress (LowRank)");
+    CallStackEntry entry("hmat_tools::Compress (LowRank)");
 #endif
     typedef std::complex<Real> Scalar;
 
@@ -258,12 +244,7 @@ void Compress( int maxRank, LowRank<std::complex<Real> >& A )
     const int r = A.Rank();
     const int roundedRank = std::min( r, maxRank );
     if( roundedRank == r )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     // Grab enough workspace for our entire rounded addition
     const int leftPanelSize = std::max(1,std::max(1,m)*r);
@@ -382,9 +363,6 @@ void Compress( int maxRank, LowRank<std::complex<Real> >& A )
     ( 'L', 'N', n, roundedRank, r, &buffer[2*blockSize], n, &tauV[0],
       A.V.Buffer(), A.V.LDim(), &buffer[0], blockSize );
 #endif // PIVOTED_QR
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template void Compress( int maxRank, Dense<float>& D, LowRank<float>& F );

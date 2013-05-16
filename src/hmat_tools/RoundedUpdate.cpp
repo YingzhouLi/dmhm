@@ -19,7 +19,7 @@ void RoundedUpdate
   Real beta,        LowRank<Real>& B )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::RoundedUpdate (F := F + F)");
+    CallStackEntry entry("hmat_tools::RoundedUpdate (F := F + F)");
     if( A.Height() != B.Height() || A.Width() != B.Width() )
         throw std::logic_error("Incompatible matrix dimensions");
 #endif
@@ -50,9 +50,6 @@ void RoundedUpdate
             std::memcpy
             ( B.V.Buffer(0,j+Br), A.V.LockedBuffer(0,j), n*sizeof(Real) );
 
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
     }
 
@@ -169,9 +166,6 @@ void RoundedUpdate
     ( 'L', 'N', n, roundedRank, minDimV, V.LockedBuffer(), V.LDim(), &tauV[0],
       B.V.Buffer(), B.V.LDim(), &workV[0], workV.size() );
 #endif // PIVOTED_QR
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Real>
@@ -184,7 +178,7 @@ void RoundedUpdate
 {
     typedef std::complex<Real> Scalar;
 #ifndef RELEASE
-    PushCallStack("hmat_tools::RoundedUpdate (F := F + F)");
+    CallStackEntry entry("hmat_tools::RoundedUpdate (F := F + F)");
     if( A.Height() != B.Height() || A.Width() != B.Width() )
         throw std::logic_error("Incompatible matrix dimensions");
 #endif
@@ -215,9 +209,6 @@ void RoundedUpdate
             std::memcpy
             ( B.V.Buffer(0,j+Br), A.V.LockedBuffer(0,j), n*sizeof(Scalar) );
 
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
     }
 
@@ -335,9 +326,6 @@ void RoundedUpdate
     ( 'L', 'N', n, roundedRank, minDimV, V.LockedBuffer(), V.LDim(), &tauV[0],
       B.V.Buffer(), B.V.LDim(), &workV[0], workV.size() );
 #endif // PIVOTED_QR
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template void RoundedUpdate

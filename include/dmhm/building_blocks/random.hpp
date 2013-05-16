@@ -346,7 +346,7 @@ void
 SerialGaussianRandomVector( Vector<Real>& x )
 {
 #ifndef RELEASE
-    PushCallStack("SerialGaussianRandomVector");
+    CallStackEntry entry("SerialGaussianRandomVector");
 #endif
     // Use BoxMuller for every pair of entries
     const int n = x.Height();
@@ -363,9 +363,6 @@ SerialGaussianRandomVector( Vector<Real>& x )
         SerialGaussianRandomVariable( buffer[n-1] );
     else
         SerialBoxMuller( buffer[n-2], buffer[n-1] );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Real>
@@ -373,7 +370,7 @@ void
 ParallelGaussianRandomVector( Vector<Real>& x )
 {
 #ifndef RELEASE
-    PushCallStack("ParallelGaussianRandomVector");
+    CallStackEntry entry("ParallelGaussianRandomVector");
 #endif
     // Use BoxMuller for every pair of entries
     const int n = x.Height();
@@ -390,9 +387,6 @@ ParallelGaussianRandomVector( Vector<Real>& x )
         ParallelGaussianRandomVariable( buffer[n-1] );
     else
         ParallelBoxMuller( buffer[n-2], buffer[n-1] );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Real>
@@ -400,15 +394,12 @@ void
 SerialGaussianRandomVector( Vector<std::complex<Real> >& x )
 {
 #ifndef RELEASE
-    PushCallStack("SerialGaussianRandomVector");
+    CallStackEntry entry("SerialGaussianRandomVector");
 #endif
     const int n = x.Height();
     std::complex<Real>* buffer = x.Buffer();
     for( int i=0; i<n; ++i )
         SerialGaussianRandomVariable( buffer[i] );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Real>
@@ -416,15 +407,12 @@ void
 ParallelGaussianRandomVector( Vector<std::complex<Real> >& x )
 {
 #ifndef RELEASE
-    PushCallStack("ParallelGaussianRandomVector");
+    CallStackEntry entry("ParallelGaussianRandomVector");
 #endif
     const int n = x.Height();
     std::complex<Real>* buffer = x.Buffer();
     for( int i=0; i<n; ++i )
         ParallelGaussianRandomVariable( buffer[i] );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Real>
@@ -432,7 +420,7 @@ void
 SerialGaussianRandomVectors( Dense<Real>& A )
 {
 #ifndef RELEASE
-    PushCallStack("SerialGaussianRandomVectors");
+    CallStackEntry entry("SerialGaussianRandomVectors");
 #endif
     // Use BoxMuller for every pair of entries in each column
     A.SetType( GENERAL );
@@ -454,9 +442,6 @@ SerialGaussianRandomVectors( Dense<Real>& A )
         else
             SerialBoxMuller( ACol[n-2], ACol[n-1] );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Real>
@@ -464,7 +449,7 @@ void
 ParallelGaussianRandomVectors( Dense<Real>& A )
 {
 #ifndef RELEASE
-    PushCallStack("ParallelGaussianRandomVectors");
+    CallStackEntry entry("ParallelGaussianRandomVectors");
 #endif
     // Use BoxMuller for every pair of entries in each column
     A.SetType( GENERAL );
@@ -486,9 +471,6 @@ ParallelGaussianRandomVectors( Dense<Real>& A )
         else
             ParallelBoxMuller( ACol[n-2], ACol[n-1] );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Real>
@@ -496,7 +478,7 @@ void
 SerialGaussianRandomVectors( Dense<std::complex<Real> >& A )
 {
 #ifndef RELEASE
-    PushCallStack("SerialGaussianRandomVectors");
+    CallStackEntry entry("SerialGaussianRandomVectors");
 #endif
     A.SetType( GENERAL );
     const int m = A.Height();
@@ -507,9 +489,6 @@ SerialGaussianRandomVectors( Dense<std::complex<Real> >& A )
         for( int i=0; i<m; ++i )
             SerialGaussianRandomVariable( ACol[i] );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Real>
@@ -517,7 +496,7 @@ void
 ParallelGaussianRandomVectors( Dense<std::complex<Real> >& ALocal )
 {
 #ifndef RELEASE
-    PushCallStack("ParallelGaussianRandomVectors");
+    CallStackEntry entry("ParallelGaussianRandomVectors");
 #endif
     ALocal.SetType( GENERAL );
     const int m = ALocal.Height();
@@ -528,9 +507,6 @@ ParallelGaussianRandomVectors( Dense<std::complex<Real> >& ALocal )
         for( int i=0; i<m; ++i )
             ParallelGaussianRandomVariable( ALocalCol[i] );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 } // namespace dmhm

@@ -34,7 +34,7 @@ inline void
 Timer::Start( int key )
 {
 #ifndef RELEASE
-    PushCallStack("Timer::Start");
+    CallStackEntry entry("Timer::Start");
 #endif
     std::map<int,bool>::iterator it;
     it = running_.find( key );
@@ -51,16 +51,13 @@ Timer::Start( int key )
         running_[key] = true;
         startTimes_[key] = mpi::WallTime();
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 inline double
 Timer::Stop( int key )
 {
 #ifndef RELEASE
-    PushCallStack("Timer::Stop");
+    CallStackEntry entry("Timer::Stop");
 #endif
     double pairTime = 0;
 
@@ -81,9 +78,6 @@ Timer::Stop( int key )
 
         running_[key] = false;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
     return pairTime;
 }
 
@@ -91,7 +85,7 @@ inline double
 Timer::GetTime( int key )
 {
 #ifndef RELEASE
-    PushCallStack("Timer::GetTime");
+    CallStackEntry entry("Timer::GetTime");
 #endif
     double time = 0;
 
@@ -101,9 +95,6 @@ Timer::GetTime( int key )
         time = 0;
     else
         time = times_[key];
-#ifndef RELEASE
-    PopCallStack();
-#endif
     return time;
 }
 

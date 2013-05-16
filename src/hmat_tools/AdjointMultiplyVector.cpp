@@ -19,7 +19,7 @@ void AdjointMultiply
   Scalar beta,        Vector<Scalar>& y )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::AdjointMultiply (y := D^H x + y)");
+    CallStackEntry entry("hmat_tools::AdjointMultiply (y := D^H x + y)");
 #endif
     if( A.Symmetric() )
     {
@@ -41,9 +41,6 @@ void AdjointMultiply
                  x.LockedBuffer(), 1, 
           beta,  y.Buffer(),       1 );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Dense y := alpha A^H x
@@ -54,7 +51,7 @@ void AdjointMultiply
                       Vector<Scalar>& y )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::AdjointMultiply (y := D^H x)");
+    CallStackEntry entry("hmat_tools::AdjointMultiply (y := D^H x)");
 #endif
     y.Resize( A.Width() );
     if( A.Symmetric() )
@@ -76,9 +73,6 @@ void AdjointMultiply
                  x.LockedBuffer(), 1, 
           0,     y.Buffer(),       1 );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Low-rank y := alpha A^H x + beta y
@@ -89,7 +83,7 @@ void AdjointMultiply
   Scalar beta,        Vector<Scalar>& y )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::AdjointMultiply (y := F x + y)");
+    CallStackEntry entry("hmat_tools::AdjointMultiply (y := F x + y)");
 #endif
     const int m = A.Height();
     const int n = A.Width();
@@ -111,9 +105,6 @@ void AdjointMultiply
                   t.LockedBuffer(),   1, 
       Conj(beta), y.Buffer(),         1 );
     Conjugate( y );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Low-rank y := alpha A^H x
@@ -124,7 +115,7 @@ void AdjointMultiply
                       Vector<Scalar>& y )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::AdjointMultiply (y := F x)");
+    CallStackEntry entry("hmat_tools::AdjointMultiply (y := F x)");
 #endif
     const int m = A.Height();
     const int n = A.Width();
@@ -146,9 +137,6 @@ void AdjointMultiply
          t.LockedBuffer(),   1, 
       0, y.Buffer(),         1 );
     Conjugate( y );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template void AdjointMultiply

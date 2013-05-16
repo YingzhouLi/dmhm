@@ -17,7 +17,7 @@ HMat2d<Scalar>::Multiply
                       HMat2d<Scalar>& C ) const
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::Multiply H := H H");
+    CallStackEntry entry("HMat2d::Multiply H := H H");
     if( Width() != B.Height() )
         throw std::logic_error("Attempted nonconformal matrix-matrix multiply");
     if( numLevels_ != B.numLevels_ )
@@ -184,9 +184,6 @@ HMat2d<Scalar>::Multiply
             hmat_tools::Multiply
             ( alpha, *A.block_.data.F, *B.block_.data.F, *C.block_.data.D );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // C := alpha A B + beta C
@@ -197,7 +194,7 @@ HMat2d<Scalar>::Multiply
   Scalar beta,        HMat2d<Scalar>& C ) const
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::Multiply (H := H H + H)");
+    CallStackEntry entry("HMat2d::Multiply (H := H H + H)");
     if( Width() != B.Height() || 
         Height() != C.Height() || B.Width() != C.Width() )
         throw std::logic_error("Attempted nonconformal matrix-matrix multiply");
@@ -380,9 +377,6 @@ HMat2d<Scalar>::Multiply
             ( alpha, *A.block_.data.F, *B.block_.data.F, 
               beta, *C.block_.data.D );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 } // namespace dmhm

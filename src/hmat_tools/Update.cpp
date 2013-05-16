@@ -18,7 +18,7 @@ void Update
   Scalar beta,        Dense<Scalar>& B )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Update (D := D + D)");
+    CallStackEntry entry("hmat_tools::Update (D := D + D)");
     if( A.Height() != B.Height() || A.Width() != B.Width() )
         throw std::logic_error("Tried to update with nonconforming matrices.");
     // TODO: Allow for A to be symmetric when B is general
@@ -50,9 +50,6 @@ void Update
                 BCol[i] = alpha*ACol[i] + beta*BCol[i];
         }
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Low-rank B := alpha A + beta B
@@ -62,7 +59,7 @@ void Update
   Scalar beta,        LowRank<Scalar>& B )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Update (F := F + F)");
+    CallStackEntry entry("hmat_tools::Update (F := F + F)");
     if( A.Height() != B.Height() || A.Width() != B.Width() )
         throw std::logic_error("Tried to update with nonconforming matrices.");
 #endif
@@ -89,9 +86,6 @@ void Update
     for( int j=0; j<Ar; ++j )
         std::memcpy
         ( B.V.Buffer(0,j+Br), A.V.LockedBuffer(0,j), n*sizeof(Scalar) );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Dense updated with low-rank, B := alpha A + beta B
@@ -101,7 +95,7 @@ void Update
   Scalar beta,        Dense<Scalar>& B )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Update (D := F + D)");
+    CallStackEntry entry("hmat_tools::Update (D := F + D)");
     if( A.Height() != B.Height() || A.Width() != B.Width()  )
         throw std::logic_error("Tried to update with nonconforming matrices.");
     if( B.Symmetric() )
@@ -112,9 +106,6 @@ void Update
     ( 'N', option, A.Height(), A.Width(), A.Rank(), 
       alpha, A.U.LockedBuffer(), A.U.LDim(), A.V.LockedBuffer(), A.V.LDim(), 
       beta, B.Buffer(), B.LDim() );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Dense update B := alpha A + beta B

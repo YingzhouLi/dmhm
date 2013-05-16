@@ -24,7 +24,7 @@ DistHMat2d<Scalar>::MultiplyHMatParallelQR
         std::vector<Scalar>& qrWork ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatParallelQR");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatParallelQR");
 #endif
     const int globalRank = mpi::CommRank( teams_->Team(0) );
     const int numTeamLevels = teams_->NumLevels();
@@ -558,9 +558,6 @@ DistHMat2d<Scalar>::MultiplyHMatParallelQR
             passes += 2;
         }
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 } // namespace dmhm

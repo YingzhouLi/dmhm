@@ -34,7 +34,7 @@ inline void
 Sparse<Scalar>::Print( const std::string tag ) const
 {
 #ifndef RELEASE
-    PushCallStack("Sparse::Print");
+    CallStackEntry entry("Sparse::Print");
 #endif
     if( symmetric )
         std::cout << tag << "(symmetric)\n";
@@ -53,9 +53,6 @@ Sparse<Scalar>::Print( const std::string tag ) const
         }
     }
     std::cout << std::endl;
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 } // namespace dmhm

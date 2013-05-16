@@ -14,7 +14,7 @@ BASE(Scalar)
 DistHMat2d<Scalar>::ParallelEstimateTwoNorm( Real theta, Real confidence )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::ParallelEstimateTwoNorm");
+    CallStackEntry entry("DistHMat2d::ParallelEstimateTwoNorm");
     if( theta <= 1 )
         throw std::logic_error("Theta must be > 1");
     if( confidence <= 0 )
@@ -55,7 +55,6 @@ DistHMat2d<Scalar>::ParallelEstimateTwoNorm( Real theta, Real confidence )
     }
 #ifndef RELEASE
     std::cerr << "Estimated ||A||_2 as " << estimate << std::endl;
-    PopCallStack();
 #endif
     return estimate;
 }

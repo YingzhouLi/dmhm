@@ -15,7 +15,7 @@ template<typename Scalar>
 void Invert( Dense<Scalar>& D )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Invert");
+    CallStackEntry entry("hmat_tools::Invert");
     if( D.Height() != D.Width() )
         throw std::logic_error("Tried to invert a non-square dense matrix.");
 #endif
@@ -35,9 +35,6 @@ void Invert( Dense<Scalar>& D )
         lapack::LU( n, n, D.Buffer(), D.LDim(), &ipiv[0] );
         lapack::InvertLU( n, D.Buffer(), D.LDim(), &ipiv[0], &work[0], lwork );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template void Invert( Dense<float>& D );

@@ -19,14 +19,11 @@ void AdjointMultiply
                       Dense<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::AdjointMultiply (D := D^H D)");
+    CallStackEntry entry("hmat_tools::AdjointMultiply (D := D^H D)");
 #endif
     C.SetType( GENERAL );
     C.Resize( A.Width(), B.Width() );
     AdjointMultiply( alpha, A, B, Scalar(0), C );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Dense C := alpha A^H B + beta C
@@ -37,7 +34,7 @@ void AdjointMultiply
   Scalar beta,        Dense<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack
+    CallStackEntry entry
     ("hmat_tools::AdjointMultiply (D := D^H D + D)");
     if( A.Height() != B.Height() )
         throw std::logic_error("Cannot multiply nonconformal matrices.");
@@ -95,9 +92,6 @@ void AdjointMultiply
           alpha, A.LockedBuffer(), A.LDim(), B.LockedBuffer(), B.LDim(),
           beta, C.Buffer(), C.LDim() );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // TODO: version of above routine that allows for temporary in-place conj of B
@@ -110,14 +104,11 @@ void AdjointMultiply
                       Dense<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::AdjointMultiply (D := D^H F)");
+    CallStackEntry entry("hmat_tools::AdjointMultiply (D := D^H F)");
 #endif
     C.SetType( GENERAL );
     C.Resize( A.Width(), B.Width() );
     AdjointMultiply( alpha, A, B, Scalar(0), C );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Form a dense matrix from a dense matrix times a low-rank matrix
@@ -128,7 +119,7 @@ void AdjointMultiply
   Scalar beta,        Dense<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack
+    CallStackEntry entry
     ("hmat_tools::AdjointMultiply (D := D^H F + D)");
     if( A.Height() != B.Height() )
         throw std::logic_error("Cannot multiply nonconformal matrices.");
@@ -184,9 +175,6 @@ void AdjointMultiply
                  B.V.LockedBuffer(), B.V.LDim(), 
           beta,  C.Buffer(),         C.LDim() );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Form a dense matrix from a low-rank matrix times a dense matrix
@@ -197,14 +185,11 @@ void AdjointMultiply
                       Dense<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::AdjointMultiply (D := F^H D)");
+    CallStackEntry entry("hmat_tools::AdjointMultiply (D := F^H D)");
 #endif
     C.SetType( GENERAL );
     C.Resize( A.Width(), B.Width() );
     AdjointMultiply( alpha, A, B, Scalar(0), C );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Form a dense matrix from a low-rank matrix times a dense matrix
@@ -215,7 +200,7 @@ void AdjointMultiply
   Scalar beta,        Dense<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::AdjointMultiply (D := F^H D + D)");
+    CallStackEntry entry("hmat_tools::AdjointMultiply (D := F^H D + D)");
     if( A.Height() != B.Height() )
         throw std::logic_error("Cannot multiply nonconformal matrices.");
     if( C.Symmetric() )
@@ -273,9 +258,6 @@ void AdjointMultiply
                  W.LockedBuffer(),      W.LDim(), 
           beta,  C.Buffer(),            C.LDim() );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Form a dense matrix from the product of two low-rank matrices
@@ -286,13 +268,10 @@ void AdjointMultiply
                       Dense<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::AdjointMultiply (D := F^H F)");
+    CallStackEntry entry("hmat_tools::AdjointMultiply (D := F^H F)");
 #endif
     C.SetType( GENERAL ); C.Resize( A.Width(), B.Width() );
     AdjointMultiply( alpha, A, B, Scalar(0), C );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Update a dense matrix from the product of two low-rank matrices
@@ -303,7 +282,7 @@ void AdjointMultiply
   Scalar beta,        Dense<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::AdjointMultiply (D := F^H F + D)");
+    CallStackEntry entry("hmat_tools::AdjointMultiply (D := F^H F + D)");
 #endif
     Dense<Scalar> W( A.Rank(), B.Rank() );
     blas::Gemm
@@ -321,9 +300,6 @@ void AdjointMultiply
     ( 'N', 'T', C.Height(), C.Width(), B.Rank(),
       alpha, X.LockedBuffer(), X.LDim(), B.V.LockedBuffer(), B.V.LDim(),
       beta,  C.Buffer(), C.LDim() );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Low-rank C := alpha A^H B
@@ -334,7 +310,7 @@ void AdjointMultiply
                       LowRank<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::AdjointMultiply (F := F^H F)");
+    CallStackEntry entry("hmat_tools::AdjointMultiply (F := F^H F)");
     if( A.Height() != B.Height() )
         throw std::logic_error("Cannot multiply nonconformal matrices.");
 #endif
@@ -401,9 +377,6 @@ void AdjointMultiply
         Conjugate( C.U );
         Copy( B.V, C.V );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Form a low-rank matrix from a dense matrix times a low-rank matrix
@@ -414,7 +387,7 @@ void AdjointMultiply
                       LowRank<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::AdjointMultiply (F := D^H F)");
+    CallStackEntry entry("hmat_tools::AdjointMultiply (F := D^H F)");
     if( A.Height() != B.Height() )
         throw std::logic_error("Cannot multiply nonconformal matrices.");
 #endif
@@ -456,9 +429,6 @@ void AdjointMultiply
           0,     C.U.Buffer(),       C.U.LDim() );
         Copy( B.V, C.V );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Form a low-rank matrix from a low-rank matrix times a dense matrix
@@ -469,7 +439,7 @@ void AdjointMultiply
                       LowRank<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::AdjointMultiply (F := F^H D)");
+    CallStackEntry entry("hmat_tools::AdjointMultiply (F := F^H D)");
     if( A.Height() != B.Height() )
         throw std::logic_error("Cannot multiply nonconformal matrices.");
 #endif
@@ -506,9 +476,6 @@ void AdjointMultiply
                  AUConj.LockedBuffer(), AUConj.LDim(),
           0,     C.V.Buffer(),          C.V.LDim() );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Real>
@@ -519,12 +486,9 @@ void AdjointMultiply
         LowRank<Real>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::AdjointMultiply (F := D^H D)");
+    CallStackEntry entry("hmat_tools::AdjointMultiply (F := D^H D)");
 #endif
     TransposeMultiply( maxRank, alpha, A, B, C );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Real>
@@ -535,7 +499,7 @@ void AdjointMultiply
         LowRank<std::complex<Real> >& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::AdjointMultiply (F := D^H D)");
+    CallStackEntry entry("hmat_tools::AdjointMultiply (F := D^H D)");
 #endif
     typedef std::complex<Real> Scalar;
 
@@ -574,9 +538,6 @@ void AdjointMultiply
         for( int i=0; i<n; ++i )
             VCol[i] = sigma*VHRow[i*VHLDim];
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Real>
@@ -588,12 +549,9 @@ void AdjointMultiply
   LowRank<Real>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::AdjointMultiply (F := D^H D + F)");
+    CallStackEntry entry("hmat_tools::AdjointMultiply (F := D^H D + F)");
 #endif
     TransposeMultiply( maxRank, alpha, A, B, beta, C );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Real>
@@ -605,7 +563,7 @@ void AdjointMultiply
         LowRank<std::complex<Real> >& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::AdjointMultiply (F := D^H D + F)");
+    CallStackEntry entry("hmat_tools::AdjointMultiply (F := D^H D + F)");
 #endif
     typedef std::complex<Real> Scalar;
 
@@ -616,9 +574,6 @@ void AdjointMultiply
 
     // Force D into a low-rank matrix of rank 'maxRank'
     Compress( maxRank, D, C );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Dense C := alpha A^H B

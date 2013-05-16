@@ -14,7 +14,7 @@ void
 DistHMat2d<Scalar>::SetToRandom()
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::SetToRandom");
+    CallStackEntry entry("DistHMat2d::SetToRandom");
 #endif
     const int maxRank = MaxRank();
     switch( block_.type )
@@ -80,9 +80,6 @@ DistHMat2d<Scalar>::SetToRandom()
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 } // namespace dmhm

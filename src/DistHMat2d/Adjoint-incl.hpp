@@ -14,13 +14,10 @@ void
 DistHMat2d<Scalar>::Adjoint()
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::Adjoint");
+    CallStackEntry entry("DistHMat2d::Adjoint");
 #endif
     // This requires communication and is not yet written
     throw std::logic_error("DistHMat2d::Adjoint is not yet written");
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -28,13 +25,10 @@ void
 DistHMat2d<Scalar>::AdjointFrom( const DistHMat2d<Scalar>& B )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::AdjointFrom");
+    CallStackEntry entry("DistHMat2d::AdjointFrom");
 #endif
     AdjointCopy( B );
     AdjointPassData( B );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -42,7 +36,7 @@ void
 DistHMat2d<Scalar>::AdjointCopy( const DistHMat2d<Scalar>& B )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::AdjointCopy");
+    CallStackEntry entry("DistHMat2d::AdjointCopy");
 #endif
     DistHMat2d<Scalar>& A = *this;
 
@@ -130,10 +124,6 @@ DistHMat2d<Scalar>::AdjointCopy( const DistHMat2d<Scalar>& B )
         break;
     }
     }
-
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -141,7 +131,7 @@ void
 DistHMat2d<Scalar>::AdjointPassData( const DistHMat2d<Scalar>& B )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::AdjointPassData");
+    CallStackEntry entry("DistHMat2d::AdjointPassData");
 #endif
     // Compute send and recv sizes
     std::map<int,int> sendSizes, recvSizes;
@@ -206,9 +196,6 @@ DistHMat2d<Scalar>::AdjointPassData( const DistHMat2d<Scalar>& B )
     // Don't exit until we know that the data was sent
     for( int i=0; i<numSends; ++i )
         mpi::Wait( sendRequests[i] );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -218,15 +205,10 @@ DistHMat2d<Scalar>::AdjointPassDataCount
   std::map<int,int>& sendSizes, std::map<int,int>& recvSizes ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::AdjointPassDataCount");
+    CallStackEntry entry("DistHMat2d::AdjointPassDataCount");
 #endif
     if( Height() == 0 || Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
     const DistHMat2d<Scalar>& A = *this;
 
     switch( B.block_.type )
@@ -254,10 +236,6 @@ DistHMat2d<Scalar>::AdjointPassDataCount
     default:
         break;
     }
-
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -267,15 +245,10 @@ DistHMat2d<Scalar>::AdjointPassDataPack
   std::vector<Scalar>& buffer, std::map<int,int>& offsets ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::AdjointPassDataPack");
+    CallStackEntry entry("DistHMat2d::AdjointPassDataPack");
 #endif
     if( Height() == 0 || Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
     const DistHMat2d<Scalar>& A = *this;
 
     switch( B.block_.type )
@@ -307,10 +280,6 @@ DistHMat2d<Scalar>::AdjointPassDataPack
     default:
         break;
     }
-
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -320,15 +289,10 @@ DistHMat2d<Scalar>::AdjointPassDataUnpack
   const std::vector<Scalar>& buffer, std::map<int,int>& offsets )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::AdjointPassDataUnpack");
+    CallStackEntry entry("DistHMat2d::AdjointPassDataUnpack");
 #endif
     if( Height() == 0 || Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
     DistHMat2d<Scalar>& A = *this;
 
     switch( B.block_.type )
@@ -367,10 +331,6 @@ DistHMat2d<Scalar>::AdjointPassDataUnpack
     default:
         break;
     }
-
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 } // namespace dmhm

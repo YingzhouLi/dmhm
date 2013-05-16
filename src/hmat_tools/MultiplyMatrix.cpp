@@ -19,14 +19,11 @@ void Multiply
                       Dense<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Multiply (D := D D)");
+    CallStackEntry entry("hmat_tools::Multiply (D := D D)");
 #endif
     C.SetType( GENERAL );
     C.Resize( A.Height(), B.Width() );
     Multiply( alpha, A, B, Scalar(0), C );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Dense C := alpha A B + beta C
@@ -37,7 +34,7 @@ void Multiply
   Scalar beta,        Dense<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Multiply (D := D D + D)");
+    CallStackEntry entry("hmat_tools::Multiply (D := D D + D)");
     if( A.Width() != B.Height() )
         throw std::logic_error("Cannot multiply nonconformal matrices.");
     if( C.Height() != A.Height() || C.Width() != B.Width() )
@@ -68,9 +65,6 @@ void Multiply
           alpha, A.LockedBuffer(), A.LDim(), B.LockedBuffer(), B.LDim(),
           beta, C.Buffer(), C.LDim() );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Form a dense matrix from a dense matrix times a low-rank matrix
@@ -81,14 +75,11 @@ void Multiply
                       Dense<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Multiply (D := D F)");
+    CallStackEntry entry("hmat_tools::Multiply (D := D F)");
 #endif
     C.SetType( GENERAL );
     C.Resize( A.Height(), B.Width() );
     Multiply( alpha, A, B, Scalar(0), C );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Form a dense matrix from a dense matrix times a low-rank matrix
@@ -99,7 +90,7 @@ void Multiply
   Scalar beta,        Dense<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Multiply (D := D F + D)");
+    CallStackEntry entry("hmat_tools::Multiply (D := D F + D)");
     if( A.Width() != B.Height() )
         throw std::logic_error("Cannot multiply nonconformal matrices.");
     if( C.Height() != A.Height() || C.Width() != B.Width() )
@@ -132,9 +123,6 @@ void Multiply
       alpha, W.LockedBuffer(),   W.LDim(), 
              B.V.LockedBuffer(), B.V.LDim(), 
       beta,  C.Buffer(),         C.LDim() );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Form a dense matrix from a low-rank matrix times a dense matrix
@@ -145,14 +133,11 @@ void Multiply
                       Dense<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Multiply (D := F D)");
+    CallStackEntry entry("hmat_tools::Multiply (D := F D)");
 #endif
     C.SetType( GENERAL );
     C.Resize( A.Height(), B.Width() );
     Multiply( alpha, A, B, Scalar(0), C );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Form a dense matrix from a low-rank matrix times a dense matrix
@@ -163,7 +148,7 @@ void Multiply
   Scalar beta,        Dense<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Multiply (D := F D + D)");
+    CallStackEntry entry("hmat_tools::Multiply (D := F D + D)");
     if( A.Width() != B.Height() )
         throw std::logic_error("Cannot multiply nonconformal matrices.");
     if( C.Height() != A.Height() || C.Width() != B.Width() )
@@ -210,9 +195,6 @@ void Multiply
                  W.LockedBuffer(),   W.LDim(), 
           beta,  C.Buffer(),         C.LDim() );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Form a dense matrix from the product of two low-rank matrices.
@@ -223,13 +205,10 @@ void Multiply
                       Dense<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Multiply (D := F F)");
+    CallStackEntry entry("hmat_tools::Multiply (D := F F)");
 #endif
     C.SetType( GENERAL ); C.Resize( A.Height(), B.Width() );
     Multiply( alpha, A, B, Scalar(0), C );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Update a dense matrix from the product of two low-rank matrices.
@@ -240,7 +219,7 @@ void Multiply
   Scalar beta,        Dense<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Multiply (D := F F + D)");
+    CallStackEntry entry("hmat_tools::Multiply (D := F F + D)");
     if( A.Width() != B.Height() )
         throw std::logic_error("A and B do not conform in Multiply");
     if( C.Height() != A.Height() || C.Width() != B.Width() )
@@ -261,9 +240,6 @@ void Multiply
     ( 'N', option, C.Height(), C.Width(), B.Rank(),
       alpha, X.LockedBuffer(), X.LDim(), B.V.LockedBuffer(), B.V.LDim(),
       beta,  C.Buffer(), C.LDim() );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Low-rank C := alpha A B
@@ -274,7 +250,7 @@ void Multiply
                       LowRank<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Multiply (F := F F)");
+    CallStackEntry entry("hmat_tools::Multiply (F := F F)");
     if( A.Width() != B.Height() )
         throw std::logic_error("Cannot multiply nonconformal matrices.");
 #endif
@@ -334,9 +310,6 @@ void Multiply
           0,     C.U.Buffer(),       C.U.LDim() );
         Copy( B.V, C.V );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Form a low-rank matrix from a dense matrix times a low-rank matrix
@@ -347,7 +320,7 @@ void Multiply
                       LowRank<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Multiply (F := D F)");
+    CallStackEntry entry("hmat_tools::Multiply (F := D F)");
     if( A.Width() != B.Height() )
         throw std::logic_error("Cannot multiply nonconformal matrices.");
 #endif
@@ -378,9 +351,6 @@ void Multiply
 
     // Form C.V := B.V
     Copy( B.V, C.V );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Form a low-rank matrix from a low-rank matrix times a dense matrix
@@ -391,7 +361,7 @@ void Multiply
                       LowRank<Scalar>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Multiply (F := F D)");
+    CallStackEntry entry("hmat_tools::Multiply (F := F D)");
     if( A.Width() != B.Height() )
         throw std::logic_error("Cannot multiply nonconformal matrices.");
 #endif
@@ -431,9 +401,6 @@ void Multiply
                  A.V.LockedBuffer(), A.V.LDim(),
           0,     C.V.Buffer(),       C.V.LDim() );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Real>
@@ -444,7 +411,7 @@ void Multiply
         LowRank<Real>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Multiply (F := D D)");
+    CallStackEntry entry("hmat_tools::Multiply (F := D D)");
 #endif
     const int m = A.Height();
     const int n = B.Width();
@@ -481,9 +448,6 @@ void Multiply
         for( int i=0; i<n; ++i )
             VCol[i] = sigma*VTRow[i*VTLDim];
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Real>
@@ -494,7 +458,7 @@ void Multiply
         LowRank<std::complex<Real> >& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Multiply (F := D D)");
+    CallStackEntry entry("hmat_tools::Multiply (F := D D)");
 #endif
     typedef std::complex<Real> Scalar;
 
@@ -534,9 +498,6 @@ void Multiply
         for( int i=0; i<n; ++i )
             VCol[i] = sigma*VHRow[i*VHLDim];
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Real>
@@ -548,7 +509,7 @@ void Multiply
   LowRank<Real>& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Multiply (F := D D + F)");
+    CallStackEntry entry("hmat_tools::Multiply (F := D D + F)");
     if( A.Width() != B.Height() )
         throw std::logic_error("A and B not conformal in Multiply");
     if( C.Height() != A.Height() || C.Width() != B.Width() )
@@ -561,9 +522,6 @@ void Multiply
 
     // Truncate D down to a low-rank matrix of rank 'maxRank'
     Compress( maxRank, D, C );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Real>
@@ -575,7 +533,7 @@ void Multiply
         LowRank<std::complex<Real> >& C )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Multiply (F := D D + F)");
+    CallStackEntry entry("hmat_tools::Multiply (F := D D + F)");
     if( A.Width() != B.Height() )
         throw std::logic_error("A and B not conformal in Multiply");
     if( C.Height() != A.Height() || C.Width() != B.Width() )
@@ -590,9 +548,6 @@ void Multiply
 
     // Truncate D down to a low-rank matrix of rank 'maxRank'
     Compress( maxRank, D, C );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Dense C := alpha A B

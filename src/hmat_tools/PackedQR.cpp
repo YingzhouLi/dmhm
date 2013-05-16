@@ -196,7 +196,7 @@ void ApplyPackedQFromLeft
   Dense<Scalar>& B, Scalar* work )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::ApplyPackedQFromLeft");
+    CallStackEntry entry("hmat_tools::ApplyPackedQFromLeft");
     if( B.Type() != GENERAL )
         throw std::logic_error("B must be a full dense matrix");
     if( B.Height() != s+t )
@@ -245,9 +245,6 @@ void ApplyPackedQFromLeft
                  work,                     1,
                  &BBuffer[s+overlap],      BLDim );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -257,7 +254,7 @@ void ApplyPackedQAdjointFromLeft
   Dense<Scalar>& B, Scalar* work )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::ApplyPackedQAdjointFromLeft");
+    CallStackEntry entry("hmat_tools::ApplyPackedQAdjointFromLeft");
     if( B.Type() != GENERAL )
         throw std::logic_error("B must be a full dense matrix");
     if( B.Height() != s+t )
@@ -307,9 +304,6 @@ void ApplyPackedQAdjointFromLeft
 
         jCol += S + T;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -319,7 +313,7 @@ void ApplyPackedQFromRight
   Dense<Scalar>& B, Scalar* work )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::ApplyPackedQFromRight");
+    CallStackEntry entry("hmat_tools::ApplyPackedQFromRight");
     if( B.Type() != GENERAL )
         throw std::logic_error("B must be a full dense matrix");
     if( B.Width() != s+t )
@@ -361,9 +355,6 @@ void ApplyPackedQFromRight
 
         jCol += S + T;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -373,7 +364,7 @@ void ApplyPackedQAdjointFromRight
   Dense<Scalar>& B, Scalar* work )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::ApplyPackedQAdjointFromRight");
+    CallStackEntry entry("hmat_tools::ApplyPackedQAdjointFromRight");
     if( B.Type() != GENERAL )
         throw std::logic_error("B must be a full dense matrix");
     if( B.Width() != s+t )
@@ -414,9 +405,6 @@ void ApplyPackedQAdjointFromRight
                      &packedA[jCol+S+overlap],    1,
                      &BBuffer[(s+overlap)*BLDim], BLDim );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -426,7 +414,7 @@ void PrintPacked
   const Scalar* packedA )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::PrintPacked");
+    CallStackEntry entry("hmat_tools::PrintPacked");
 #endif
     os << msg << "\n";
 
@@ -483,9 +471,6 @@ void PrintPacked
     }
 
     os.flush();
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>

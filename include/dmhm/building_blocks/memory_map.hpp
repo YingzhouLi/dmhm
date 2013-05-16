@@ -27,10 +27,9 @@ public:
     T1 CurrentKey() const
     { 
 #ifndef RELEASE
-        PushCallStack("MemoryMap::CurrentKey");
+        CallStackEntry entry("MemoryMap::CurrentKey");
         if( currentIndex_ >= baseMap_.size() )
             throw std::logic_error("Traversed past end of map");
-        PopCallStack();
 #endif
         if( currentIndex_ == 0 )
             it_ = baseMap_.begin();
@@ -40,13 +39,12 @@ public:
     T2& Get( int key )
     {
 #ifndef RELEASE
-        PushCallStack("MemoryMap::Get");
+        CallStackEntry entry("MemoryMap::Get");
 #endif
         T2* value = baseMap_[key];
 #ifndef RELEASE
         if( value == 0 )
             throw std::logic_error("Tried to access with invalid key.");
-        PopCallStack();
 #endif
         return *value;
     }
@@ -54,13 +52,12 @@ public:
     const T2& Get( int key ) const
     {
 #ifndef RELEASE
-        PushCallStack("MemoryMap::Get");
+        CallStackEntry entry("MemoryMap::Get");
 #endif
         T2* value = baseMap_[key];
 #ifndef RELEASE
         if( value == 0 )
             throw std::logic_error("Tried to access with invalid key.");
-        PopCallStack();
 #endif
         return *value;
     }
@@ -69,20 +66,17 @@ public:
     void Set( int key, T2* value )
     {
 #ifndef RELEASE
-        PushCallStack("MemoryMap::Set");
+        CallStackEntry entry("MemoryMap::Set");
         if( baseMap_[key] != 0 )
             throw std::logic_error("Overwrote previous value");
 #endif
         baseMap_[key] = value;
-#ifndef RELEASE
-        PopCallStack();
-#endif
     }
 
     T2* CurrentEntry() 
     {
 #ifndef RELEASE
-        PushCallStack("MemoryMap::CurrentEntry");
+        CallStackEntry entry("MemoryMap::CurrentEntry");
         if( currentIndex_ >= baseMap_.size() )
             throw std::logic_error("Traversed past end of map");
 #endif
@@ -93,7 +87,6 @@ public:
 #ifndef RELEASE
         if( value == 0 )
             throw std::logic_error("Tried to return null pointer.");
-        PopCallStack();
 #endif
         return value;
     }
@@ -101,7 +94,7 @@ public:
     const T2* CurrentEntry() const
     {
 #ifndef RELEASE
-        PushCallStack("MemoryMap::CurrentEntry");
+        CallStackEntry entry("MemoryMap::CurrentEntry");
         if( currentIndex_ >= baseMap_.size() )
             throw std::logic_error("Traversed past end of map");
 #endif
@@ -112,7 +105,6 @@ public:
 #ifndef RELEASE
         if( value == 0 )
             throw std::logic_error("Tried to return null pointer.");
-        PopCallStack();
 #endif
         return value;
     }
@@ -120,7 +112,7 @@ public:
     const int CurrentWidth() const
     {
 #ifndef RELEASE
-        PushCallStack("MemoryMap::CurrentWidth");
+        CallStackEntry entry("MemoryMap::CurrentWidth");
         if( currentIndex_ >= baseMap_.size() )
             throw std::logic_error("Traversed past end of map");
 #endif
@@ -128,31 +120,25 @@ public:
             it_ = baseMap_.begin();
 
         const T2* value = it_->second;
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return value->Width();
     }
 
     const int TotalWidth() const
     {
 #ifndef RELEASE
-        PushCallStack("MemoryMap::TotalWidth");
+        CallStackEntry entry("MemoryMap::TotalWidth");
 #endif
         int width=0;
         typename std::map<T1,T2*>::iterator it = baseMap_.begin();
         for( int i=0; i<baseMap_.size(); ++i,++it)
             width += it->second->Width();
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return width;
     }
 
     const int FirstWidth() const
     {
 #ifndef RELEASE
-        PushCallStack("MemoryMap::FirstWidth");
+        CallStackEntry entry("MemoryMap::FirstWidth");
 #endif
         int width=0;
         if( baseMap_.size() > 0 )
@@ -160,16 +146,13 @@ public:
             typename std::map<T1,T2*>::iterator it = baseMap_.begin();
             width = it->second->Width();
         }
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return width;
     }
 
     void Increment()
     {
 #ifndef RELEASE
-        PushCallStack("MemoryMap::Increment");
+        CallStackEntry entry("MemoryMap::Increment");
         if( currentIndex_ >= baseMap_.size() )
             throw std::logic_error("Traversed past end of map");
 #endif
@@ -177,51 +160,39 @@ public:
             it_ = baseMap_.begin();
         ++it_;
         ++currentIndex_;
-#ifndef RELEASE
-        PopCallStack();
-#endif
     }
     
     void Decrement()
     {
 #ifndef RELEASE
-        PushCallStack("MemoryMap::Decrement");
+        CallStackEntry entry("MemoryMap::Decrement");
         if( currentIndex_ == 0 )
             throw std::logic_error("Traversed prior to beginning of map");
 #endif
         --it_;
         --currentIndex_;
-#ifndef RELEASE
-        PopCallStack();
-#endif
     }
 
     void Erase( int key )
     {
 #ifndef RELEASE
-        PushCallStack("MemoryMap::Erase");
+        CallStackEntry entry("MemoryMap::Erase");
 #endif
         delete baseMap_[key];
         baseMap_[key] = 0;
         baseMap_.erase( key );
         it_ = baseMap_.begin();
         currentIndex_ = 0;
-#ifndef RELEASE
-        PopCallStack();
-#endif
     }
 
     void EraseCurrentEntry()
     {
 #ifndef RELEASE
-        PushCallStack("MemoryMap::EraseCurrentEntry");
+        CallStackEntry entry("MemoryMap::EraseCurrentEntry");
 #endif
         delete it_->second;
         it_->second = 0;
         baseMap_.erase( it_++ );
-#ifndef RELEASE
-        PopCallStack();
-#endif
     }
     
     void Clear()

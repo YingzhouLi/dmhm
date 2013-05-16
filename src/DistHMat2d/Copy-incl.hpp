@@ -14,7 +14,7 @@ void
 DistHMat2d<Scalar>::CopyFrom( const DistHMat2d<Scalar>& B )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::CopyFrom");
+    CallStackEntry entry("DistHMat2d::CopyFrom");
 #endif
     DistHMat2d<Scalar>& A = *this;
 
@@ -105,9 +105,6 @@ DistHMat2d<Scalar>::CopyFrom( const DistHMat2d<Scalar>& B )
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 } // namespace dmhm

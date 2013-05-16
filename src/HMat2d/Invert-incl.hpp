@@ -15,7 +15,7 @@ void
 HMat2d<Scalar>::DirectInvert()
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::DirectInvert");
+    CallStackEntry entry("HMat2d::DirectInvert");
     if( Height() != Width() )
         throw std::logic_error("Cannot invert non-square matrices");
     if( IsLowRank() )
@@ -119,9 +119,6 @@ HMat2d<Scalar>::DirectInvert()
         break;
     }
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // A := inv(A) using Schulz iterations, X_k+1 := (2I - X_k A) X_k
@@ -131,7 +128,7 @@ HMat2d<Scalar>::SchulzInvert
 ( int numIterations, BASE(Scalar) theta, BASE(Scalar) confidence )
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::SchulzInvert");
+    CallStackEntry entry("HMat2d::SchulzInvert");
     if( Height() != Width() )
         throw std::logic_error("Cannot invert non-square matrices");
     if( IsLowRank() )
@@ -167,9 +164,6 @@ HMat2d<Scalar>::SchulzInvert
     }
 
     CopyFrom( X );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 } // namespace dmhm

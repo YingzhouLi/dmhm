@@ -18,7 +18,7 @@ void
 DistHMat2d<Scalar>::MultiplyHMatCompress( int startLevel, int endLevel )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompress");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompress");
 #endif
     Real error = lapack::MachineEpsilon<Real>();
     //Written By Ryan Li
@@ -69,9 +69,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompress( int startLevel, int endLevel )
     // Clean up all the space used in this file
     // Also, clean up the colXMap_, rowXMap_, UMap_, VMap_, ZMap_
     //MultiplyHMatCompressFCleanup( startLevel, endLevel );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -79,15 +76,10 @@ void
 DistHMat2d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressLowRankCountAndResize");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressLowRankCountAndResize");
 #endif
     if( Height() == 0 || Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -436,9 +428,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 
@@ -447,15 +436,10 @@ void
 DistHMat2d<Scalar>::MultiplyHMatCompressLowRankImport( int rank )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressLowRankImport");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressLowRankImport");
 #endif
     if( Height() == 0 || Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -723,9 +707,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankImport( int rank )
         VMap_.Clear();
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -734,15 +715,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressImportU
 ( int rank, const Dense<Scalar>& U )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressImportU");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressImportU");
 #endif
     if( !inTargetTeam_ || Height() == 0 || Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -837,9 +813,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressImportU
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -848,15 +821,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressImportV
 ( int rank, const Dense<Scalar>& V )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressImportV");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressImportV");
 #endif
     if( !inSourceTeam_ || Height() == 0 || Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -951,11 +919,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressImportV
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
-
 
 template<typename Scalar>
 void
@@ -963,15 +927,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
 ( int startLevel, int endLevel )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressFPrecompute");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFPrecompute");
 #endif
     if( Height() == 0 || Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -1242,10 +1201,6 @@ if( level_ == 3 && teamRankp == 0 && block_.type == LOW_RANK)
 _USqr.Print("_USqr******************************************");
 _VSqr.Print("_VSqr******************************************");
 }*/
-
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1254,7 +1209,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFReduces
 ( int startLevel, int endLevel )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressFReduces");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFReduces");
 #endif
 
     const int numLevels = teams_->NumLevels();
@@ -1278,10 +1233,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFReduces
     
     MultiplyHMatCompressFReducesUnpack
     ( buffer, offsets, startLevel, endLevel );
-    
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1290,15 +1241,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFReducesCount
 ( std::vector<int>& sizes, int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressFReduceCount");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFReduceCount");
 #endif
     if( Height() == 0 || Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -1326,9 +1272,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFReducesCount
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1338,15 +1281,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFReducesPack
   int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressFReducePack");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFReducePack");
 #endif
     if( Height() == 0 || Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -1388,9 +1326,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFReducesPack
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1399,12 +1334,9 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFTreeReduces
 ( std::vector<Scalar>& buffer, std::vector<int>& sizes ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressFTreeReduces");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFTreeReduces");
 #endif
     teams_-> TreeSumToRoots( buffer, sizes );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1414,15 +1346,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFReducesUnpack
   int startLevel, int endLevel )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressFReducesUnpack");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFReducesUnpack");
 #endif
     if( Height() == 0 || Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -1469,9 +1396,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFReducesUnpack
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1480,15 +1404,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFEigenDecomp
 ( int startLevel, int endLevel )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressFEigenDecomp");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFEigenDecomp");
 #endif
     if( Height() == 0 || Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -1574,9 +1493,6 @@ std::cout << "MaxEig before pass: " << *std::max_element( USqrEig_.begin(), USqr
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1585,7 +1501,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrix
 ( int startLevel, int endLevel )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressFPassMatrix");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFPassMatrix");
 #endif
     // Compute send and recv sizes
     std::map<int,int> sendSizes, recvSizes;
@@ -1650,9 +1566,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrix
     // Don't exit until we know that the data was sent
     for( int i=0; i<numSends; ++i )
         mpi::Wait( sendRequests[i] );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1662,15 +1575,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrixCount
   int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressFPassMatrixCount");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFPassMatrixCount");
 #endif
     if( Height() == 0 || Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -1710,9 +1618,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrixCount
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1722,15 +1627,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrixPack
   int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressFPassMatrixPack");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFPassMatrixPack");
 #endif
     if( !inSourceTeam_ || Height() == 0 || Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -1770,9 +1670,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrixPack
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1782,15 +1679,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrixUnpack
   int startLevel, int endLevel )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressFPassMatrixUnpack");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFPassMatrixUnpack");
 #endif
     if( !inTargetTeam_ || Height() == 0 || Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -1832,9 +1724,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrixUnpack
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1843,7 +1732,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassVector
 ( int startLevel, int endLevel )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressFPassVector");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFPassVector");
 #endif
     // Compute send and recv sizes
     std::map<int,int> sendSizes, recvSizes;
@@ -1908,9 +1797,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassVector
     // Don't exit until we know that the data was sent
     for( int i=0; i<numSends; ++i )
         mpi::Wait( sendRequests[i] );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1920,15 +1806,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassVectorCount
   int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressFPassVectorCount");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFPassVectorCount");
 #endif
     if( Height() == 0 || Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -1968,9 +1849,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassVectorCount
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1980,15 +1858,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassVectorPack
   int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressFPassVectorPack");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFPassVectorPack");
 #endif
     if( !inSourceTeam_ || Height() == 0 || Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -2028,9 +1901,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassVectorPack
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -2040,15 +1910,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassVectorUnpack
   int startLevel, int endLevel )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressFPassVectorUnpack");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFPassVectorUnpack");
 #endif
     if( !inTargetTeam_ || Height() == 0 || Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -2090,9 +1955,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassVectorUnpack
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -2101,15 +1963,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
 ( Real error, int startLevel, int endLevel )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressFMidcompute");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFMidcompute");
 #endif
     if( !inTargetTeam_ || Height() == 0 || Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -2247,9 +2104,6 @@ _BSqrVH.Print("_BSqrVH After svd");*/
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -2258,7 +2112,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackNum
 ( int startLevel, int endLevel )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressFPassbackNum");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFPassbackNum");
 #endif
 
     // Compute send and recv sizes
@@ -2324,9 +2178,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackNum
     // Don't exit until we know that the data was sent
     for( int i=0; i<numSends; ++i )
         mpi::Wait( sendRequests[i] );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -2336,15 +2187,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackNumCount
   int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressFPassbackNumCount");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFPassbackNumCount");
 #endif
     if( Height() == 0 || Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -2384,9 +2230,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackNumCount
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -2396,15 +2239,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackNumPack
   int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressFPassbackNumPack");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFPassbackNumPack");
 #endif
     if( !inTargetTeam_ || Height() == 0 || Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -2442,9 +2280,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackNumPack
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -2454,15 +2289,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackNumUnpack
   int startLevel, int endLevel )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressFPassbackNumUnpack");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFPassbackNumUnpack");
 #endif
     if( !inSourceTeam_ || Height() == 0 || Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -2502,9 +2332,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackNumUnpack
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -2513,7 +2340,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackData
 ( int startLevel, int endLevel )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressFPassbackData");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFPassbackData");
 #endif
 
     // Compute send and recv sizes
@@ -2579,9 +2406,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackData
     // Don't exit until we know that the data was sent
     for( int i=0; i<numSends; ++i )
         mpi::Wait( sendRequests[i] );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -2591,15 +2415,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackDataCount
   int startLevel, int endLevel )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressFPassbackDataCount");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFPassbackDataCount");
 #endif
     if( Height() == 0 || Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -2673,9 +2492,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackDataCount
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -2685,15 +2501,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackDataPack
   int startLevel, int endLevel )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressFPassbackDataPack");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFPassbackDataPack");
 #endif
     if( Height() == 0 || Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -2783,9 +2594,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackDataPack
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -2795,15 +2603,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackDataUnpack
   int startLevel, int endLevel )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressFPassbackDataUnpack");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFPassbackDataUnpack");
 #endif
     if( Height() == 0 || Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -2895,9 +2698,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackDataUnpack
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 
@@ -2907,15 +2707,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPostcompute
 ( Real error, int startLevel, int endLevel )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressFPostcompute");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFPostcompute");
 #endif
     if( Height() == 0 || Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -3102,9 +2897,6 @@ if( level_ == 3 && teamRankp == 0 && block_.type==LOW_RANK )
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -3113,7 +2905,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcastsNum
 ( int startLevel, int endLevel )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressFBroadcastsNum");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFBroadcastsNum");
 #endif
     const int numLevels = teams_->NumLevels();
     const int numBroadcasts = numLevels-1;
@@ -3136,10 +2928,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcastsNum
     
     MultiplyHMatCompressFBroadcastsNumUnpack
     ( buffer, offsets, startLevel, endLevel );
-
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -3148,15 +2936,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcastsNumCount
 ( std::vector<int>& sizes, int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressFBroadcastsNumCount");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFBroadcastsNumCount");
 #endif
     if( Height() == 0 || Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -3188,9 +2971,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcastsNumCount
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -3200,15 +2980,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcastsNumPack
   int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressFBroadcastsNumPack");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFBroadcastsNumPack");
 #endif
     if( Height() == 0 || Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -3248,9 +3023,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcastsNumPack
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -3259,12 +3031,9 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFTreeBroadcastsNum
 ( std::vector<int>& buffer, std::vector<int>& sizes ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressFTreeBroadcastsNum");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFTreeBroadcastsNum");
 #endif
     teams_-> TreeBroadcasts( buffer, sizes );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -3274,15 +3043,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcastsNumUnpack
   int startLevel, int endLevel )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressFBroadcastsNumUnpack");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFBroadcastsNumUnpack");
 #endif
     if( Height() == 0 || Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -3327,9 +3091,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcastsNumUnpack
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 
@@ -3339,7 +3100,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcasts
 ( int startLevel, int endLevel )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressFBroadcasts");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFBroadcasts");
 #endif
     const int numLevels = teams_->NumLevels();
     const int numBroadcasts = numLevels-1;
@@ -3362,10 +3123,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcasts
     
     MultiplyHMatCompressFBroadcastsUnpack
     ( buffer, offsets, startLevel, endLevel );
-
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -3374,15 +3131,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcastsCount
 ( std::vector<int>& sizes, int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressFBroadcastsCount");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFBroadcastsCount");
 #endif
     if( Height() == 0 || Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -3411,9 +3163,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcastsCount
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -3423,15 +3172,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcastsPack
   int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressFBroadcastsPack");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFBroadcastsPack");
 #endif
     if( Height() == 0 || Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -3477,9 +3221,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcastsPack
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -3488,12 +3229,9 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFTreeBroadcasts
 ( std::vector<Scalar>& buffer, std::vector<int>& sizes ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressFTreeBroadcasts");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFTreeBroadcasts");
 #endif
     teams_-> TreeBroadcasts( buffer, sizes );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -3503,15 +3241,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcastsUnpack
   int startLevel, int endLevel )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressFBroadcastsUnpack");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFBroadcastsUnpack");
 #endif
     if( Height() == 0 || Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -3552,9 +3285,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcastsUnpack
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -3563,15 +3293,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
 ( int startLevel, int endLevel )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressFFinalcompute");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFFinalcompute");
 #endif
     if( Height() == 0 || Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -3925,9 +3650,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -3936,7 +3658,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFCleanup
 ( int startLevel, int endLevel )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressFCleanup");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFCleanup");
 #endif
     switch( block_.type )
     {
@@ -3988,9 +3710,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFCleanup
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -3999,15 +3718,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFCompressless
 ( int startLevel, int endLevel )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyHMatCompressFCompressless");
+    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFCompressless");
 #endif
     if( Height() == 0 || Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -4272,9 +3986,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFCompressless
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 } // namespace dmhm

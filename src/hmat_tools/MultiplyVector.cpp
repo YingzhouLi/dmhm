@@ -19,7 +19,7 @@ void Multiply
   Scalar beta,        Vector<Scalar>& y )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Multiply (y := D x + y)");
+    CallStackEntry entry("hmat_tools::Multiply (y := D x + y)");
 #endif
     if( A.Symmetric() )
     {
@@ -37,9 +37,6 @@ void Multiply
                  x.LockedBuffer(), 1, 
           beta,  y.Buffer(),       1 );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Dense y := alpha A x
@@ -50,7 +47,7 @@ void Multiply
                       Vector<Scalar>& y )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Multiply (y := D x)");
+    CallStackEntry entry("hmat_tools::Multiply (y := D x)");
 #endif
     y.Resize( A.Height() );
     if( A.Symmetric() )
@@ -69,9 +66,6 @@ void Multiply
                  x.LockedBuffer(), 1, 
           0,     y.Buffer(),       1 );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Low-rank y := alpha A x + beta y
@@ -82,7 +76,7 @@ void Multiply
   Scalar beta,        Vector<Scalar>& y )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Multiply (y := F x + y)");
+    CallStackEntry entry("hmat_tools::Multiply (y := F x + y)");
 #endif
     const int r = A.Rank();
 
@@ -101,9 +95,6 @@ void Multiply
       1,    A.U.LockedBuffer(), A.U.LDim(), 
             t.LockedBuffer(),   1, 
       beta, y.Buffer(),         1 );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Low-rank y := alpha A x
@@ -114,7 +105,7 @@ void Multiply
                       Vector<Scalar>& y )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Multiply (y := F x)");
+    CallStackEntry entry("hmat_tools::Multiply (y := F x)");
 #endif
     const int r = A.Rank();
 
@@ -134,9 +125,6 @@ void Multiply
       1, A.U.LockedBuffer(), A.U.LDim(), 
          t.LockedBuffer(),   1, 
       0, y.Buffer(),         1 );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template void Multiply

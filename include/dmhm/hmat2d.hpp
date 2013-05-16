@@ -465,14 +465,13 @@ inline HMat2d<Scalar>&
 HMat2d<Scalar>::Node::Child( int i, int j )
 { 
 #ifndef RELEASE
-    PushCallStack("HMat2d::Node::Child");
+    CallStackEntry entry("HMat2d::Node::Child");
     if( i < 0 || j < 0 )
         throw std::logic_error("Indices must be non-negative");
     if( i > 3 || j > 3 )
         throw std::logic_error("Indices out of bounds");
     if( children.size() != 16 )
         throw std::logic_error("children array not yet set up");
-    PopCallStack();
 #endif
     return *children[j+4*i]; 
 }
@@ -482,14 +481,13 @@ inline const HMat2d<Scalar>&
 HMat2d<Scalar>::Node::Child( int i, int j ) const
 { 
 #ifndef RELEASE
-    PushCallStack("HMat2d::Node::Child");
+    CallStackEntry entry("HMat2d::Node::Child");
     if( i < 0 || j < 0 )
         throw std::logic_error("Indices must be non-negative");
     if( i > 3 || j > 3 )
         throw std::logic_error("Indices out of bounds");
     if( children.size() != 16 )
         throw std::logic_error("children array not yet set up");
-    PopCallStack();
 #endif
     return *children[j+4*i]; 
 }
@@ -533,7 +531,7 @@ inline HMat2d<Scalar>&
 HMat2d<Scalar>::NodeSymmetric::Child( int i, int j )
 { 
 #ifndef RELEASE
-    PushCallStack("HMat2d::NodeSymmetric::Child");
+    CallStackEntry entry("HMat2d::NodeSymmetric::Child");
     if( i < 0 || j < 0 )
         throw std::logic_error("Indices must be non-negative");
     if( i > 3 || j > 3 )
@@ -542,7 +540,6 @@ HMat2d<Scalar>::NodeSymmetric::Child( int i, int j )
         throw std::logic_error("Index outside of lower triangle");
     if( children.size() != 10 )
         throw std::logic_error("children array not yet set up");
-    PopCallStack();
 #endif
     return *children[(i*(i+1))/2 + j]; 
 }
@@ -552,7 +549,7 @@ inline const HMat2d<Scalar>&
 HMat2d<Scalar>::NodeSymmetric::Child( int i, int j ) const
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::NodeSymmetric::Child");
+    CallStackEntry entry("HMat2d::NodeSymmetric::Child");
     if( i < 0 || j < 0 )
         throw std::logic_error("Indices must be non-negative");
     if( i > 3 || j > 3 )
@@ -561,7 +558,6 @@ HMat2d<Scalar>::NodeSymmetric::Child( int i, int j ) const
         throw std::logic_error("Index outside of lower triangle");
     if( children.size() != 10 )
         throw std::logic_error("children array not yet set up");
-    PopCallStack();
 #endif
     return *children[(i*(i+1))/2 + j];
 }

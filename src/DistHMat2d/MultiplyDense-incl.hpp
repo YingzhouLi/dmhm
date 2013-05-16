@@ -16,13 +16,10 @@ DistHMat2d<Scalar>::Multiply
                       Dense<Scalar>& YLocal ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::Multiply");
+    CallStackEntry entry("DistHMat2d::Multiply");
 #endif
     YLocal.Resize( LocalHeight(), XLocal.Width() );
     Multiply( alpha, XLocal, Scalar(0), YLocal );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -32,13 +29,10 @@ DistHMat2d<Scalar>::TransposeMultiply
                       Dense<Scalar>& YLocal ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::TransposeMultiply");
+    CallStackEntry entry("DistHMat2d::TransposeMultiply");
 #endif
     YLocal.Resize( LocalWidth(), XLocal.Width() );
     TransposeMultiply( alpha, XLocal, Scalar(0), YLocal );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -48,13 +42,10 @@ DistHMat2d<Scalar>::AdjointMultiply
                       Dense<Scalar>& YLocal ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::AdjointMultiply");
+    CallStackEntry entry("DistHMat2d::AdjointMultiply");
 #endif
     YLocal.Resize( LocalWidth(), XLocal.Width() );
     AdjointMultiply( alpha, XLocal, Scalar(0), YLocal );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -64,16 +55,11 @@ DistHMat2d<Scalar>::Multiply
   Scalar beta,        Dense<Scalar>& YLocal ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::Multiply");
+    CallStackEntry entry("DistHMat2d::Multiply");
 #endif
     RequireRoot();
     if( XLocal.Height() == 0 || YLocal.Height() == 0 || XLocal.Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
     hmat_tools::Scale( beta, YLocal );
     MultiplyDenseContext context;
     MultiplyDenseInitialize( context, XLocal.Width() );
@@ -82,9 +68,6 @@ DistHMat2d<Scalar>::Multiply
     MultiplyDensePassData( context );
     MultiplyDenseBroadcasts( context );
     MultiplyDensePostcompute( context, alpha, XLocal, YLocal );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -94,16 +77,11 @@ DistHMat2d<Scalar>::TransposeMultiply
   Scalar beta,        Dense<Scalar>& YLocal ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::TransposeMultiply");
+    CallStackEntry entry("DistHMat2d::TransposeMultiply");
 #endif
     RequireRoot();
     if( XLocal.Height() == 0 || YLocal.Height() == 0 || XLocal.Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
     hmat_tools::Scale( beta, YLocal );
 
     MultiplyDenseContext context;
@@ -115,9 +93,6 @@ DistHMat2d<Scalar>::TransposeMultiply
     TransposeMultiplyDenseBroadcasts( context );
 
     TransposeMultiplyDensePostcompute( context, alpha, XLocal, YLocal );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -127,17 +102,12 @@ DistHMat2d<Scalar>::AdjointMultiply
   Scalar beta,        Dense<Scalar>& YLocal ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::AdjointMultiply");
+    CallStackEntry entry("DistHMat2d::AdjointMultiply");
 #endif
     RequireRoot();
     hmat_tools::Scale( beta, YLocal );
     if( XLocal.Height() == 0 || YLocal.Height() == 0 || XLocal.Width() == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     MultiplyDenseContext context;
     AdjointMultiplyDenseInitialize( context, XLocal.Width() );
@@ -148,9 +118,6 @@ DistHMat2d<Scalar>::AdjointMultiply
     AdjointMultiplyDenseBroadcasts( context );
 
     AdjointMultiplyDensePostcompute( context, alpha, XLocal, YLocal );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 //----------------------------------------------------------------------------//
@@ -163,7 +130,7 @@ DistHMat2d<Scalar>::MultiplyDenseInitialize
 ( MultiplyDenseContext& context, int numRhs ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyDenseInitialize");
+    CallStackEntry entry("DistHMat2d::MultiplyDenseInitialize");
 #endif
     context.Clear();
     context.numRhs = numRhs;
@@ -213,9 +180,6 @@ DistHMat2d<Scalar>::MultiplyDenseInitialize
         context.block.type = EMPTY;
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -224,13 +188,10 @@ DistHMat2d<Scalar>::TransposeMultiplyDenseInitialize
 ( MultiplyDenseContext& context, int numRhs ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::TransposeMultiplyDenseInitialize");
+    CallStackEntry entry("DistHMat2d::TransposeMultiplyDenseInitialize");
 #endif
     // The non-transposed initialization is identical
     MultiplyDenseInitialize( context, numRhs );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -239,13 +200,10 @@ DistHMat2d<Scalar>::AdjointMultiplyDenseInitialize
 ( MultiplyDenseContext& context, int numRhs ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::AdjointMultiplyDenseInitialize");
+    CallStackEntry entry("DistHMat2d::AdjointMultiplyDenseInitialize");
 #endif
     // The non-transposed initialization is identical
     MultiplyDenseInitialize( context, numRhs );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -256,16 +214,11 @@ DistHMat2d<Scalar>::MultiplyDensePrecompute
                       Dense<Scalar>& YLocal ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyDensePrecompute");
+    CallStackEntry entry("DistHMat2d::MultiplyDensePrecompute");
 #endif
     const int numRhs = context.numRhs;
     if( !inSourceTeam_ || numRhs == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -472,9 +425,6 @@ DistHMat2d<Scalar>::MultiplyDensePrecompute
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -485,16 +435,11 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePrecompute
                       Dense<Scalar>& YLocal ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::TransposeMultiplyDensePrecompute");
+    CallStackEntry entry("DistHMat2d::TransposeMultiplyDensePrecompute");
 #endif
     const int numRhs = context.numRhs;
     if( !inTargetTeam_ || numRhs == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -697,9 +642,6 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePrecompute
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -710,16 +652,11 @@ DistHMat2d<Scalar>::AdjointMultiplyDensePrecompute
                       Dense<Scalar>& YLocal ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::AdjointMultiplyDensePrecompute");
+    CallStackEntry entry("DistHMat2d::AdjointMultiplyDensePrecompute");
 #endif
     const int numRhs = context.numRhs;
     if( !inTargetTeam_ || numRhs == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -919,9 +856,6 @@ DistHMat2d<Scalar>::AdjointMultiplyDensePrecompute
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -930,7 +864,7 @@ DistHMat2d<Scalar>::MultiplyDenseSums
 ( MultiplyDenseContext& context ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyDenseSums");
+    CallStackEntry entry("DistHMat2d::MultiplyDenseSums");
 #endif
     // Compute the message sizes for each reduce 
     const int numLevels = teams_->NumLevels();
@@ -945,12 +879,7 @@ DistHMat2d<Scalar>::MultiplyDenseSums
     for( int i=0; i<numReduces; ++i )
         totalSize += sizes[i];
     if( totalSize == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
     std::vector<Scalar> buffer( totalSize );
     std::vector<int> offsets( numReduces );
     for( int i=0,offset=0; i<numReduces; offset+=sizes[i],++i )
@@ -963,9 +892,6 @@ DistHMat2d<Scalar>::MultiplyDenseSums
 
     // Unpack the reduced buffers (only roots of subcommunicators have data)
     MultiplyDenseSumsUnpack( context, buffer, offsets );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -974,7 +900,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDenseSums
 ( MultiplyDenseContext& context ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::TransposeMultiplyDenseSums");
+    CallStackEntry entry("DistHMat2d::TransposeMultiplyDenseSums");
 #endif
     // Compute the message sizes for each reduce 
     const int numLevels = teams_->NumLevels();
@@ -999,9 +925,6 @@ DistHMat2d<Scalar>::TransposeMultiplyDenseSums
 
     // Unpack the reduced buffers (only roots of subcommunicators have data)
     TransposeMultiplyDenseSumsUnpack( context, buffer, offsets );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1010,13 +933,10 @@ DistHMat2d<Scalar>::AdjointMultiplyDenseSums
 ( MultiplyDenseContext& context ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::AdjointMultiplyDenseSums");
+    CallStackEntry entry("DistHMat2d::AdjointMultiplyDenseSums");
 #endif
     // This unconjugated version is identical
     TransposeMultiplyDenseSums( context );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1025,15 +945,10 @@ DistHMat2d<Scalar>::MultiplyDenseSumsCount
 ( std::vector<int>& sizes, int numRhs ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyDenseSumsCount");
+    CallStackEntry entry("DistHMat2d::MultiplyDenseSumsCount");
 #endif
     if( !inSourceTeam_ || numRhs == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -1053,9 +968,6 @@ DistHMat2d<Scalar>::MultiplyDenseSumsCount
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1064,15 +976,10 @@ DistHMat2d<Scalar>::TransposeMultiplyDenseSumsCount
 ( std::vector<int>& sizes, int numRhs ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::TransposeMultiplyDenseSumsCount");
+    CallStackEntry entry("DistHMat2d::TransposeMultiplyDenseSumsCount");
 #endif
     if( !inTargetTeam_ || numRhs == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -1091,9 +998,6 @@ DistHMat2d<Scalar>::TransposeMultiplyDenseSumsCount
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1103,16 +1007,11 @@ DistHMat2d<Scalar>::MultiplyDenseSumsPack
   std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyDenseSumsPack");
+    CallStackEntry entry("DistHMat2d::MultiplyDenseSumsPack");
 #endif
     const int numRhs = context.numRhs;
     if( !inSourceTeam_ || numRhs == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -1146,9 +1045,6 @@ DistHMat2d<Scalar>::MultiplyDenseSumsPack
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1158,16 +1054,11 @@ DistHMat2d<Scalar>::TransposeMultiplyDenseSumsPack
   std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::TransposeMultiplyDenseSumsPack");
+    CallStackEntry entry("DistHMat2d::TransposeMultiplyDenseSumsPack");
 #endif
     const int numRhs = context.numRhs;
     if( !inTargetTeam_ || numRhs == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -1201,9 +1092,6 @@ DistHMat2d<Scalar>::TransposeMultiplyDenseSumsPack
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1213,16 +1101,11 @@ DistHMat2d<Scalar>::MultiplyDenseSumsUnpack
   const std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyDenseSumsUnpack");
+    CallStackEntry entry("DistHMat2d::MultiplyDenseSumsUnpack");
 #endif
     const int numRhs = context.numRhs;
     if( !inSourceTeam_ || numRhs == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -1261,9 +1144,6 @@ DistHMat2d<Scalar>::MultiplyDenseSumsUnpack
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1273,16 +1153,11 @@ DistHMat2d<Scalar>::TransposeMultiplyDenseSumsUnpack
   const std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::TransposeMultiplyDenseSumsUnpack");
+    CallStackEntry entry("DistHMat2d::TransposeMultiplyDenseSumsUnpack");
 #endif
     const int numRhs = context.numRhs;
     if( !inTargetTeam_ || numRhs == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -1321,9 +1196,6 @@ DistHMat2d<Scalar>::TransposeMultiplyDenseSumsUnpack
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1332,7 +1204,7 @@ DistHMat2d<Scalar>::MultiplyDensePassData
 ( MultiplyDenseContext& context ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyDensePassData");
+    CallStackEntry entry("DistHMat2d::MultiplyDensePassData");
 #endif
     // Constuct maps of the send/recv processes to the send/recv sizes
     std::map<int,int> sendSizes, recvSizes;
@@ -1394,9 +1266,6 @@ DistHMat2d<Scalar>::MultiplyDensePassData
     // Don't exit until we know that the data was sent
     for( int i=0; i<numSends; ++i )
         mpi::Wait( sendRequests[i] );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1405,15 +1274,10 @@ DistHMat2d<Scalar>::MultiplyDensePassDataCount
 ( std::map<int,int>& sendSizes, std::map<int,int>& recvSizes, int numRhs ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyDensePassDataCount");
+    CallStackEntry entry("DistHMat2d::MultiplyDensePassDataCount");
 #endif
     if( numRhs == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -1463,9 +1327,6 @@ DistHMat2d<Scalar>::MultiplyDensePassDataCount
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1475,16 +1336,11 @@ DistHMat2d<Scalar>::MultiplyDensePassDataPack
   std::vector<Scalar>& buffer, std::map<int,int>& offsets ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyDensePassDataPack");
+    CallStackEntry entry("DistHMat2d::MultiplyDensePassDataPack");
 #endif
     const int numRhs = context.numRhs;
     if( !inSourceTeam_ || numRhs == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -1576,9 +1432,6 @@ DistHMat2d<Scalar>::MultiplyDensePassDataPack
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1588,16 +1441,11 @@ DistHMat2d<Scalar>::MultiplyDensePassDataUnpack
   const std::vector<Scalar>& buffer, std::map<int,int>& offsets ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyDensePassDataUnpack");
+    CallStackEntry entry("DistHMat2d::MultiplyDensePassDataUnpack");
 #endif
     const int numRhs = context.numRhs;
     if( !inTargetTeam_ || numRhs == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -1674,9 +1522,6 @@ DistHMat2d<Scalar>::MultiplyDensePassDataUnpack
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1685,7 +1530,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePassData
 ( MultiplyDenseContext& context, const Dense<Scalar>& XLocal ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::TransposeMultiplyDensePassData");
+    CallStackEntry entry("DistHMat2d::TransposeMultiplyDensePassData");
 #endif
     // Constuct maps of the send/recv processes to the send/recv sizes
     std::map<int,int> sendSizes, recvSizes;
@@ -1745,9 +1590,6 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePassData
     // Don't exit until we know that the data was sent
     for( int i=0; i<numSends; ++i )
         mpi::Wait( sendRequests[i] );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1756,15 +1598,10 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePassDataCount
 ( std::map<int,int>& sendSizes, std::map<int,int>& recvSizes, int numRhs ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::TransposeMultiplyDensePassDataCount");
+    CallStackEntry entry("DistHMat2d::TransposeMultiplyDensePassDataCount");
 #endif
     if( numRhs == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -1814,9 +1651,6 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePassDataCount
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1826,16 +1660,11 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePassDataPack
   std::vector<Scalar>& buffer, std::map<int,int>& offsets ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::TransposeMultiplyDensePassDataPack");
+    CallStackEntry entry("DistHMat2d::TransposeMultiplyDensePassDataPack");
 #endif
     const int numRhs = context.numRhs;
     if( !inTargetTeam_ || numRhs == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -1966,9 +1795,6 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePassDataPack
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1978,16 +1804,11 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePassDataUnpack
   const std::vector<Scalar>& buffer, std::map<int,int>& offsets ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::TransposeMultiplyDensePassDataUnpack");
+    CallStackEntry entry("DistHMat2d::TransposeMultiplyDensePassDataUnpack");
 #endif
     const int numRhs = context.numRhs;
     if( !inSourceTeam_ || numRhs == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -2065,9 +1886,6 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePassDataUnpack
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -2076,13 +1894,10 @@ DistHMat2d<Scalar>::AdjointMultiplyDensePassData
 ( MultiplyDenseContext& context, const Dense<Scalar>& XLocal ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::AdjointMultiplyDensePassData");
+    CallStackEntry entry("DistHMat2d::AdjointMultiplyDensePassData");
 #endif
     // The unconjugated version should be identical
     TransposeMultiplyDensePassData( context, XLocal );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -2091,7 +1906,7 @@ DistHMat2d<Scalar>::MultiplyDenseBroadcasts
 ( MultiplyDenseContext& context ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyDenseBroadcasts");
+    CallStackEntry entry("DistHMat2d::MultiplyDenseBroadcasts");
 #endif
     // Compute the message sizes for each broadcast
     const int numLevels = teams_->NumLevels();
@@ -2117,9 +1932,6 @@ DistHMat2d<Scalar>::MultiplyDenseBroadcasts
 
     // Unpack the broadcasted buffers 
     MultiplyDenseBroadcastsUnpack( context, buffer, offsets );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -2128,7 +1940,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDenseBroadcasts
 ( MultiplyDenseContext& context ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::TransposeMultiplyDenseBroadcasts");
+    CallStackEntry entry("DistHMat2d::TransposeMultiplyDenseBroadcasts");
 #endif
     // Compute the message sizes for each broadcast
     const int numLevels = teams_->NumLevels();
@@ -2154,9 +1966,6 @@ DistHMat2d<Scalar>::TransposeMultiplyDenseBroadcasts
 
     // Unpack the broadcasted buffers 
     TransposeMultiplyDenseBroadcastsUnpack( context, buffer, offsets );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -2165,13 +1974,10 @@ DistHMat2d<Scalar>::AdjointMultiplyDenseBroadcasts
 ( MultiplyDenseContext& context ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::AdjointMultiplyDenseBroadcasts");
+    CallStackEntry entry("DistHMat2d::AdjointMultiplyDenseBroadcasts");
 #endif
     // The unconjugated version should be identical
     TransposeMultiplyDenseBroadcasts( context );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -2180,15 +1986,10 @@ DistHMat2d<Scalar>::MultiplyDenseBroadcastsCount
 ( std::vector<int>& sizes, int numRhs ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyDenseBroadcastsCount");
+    CallStackEntry entry("DistHMat2d::MultiplyDenseBroadcastsCount");
 #endif
     if( !inTargetTeam_ || numRhs == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -2206,9 +2007,6 @@ DistHMat2d<Scalar>::MultiplyDenseBroadcastsCount
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -2217,15 +2015,10 @@ DistHMat2d<Scalar>::TransposeMultiplyDenseBroadcastsCount
 ( std::vector<int>& sizes, int numRhs ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::TransposeMultiplyDenseBroadcastsCount");
+    CallStackEntry entry("DistHMat2d::TransposeMultiplyDenseBroadcastsCount");
 #endif
     if( !inSourceTeam_ || numRhs == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -2244,9 +2037,6 @@ DistHMat2d<Scalar>::TransposeMultiplyDenseBroadcastsCount
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -2256,16 +2046,11 @@ DistHMat2d<Scalar>::MultiplyDenseBroadcastsPack
   std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyDenseBroadcastsPack");
+    CallStackEntry entry("DistHMat2d::MultiplyDenseBroadcastsPack");
 #endif
     const int numRhs = context.numRhs;
     if( !inTargetTeam_ || numRhs == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -2302,9 +2087,6 @@ DistHMat2d<Scalar>::MultiplyDenseBroadcastsPack
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -2314,16 +2096,11 @@ DistHMat2d<Scalar>::TransposeMultiplyDenseBroadcastsPack
   std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::TransposeMultiplyDenseBroadcastsPack");
+    CallStackEntry entry("DistHMat2d::TransposeMultiplyDenseBroadcastsPack");
 #endif
     const int numRhs = context.numRhs;
     if( !inSourceTeam_ || numRhs == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -2356,9 +2133,6 @@ DistHMat2d<Scalar>::TransposeMultiplyDenseBroadcastsPack
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -2368,16 +2142,11 @@ DistHMat2d<Scalar>::MultiplyDenseBroadcastsUnpack
   const std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyDenseBroadcastsUnpack");
+    CallStackEntry entry("DistHMat2d::MultiplyDenseBroadcastsUnpack");
 #endif
     const int numRhs = context.numRhs;
     if( !inTargetTeam_ || numRhs == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -2409,9 +2178,6 @@ DistHMat2d<Scalar>::MultiplyDenseBroadcastsUnpack
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -2421,16 +2187,11 @@ DistHMat2d<Scalar>::TransposeMultiplyDenseBroadcastsUnpack
   const std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::TransposeMultiplyDenseBroadcastsUnpack");
+    CallStackEntry entry("DistHMat2d::TransposeMultiplyDenseBroadcastsUnpack");
 #endif
     const int numRhs = context.numRhs;
     if( !inSourceTeam_ || numRhs == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -2462,9 +2223,6 @@ DistHMat2d<Scalar>::TransposeMultiplyDenseBroadcastsUnpack
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -2475,16 +2233,11 @@ DistHMat2d<Scalar>::MultiplyDensePostcompute
                       Dense<Scalar>& YLocal ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyDensePostcompute");
+    CallStackEntry entry("DistHMat2d::MultiplyDensePostcompute");
 #endif
     const int numRhs = context.numRhs;
     if( !inTargetTeam_ || numRhs == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -2669,9 +2422,6 @@ DistHMat2d<Scalar>::MultiplyDensePostcompute
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -2682,16 +2432,11 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePostcompute
                       Dense<Scalar>& YLocal ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::TransposeMultiplyDensePostcompute");
+    CallStackEntry entry("DistHMat2d::TransposeMultiplyDensePostcompute");
 #endif
     const int numRhs = context.numRhs;
     if( !inSourceTeam_ || numRhs == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -2870,9 +2615,6 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePostcompute
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -2883,16 +2625,11 @@ DistHMat2d<Scalar>::AdjointMultiplyDensePostcompute
                       Dense<Scalar>& YLocal ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::AdjointMultiplyDensePostcompute");
+    CallStackEntry entry("DistHMat2d::AdjointMultiplyDensePostcompute");
 #endif
     const int numRhs = context.numRhs;
     if( !inSourceTeam_ || numRhs == 0 )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     switch( block_.type )
     {
@@ -3080,9 +2817,6 @@ DistHMat2d<Scalar>::AdjointMultiplyDensePostcompute
     default:
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 } // namespace dmhm

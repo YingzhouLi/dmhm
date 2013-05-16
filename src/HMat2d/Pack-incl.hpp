@@ -17,12 +17,9 @@ template<typename Scalar>
 HMat2d<Scalar>::HMat2d( const std::vector<byte>& packedHMat )
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::HMat2d");
+    CallStackEntry entry("HMat2d::HMat2d");
 #endif
     Unpack( packedHMat );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -30,13 +27,10 @@ std::size_t
 HMat2d<Scalar>::PackedSize() const
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::PackedSize");
+    CallStackEntry entry("HMat2d::PackedSize");
 #endif
     std::size_t packedSize = 13*sizeof(int) + 2*sizeof(bool);
     PackedSizeRecursion( packedSize );
-#ifndef RELEASE
-    PopCallStack();
-#endif
     return packedSize;
 }
 
@@ -45,7 +39,7 @@ std::size_t
 HMat2d<Scalar>::Pack( byte* packedHMat ) const
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::Pack");
+    CallStackEntry entry("HMat2d::Pack");
 #endif
     byte* head = packedHMat;
     
@@ -66,9 +60,6 @@ HMat2d<Scalar>::Pack( byte* packedHMat ) const
     Write( head, yTarget_ );
 
     PackRecursion( head );
-#ifndef RELEASE
-    PopCallStack();
-#endif
     return head-packedHMat;
 }
 
@@ -77,7 +68,7 @@ std::size_t
 HMat2d<Scalar>::Pack( std::vector<byte>& packedHMat ) const
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::Pack");
+    CallStackEntry entry("HMat2d::Pack");
 #endif
     // Create the storage and extract the buffer
     const std::size_t packedSize = PackedSize();
@@ -101,9 +92,6 @@ HMat2d<Scalar>::Pack( std::vector<byte>& packedHMat ) const
     Write( head, yTarget_ );
 
     PackRecursion( head );
-#ifndef RELEASE
-    PopCallStack();
-#endif
     return head-&packedHMat[0];
 }
 
@@ -112,7 +100,7 @@ std::size_t
 HMat2d<Scalar>::Unpack( const byte* packedHMat )
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::Unpack");
+    CallStackEntry entry("HMat2d::Unpack");
 #endif
     const byte* head = packedHMat;
     
@@ -133,9 +121,6 @@ HMat2d<Scalar>::Unpack( const byte* packedHMat )
     yTarget_            = Read<int>( head );
 
     UnpackRecursion( head );
-#ifndef RELEASE
-    PopCallStack();
-#endif
     return head-packedHMat;
 }
 
@@ -144,7 +129,7 @@ std::size_t
 HMat2d<Scalar>::Unpack( const std::vector<byte>& packedHMat )
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::Unpack");
+    CallStackEntry entry("HMat2d::Unpack");
 #endif
     const byte* head = &packedHMat[0];
 
@@ -165,9 +150,6 @@ HMat2d<Scalar>::Unpack( const std::vector<byte>& packedHMat )
     yTarget_            = Read<int>( head );
     
     UnpackRecursion( head );
-#ifndef RELEASE
-    PopCallStack();
-#endif
     return head-&packedHMat[0];
 }
 

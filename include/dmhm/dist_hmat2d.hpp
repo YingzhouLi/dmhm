@@ -1353,14 +1353,13 @@ inline DistHMat2d<Scalar>&
 DistHMat2d<Scalar>::Node::Child( int t, int s )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::Node::Child");
+    CallStackEntry entry("DistHMat2d::Node::Child");
     if( t < 0 || s < 0 )
         throw std::logic_error("Indices must be non-negative");
     if( t > 3 || s > 3 )
         throw std::logic_error("Indices out of bounds");
     if( children.size() != 16 )
         throw std::logic_error("children array not yet set up");
-    PopCallStack();
 #endif
     return *children[s+4*t];
 }
@@ -1370,14 +1369,13 @@ inline const DistHMat2d<Scalar>&
 DistHMat2d<Scalar>::Node::Child( int t, int s ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::Node::Child");
+    CallStackEntry entry("DistHMat2d::Node::Child");
     if( t < 0 || s < 0 )
         throw std::logic_error("Indices must be non-negative");
     if( t > 3 || s > 3 )
         throw std::logic_error("Indices out of bounds");
     if( children.size() != 16 )
         throw std::logic_error("children array not yet set up");
-    PopCallStack();
 #endif
     return *children[s+4*t];
 }
@@ -1458,14 +1456,13 @@ inline typename DistHMat2d<Scalar>::MultiplyVectorContext&
 DistHMat2d<Scalar>::MultiplyVectorContext::DistNode::Child( int t, int s )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyVectorContext::DistNode::Child");
+    CallStackEntry entry("DistHMat2d::MultiplyVectorContext::DistNode::Child");
     if( t < 0 || s < 0 )
         throw std::logic_error("Indices must be non-negative");
     if( t > 3 || s > 3 )
         throw std::logic_error("Indices out of bounds");
     if( children.size() != 16 )
         throw std::logic_error("children array not yet set up");
-    PopCallStack();
 #endif
     return *children[s+4*t];
 }
@@ -1475,14 +1472,13 @@ inline const typename DistHMat2d<Scalar>::MultiplyVectorContext&
 DistHMat2d<Scalar>::MultiplyVectorContext::DistNode::Child( int t, int s ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyVectorContext::DistNode::Child");
+    CallStackEntry entry("DistHMat2d::MultiplyVectorContext::DistNode::Child");
     if( t < 0 || s < 0 )
         throw std::logic_error("Indices must be non-negative");
     if( t > 3 || s > 3 )
         throw std::logic_error("Indices out of bounds");
     if( children.size() != 16 )
         throw std::logic_error("children array not yet set up");
-    PopCallStack();
 #endif
     return *children[s+4*t];
 }
@@ -1560,14 +1556,13 @@ inline typename DistHMat2d<Scalar>::MultiplyDenseContext&
 DistHMat2d<Scalar>::MultiplyDenseContext::DistNode::Child( int t, int s )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyDenseContext::DistNode::Child");
+    CallStackEntry entry("DistHMat2d::MultiplyDenseContext::DistNode::Child");
     if( t < 0 || s < 0 )
         throw std::logic_error("Indices must be non-negative");
     if( t > 3 || s > 3 )
         throw std::logic_error("Indices out of bounds");
     if( children.size() != 16 )
         throw std::logic_error("children array not yet set up");
-    PopCallStack();
 #endif
     return *children[s+4*t];
 }
@@ -1579,14 +1574,13 @@ DistHMat2d<Scalar>::MultiplyDenseContext::DistNode::Child( int t, int s )
 const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MultiplyDenseContext::DistNode::Child");
+    CallStackEntry entry("DistHMat2d::MultiplyDenseContext::DistNode::Child");
     if( t < 0 || s < 0 )
         throw std::logic_error("Indices must be non-negative");
     if( t > 3 || s > 3 )
         throw std::logic_error("Indices out of bounds");
     if( children.size() != 16 )
         throw std::logic_error("children array not yet set up");
-    PopCallStack();
 #endif
     return *children[s+4*t];
 }
@@ -1674,7 +1668,7 @@ inline
 DistHMat2d<Scalar>::Teams::Teams( MPI_Comm comm )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::Teams::Teams");
+    CallStackEntry entry("DistHMat2d::Teams::Teams");
 #endif
     const int rank = mpi::CommRank( comm );
     const int p = mpi::CommSize( comm );
@@ -1730,9 +1724,6 @@ DistHMat2d<Scalar>::Teams::Teams( MPI_Comm comm )
 
         mpi::CommSplit( comm, color, key, crossTeams_[inverseLevel] );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1740,15 +1731,12 @@ inline
 DistHMat2d<Scalar>::Teams::~Teams()
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::Teams::~Teams");
+    CallStackEntry entry("DistHMat2d::Teams::~Teams");
 #endif
     for( unsigned i=0; i<teams_.size(); ++i )
         mpi::CommFree( teams_[i] );
     for( unsigned i=0; i<crossTeams_.size(); ++i )
         mpi::CommFree( crossTeams_[i] );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1773,10 +1761,9 @@ DistHMat2d<Scalar>::Teams::CrossTeam
 ( unsigned inverseLevel ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::Teams::CrossTeam");
+    CallStackEntry entry("DistHMat2d::Teams::CrossTeam");
     if( inverseLevel >= crossTeams_.size() )
         throw std::logic_error("Invalid cross team request");
-    PopCallStack();
 #endif
     return crossTeams_[inverseLevel];
 }
@@ -1787,7 +1774,7 @@ DistHMat2d<Scalar>::Teams::TreeSums
 ( std::vector<Scalar>& buffer, const std::vector<int>& sizes ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::Teams::TreeSums");
+    CallStackEntry entry("DistHMat2d::Teams::TreeSums");
 #endif
     const int numLevels = NumLevels();
     const int numAllReduces = numLevels-1;
@@ -1797,12 +1784,7 @@ DistHMat2d<Scalar>::Teams::TreeSums
         totalSize += sizes[i];
 
     if( totalSize == 0 )
-    {
-#ifndef RELEASE
-    PopCallStack();
-#endif
         return;
-    }
 
     // Use O(log(p)) custom method: 
     // - AllReduce over each cross communicator
@@ -1817,9 +1799,6 @@ DistHMat2d<Scalar>::Teams::TreeSums
           crossTeam );
         partialSize -= sizes[numAllReduces-1-i];
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1828,7 +1807,7 @@ DistHMat2d<Scalar>::Teams::TreeSumToRoots
 ( std::vector<Scalar>& buffer, const std::vector<int>& sizes ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::Teams::TreeSumToRoots");
+    CallStackEntry entry("DistHMat2d::Teams::TreeSumToRoots");
 #endif
     const int numLevels = NumLevels();
     const int numReduces = numLevels-1;
@@ -1838,12 +1817,7 @@ DistHMat2d<Scalar>::Teams::TreeSumToRoots
         totalSize += sizes[i];
 
     if( totalSize == 0 )
-    {
-#ifndef RELEASE
-    PopCallStack();
-#endif
         return;
-    }
 
     // Use O(log(p)) custom method: 
     // - Reduce to the root of each cross communicator
@@ -1862,9 +1836,6 @@ DistHMat2d<Scalar>::Teams::TreeSumToRoots
             mpi::Reduce( &buffer[0], 0, partialSize, 0, MPI_SUM, crossTeam );
         partialSize -= sizes[numReduces-1-i];
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1873,7 +1844,7 @@ DistHMat2d<Scalar>::Teams::TreeBroadcasts
 ( std::vector<Scalar>& buffer, const std::vector<int>& sizes ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::Teams::TreeBroadcasts");
+    CallStackEntry entry("DistHMat2d::Teams::TreeBroadcasts");
 #endif
     const int numLevels = NumLevels();
     const int numBroadcasts = numLevels-1;
@@ -1883,12 +1854,7 @@ DistHMat2d<Scalar>::Teams::TreeBroadcasts
         totalSize += sizes[i];
 
     if( totalSize == 0 )
-    {
-#ifndef RELEASE
-    PopCallStack();
-#endif
         return;
-    }
 
     // Use O(log(p)) custom method: 
     // - Broadcast over each cross communicator
@@ -1901,9 +1867,6 @@ DistHMat2d<Scalar>::Teams::TreeBroadcasts
         mpi::Broadcast( &buffer[0], partialSize, 0, crossTeam );
         partialSize -= sizes[numBroadcasts-1-i];
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -1912,7 +1875,7 @@ DistHMat2d<Scalar>::Teams::TreeBroadcasts
 ( std::vector<int>& buffer, const std::vector<int>& sizes ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::Teams::TreeBroadcasts");
+    CallStackEntry entry("DistHMat2d::Teams::TreeBroadcasts");
 #endif
     const int numLevels = NumLevels();
     const int numBroadcasts = numLevels-1;
@@ -1922,12 +1885,7 @@ DistHMat2d<Scalar>::Teams::TreeBroadcasts
         totalSize += sizes[i];
 
     if( totalSize == 0 )
-    {
-#ifndef RELEASE
-    PopCallStack();
-#endif
         return;
-    }
 
     // Use O(log(p)) custom method: 
     // - Broadcast over each cross communicator
@@ -1940,9 +1898,6 @@ DistHMat2d<Scalar>::Teams::TreeBroadcasts
         mpi::Broadcast( &buffer[0], partialSize, 0, crossTeam );
         partialSize -= sizes[numBroadcasts-1-i];
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 } // namespace dmhm 

@@ -69,7 +69,7 @@ HMat2d<Scalar>::BuildNaturalToHierarchicalMap
 ( std::vector<int>& map, int xSize, int ySize, int numLevels )
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::BuildNaturalToHierarchicalMap");
+    CallStackEntry entry("HMat2d::BuildNaturalToHierarchicalMap");
 #endif
     map.resize( xSize*ySize );
 
@@ -80,7 +80,6 @@ HMat2d<Scalar>::BuildNaturalToHierarchicalMap
 #ifndef RELEASE
     if( index != xSize*ySize )
         throw std::logic_error("Map recursion is incorrect.");
-    PopCallStack();
 #endif
 }
 
@@ -134,13 +133,11 @@ HMat2d<Scalar>::HMat2d
   ySource_(0), yTarget_(0)
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::HMat2d");
+    CallStackEntry entry("HMat2d::HMat2d");
 #endif
     ImportLowRank( F );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
+
 template<typename Scalar>
 HMat2d<Scalar>::HMat2d
 ( const Sparse<Scalar>& S,
@@ -156,12 +153,9 @@ HMat2d<Scalar>::HMat2d
   ySource_(0), yTarget_(0)
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::HMat2d");
+    CallStackEntry entry("HMat2d::HMat2d");
 #endif
     ImportSparse( S );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // Create a potentially non-square non-top-level H-matrix
@@ -204,13 +198,11 @@ HMat2d<Scalar>::HMat2d
   ySource_(ySource), yTarget_(yTarget)
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::HMat2d");
+    CallStackEntry entry("HMat2d::HMat2d");
 #endif
     ImportLowRank( F );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
+
 template<typename Scalar>
 HMat2d<Scalar>::HMat2d
 ( const Sparse<Scalar>& S,
@@ -231,12 +223,9 @@ HMat2d<Scalar>::HMat2d
   ySource_(ySource), yTarget_(yTarget)
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::HMat2d");
+    CallStackEntry entry("HMat2d::HMat2d");
 #endif
     ImportSparse( S, targetOffset, sourceOffset );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -253,7 +242,7 @@ void
 HMat2d<Scalar>::Print( const std::string tag ) const
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::Print");
+    CallStackEntry entry("HMat2d::Print");
 #endif
     const int n = Width();
     Dense<Scalar> I( n, n );
@@ -264,9 +253,6 @@ HMat2d<Scalar>::Print( const std::string tag ) const
     Dense<Scalar> HFull;
     Multiply( Scalar(1), I, HFull );
     HFull.Print( tag );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -274,7 +260,7 @@ void
 HMat2d<Scalar>::LatexWriteStructure( const std::string filebase ) const
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::LatexWriteStructure");
+    CallStackEntry entry("HMat2d::LatexWriteStructure");
 #endif
 
     std::ofstream file( (filebase+".tex").c_str() );
@@ -288,9 +274,6 @@ HMat2d<Scalar>::LatexWriteStructure( const std::string filebase ) const
     file << "\\end{tikzpicture}\n"
          << "\\end{center}\n"
          << "\\end{document}" << std::endl;
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -298,13 +281,10 @@ void
 HMat2d<Scalar>::MScriptWriteStructure( const std::string filebase ) const
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::MScriptWriteStructure");
+    CallStackEntry entry("HMat2d::MScriptWriteStructure");
 #endif
     std::ofstream file( (filebase+".dat").c_str() );
     MScriptWriteStructureRecursion( file );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 /*\
@@ -317,7 +297,7 @@ void
 HMat2d<Scalar>::CopyFrom( const HMat2d<Scalar>& B )
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::CopyFrom");
+    CallStackEntry entry("HMat2d::CopyFrom");
 #endif
     numLevels_ = B.NumLevels();
     maxRank_ = B.MaxRank();
@@ -371,9 +351,6 @@ HMat2d<Scalar>::CopyFrom( const HMat2d<Scalar>& B )
         hmat_tools::Copy( *B.block_.data.D, *block_.data.D );
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // A := Conj(A)
@@ -382,7 +359,7 @@ void
 HMat2d<Scalar>::Conjugate()
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::Conjugate");
+    CallStackEntry entry("HMat2d::Conjugate");
 #endif
     switch( block_.type )
     {
@@ -402,9 +379,6 @@ HMat2d<Scalar>::Conjugate()
         hmat_tools::Conjugate( *block_.data.D );
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // A := Conj(B)
@@ -413,7 +387,7 @@ void
 HMat2d<Scalar>::ConjugateFrom( const HMat2d<Scalar>& B )
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::ConjugateFrom");
+    CallStackEntry entry("HMat2d::ConjugateFrom");
 #endif
     HMat2d<Scalar>& A = *this;
 
@@ -458,9 +432,6 @@ HMat2d<Scalar>::ConjugateFrom( const HMat2d<Scalar>& B )
         hmat_tools::Conjugate( *B.block_.data.D, *A.block_.data.D );
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // A := B^T
@@ -469,7 +440,7 @@ void
 HMat2d<Scalar>::TransposeFrom( const HMat2d<Scalar>& B )
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::TransposeFrom");
+    CallStackEntry entry("HMat2d::TransposeFrom");
 #endif
     HMat2d<Scalar>& A = *this;
 
@@ -532,9 +503,6 @@ HMat2d<Scalar>::TransposeFrom( const HMat2d<Scalar>& B )
         break;
     }
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // A := B^H
@@ -543,7 +511,7 @@ void
 HMat2d<Scalar>::AdjointFrom( const HMat2d<Scalar>& B )
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::AdjointFrom");
+    CallStackEntry entry("HMat2d::AdjointFrom");
 #endif
     HMat2d<Scalar>& A = *this;
 
@@ -606,9 +574,6 @@ HMat2d<Scalar>::AdjointFrom( const HMat2d<Scalar>& B )
         break;
     }
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // A := alpha A
@@ -617,7 +582,7 @@ void
 HMat2d<Scalar>::Scale( Scalar alpha )
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::Scale");
+    CallStackEntry entry("HMat2d::Scale");
 #endif
     switch( block_.type )
     {
@@ -642,9 +607,6 @@ HMat2d<Scalar>::Scale( Scalar alpha )
         hmat_tools::Scale( alpha, *block_.data.D );
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // A := I
@@ -653,7 +615,7 @@ void
 HMat2d<Scalar>::SetToIdentity()
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::SetToIdentity");
+    CallStackEntry entry("HMat2d::SetToIdentity");
 #endif
     switch( block_.type )
     {
@@ -700,9 +662,6 @@ HMat2d<Scalar>::SetToIdentity()
         break;
     }
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // A := A + alpha I
@@ -711,7 +670,7 @@ void
 HMat2d<Scalar>::AddConstantToDiagonal( Scalar alpha )
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::AddConstantToDiagonal");
+    CallStackEntry entry("HMat2d::AddConstantToDiagonal");
 #endif
     switch( block_.type )
     {
@@ -745,9 +704,6 @@ HMat2d<Scalar>::AddConstantToDiagonal( Scalar alpha )
         break;
     }
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // A := alpha B + A
@@ -756,7 +712,7 @@ void
 HMat2d<Scalar>::UpdateWith( Scalar alpha, const HMat2d<Scalar>& B )
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::UpdateWith");
+    CallStackEntry entry("HMat2d::UpdateWith");
 #endif
     HMat2d<Scalar>& A = *this;
 
@@ -788,9 +744,6 @@ HMat2d<Scalar>::UpdateWith( Scalar alpha, const HMat2d<Scalar>& B )
         ( alpha, *B.block_.data.D, Scalar(1), *A.block_.data.D );
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 //----------------------------------------------------------------------------//
@@ -820,7 +773,7 @@ void
 HMat2d<Scalar>::ImportLowRank( const LowRank<Scalar>& F )
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::ImportLowRank");
+    CallStackEntry entry("HMat2d::ImportLowRank");
 #endif
     block_.Clear();
     if( Admissible() )
@@ -908,9 +861,6 @@ HMat2d<Scalar>::ImportLowRank( const LowRank<Scalar>& F )
              F.V.LockedBuffer(), F.V.LDim(),
           0, block_.data.D->Buffer(), block_.data.D->LDim() );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -918,7 +868,7 @@ void
 HMat2d<Scalar>::UpdateWithLowRank( Scalar alpha, const LowRank<Scalar>& F )
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::UpdateWithLowRank");
+    CallStackEntry entry("HMat2d::UpdateWithLowRank");
 #endif
     if( Admissible() )
         hmat_tools::RoundedUpdate
@@ -966,9 +916,6 @@ HMat2d<Scalar>::UpdateWithLowRank( Scalar alpha, const LowRank<Scalar>& F )
                  F.V.LockedBuffer(), F.V.LDim(),
           1, block_.data.D->Buffer(), block_.data.D->LDim() );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -977,7 +924,7 @@ HMat2d<Scalar>::ImportSparse
 ( const Sparse<Scalar>& S, int iOffset, int jOffset )
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::ImportSparse");
+    CallStackEntry entry("HMat2d::ImportSparse");
 #endif
     block_.Clear();
     if( Admissible() )
@@ -1043,9 +990,6 @@ HMat2d<Scalar>::ImportSparse
         hmat_tools::ConvertSubmatrix
         ( *block_.data.D, S, iOffset, jOffset, Height(), Width() );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // y += alpha A x
@@ -1055,7 +999,7 @@ HMat2d<Scalar>::UpdateVectorWithNodeSymmetric
 ( Scalar alpha, const Vector<Scalar>& x, Vector<Scalar>& y ) const
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::UpdateVectorWithNodeSymmetric");
+    CallStackEntry entry("HMat2d::UpdateVectorWithNodeSymmetric");
 #endif
     NodeSymmetric& node = *block_.data.NS;
 
@@ -1090,9 +1034,6 @@ HMat2d<Scalar>::UpdateVectorWithNodeSymmetric
             node.Child(t,s).TransposeMultiply( alpha, xSub, Scalar(1), ySub );
         }
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // C += alpha A B
@@ -1102,7 +1043,7 @@ HMat2d<Scalar>::UpdateWithNodeSymmetric
 ( Scalar alpha, const Dense<Scalar>& B, Dense<Scalar>& C ) const
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::UpdateWithNodeSymmetric");
+    CallStackEntry entry("HMat2d::UpdateWithNodeSymmetric");
 #endif
     const HMat2d<Scalar>& A = *this;
     NodeSymmetric& node = *A.block_.data.NS;
@@ -1138,9 +1079,6 @@ HMat2d<Scalar>::UpdateWithNodeSymmetric
             node.Child(t,s).TransposeMultiply( alpha, BSub, Scalar(1), CSub );
         }
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 namespace {

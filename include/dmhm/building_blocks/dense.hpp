@@ -27,14 +27,14 @@ private:
     /*
      * Private member data
      */
-    int _height, _width;
-    int _ldim; // leading dimension of matrix
-    bool _viewing;
-    bool _lockedView;
-    std::vector<Scalar> _memory;
-    Scalar* _buffer;
-    const Scalar* _lockedBuffer;
-    MatrixType _type;
+    int height_, width_;
+    int ldim_; // leading dimension of matrix
+    bool viewing_;
+    bool lockedView_;
+    std::vector<Scalar> memory_;
+    Scalar* buffer_;
+    const Scalar* lockedBuffer_;
+    MatrixType type_;
 
 public:
     /*
@@ -92,28 +92,27 @@ public:
 template<typename Scalar>
 inline
 Dense<Scalar>::Dense( MatrixType type )
-: _height(0), _width(0), _ldim(1), 
-  _viewing(false), _lockedView(false),
-  _memory(), _buffer(0), _lockedBuffer(0),
-  _type(type)
+: height_(0), width_(0), ldim_(1), 
+  viewing_(false), lockedView_(false),
+  memory_(), buffer_(0), lockedBuffer_(0),
+  type_(type)
 { }
 
 template<typename Scalar>
 inline
 Dense<Scalar>::Dense
 ( int height, int width, MatrixType type )
-: _height(height), _width(width), _ldim(std::max(height,1)),
-  _viewing(false), _lockedView(false),
-  _memory(_ldim*_width), _buffer(&_memory[0]), _lockedBuffer(0),
-  _type(type)
+: height_(height), width_(width), ldim_(std::max(height,1)),
+  viewing_(false), lockedView_(false),
+  memory_(ldim_*width_), buffer_(&memory_[0]), lockedBuffer_(0),
+  type_(type)
 {
 #ifndef RELEASE
-    PushCallStack("Dense::Dense");
+    CallStackEntry entry("Dense::Dense");
     if( height < 0 || width < 0 )
         throw std::logic_error("Height and width must be non-negative");
     if( type == SYMMETRIC && height != width )
         throw std::logic_error("Symmetric matrices must be square");
-    PopCallStack();
 #endif
 }
 
@@ -121,20 +120,19 @@ template<typename Scalar>
 inline 
 Dense<Scalar>::Dense
 ( int height, int width, int ldim, MatrixType type )
-: _height(height), _width(width), _ldim(ldim), 
-  _viewing(false), _lockedView(false),
-  _memory(_ldim*_width), _buffer(&_memory[0]), _lockedBuffer(0),
-  _type(type)
+: height_(height), width_(width), ldim_(ldim), 
+  viewing_(false), lockedView_(false),
+  memory_(ldim_*width_), buffer_(&memory_[0]), lockedBuffer_(0),
+  type_(type)
 {
 #ifndef RELEASE
-    PushCallStack("Dense::Dense");
+    CallStackEntry entry("Dense::Dense");
     if( height < 0 || width < 0 )
         throw std::logic_error("Height and width must be non-negative");
     if( type == SYMMETRIC && height != width )
         throw std::logic_error("Symmetric matrices must be square");
     if( ldim <= 0 )
         throw std::logic_error("Leading dimensions must be positive");
-    PopCallStack();
 #endif
 }
 
@@ -142,20 +140,19 @@ template<typename Scalar>
 inline 
 Dense<Scalar>::Dense
 ( Scalar* buffer, int height, int width, int ldim, MatrixType type )
-: _height(height), _width(width), _ldim(ldim), 
-  _viewing(true), _lockedView(false),
-  _memory(), _buffer(buffer), _lockedBuffer(0),
-  _type(type)
+: height_(height), width_(width), ldim_(ldim), 
+  viewing_(true), lockedView_(false),
+  memory_(), buffer_(buffer), lockedBuffer_(0),
+  type_(type)
 {
 #ifndef RELEASE
-    PushCallStack("Dense::Dense");
+    CallStackEntry entry("Dense::Dense");
     if( height < 0 || width < 0 )
         throw std::logic_error("Height and width must be non-negative");
     if( type == SYMMETRIC && height != width )
         throw std::logic_error("Symmetric matrices must be square");
     if( ldim <= 0 )
         throw std::logic_error("Leading dimensions must be positive");
-    PopCallStack();
 #endif
 }
 
@@ -163,20 +160,19 @@ template<typename Scalar>
 inline 
 Dense<Scalar>::Dense
 ( const Scalar* lockedBuffer, int height, int width, int ldim, MatrixType type )
-: _height(height), _width(width), _ldim(ldim),
-  _viewing(true), _lockedView(true),
-  _memory(), _buffer(0), _lockedBuffer(lockedBuffer),
-  _type(type)
+: height_(height), width_(width), ldim_(ldim),
+  viewing_(true), lockedView_(true),
+  memory_(), buffer_(0), lockedBuffer_(lockedBuffer),
+  type_(type)
 {
 #ifndef RELEASE
-    PushCallStack("Dense::Dense");
+    CallStackEntry entry("Dense::Dense");
     if( height < 0 || width < 0 )
         throw std::logic_error("Height and width must be non-negative");
     if( type == SYMMETRIC && height != width )
         throw std::logic_error("Symmetric matrices must be square");
     if( ldim <= 0 )
         throw std::logic_error("Leading dimensions must be positive");
-    PopCallStack();
 #endif
 }
 
@@ -190,76 +186,72 @@ inline void
 Dense<Scalar>::SetType( MatrixType type )
 {
 #ifndef RELEASE
-    PushCallStack("Dense::SetType");
-    if( type == SYMMETRIC && _height != _width )
+    CallStackEntry entry("Dense::SetType");
+    if( type == SYMMETRIC && height_ != width_ )
         throw std::logic_error("Symmetric matrices must be square");
-    PopCallStack();
 #endif
-    _type = type;
+    type_ = type;
 }
 
 template<typename Scalar>
 inline dmhm::MatrixType
 Dense<Scalar>::Type() const
-{ return _type; }
+{ return type_; }
 
 template<typename Scalar>
 inline bool
 Dense<Scalar>::General() const
-{ return _type == GENERAL; }
+{ return type_ == GENERAL; }
 
 template<typename Scalar>
 inline bool
 Dense<Scalar>::Symmetric() const
-{ return _type == SYMMETRIC; }
+{ return type_ == SYMMETRIC; }
 
 /*
 template<typename Scalar>
 inline bool
 Dense<Scalar>::Hermitian() const
-{ return _type == HERMITIAN; }
+{ return type_ == HERMITIAN; }
 */
 
 template<typename Scalar>
 inline int
 Dense<Scalar>::Height() const
-{ return _height; }
+{ return height_; }
 
 template<typename Scalar>
 inline int
 Dense<Scalar>::Width() const
-{ return _width; }
+{ return width_; }
 
 template<typename Scalar>
 inline int
 Dense<Scalar>::LDim() const
-{ return _ldim; }
+{ return ldim_; }
 
 template<typename Scalar>
 inline void
 Dense<Scalar>::Resize( int height, int width )
 {
 #ifndef RELEASE
-    PushCallStack("Dense::Resize");
-    if( _viewing )
+    CallStackEntry entry("Dense::Resize");
+    if( viewing_ )
         throw std::logic_error("Cannot resize views");
     if( height < 0 || width < 0 )
         throw std::logic_error("Height and width must be non-negative");
-    if( _type == SYMMETRIC && height != width )
+    if( type_ == SYMMETRIC && height != width )
         throw std::logic_error("Destroyed symmetry of symmetric matrix");
 #endif
-    if( height > _ldim )
+    if( height > ldim_ )
     {
         // We cannot trivially preserve the old contents
-        _ldim = std::max( height, 1 );
+        ldim_ = std::max( height, 1 );
     }
-    _height = height;
-    _width = width;
-    _memory.resize( _ldim*width );
-    _buffer = &_memory[0];
-#ifndef RELEASE
-    PopCallStack();
-#endif
+    height_ = height;
+    width_ = width;
+    memory_.resize( ldim_*width );
+    buffer_ = &memory_[0];
 }
 
 template<typename Scalar>
@@ -267,24 +259,21 @@ inline void
 Dense<Scalar>::Resize( int height, int width, int ldim )
 {
 #ifndef RELEASE
-    PushCallStack("Dense::Resize");
-    if( _viewing )
+    CallStackEntry entry("Dense::Resize");
+    if( viewing_ )
         throw std::logic_error("Cannot resize views");
     if( height < 0 || width < 0 )
         throw std::logic_error("Height and width must be non-negative");
     if( ldim < height || ldim < 0 )
         throw std::logic_error("LDim must be positive and >= the height");
-    if( _type == SYMMETRIC && height != width )
+    if( type_ == SYMMETRIC && height != width )
         throw std::logic_error("Destroyed symmetry of symmetric matrix");
 #endif
-    _height = height;
-    _width = width;
-    _ldim = ldim;
-    _memory.resize( ldim*width );
-    _buffer = &_memory[0];
-#ifndef RELEASE
-    PopCallStack();
-#endif
+    height_ = height;
+    width_ = width;
+    ldim_ = ldim;
+    memory_.resize( ldim*width );
+    buffer_ = &memory_[0];
 }
 
 template<typename Scalar>
@@ -292,24 +281,21 @@ inline void
 Dense<Scalar>::EraseCol( int first, int last )
 {
 #ifndef RELEASE
-    PushCallStack("Dense::EraseCol");
-    if( _viewing )
+    CallStackEntry entry("Dense::EraseCol");
+    if( viewing_ )
         throw std::logic_error("Cannot erase views");
-    if( first < 0 || last > _width+1 )
+    if( first < 0 || last > width_+1 )
         throw std::logic_error("First and last must be in the range of matrix");
-    if( _type == SYMMETRIC )
+    if( type_ == SYMMETRIC )
         throw std::logic_error("Destroyed symmetry of symmetric matrix");
 #endif
     if( first <= last )
     {
-        _width = _width-last+first-1;                                                 
-        _memory.erase
-        ( _memory.begin()+first*_ldim, _memory.begin()+(last+1)*_ldim );
-        _buffer = &_memory[0];
+        width_ = width_-last+first-1;                                                 
+        memory_.erase
+        ( memory_.begin()+first*ldim_, memory_.begin()+(last+1)*ldim_ );
+        buffer_ = &memory_[0];
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -317,77 +303,71 @@ inline void
 Dense<Scalar>::EraseRow( int first, int last )
 {
 #ifndef RELEASE
-    PushCallStack("Dense::EraseRow");
-    if( _viewing )
+    CallStackEntry entry("Dense::EraseRow");
+    if( viewing_ )
         throw std::logic_error("Cannot erase views");
-    if( first < 0 || last > _height+1 )
+    if( first < 0 || last > height_+1 )
         throw std::logic_error("First and last must be in the range of matrix");
-    if( _type == SYMMETRIC )
+    if( type_ == SYMMETRIC )
         throw std::logic_error("Destroyed symmetry of symmetric matrix");
 #endif
     if(first <= last)
     {
-        _height = _height-last+first-1;                                                     
-        for( int i=_width-1; i>=0; --i)
-            _memory.erase
-            ( _memory.begin()+i*_ldim+first, _memory.begin()+i*_ldim+last+1 );
-        _buffer = &_memory[0];
-        _ldim = _ldim-last+first-1;
+        height_ = height_-last+first-1;                                                     
+        for( int i=width_-1; i>=0; --i)
+            memory_.erase
+            ( memory_.begin()+i*ldim_+first, memory_.begin()+i*ldim_+last+1 );
+        buffer_ = &memory_[0];
+        ldim_ = ldim_-last+first-1;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
 inline void
 Dense<Scalar>::Erase( int colfirst, int collast, int rowfirst, int rowlast )
 {
-    MatrixType typetmp = _type;
+    MatrixType typetmp = type_;
 #ifndef RELEASE
-    PushCallStack("Dense::Erase");
-    if( _viewing )
+    CallStackEntry entry("Dense::Erase");
+    if( viewing_ )
         throw std::logic_error("Cannot erase views");
-    if( rowfirst < 0 || rowlast > _height+1 || colfirst<0 || collast > _width+1 )
+    if( rowfirst < 0 || rowlast > height_+1 || 
+        colfirst<0 || collast > width_+1 )
         throw std::logic_error("First and last must be in the range of matrix");
-    if( _type == SYMMETRIC && ( colfirst != rowfirst || collast != rowlast ) )
+    if( type_ == SYMMETRIC && ( colfirst != rowfirst || collast != rowlast ) )
         throw std::logic_error("Destroyed symmetry of symmetric matrix");
-    if( _type == SYMMETRIC )
-        _type = GENERAL;
+    if( type_ == SYMMETRIC )
+        type_ = GENERAL;
 #endif
         
     EraseCol( colfirst, collast );
     EraseRow( rowfirst, rowlast );
 #ifndef RELEASE
-    _type = typetmp;
-    PopCallStack();
+    type_ = typetmp;
 #endif
 }
 
 template<typename Scalar>
 inline bool
 Dense<Scalar>::IsEmpty() const
-{ return _height==0 && _width==0; }
+{ return height_==0 && width_==0; }
 
 template<typename Scalar>
 inline void
 Dense<Scalar>::Clear()
 {
 #ifndef RELEASE
-    PushCallStack("Dense::Clear");
+    CallStackEntry entry("Dense::Clear");
 #endif
-    _height = 0;
-    _width = 0;
-    _ldim = 1;
-    _viewing = false;
-    _lockedView = false;
-    _memory.clear();
-    _buffer = 0;
-    _lockedBuffer = 0;
-    _type = GENERAL;
-#ifndef RELEASE
-    PopCallStack();
-#endif
+    height_ = 0;
+    width_ = 0;
+    ldim_ = 1;
+    viewing_ = false;
+    lockedView_ = false;
+    memory_.clear();
+    buffer_ = 0;
+    lockedBuffer_ = 0;
+    type_ = GENERAL;
 }
 
 template<typename Scalar>
@@ -395,18 +375,17 @@ inline void
 Dense<Scalar>::Set( int i, int j, Scalar value )
 {
 #ifndef RELEASE
-    PushCallStack("Dense::Set");
-    if( _lockedView )
+    CallStackEntry entry("Dense::Set");
+    if( lockedView_ )
         throw std::logic_error("Cannot change data in a locked view");
     if( i < 0 || j < 0 )
         throw std::logic_error("Indices must be non-negative");
-    if( i >= _height || j >= _width )
+    if( i >= height_ || j >= width_ )
         throw std::logic_error("Indices are out of bound");
-    if( _type == SYMMETRIC && j > i )
+    if( type_ == SYMMETRIC && j > i )
         throw std::logic_error("Setting upper entry from symmetric matrix");
-    PopCallStack();
 #endif
-    _buffer[i+j*_ldim] = value;
+    buffer_[i+j*ldim_] = value;
 }
 
 template<typename Scalar>
@@ -414,19 +393,18 @@ inline Scalar
 Dense<Scalar>::Get( int i, int j ) const
 {
 #ifndef RELEASE
-    PushCallStack("Dense::Get");
+    CallStackEntry entry("Dense::Get");
     if( i < 0 || j < 0 )
         throw std::logic_error("Indices must be non-negative");
-    if( i >= _height || j >= _width )
+    if( i >= height_ || j >= width_ )
         throw std::logic_error("Indices are out of bound");
-    if( _type == SYMMETRIC && j > i )
+    if( type_ == SYMMETRIC && j > i )
         throw std::logic_error("Retrieving upper entry from symmetric matrix");
-    PopCallStack();
 #endif
-    if( _lockedView )
-        return _lockedBuffer[i+j*_ldim];
+    if( lockedView_ )
+        return lockedBuffer_[i+j*ldim_];
     else
-        return _buffer[i+j*_ldim];
+        return buffer_[i+j*ldim_];
 }
 
 template<typename Scalar>
@@ -434,33 +412,30 @@ inline void
 Dense<Scalar>::Print( std::ostream& os, const std::string tag ) const
 {
 #ifndef RELEASE
-    PushCallStack("Dense::Print");
+    CallStackEntry entry("Dense::Print");
 #endif
     os << tag << "\n";
-    if( _type == SYMMETRIC )
+    if( type_ == SYMMETRIC )
     {
-        for( int i=0; i<_height; ++i )
+        for( int i=0; i<height_; ++i )
         {
             for( int j=0; j<=i; ++j )
                 os << WrapScalar(Get(i,j)) << " ";
-            for( int j=i+1; j<_width; ++j )
+            for( int j=i+1; j<width_; ++j )
                 os << WrapScalar(Get(j,i)) << " ";
             os << "\n";
         }
     }
     else
     {
-        for( int i=0; i<_height; ++i )
+        for( int i=0; i<height_; ++i )
         {
-            for( int j=0; j<_width; ++j )
+            for( int j=0; j<width_; ++j )
                 os << WrapScalar(Get(i,j)) << " ";
             os << "\n";
         }
     }
     os.flush();
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -473,16 +448,15 @@ inline Scalar*
 Dense<Scalar>::Buffer( int i, int j )
 {
 #ifndef RELEASE
-    PushCallStack("Dense::Buffer");
-    if( _lockedView )
+    CallStackEntry entry("Dense::Buffer");
+    if( lockedView_ )
         throw std::logic_error("Cannot modify the buffer from a locked view");
     if( i < 0 || j < 0 )
         throw std::logic_error("Indices must be non-negative");
-    if( i > _height || j > _width )
+    if( i > height_ || j > width_ )
         throw std::logic_error("Indices are out of bound");
-    PopCallStack();
 #endif
-    return &_buffer[i+j*_ldim];
+    return &buffer_[i+j*ldim_];
 }
 
 template<typename Scalar>
@@ -490,17 +464,16 @@ inline const Scalar*
 Dense<Scalar>::LockedBuffer( int i, int j ) const
 {
 #ifndef RELEASE
-    PushCallStack("Dense::LockedBuffer");
+    CallStackEntry entry("Dense::LockedBuffer");
     if( i < 0 || j < 0 )
         throw std::logic_error("Indices must be non-negative");
-    if( i > _height || j > _width )
+    if( i > height_ || j > width_ )
         throw std::logic_error("Indices are out of bound");
-    PopCallStack();
 #endif
-    if( _lockedView )
-        return &_lockedBuffer[i+j*_ldim];
+    if( lockedView_ )
+        return &lockedBuffer_[i+j*ldim_];
     else
-        return &_buffer[i+j*_ldim];
+        return &buffer_[i+j*ldim_];
 }
 
 template<typename Scalar>
@@ -508,18 +481,15 @@ inline void
 Dense<Scalar>::View( Dense<Scalar>& A )
 {
 #ifndef RELEASE
-    PushCallStack("Dense::View");
+    CallStackEntry entry("Dense::View");
 #endif
-    _height = A.Height();
-    _width = A.Width();
-    _ldim = A.LDim();
-    _viewing = true;
-    _lockedView = false;
-    _buffer = A.Buffer();
-    _type = A.Type();
-#ifndef RELEASE
-    PopCallStack();
-#endif
+    height_ = A.Height();
+    width_ = A.Width();
+    ldim_ = A.LDim();
+    viewing_ = true;
+    lockedView_ = false;
+    buffer_ = A.Buffer();
+    type_ = A.Type();
 }
 
 template<typename Scalar>
@@ -527,7 +497,7 @@ inline void
 Dense<Scalar>::View( Dense<Scalar>& A, int i, int j, int height, int width )
 {
 #ifndef RELEASE
-    PushCallStack("Dense::View");
+    CallStackEntry entry("Dense::View");
     if( A.Type() == SYMMETRIC && (i != j || height != width) )
         throw std::logic_error("Invalid submatrix of symmetric matrix");
     if( i < 0 || j < 0 )
@@ -541,16 +511,13 @@ Dense<Scalar>::View( Dense<Scalar>& A, int i, int j, int height, int width )
         throw std::logic_error( s.str().c_str() );
     }
 #endif
-    _height = height;
-    _width = width;
-    _ldim = A.LDim();
-    _viewing = true;
-    _lockedView = false;
-    _buffer = A.Buffer(i,j);
-    _type = A.Type();
-#ifndef RELEASE
-    PopCallStack();
-#endif
+    height_ = height;
+    width_ = width;
+    ldim_ = A.LDim();
+    viewing_ = true;
+    lockedView_ = false;
+    buffer_ = A.Buffer(i,j);
+    type_ = A.Type();
 }
 
 template<typename Scalar>
@@ -558,18 +525,15 @@ inline void
 Dense<Scalar>::LockedView( const Dense<Scalar>& A )
 {
 #ifndef RELEASE
-    PushCallStack("Dense::LockedView");
+    CallStackEntry entry("Dense::LockedView");
 #endif
-    _height = A.Height();
-    _width = A.Width();
-    _ldim = A.LDim();
-    _viewing = true;
-    _lockedView = true;
-    _lockedBuffer = A.LockedBuffer();
-    _type = A.Type();
-#ifndef RELEASE
-    PopCallStack();
-#endif
+    height_ = A.Height();
+    width_ = A.Width();
+    ldim_ = A.LDim();
+    viewing_ = true;
+    lockedView_ = true;
+    lockedBuffer_ = A.LockedBuffer();
+    type_ = A.Type();
 }
 
 template<typename Scalar>
@@ -578,7 +542,7 @@ Dense<Scalar>::LockedView
 ( const Dense<Scalar>& A, int i, int j, int height, int width )
 {
 #ifndef RELEASE
-    PushCallStack("Dense::LockedView");
+    CallStackEntry entry("Dense::LockedView");
     if( A.Type() == SYMMETRIC && (i != j || height != width) )
         throw std::logic_error("Invalid submatrix of symmetric matrix");
     if( i < 0 || j < 0 )
@@ -592,16 +556,13 @@ Dense<Scalar>::LockedView
         throw std::logic_error( s.str().c_str() );
     }
 #endif
-    _height = height;
-    _width = width;
-    _ldim = A.LDim();
-    _viewing = true;
-    _lockedView = true;
-    _lockedBuffer = A.LockedBuffer(i,j);
-    _type = A.Type();
-#ifndef RELEASE
-    PopCallStack();
-#endif
+    height_ = height;
+    width_ = width;
+    ldim_ = A.LDim();
+    viewing_ = true;
+    lockedView_ = true;
+    lockedBuffer_ = A.LockedBuffer(i,j);
+    type_ = A.Type();
 }
 
 } // namespace dmhm

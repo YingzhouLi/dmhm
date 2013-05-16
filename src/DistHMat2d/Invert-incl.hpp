@@ -17,7 +17,7 @@ DistHMat2d<Scalar>::SchulzInvert
 ( int numIterations, BASE(Scalar) theta, BASE(Scalar) confidence )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::SchulzInvert");
+    CallStackEntry entry("DistHMat2d::SchulzInvert");
     if( Height() != Width() )
         throw std::logic_error("Cannot invert non-square matrices");
     if( theta <= 1 )
@@ -51,9 +51,6 @@ DistHMat2d<Scalar>::SchulzInvert
     }
 
     CopyFrom( X );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 } // namespace dmhm

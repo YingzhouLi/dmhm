@@ -14,13 +14,10 @@ void
 DistHMat2d<Scalar>::Transpose()
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::Transpose");
+    CallStackEntry entry("DistHMat2d::Transpose");
 #endif
     // This requires communication and is not yet written
     throw std::logic_error("DistHMat2d::Transpose is not yet written");
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -29,7 +26,7 @@ DistHMat2d<Scalar>::TransposeFrom
 ( const DistHMat2d<Scalar>& B )
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::TransposeFrom");
+    CallStackEntry entry("DistHMat2d::TransposeFrom");
 #endif
     DistHMat2d<Scalar>& A = *this;
 
@@ -61,10 +58,6 @@ DistHMat2d<Scalar>::TransposeFrom
 
     // This requires communication and is not yet written
     throw std::logic_error("DistHMat2d::TransposeFrom is not yet written");
-
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 } // namespace dmhm

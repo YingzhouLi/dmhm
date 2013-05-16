@@ -16,7 +16,7 @@ HMat2d<Scalar>::Multiply
   Scalar beta,        Dense<Scalar>& C ) const
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::Multiply (D := H D + D)");
+    CallStackEntry entry("HMat2d::Multiply (D := H D + D)");
 #endif
     hmat_tools::Scale( beta, C );
     switch( block_.type )
@@ -51,9 +51,6 @@ HMat2d<Scalar>::Multiply
         hmat_tools::Multiply( alpha, *block_.data.D, B, Scalar(1), C );
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -63,14 +60,11 @@ HMat2d<Scalar>::Multiply
                       Dense<Scalar>& C ) const
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::Multiply (D := H D)");
+    CallStackEntry entry("HMat2d::Multiply (D := H D)");
 #endif
     C.SetType( GENERAL );
     C.Resize( Height(), B.Width() );
     Multiply( alpha, B, 0, C );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -80,7 +74,7 @@ HMat2d<Scalar>::TransposeMultiply
   Scalar beta,        Dense<Scalar>& C ) const
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::TransposeMultiply (D := H^T D + D)");
+    CallStackEntry entry("HMat2d::TransposeMultiply (D := H^T D + D)");
 #endif
     hmat_tools::Scale( beta, C );
     switch( block_.type )
@@ -118,9 +112,6 @@ HMat2d<Scalar>::TransposeMultiply
         ( alpha, *block_.data.D, B, Scalar(1), C );
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -130,14 +121,11 @@ HMat2d<Scalar>::TransposeMultiply
                       Dense<Scalar>& C ) const
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::TransposeMultiply (D := H^T D)");
+    CallStackEntry entry("HMat2d::TransposeMultiply (D := H^T D)");
 #endif
     C.SetType( GENERAL );
     C.Resize( Width(), B.Width() );
     TransposeMultiply( alpha, B, 0, C );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -147,7 +135,7 @@ HMat2d<Scalar>::AdjointMultiply
   Scalar beta,        Dense<Scalar>& C ) const
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::AdjointMultiply (D := H^H D + D)");
+    CallStackEntry entry("HMat2d::AdjointMultiply (D := H^H D + D)");
 #endif
     hmat_tools::Scale( beta, C );
     switch( block_.type )
@@ -189,9 +177,6 @@ HMat2d<Scalar>::AdjointMultiply
         hmat_tools::AdjointMultiply( alpha, *block_.data.D, B, Scalar(1), C );
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // This version allows for temporary in-place conjugation of B
@@ -202,7 +187,7 @@ HMat2d<Scalar>::AdjointMultiply
   Scalar beta,  Dense<Scalar>& C ) const
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::AdjointMultiply (D := H^H D + D, non-const)");
+    CallStackEntry entry("HMat2d::AdjointMultiply (D := H^H D + D, non-const)");
 #endif
     hmat_tools::Scale( beta, C );
     switch( block_.type )
@@ -242,9 +227,6 @@ HMat2d<Scalar>::AdjointMultiply
         hmat_tools::AdjointMultiply( alpha, *block_.data.D, B, Scalar(1), C );
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -254,14 +236,11 @@ HMat2d<Scalar>::AdjointMultiply
                       Dense<Scalar>& C ) const
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::AdjointMultiply (D := H^H D)");
+    CallStackEntry entry("HMat2d::AdjointMultiply (D := H^H D)");
 #endif
     C.SetType( GENERAL );
     C.Resize( Width(), B.Width() );
     AdjointMultiply( alpha, B, 0, C );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // This version allows for temporary in-place conjugation of B
@@ -272,14 +251,11 @@ HMat2d<Scalar>::AdjointMultiply
                 Dense<Scalar>& C ) const
 {
 #ifndef RELEASE
-    PushCallStack("HMat2d::AdjointMultiply (D := H^H D, non-const)");
+    CallStackEntry entry("HMat2d::AdjointMultiply (D := H^H D, non-const)");
 #endif
     C.SetType( GENERAL );
     C.Resize( Width(), B.Width() );
     AdjointMultiply( alpha, B, 0, C );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 } // namespace dmhm

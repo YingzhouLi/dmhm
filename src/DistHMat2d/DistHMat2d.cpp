@@ -66,15 +66,12 @@ DistHMat2d<Scalar>::DistHMat2d
   beganColSpaceComp_(false), finishedColSpaceComp_(false)
 { 
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::DistHMat2d");
+    CallStackEntry entry("DistHMat2d::DistHMat2d");
 #endif
     const int numTeamLevels = teams.NumLevels();
     if( numTeamLevels > numLevels )
         throw std::logic_error("Too many processes for this H-matrix depth");
     BuildTree();
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -96,15 +93,12 @@ DistHMat2d<Scalar>::DistHMat2d
   beganColSpaceComp_(false), finishedColSpaceComp_(false)
 { 
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::DistHMat2d");
+    CallStackEntry entry("DistHMat2d::DistHMat2d");
 #endif
     const int numTeamLevels = teams.NumLevels();
     if( numTeamLevels > numLevels )
         throw std::logic_error("Too many processes for this H-matrix depth");
     BuildTree();
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
     
 template<typename Scalar>
@@ -121,7 +115,7 @@ int
 DistHMat2d<Scalar>::LocalHeight() const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::LocalHeight");
+    CallStackEntry entry("DistHMat2d::LocalHeight");
 #endif
     int localHeight;
     if( inTargetTeam_ )
@@ -135,9 +129,6 @@ DistHMat2d<Scalar>::LocalHeight() const
     }
     else
         localHeight = 0;
-#ifndef RELEASE
-    PopCallStack();
-#endif
     return localHeight;
 }
 
@@ -146,7 +137,7 @@ int
 DistHMat2d<Scalar>::LocalHeightPartner() const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::LocalHeightPartner");
+    CallStackEntry entry("DistHMat2d::LocalHeightPartner");
 #endif
     int localHeightPartner;
     if( inSourceTeam_ )
@@ -160,9 +151,6 @@ DistHMat2d<Scalar>::LocalHeightPartner() const
     }
     else
         localHeightPartner = 0;
-#ifndef RELEASE
-    PopCallStack();
-#endif
     return localHeightPartner;
 }
 
@@ -171,7 +159,7 @@ int
 DistHMat2d<Scalar>::LocalWidth() const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::LocalWidth");
+    CallStackEntry entry("DistHMat2d::LocalWidth");
 #endif
     int localWidth;
     if( inSourceTeam_ )
@@ -185,9 +173,6 @@ DistHMat2d<Scalar>::LocalWidth() const
     }
     else
         localWidth = 0;
-#ifndef RELEASE
-    PopCallStack();
-#endif
     return localWidth;
 }
 
@@ -196,7 +181,7 @@ int
 DistHMat2d<Scalar>::LocalWidthPartner() const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::LocalWidthPartner");
+    CallStackEntry entry("DistHMat2d::LocalWidthPartner");
 #endif
     int localWidthPartner;
     if( inTargetTeam_ )
@@ -210,9 +195,6 @@ DistHMat2d<Scalar>::LocalWidthPartner() const
     }
     else
         localWidthPartner = 0;
-#ifndef RELEASE
-    PopCallStack();
-#endif
     return localWidthPartner;
 }
 
@@ -221,7 +203,7 @@ int
 DistHMat2d<Scalar>::FirstLocalRow() const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::FirstLocalRow");
+    CallStackEntry entry("DistHMat2d::FirstLocalRow");
 #endif
     int firstLocalRow = 0;
     if( inTargetTeam_ )
@@ -231,9 +213,6 @@ DistHMat2d<Scalar>::FirstLocalRow() const
         ComputeFirstLocalIndexRecursion
         ( firstLocalRow, xSizeTarget_, ySizeTarget_, teamSize, teamRank );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
     return firstLocalRow;
 }
 
@@ -242,7 +221,7 @@ int
 DistHMat2d<Scalar>::FirstLocalCol() const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::FirstLocalCol");
+    CallStackEntry entry("DistHMat2d::FirstLocalCol");
 #endif
     int firstLocalCol = 0;
     if( inSourceTeam_ )
@@ -252,9 +231,6 @@ DistHMat2d<Scalar>::FirstLocalCol() const
         ComputeFirstLocalIndexRecursion
         ( firstLocalCol, xSizeSource_, ySizeSource_, teamSize, teamRank );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
     return firstLocalCol;
 }
 
@@ -283,7 +259,7 @@ int
 DistHMat2d<Scalar>::LocalXTargetSize() const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::LocalXTargetSize");
+    CallStackEntry entry("DistHMat2d::LocalXTargetSize");
 #endif
     int xSize;
     if( inTargetTeam_ )
@@ -298,9 +274,6 @@ DistHMat2d<Scalar>::LocalXTargetSize() const
     }
     else
         xSize = 0;
-#ifndef RELEASE
-    PopCallStack();
-#endif
     return xSize;
 }
 
@@ -309,7 +282,7 @@ int
 DistHMat2d<Scalar>::LocalXSourceSize() const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::LocalXSourceSize");
+    CallStackEntry entry("DistHMat2d::LocalXSourceSize");
 #endif
     int xSize;
     if( inSourceTeam_ )
@@ -324,9 +297,6 @@ DistHMat2d<Scalar>::LocalXSourceSize() const
     }
     else
         xSize = 0;
-#ifndef RELEASE
-    PopCallStack();
-#endif
     return xSize;
 }
 
@@ -335,7 +305,7 @@ int
 DistHMat2d<Scalar>::LocalYTargetSize() const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::LocalYTargetSize");
+    CallStackEntry entry("DistHMat2d::LocalYTargetSize");
 #endif
     int ySize;
     if( inTargetTeam_ )
@@ -350,9 +320,6 @@ DistHMat2d<Scalar>::LocalYTargetSize() const
     }
     else
         ySize = 0;
-#ifndef RELEASE
-    PopCallStack();
-#endif
     return ySize;
 }
 
@@ -361,7 +328,7 @@ int
 DistHMat2d<Scalar>::LocalYSourceSize() const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::LocalYSourceSize");
+    CallStackEntry entry("DistHMat2d::LocalYSourceSize");
 #endif
     int ySize;
     if( inSourceTeam_ )
@@ -376,9 +343,6 @@ DistHMat2d<Scalar>::LocalYSourceSize() const
     }
     else
         ySize = 0;
-#ifndef RELEASE
-    PopCallStack();
-#endif
     return ySize;
 }
 
@@ -387,13 +351,10 @@ void
 DistHMat2d<Scalar>::RequireRoot() const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::RequireRoot");
+    CallStackEntry entry("DistHMat2d::RequireRoot");
 #endif
     if( level_ != 0 )
         throw std::logic_error("Not a root H-matrix as required.");
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -401,7 +362,7 @@ int
 DistHMat2d<Scalar>::Rank() const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::Rank");
+    CallStackEntry entry("DistHMat2d::Rank");
 #endif
     int rank = 0; // initialize to avoid compiler warnings
     switch( block_.type )
@@ -428,9 +389,6 @@ DistHMat2d<Scalar>::Rank() const
         throw std::logic_error("Can only request rank of low-rank blocks");
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
     return rank;
 }
 
@@ -439,7 +397,7 @@ void
 DistHMat2d<Scalar>::SetGhostRank( int rank ) 
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::SetGhostRank");
+    CallStackEntry entry("DistHMat2d::SetGhostRank");
 #endif
     switch( block_.type )
     {
@@ -459,9 +417,6 @@ DistHMat2d<Scalar>::SetGhostRank( int rank )
 #endif
         break;
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 //----------------------------------------------------------------------------//
@@ -491,7 +446,7 @@ DistHMat2d<Scalar>::LatexWriteLocalStructure
 ( const std::string basename ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::LatexWriteLocalStructure");
+    CallStackEntry entry("DistHMat2d::LatexWriteLocalStructure");
 #endif
     MPI_Comm comm = teams_->Team( 0 );
     const int commRank = mpi::CommRank( comm );
@@ -510,9 +465,6 @@ DistHMat2d<Scalar>::LatexWriteLocalStructure
     file << "\\end{tikzpicture}\n"
          << "\\end{center}\n"
          << "\\end{document}" << std::endl;
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
@@ -521,7 +473,7 @@ DistHMat2d<Scalar>::MScriptWriteLocalStructure
 ( const std::string basename ) const
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::MScriptWriteLocalStructure");
+    CallStackEntry entry("DistHMat2d::MScriptWriteLocalStructure");
 #endif
     MPI_Comm comm = teams_->Team( 0 );
     const int commRank = mpi::CommRank( comm );
@@ -530,9 +482,6 @@ DistHMat2d<Scalar>::MScriptWriteLocalStructure
     os << basename << "-" << commRank << ".dat";
     std::ofstream file( os.str().c_str() );
     MScriptWriteLocalStructureRecursion( file );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 //----------------------------------------------------------------------------//
 // Private static routines                                                    //
@@ -620,7 +569,7 @@ void
 DistHMat2d<Scalar>::BuildTree()
 {
 #ifndef RELEASE
-    PushCallStack("DistHMat2d::BuildTree");
+    CallStackEntry entry("DistHMat2d::BuildTree");
 #endif
     MPI_Comm team = teams_->Team(level_);
     const int teamSize = mpi::CommSize( team );
@@ -892,9 +841,6 @@ DistHMat2d<Scalar>::BuildTree()
                 block_.data.SD->D.Resize( Height(), Width() );
         }
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 namespace {

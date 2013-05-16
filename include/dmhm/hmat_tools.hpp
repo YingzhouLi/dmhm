@@ -816,59 +816,47 @@ template<typename Scalar>
 void Copy( const Vector<Scalar>& x, Vector<Scalar>& y )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Copy (Vector,Vector)");
+    CallStackEntry entry("hmat_tools::Copy (Vector,Vector)");
 #endif
     y.Resize( x.Height() );
     std::memcpy( y.Buffer(), x.LockedBuffer(), x.Height()*sizeof(Scalar) );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
 void Copy( const std::vector<Scalar>& x, std::vector<Scalar>& y )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Copy (vector,vector)");
+    CallStackEntry entry("hmat_tools::Copy (vector,vector)");
 #endif
     y.resize( x.size() );
     std::memcpy( &y[0], &x[0], x.size()*sizeof(Scalar) );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
 void Copy( const Vector<Scalar>& x, std::vector<Scalar>& y )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Copy (Vector,vector)");
+    CallStackEntry entry("hmat_tools::Copy (Vector,vector)");
 #endif
     y.resize( x.Height() );
     std::memcpy( &y[0], x.LockedBuffer(), x.Height()*sizeof(Scalar) );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
 void Copy( const std::vector<Scalar>& x, Vector<Scalar>& y )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Copy (vector,Vector)");
+    CallStackEntry entry("hmat_tools::Copy (vector,Vector)");
 #endif
     y.Resize( x.size() );
     std::memcpy( y.Buffer(), &x[0], x.size()*sizeof(Scalar) );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
 void Copy( const Dense<Scalar>& A, Dense<Scalar>& B )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Copy (Dense,Dense)");
+    CallStackEntry entry("hmat_tools::Copy (Dense,Dense)");
 #endif
     const int m = A.Height();
     const int n = A.Width();
@@ -889,22 +877,16 @@ void Copy( const Dense<Scalar>& A, Dense<Scalar>& B )
             ( B.Buffer(0,j), A.LockedBuffer(0,j), m*sizeof(Scalar) );
         }
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
 void Copy( const LowRank<Scalar>& A, LowRank<Scalar>& B )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Copy (LowRank,LowRank)");
+    CallStackEntry entry("hmat_tools::Copy (LowRank,LowRank)");
 #endif
     Copy( A.U, B.U );
     Copy( A.V, B.V );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 /*
@@ -919,28 +901,22 @@ template<typename Real>
 void Conjugate( Vector<std::complex<Real> >& x )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Conjugate (Vector)");
+    CallStackEntry entry("hmat_tools::Conjugate (Vector)");
 #endif
     const int n = x.Height();
     std::complex<Real>* xBuffer = x.Buffer();
     for( int i=0; i<n; ++i ) 
         xBuffer[i] = Conj( xBuffer[i] );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Real>
 void Conjugate( const Vector<Real>& x, Vector<Real>& y )
 { 
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Conjugate (Vector,Vector)");
+    CallStackEntry entry("hmat_tools::Conjugate (Vector,Vector)");
 #endif
     y.Resize( x.Height() );
     std::memcpy( y.Buffer(), x.LockedBuffer(), x.Height()*sizeof(Real) );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Real>
@@ -948,7 +924,7 @@ void Conjugate
 ( const Vector<std::complex<Real> >& x, Vector<std::complex<Real> >& y )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Conjugate (Vector,Vector)");
+    CallStackEntry entry("hmat_tools::Conjugate (Vector,Vector)");
 #endif
     const int n = x.Height();
     y.Resize( n );
@@ -956,9 +932,6 @@ void Conjugate
     std::complex<Real>* RESTRICT yBuffer = y.Buffer();
     for( int i=0; i<n; ++i )
         yBuffer[i] = Conj( xBuffer[i] );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Real>
@@ -969,28 +942,22 @@ template<typename Real>
 void Conjugate( std::vector<std::complex<Real> >& x )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Conjugate (vector)");
+    CallStackEntry entry("hmat_tools::Conjugate (vector)");
 #endif
     const int n = x.size();
     std::complex<Real>* xBuffer = &x[0];
     for( int i=0; i<n; ++i )
         xBuffer[i] = Conj( xBuffer[i] );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Real>
 void Conjugate( const std::vector<Real>& x, std::vector<Real>& y )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Conjugate (vector,vector)");
+    CallStackEntry entry("hmat_tools::Conjugate (vector,vector)");
 #endif
     y.resize( x.size() );
     std::memcpy( &y[0], &x[0], x.size()*sizeof(Real) );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Real>
@@ -999,7 +966,7 @@ void Conjugate
         std::vector<std::complex<Real> >& y )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Conjugate (vector,vector)");
+    CallStackEntry entry("hmat_tools::Conjugate (vector,vector)");
 #endif
     const int n = x.size();
     y.resize( n );
@@ -1007,22 +974,16 @@ void Conjugate
     std::complex<Real>* RESTRICT yBuffer = &y[0];
     for( int i=0; i<n; ++i )
         yBuffer[i] = Conj( xBuffer[i] );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Real>
 void Conjugate( const Vector<Real>& x, std::vector<Real>& y )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Conjugate (Vector,vector)");
+    CallStackEntry entry("hmat_tools::Conjugate (Vector,vector)");
 #endif
     y.resize( x.Height() );
     std::memcpy( &y[0], x.Buffer(), x.Height()*sizeof(Real) );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Real>
@@ -1030,7 +991,7 @@ void Conjugate
 ( const Vector<std::complex<Real> >& x, std::vector<std::complex<Real> >& y )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Conjugate (Vector,vector)");
+    CallStackEntry entry("hmat_tools::Conjugate (Vector,vector)");
 #endif
     const int n = x.Height();
     y.resize( n );
@@ -1038,22 +999,16 @@ void Conjugate
     std::complex<Real>* RESTRICT yBuffer = &y[0];
     for( int i=0; i<n; ++i )
         yBuffer[i] = Conj( xBuffer[i] );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Real>
 void Conjugate( const std::vector<Real>& x, Vector<Real>& y )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Conjugate (vector,Vector)");
+    CallStackEntry entry("hmat_tools::Conjugate (vector,Vector)");
 #endif
     y.Resize( x.size() );
     std::memcpy( y.Buffer(), &x[0], x.size()*sizeof(Real) );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Real>
@@ -1062,7 +1017,7 @@ void Conjugate
         Vector<std::complex<Real> >& y )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Conjugate (vector,Vector)");
+    CallStackEntry entry("hmat_tools::Conjugate (vector,Vector)");
 #endif
     const int n = x.size();
     y.Resize( n );
@@ -1070,9 +1025,6 @@ void Conjugate
     std::complex<Real>* yBuffer = y.Buffer();
     for( int i=0; i<n; ++i )
         yBuffer[i] = Conj( xBuffer[i] );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Real>
@@ -1083,7 +1035,7 @@ template<typename Real>
 void Conjugate( Dense<std::complex<Real> >& D )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Conjugate (Dense)");
+    CallStackEntry entry("hmat_tools::Conjugate (Dense)");
 #endif
     const int m = D.Height();
     const int n = D.Width();
@@ -1093,16 +1045,13 @@ void Conjugate( Dense<std::complex<Real> >& D )
         for( int i=0; i<m; ++i )
             DCol[i] = Conj( DCol[i] );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Real>
 void Conjugate( const Dense<Real>& D1, Dense<Real>& D2 )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Conjugate (Dense,Dense)");
+    CallStackEntry entry("hmat_tools::Conjugate (Dense,Dense)");
 #endif
     const int m = D1.Height();
     const int n = D1.Width();
@@ -1124,9 +1073,6 @@ void Conjugate( const Dense<Real>& D1, Dense<Real>& D2 )
             ( D2.Buffer(0,j), D1.LockedBuffer(0,j), m*sizeof(Real) );
         }
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Real>
@@ -1134,7 +1080,7 @@ void Conjugate
 ( const Dense<std::complex<Real> >& D1, Dense<std::complex<Real> >& D2 )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Conjugate (Dense,Dense)");
+    CallStackEntry entry("hmat_tools::Conjugate (Dense,Dense)");
 #endif
     const int m = D1.Height();
     const int n = D1.Width();
@@ -1160,9 +1106,6 @@ void Conjugate
                 D2Col[i] = Conj( D1Col[i] );
         }
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Real>
@@ -1173,20 +1116,17 @@ template<typename Real>
 void Conjugate( LowRank<std::complex<Real> >& F )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Conjugate (LowRank)");
+    CallStackEntry entry("hmat_tools::Conjugate (LowRank)");
 #endif
     Conjugate( F.U );
     Conjugate( F.V );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Real>
 void Conjugate( const LowRank<Real>& F1, LowRank<Real>& F2 )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Conjugate (LowRank,LowRank)");
+    CallStackEntry entry("hmat_tools::Conjugate (LowRank,LowRank)");
 #endif
     const int m = F1.Height();
     const int n = F1.Width();
@@ -1195,9 +1135,6 @@ void Conjugate( const LowRank<Real>& F1, LowRank<Real>& F2 )
     F2.V.SetType( GENERAL ); F2.V.Resize( n, r );
     Copy( F1.U, F2.U );
     Copy( F1.V, F2.V );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Real>
@@ -1206,7 +1143,7 @@ void Conjugate
         LowRank<std::complex<Real> >& F2 )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Conjugate (LowRank,LowRank)");
+    CallStackEntry entry("hmat_tools::Conjugate (LowRank,LowRank)");
 #endif
     const int m = F1.Height();
     const int n = F1.Width();
@@ -1215,9 +1152,6 @@ void Conjugate
     F2.V.SetType( GENERAL ); F2.V.Resize( n, r );
     Conjugate( F1.U, F2.U );
     Conjugate( F1.V, F2.V );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 /*
@@ -1228,7 +1162,7 @@ template<typename Scalar>
 void Transpose( const Dense<Scalar>& A, Dense<Scalar>& B )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Transpose (Dense)");
+    CallStackEntry entry("hmat_tools::Transpose (Dense)");
 #endif
     if( B.Symmetric() )
         Copy( A, B );
@@ -1245,22 +1179,16 @@ void Transpose( const Dense<Scalar>& A, Dense<Scalar>& B )
             for( int i=0; i<m; ++i )
                 BBuffer[j+i*BLDim] = ABuffer[i+j*ALDim];
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
 void Transpose( const LowRank<Scalar>& A, LowRank<Scalar>& B )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Transpose (LowRank)");
+    CallStackEntry entry("hmat_tools::Transpose (LowRank)");
 #endif
     Copy( A.V, B.U );
     Copy( A.U, B.V );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 /*
@@ -1271,7 +1199,7 @@ template<typename Scalar>
 void Adjoint( const Dense<Scalar>& A, Dense<Scalar>& B )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Adjoint (Dense)");
+    CallStackEntry entry("hmat_tools::Adjoint (Dense)");
 #endif
     if( B.Symmetric() )
         Conjugate( A, B );
@@ -1288,22 +1216,16 @@ void Adjoint( const Dense<Scalar>& A, Dense<Scalar>& B )
             for( int i=0; i<m; ++i )
                 BBuffer[j+i*BLDim] = Conj(ABuffer[i+j*ALDim]);
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
 void Adjoint( const LowRank<Scalar>& A, LowRank<Scalar>& B )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Adjoint (LowRank)");
+    CallStackEntry entry("hmat_tools::Adjoint (LowRank)");
 #endif
     Conjugate( A.V, B.U );
     Conjugate( A.U, B.V );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 /*
@@ -1313,26 +1235,18 @@ template<typename Real>
 Real TwoNorm( const Vector<Real>& x )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::TwoNorm");
+    CallStackEntry entry("hmat_tools::TwoNorm");
 #endif
-    const Real twoNorm = blas::Nrm2( x.Height(), x.LockedBuffer(), 1 );
-#ifndef RELEASE
-    PopCallStack();
-#endif
-    return twoNorm;
+    return blas::Nrm2( x.Height(), x.LockedBuffer(), 1 );
 }
 
 template<typename Real>
 Real TwoNorm( const Vector<std::complex<Real> >& x )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::TwoNorm");
+    CallStackEntry entry("hmat_tools::TwoNorm");
 #endif
-    const Real twoNorm = blas::Nrm2( x.Height(), x.LockedBuffer(), 1 );
-#ifndef RELEASE
-    PopCallStack();
-#endif
-    return twoNorm;
+    return blas::Nrm2( x.Height(), x.LockedBuffer(), 1 );
 }
 
 /*
@@ -1361,7 +1275,7 @@ template<typename Real>
 Real EstimateTwoNorm( const AbstractHMat<Real>& A, Real theta, Real confidence )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::EstimateTwoNorm");
+    CallStackEntry entry("hmat_tools::EstimateTwoNorm");
     if( theta <= 1 )
         throw std::logic_error("Theta must be > 1");
     if( confidence <= 0 )
@@ -1395,7 +1309,6 @@ Real EstimateTwoNorm( const AbstractHMat<Real>& A, Real theta, Real confidence )
     }
 #ifndef RELEASE
     std::cerr << "Estimated ||A||_2 as " << estimate << std::endl;
-    PopCallStack();
 #endif
     return estimate;
 }
@@ -1406,7 +1319,7 @@ Real EstimateTwoNorm
 {
     typedef std::complex<Real> Scalar;
 #ifndef RELEASE
-    PushCallStack("hmat_tools::EstimateTwoNorm");
+    CallStackEntry entry("hmat_tools::EstimateTwoNorm");
     if( theta <= 1 )
         throw std::logic_error("Theta must be > 1");
     if( confidence <= 0 )
@@ -1440,7 +1353,6 @@ Real EstimateTwoNorm
     }
 #ifndef RELEASE
     std::cerr << "Estimated ||A||_2 as " << estimate << std::endl;
-    PopCallStack();
 #endif
     return estimate;
 }
@@ -1453,33 +1365,25 @@ template<typename Scalar>
 void Scale( Scalar alpha, Vector<Scalar>& x )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Scale (Vector)");
+    CallStackEntry entry("hmat_tools::Scale (Vector)");
 #endif
     if( alpha == Scalar(0) )
         std::memset( x.Buffer(), 0, x.Height()*sizeof(Scalar) );
     else
         blas::Scal( x.Height(), alpha, x.Buffer(), 1 );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
 void Scale( Scalar alpha, Dense<Scalar>& D )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Scale (Dense)");
+    CallStackEntry entry("hmat_tools::Scale (Dense)");
 #endif
     const int m = D.Height();
     const int n = D.Width();
 
     if( alpha == Scalar(1) )
-    {
-#ifndef RELEASE
-        PopCallStack();
-#endif
         return;
-    }
 
     if( D.Symmetric() )
     {
@@ -1499,16 +1403,13 @@ void Scale( Scalar alpha, Dense<Scalar>& D )
             for( int j=0; j<n; ++j )
                 blas::Scal( m, alpha, D.Buffer(0,j), 1 );
     }
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 template<typename Scalar>
 void Scale( Scalar alpha, LowRank<Scalar>& F )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Scale (LowRank)");
+    CallStackEntry entry("hmat_tools::Scale (LowRank)");
 #endif
     if( alpha == Scalar(0) )
     {
@@ -1517,9 +1418,6 @@ void Scale( Scalar alpha, LowRank<Scalar>& F )
     }
     else
         Scale( alpha, F.U );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 /*
@@ -1536,7 +1434,7 @@ void Multiply
         LowRank<Real>& F )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Multiply (F := A A)");
+    CallStackEntry entry("hmat_tools::Multiply (F := A A)");
 #endif
     const int maxRankA = std::min( A.Height(), A.Width() );
     const int maxRankB = std::min( B.Height(), B.Width() );
@@ -1615,9 +1513,6 @@ void Multiply
     ( 'N', 'T', Y.Height(), r, Y.Width(), 
       1, Y.LockedBuffer(), Y.LDim(), X.LockedBuffer(), X.LDim(), 
       0, F.U.Buffer(), F.U.LDim() );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // F := alpha H H,
@@ -1630,7 +1525,7 @@ void Multiply
         LowRank<std::complex<Real> >& F )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::Multiply (F := A A)");
+    CallStackEntry entry("hmat_tools::Multiply (F := A A)");
 #endif
     typedef std::complex<Real> Scalar;
 
@@ -1718,9 +1613,6 @@ void Multiply
     ( 'N', option, Y.Height(), r, Y.Width(), 
       1, Y.LockedBuffer(), Y.LDim(), X.LockedBuffer(), X.LDim(), 
       0, F.U.Buffer(), F.U.LDim() );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // F := alpha H^T H,
@@ -1733,7 +1625,7 @@ void TransposeMultiply
         LowRank<Real>& F )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::TransposeMultiply (F := A^T A)");
+    CallStackEntry entry("hmat_tools::TransposeMultiply (F := A^T A)");
 #endif
     const int maxRankA = std::min( A.Height(), A.Width() );
     const int maxRankB = std::min( B.Height(), B.Width() );
@@ -1812,9 +1704,6 @@ void TransposeMultiply
     ( 'N', 'T', Y.Height(), r, Y.Width(),
       1, Y.LockedBuffer(), Y.LDim(), X.LockedBuffer(), X.LDim(),
       0, F.U.Buffer(), F.U.LDim() );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // F := alpha H^T H,
@@ -1827,7 +1716,7 @@ void TransposeMultiply
         LowRank<std::complex<Real> >& F )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::TransposeMultiply (F := A^T A)");
+    CallStackEntry entry("hmat_tools::TransposeMultiply (F := A^T A)");
 #endif
     typedef std::complex<Real> Scalar;
 
@@ -1915,9 +1804,6 @@ void TransposeMultiply
     ( 'N', option, Y.Height(), r, Y.Width(), 
       1, Y.LockedBuffer(), Y.LDim(), X.LockedBuffer(), X.LDim(), 
       0, F.U.Buffer(), F.U.LDim() );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // F := alpha H^H H,
@@ -1930,12 +1816,9 @@ void AdjointMultiply
         LowRank<Real>& F )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::AdjointMultiply (F := A^H A)");
+    CallStackEntry entry("hmat_tools::AdjointMultiply (F := A^H A)");
 #endif
     TransposeMultiply( sampleRank, alpha, A, B, F );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 // F := alpha H^H H
@@ -1948,7 +1831,7 @@ void AdjointMultiply
         LowRank<std::complex<Real> >& F )
 {
 #ifndef RELEASE
-    PushCallStack("hmat_tools::AdjointMultiply (F := A^H A)");
+    CallStackEntry entry("hmat_tools::AdjointMultiply (F := A^H A)");
 #endif
     typedef std::complex<Real> Scalar;
 
@@ -2036,9 +1919,6 @@ void AdjointMultiply
     ( 'N', option, Y.Height(), r, Y.Width(), 
       1, Y.LockedBuffer(), Y.LDim(), X.LockedBuffer(), X.LDim(), 
       0, F.U.Buffer(), F.U.LDim() );
-#ifndef RELEASE
-    PopCallStack();
-#endif
 }
 
 } // namespace hmat_tools
