@@ -22,12 +22,12 @@ namespace dmhm {
 template<typename Scalar>
 class Vector
 {
-    int _height;
-    bool _viewing;
-    bool _lockedView;
-    std::vector<Scalar> _memory;
-    Scalar* _buffer;
-    const Scalar* _lockedBuffer;
+    int height_;
+    bool viewing_;
+    bool lockedView_;
+    std::vector<Scalar> memory_;
+    Scalar* buffer_;
+    const Scalar* lockedBuffer_;
 
 public:
     Vector();
@@ -62,37 +62,37 @@ public:
 template<typename Scalar>
 inline
 Vector<Scalar>::Vector()
-: _height(0), _viewing(false), _lockedView(false),
-  _memory(), _buffer(0), _lockedBuffer(0)
+: height_(0), viewing_(false), lockedView_(false),
+  memory_(), buffer_(0), lockedBuffer_(0)
 { }
 
 template<typename Scalar>
 inline
 Vector<Scalar>::Vector( int height )
-: _height(height), _viewing(false), _lockedView(false),
-  _memory(height), _buffer(&_memory[0]), _lockedBuffer(0)
+: height_(height), viewing_(false), lockedView_(false),
+  memory_(height), buffer_(&memory_[0]), lockedBuffer_(0)
 { }
 
 template<typename Scalar>
 inline
 Vector<Scalar>::Vector( int height, Scalar* buffer )
-: _height(height), _viewing(true), _lockedView(false),
-  _memory(), _buffer(buffer), _lockedBuffer(0)
+: height_(height), viewing_(true), lockedView_(false),
+  memory_(), buffer_(buffer), lockedBuffer_(0)
 { }
 
 template<typename Scalar>
 inline
 Vector<Scalar>::Vector( int height, const Scalar* lockedBuffer )
-: _height(height), _viewing(true), _lockedView(true),
-  _memory(), _buffer(0), _lockedBuffer(lockedBuffer)
+: height_(height), viewing_(true), lockedView_(true),
+  memory_(), buffer_(0), lockedBuffer_(lockedBuffer)
 { }
 
 template<typename Scalar>
 inline
 Vector<Scalar>::Vector( const Vector<Scalar>& x )
-: _height(x.Height()), _viewing(false), _lockedView(false),
-  _memory(x.Height()), _buffer(&_memory[0]), _lockedBuffer(0)
-{ std::memcpy( _buffer, x.LockedBuffer(), x.Height()*sizeof(Scalar) ); }
+: height_(x.Height()), viewing_(false), lockedView_(false),
+  memory_(x.Height()), buffer_(&memory_[0]), lockedBuffer_(0)
+{ std::memcpy( buffer_, x.LockedBuffer(), x.Height()*sizeof(Scalar) ); }
 
 template<typename Scalar>
 inline
@@ -102,7 +102,7 @@ Vector<Scalar>::~Vector()
 template<typename Scalar>
 inline int
 Vector<Scalar>::Height() const
-{ return _height; }
+{ return height_; }
 
 template<typename Scalar>
 inline void
@@ -110,12 +110,12 @@ Vector<Scalar>::Resize( int height )
 {
 #ifndef RELEASE
     PushCallStack("Vector::Resize");
-    if( _viewing || _lockedView )
+    if( viewing_ || lockedView_ )
         throw std::logic_error("Cannot resize a Vector that is a view.");
 #endif
-    _height = height;
-    _memory.resize( height );
-    _buffer = &_memory[0];
+    height_ = height;
+    memory_.resize( height );
+    buffer_ = &memory_[0];
 #ifndef RELEASE
     PopCallStack();
 #endif
@@ -128,12 +128,12 @@ Vector<Scalar>::Clear()
 #ifndef RELEASE
     PushCallStack("Vector::Clear");
 #endif
-    _height = 0;
-    _viewing = false;
-    _lockedView = false;
-    _memory.clear();
-    _buffer = 0;
-    _lockedBuffer = 0;
+    height_ = 0;
+    viewing_ = false;
+    lockedView_ = false;
+    memory_.clear();
+    buffer_ = 0;
+    lockedBuffer_ = 0;
 #ifndef RELEASE
     PopCallStack();
 #endif
@@ -145,15 +145,15 @@ Vector<Scalar>::Set( int i, Scalar value )
 {
 #ifndef RELEASE
     PushCallStack("Vector::Set");
-    if( _lockedView )
+    if( lockedView_ )
         throw std::logic_error("Cannot modify locked views");
     if( i < 0 )
         throw std::logic_error("Negative buffer offsets are nonsensical");
-    if( i >= _height )
+    if( i >= height_ )
         throw std::logic_error("Vector::Set is out of bounds");
     PopCallStack();
 #endif
-    _buffer[i] = value;
+    buffer_[i] = value;
 }
 
 template<typename Scalar>
@@ -164,14 +164,14 @@ Vector<Scalar>::Get( int i ) const
     PushCallStack("Vector::Get");
     if( i < 0 )
         throw std::logic_error("Negative buffer offsets are nonsensical");
-    if( i >= _height )
+    if( i >= height_ )
         throw std::logic_error("Vector::Get is out of bounds");
     PopCallStack();
 #endif
-    if( _lockedView )
-        return _lockedBuffer[i];
+    if( lockedView_ )
+        return lockedBuffer_[i];
     else
-        return _buffer[i];
+        return buffer_[i];
 }
 
 template<typename Scalar>
@@ -182,15 +182,15 @@ Vector<Scalar>::Print( const std::string tag ) const
     PushCallStack("Vector::Print");
 #endif
     std::cout << tag << "\n";
-    if( _lockedView )
+    if( lockedView_ )
     {
-        for( int i=0; i<_height; ++i )
-            std::cout << WrapScalar(_lockedBuffer[i]) << "\n";
+        for( int i=0; i<height_; ++i )
+            std::cout << WrapScalar(lockedBuffer_[i]) << "\n";
     }
     else
     {
-        for( int i=0; i<_height; ++i )
-            std::cout << WrapScalar(_buffer[i]) << "\n";
+        for( int i=0; i<height_; ++i )
+            std::cout << WrapScalar(buffer_[i]) << "\n";
     }
     std::cout << std::endl;
 #ifndef RELEASE
@@ -204,15 +204,15 @@ Vector<Scalar>::Buffer( int i )
 {
 #ifndef RELEASE
     PushCallStack("Vector::Buffer");
-    if( _lockedView )
+    if( lockedView_ )
         throw std::logic_error("Cannot get modifiable buffer from locked view");
     if( i < 0 )
         throw std::logic_error("Negative buffer offset is nonsensical");
-    if( i > _height )
+    if( i > height_ )
         throw std::logic_error("Out of bounds of buffer");
     PopCallStack();
 #endif
-    return &_buffer[i];
+    return &buffer_[i];
 }
 
 template<typename Scalar>
@@ -223,14 +223,14 @@ Vector<Scalar>::LockedBuffer( int i ) const
     PushCallStack("Vector::LockedBuffer");
     if( i < 0 )
         throw std::logic_error("Negative buffer offset is nonsensical");
-    if( i > _height )
+    if( i > height_ )
         throw std::logic_error("Out of bounds of buffer");
     PopCallStack();
 #endif
-    if( _lockedView )
-        return &_lockedBuffer[i];
+    if( lockedView_ )
+        return &lockedBuffer_[i];
     else
-        return &_buffer[i];
+        return &buffer_[i];
 }
 
 template<typename Scalar>
@@ -240,10 +240,10 @@ Vector<Scalar>::View( Vector<Scalar>& x )
 #ifndef RELEASE
     PushCallStack("Vector::View");
 #endif
-    _viewing = true;
-    _lockedView = false;
-    _buffer = x.Buffer();
-    _height = x.Height();
+    viewing_ = true;
+    lockedView_ = false;
+    buffer_ = x.Buffer();
+    height_ = x.Height();
 #ifndef RELEASE
     PopCallStack();
 #endif
@@ -260,10 +260,10 @@ Vector<Scalar>::View( Vector<Scalar>& x, int i, int height )
     if( i < 0 )
         throw std::logic_error("Negative buffer offset is nonsensical");
 #endif
-    _viewing = true;
-    _lockedView = false;
-    _buffer = x.Buffer( i );
-    _height = height;
+    viewing_ = true;
+    lockedView_ = false;
+    buffer_ = x.Buffer( i );
+    height_ = height;
 #ifndef RELEASE
     PopCallStack();
 #endif
@@ -276,10 +276,10 @@ Vector<Scalar>::LockedView( const Vector<Scalar>& x )
 #ifndef RELEASE
     PushCallStack("Vector::LockedView");
 #endif
-    _viewing = true;
-    _lockedView = true;
-    _lockedBuffer = x.Buffer();
-    _height = x.Height();
+    viewing_ = true;
+    lockedView_ = true;
+    lockedBuffer_ = x.Buffer();
+    height_ = x.Height();
 #ifndef RELEASE
     PopCallStack();
 #endif
@@ -296,10 +296,10 @@ Vector<Scalar>::LockedView( const Vector<Scalar>& x, int i, int height )
     if( i < 0 )
         throw std::logic_error("Negative buffer offset is nonsensical");
 #endif
-    _viewing = true;
-    _lockedView = true;
-    _lockedBuffer = x.LockedBuffer( i );
-    _height = height;
+    viewing_ = true;
+    lockedView_ = true;
+    lockedBuffer_ = x.LockedBuffer( i );
+    height_ = height;
 #ifndef RELEASE
     PopCallStack();
 #endif

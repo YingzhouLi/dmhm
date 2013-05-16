@@ -22,8 +22,8 @@ public:
     void Clear();
     void Clear( int key );
 private:
-    std::map<int,double> _startTimes, _times;
-    std::map<int,bool> _running;
+    std::map<int,double> startTimes_, times_;
+    std::map<int,bool> running_;
 };
 
 //----------------------------------------------------------------------------//
@@ -37,19 +37,19 @@ Timer::Start( int key )
     PushCallStack("Timer::Start");
 #endif
     std::map<int,bool>::iterator it;
-    it = _running.find( key );
-    if( it == _running.end() )
+    it = running_.find( key );
+    if( it == running_.end() )
     {
-        _running[key] = true;
-        _startTimes[key] = mpi::WallTime();
+        running_[key] = true;
+        startTimes_[key] = mpi::WallTime();
     }
     else
     {
-        if( _running[key] )
+        if( running_[key] )
             throw std::logic_error
             ("Restarted timer with same key without stopping");
-        _running[key] = true;
-        _startTimes[key] = mpi::WallTime();
+        running_[key] = true;
+        startTimes_[key] = mpi::WallTime();
     }
 #ifndef RELEASE
     PopCallStack();
@@ -65,21 +65,21 @@ Timer::Stop( int key )
     double pairTime = 0;
 
     std::map<int,bool>::iterator runningIt;
-    runningIt = _running.find( key );
-    if( runningIt == _running.end() || !_running[key] )
+    runningIt = running_.find( key );
+    if( runningIt == running_.end() || !running_[key] )
         throw std::logic_error("Stopped a timer that was not running");
     else
     {
-        pairTime = mpi::WallTime() - _startTimes[key];
+        pairTime = mpi::WallTime() - startTimes_[key];
 
         std::map<int,double>::iterator timeIt;
-        timeIt = _times.find( key );
-        if( timeIt == _times.end() )
-            _times[key] = pairTime;
+        timeIt = times_.find( key );
+        if( timeIt == times_.end() )
+            times_[key] = pairTime;
         else
-            _times[key] += pairTime;
+            times_[key] += pairTime;
 
-        _running[key] = false;
+        running_[key] = false;
     }
 #ifndef RELEASE
     PopCallStack();
@@ -96,11 +96,11 @@ Timer::GetTime( int key )
     double time = 0;
 
     std::map<int,double>::iterator it;
-    it = _times.find( key );
-    if( it == _times.end() )
+    it = times_.find( key );
+    if( it == times_.end() )
         time = 0;
     else
-        time = _times[key];
+        time = times_[key];
 #ifndef RELEASE
     PopCallStack();
 #endif
@@ -109,16 +109,16 @@ Timer::GetTime( int key )
 
 inline void Timer::Clear()
 {
-    _running.clear();
-    _startTimes.clear();
-    _times.clear();
+    running_.clear();
+    startTimes_.clear();
+    times_.clear();
 }
 
 inline void Timer::Clear( int key )
 {
-    _running.erase( key );
-    _startTimes.erase( key );
-    _times.erase( key );
+    running_.erase( key );
+    startTimes_.erase( key );
+    times_.erase( key );
 }
 
 } // namespace dmhm

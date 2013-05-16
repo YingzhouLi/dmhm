@@ -11,6 +11,6 @@
 #define DMHM_HPP 1
 
 #include "dmhm/building_blocks/environment.hpp"
-#include "dmhm/dist_quasi2d_hmat.hpp"
+#include "dmhm/dist_hmat2d.hpp"
 
 #endif // ifndef DMHM_HPP
