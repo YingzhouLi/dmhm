@@ -1,23 +1,12 @@
 /*
-   Distributed-Memory Hierarchical Matrices (DMHM): a prototype implementation
-   of distributed-memory H-matrix arithmetic. 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   The University of Texas at Austin, and Stanford University
 
-   Copyright (C) 2011 Jack Poulson, Lexing Ying, and
-   The University of Texas at Austin
-
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
+   under the GPLv3 License, which can be found in the LICENSE file in the root
+   directory, or at http://opensource.org/licenses/GPL-3.0
 */
+#pragma once
 #ifndef DMHM_RANDOM_HPP
 #define DMHM_RANDOM_HPP 1
 
@@ -104,26 +93,20 @@ void SerialGaussianRandomVectors( Dense< std::complex<Real> >& A );
 template<typename Real>
 void ParallelGaussianRandomVectors( Dense< std::complex<Real> >& ALocal );
 
-} // namespace dmhm
-
 //----------------------------------------------------------------------------//
 // Header implementations                                                     //
 //----------------------------------------------------------------------------//
 
-inline dmhm::UInt32
-dmhm::Lower16Bits( UInt32 a )
-{
-    return a & 0xFFFF;
-}
+inline UInt32
+Lower16Bits( UInt32 a )
+{ return a & 0xFFFF; }
 
-inline dmhm::UInt32
-dmhm::Upper16Bits( UInt32 a )
-{
-    return (a >> 16) & 0xFFFF;
-}
+inline UInt32
+Upper16Bits( UInt32 a )
+{ return (a >> 16) & 0xFFFF; }
 
-inline dmhm::ExpandedUInt64
-dmhm::Expand( UInt32 a )
+inline ExpandedUInt64
+Expand( UInt32 a )
 {
     ExpandedUInt64 b;
     b[0] = Lower16Bits( a );
@@ -134,8 +117,8 @@ dmhm::Expand( UInt32 a )
     return b;
 }
 
-inline dmhm::ExpandedUInt64
-dmhm::Expand( UInt64 a )
+inline ExpandedUInt64
+Expand( UInt64 a )
 {
     ExpandedUInt64 b;
     b[0] = Lower16Bits( a[0] );
@@ -146,8 +129,8 @@ dmhm::Expand( UInt64 a )
     return b;
 }
 
-inline dmhm::UInt64
-dmhm::Deflate( ExpandedUInt64 a )
+inline UInt64
+Deflate( ExpandedUInt64 a )
 {
     UInt64 b;
     b[0] = a[0] + ( a[1] << 16 );
@@ -157,7 +140,7 @@ dmhm::Deflate( ExpandedUInt64 a )
 }
 
 inline void
-dmhm::CarryUpper16Bits( ExpandedUInt64& c )
+CarryUpper16Bits( ExpandedUInt64& c )
 {
     c[1] += Upper16Bits(c[0]);
     c[0] = Lower16Bits(c[0]);
@@ -188,8 +171,8 @@ dmhm::CarryUpper16Bits( ExpandedUInt64& c )
 //   2^0  ( a0 b0 )
 //
 // Since c := a b (mod 2^64), only the last four terms must be computed.
-inline dmhm::ExpandedUInt64 
-dmhm::MultiplyWith64BitMod( ExpandedUInt64 a, ExpandedUInt64 b )
+inline ExpandedUInt64 
+MultiplyWith64BitMod( ExpandedUInt64 a, ExpandedUInt64 b )
 {
     UInt32 temp;
     ExpandedUInt64 c;
@@ -232,8 +215,8 @@ dmhm::MultiplyWith64BitMod( ExpandedUInt64 a, ExpandedUInt64 b )
     return c;
 }
 
-inline dmhm::ExpandedUInt64 
-dmhm::AddWith64BitMod( ExpandedUInt64 a, ExpandedUInt64 b )
+inline ExpandedUInt64 
+AddWith64BitMod( ExpandedUInt64 a, ExpandedUInt64 b )
 {
     ExpandedUInt64 c;
     c[0] = a[0] + b[0];
@@ -246,7 +229,7 @@ dmhm::AddWith64BitMod( ExpandedUInt64 a, ExpandedUInt64 b )
 }
 
 inline void
-dmhm::ManualLcg( ExpandedUInt64 a, ExpandedUInt64 c, ExpandedUInt64& X )
+ManualLcg( ExpandedUInt64 a, ExpandedUInt64 c, ExpandedUInt64& X )
 {
     X = MultiplyWith64BitMod( a, X );
     X = AddWith64BitMod( c, X );
@@ -254,7 +237,7 @@ dmhm::ManualLcg( ExpandedUInt64 a, ExpandedUInt64 c, ExpandedUInt64& X )
 
 // Provide a uniform sample from (0,1]
 template<>
-inline float dmhm::SerialUniform<float>()
+inline float SerialUniform<float>()
 {
     const UInt64 state = SerialLcg();
     // Use the upper 32-bits of the LCG since they are the most random.
@@ -263,7 +246,7 @@ inline float dmhm::SerialUniform<float>()
 
 // Provide a uniform sample from (0,1]
 template<>
-inline double dmhm::SerialUniform<double>()
+inline double SerialUniform<double>()
 {
     const UInt64 state = SerialLcg();
     // Use the upper 32-bits of the LCG since they are the most random
@@ -273,7 +256,7 @@ inline double dmhm::SerialUniform<double>()
 
 // Provide a uniform sample from (0,1]
 template<>
-inline float dmhm::ParallelUniform<float>()
+inline float ParallelUniform<float>()
 {
     const UInt64 state = ParallelLcg();
     // Use the upper 32-bits of the LCG since they are the most random.
@@ -282,7 +265,7 @@ inline float dmhm::ParallelUniform<float>()
 
 // Provide a uniform sample from (0,1]
 template<>
-inline double dmhm::ParallelUniform<double>()
+inline double ParallelUniform<double>()
 {
     const UInt64 state = ParallelLcg();
     // Use the upper 32-bits of the LCG since they are the most random
@@ -296,8 +279,7 @@ inline double dmhm::ParallelUniform<double>()
 
 template<typename Real>
 inline void
-dmhm::SerialBoxMuller
-( Real& X, Real& Y )
+SerialBoxMuller( Real& X, Real& Y )
 {
     const Real U = SerialUniform<Real>();
     const Real V = SerialUniform<Real>();
@@ -310,8 +292,7 @@ dmhm::SerialBoxMuller
 
 template<typename Real>
 inline void
-dmhm::ParallelBoxMuller
-( Real& X, Real& Y )
+ParallelBoxMuller( Real& X, Real& Y )
 {
     const Real U = ParallelUniform<Real>();
     const Real V = ParallelUniform<Real>();
@@ -324,8 +305,7 @@ dmhm::ParallelBoxMuller
 
 template<typename Real>
 inline void
-dmhm::SerialGaussianRandomVariable
-( Real& X )
+SerialGaussianRandomVariable( Real& X )
 {
     // Use half of Box-Muller
     const Real U = SerialUniform<Real>();
@@ -335,8 +315,7 @@ dmhm::SerialGaussianRandomVariable
 
 template<typename Real>
 inline void
-dmhm::ParallelGaussianRandomVariable
-( Real& X )
+ParallelGaussianRandomVariable( Real& X )
 {
     // Use half of Box-Muller
     const Real U = ParallelUniform<Real>();
@@ -346,8 +325,7 @@ dmhm::ParallelGaussianRandomVariable
 
 template<typename Real>
 inline void
-dmhm::SerialGaussianRandomVariable
-( std::complex<Real>& X )
+SerialGaussianRandomVariable( std::complex<Real>& X )
 {
     Real Y, Z;
     SerialBoxMuller( Y, Z );
@@ -356,8 +334,7 @@ dmhm::SerialGaussianRandomVariable
 
 template<typename Real>
 inline void
-dmhm::ParallelGaussianRandomVariable
-( std::complex<Real>& X )
+ParallelGaussianRandomVariable( std::complex<Real>& X )
 {
     Real Y, Z;
     ParallelBoxMuller( Y, Z );
@@ -366,8 +343,7 @@ dmhm::ParallelGaussianRandomVariable
 
 template<typename Real>
 void
-dmhm::SerialGaussianRandomVector
-( dmhm::Vector<Real>& x )
+SerialGaussianRandomVector( Vector<Real>& x )
 {
 #ifndef RELEASE
     PushCallStack("SerialGaussianRandomVector");
@@ -394,8 +370,7 @@ dmhm::SerialGaussianRandomVector
 
 template<typename Real>
 void
-dmhm::ParallelGaussianRandomVector
-( dmhm::Vector<Real>& x )
+ParallelGaussianRandomVector( Vector<Real>& x )
 {
 #ifndef RELEASE
     PushCallStack("ParallelGaussianRandomVector");
@@ -422,8 +397,7 @@ dmhm::ParallelGaussianRandomVector
 
 template<typename Real>
 void
-dmhm::SerialGaussianRandomVector
-( dmhm::Vector<std::complex<Real> >& x )
+SerialGaussianRandomVector( Vector<std::complex<Real> >& x )
 {
 #ifndef RELEASE
     PushCallStack("SerialGaussianRandomVector");
@@ -439,8 +413,7 @@ dmhm::SerialGaussianRandomVector
 
 template<typename Real>
 void
-dmhm::ParallelGaussianRandomVector
-( dmhm::Vector<std::complex<Real> >& x )
+ParallelGaussianRandomVector( Vector<std::complex<Real> >& x )
 {
 #ifndef RELEASE
     PushCallStack("ParallelGaussianRandomVector");
@@ -456,8 +429,7 @@ dmhm::ParallelGaussianRandomVector
 
 template<typename Real>
 void
-dmhm::SerialGaussianRandomVectors
-( dmhm::Dense<Real>& A )
+SerialGaussianRandomVectors( Dense<Real>& A )
 {
 #ifndef RELEASE
     PushCallStack("SerialGaussianRandomVectors");
@@ -489,8 +461,7 @@ dmhm::SerialGaussianRandomVectors
 
 template<typename Real>
 void
-dmhm::ParallelGaussianRandomVectors
-( dmhm::Dense<Real>& A )
+ParallelGaussianRandomVectors( Dense<Real>& A )
 {
 #ifndef RELEASE
     PushCallStack("ParallelGaussianRandomVectors");
@@ -522,8 +493,7 @@ dmhm::ParallelGaussianRandomVectors
 
 template<typename Real>
 void
-dmhm::SerialGaussianRandomVectors
-( dmhm::Dense< std::complex<Real> >& A )
+SerialGaussianRandomVectors( Dense<std::complex<Real> >& A )
 {
 #ifndef RELEASE
     PushCallStack("SerialGaussianRandomVectors");
@@ -544,8 +514,7 @@ dmhm::SerialGaussianRandomVectors
 
 template<typename Real>
 void
-dmhm::ParallelGaussianRandomVectors
-( dmhm::Dense<std::complex<Real> >& ALocal )
+ParallelGaussianRandomVectors( Dense<std::complex<Real> >& ALocal )
 {
 #ifndef RELEASE
     PushCallStack("ParallelGaussianRandomVectors");
@@ -564,4 +533,6 @@ dmhm::ParallelGaussianRandomVectors
 #endif
 }
 
-#endif // DMHM_RANDOM_HPP
+} // namespace dmhm
+
+#endif // ifndef DMHM_RANDOM_HPP

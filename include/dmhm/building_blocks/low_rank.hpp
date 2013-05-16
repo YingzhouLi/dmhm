@@ -1,23 +1,12 @@
 /*
-   Distributed-Memory Hierarchical Matrices (DMHM): a prototype implementation
-   of distributed-memory H-matrix arithmetic. 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   The University of Texas at Austin, and Stanford University
 
-   Copyright (C) 2011 Jack Poulson, Lexing Ying, and
-   The University of Texas at Austin
-
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
+   under the GPLv3 License, which can be found in the LICENSE file in the root
+   directory, or at http://opensource.org/licenses/GPL-3.0
 */
+#pragma once
 #ifndef DMHM_LOW_RANK_HPP
 #define DMHM_LOW_RANK_HPP 1
 
@@ -25,19 +14,15 @@
 
 namespace dmhm {
 
-// NOTE: We have two different factorized forms since adjoints are
-//       more natural, but plain transposes will almost certainly be faster for
-//       complex symmetric problems.
-
 // A basic low-rank matrix representation that is used for the blocks with
 // sufficiently separated sources and targets. 
 //
 // U and V will always be assumed to be of general type 
 // (they should be non-square except in pathological cases).
-template<typename Scalar,bool Conjugated=true>
+template<typename Scalar>
 struct LowRank
 {
-    // If Conjugated == true, then A = U V^H, otherwise, A = U V^T. 
+    // A = U V^T. 
     Dense<Scalar> U, V;
 
     int Height() const { return U.Height(); }
@@ -54,4 +39,4 @@ struct LowRank
 
 } // namespace dmhm
 
-#endif // DMHM_LOW_RANK_HPP
+#endif // ifndef DMHM_LOW_RANK_HPP

@@ -1,31 +1,20 @@
 /*
-   Distributed-Memory Hierarchical Matrices (DMHM): a prototype implementation
-   of distributed-memory H-matrix arithmetic. 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   The University of Texas at Austin, and Stanford University
 
-   Copyright (C) 2011 Jack Poulson, Lexing Ying, and
-   The University of Texas at Austin
-
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
+   under the GPLv3 License, which can be found in the LICENSE file in the root
+   directory, or at http://opensource.org/licenses/GPL-3.0
 */
+
+namespace dmhm {
 
 //----------------------------------------------------------------------------//
 // Public non-static routines                                                 //
 //----------------------------------------------------------------------------//
 
-template<typename Scalar,bool Conjugated>
-dmhm::Quasi2dHMat<Scalar,Conjugated>::Quasi2dHMat
-( const std::vector<byte>& packedHMat )
+template<typename Scalar>
+Quasi2dHMat<Scalar>::Quasi2dHMat( const std::vector<byte>& packedHMat )
 {
 #ifndef RELEASE
     PushCallStack("Quasi2dHMat::Quasi2dHMat");
@@ -36,9 +25,9 @@ dmhm::Quasi2dHMat<Scalar,Conjugated>::Quasi2dHMat
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 std::size_t
-dmhm::Quasi2dHMat<Scalar,Conjugated>::PackedSize() const
+Quasi2dHMat<Scalar>::PackedSize() const
 {
 #ifndef RELEASE
     PushCallStack("Quasi2dHMat::PackedSize");
@@ -51,10 +40,9 @@ dmhm::Quasi2dHMat<Scalar,Conjugated>::PackedSize() const
     return packedSize;
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 std::size_t
-dmhm::Quasi2dHMat<Scalar,Conjugated>::Pack
-( byte* packedHMat ) const
+Quasi2dHMat<Scalar>::Pack( byte* packedHMat ) const
 {
 #ifndef RELEASE
     PushCallStack("Quasi2dHMat::Pack");
@@ -82,13 +70,12 @@ dmhm::Quasi2dHMat<Scalar,Conjugated>::Pack
 #ifndef RELEASE
     PopCallStack();
 #endif
-    return (head-packedHMat);
+    return head-packedHMat;
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 std::size_t
-dmhm::Quasi2dHMat<Scalar,Conjugated>::Pack
-( std::vector<byte>& packedHMat ) const
+Quasi2dHMat<Scalar>::Pack( std::vector<byte>& packedHMat ) const
 {
 #ifndef RELEASE
     PushCallStack("Quasi2dHMat::Pack");
@@ -119,13 +106,12 @@ dmhm::Quasi2dHMat<Scalar,Conjugated>::Pack
 #ifndef RELEASE
     PopCallStack();
 #endif
-    return (head-&packedHMat[0]);
+    return head-&packedHMat[0];
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 std::size_t
-dmhm::Quasi2dHMat<Scalar,Conjugated>::Unpack
-( const byte* packedHMat )
+Quasi2dHMat<Scalar>::Unpack( const byte* packedHMat )
 {
 #ifndef RELEASE
     PushCallStack("Quasi2dHMat::Unpack");
@@ -153,13 +139,12 @@ dmhm::Quasi2dHMat<Scalar,Conjugated>::Unpack
 #ifndef RELEASE
     PopCallStack();
 #endif
-    return (head-packedHMat);
+    return head-packedHMat;
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 std::size_t
-dmhm::Quasi2dHMat<Scalar,Conjugated>::Unpack
-( const std::vector<byte>& packedHMat )
+Quasi2dHMat<Scalar>::Unpack( const std::vector<byte>& packedHMat )
 {
 #ifndef RELEASE
     PushCallStack("Quasi2dHMat::Unpack");
@@ -187,17 +172,16 @@ dmhm::Quasi2dHMat<Scalar,Conjugated>::Unpack
 #ifndef RELEASE
     PopCallStack();
 #endif
-    return (head-&packedHMat[0]);
+    return head-&packedHMat[0];
 }
 
 //----------------------------------------------------------------------------//
 // Private non-static routines                                                //
 //----------------------------------------------------------------------------//
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::Quasi2dHMat<Scalar,Conjugated>::PackedSizeRecursion
-( std::size_t& packedSize ) const
+Quasi2dHMat<Scalar>::PackedSizeRecursion( std::size_t& packedSize ) const
 {
     packedSize += sizeof(BlockType);
     switch( _block.type )
@@ -246,10 +230,9 @@ dmhm::Quasi2dHMat<Scalar,Conjugated>::PackedSizeRecursion
     }
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::Quasi2dHMat<Scalar,Conjugated>::PackRecursion
-( byte*& head ) const
+Quasi2dHMat<Scalar>::PackRecursion( byte*& head ) const
 {
     Write( head, _block.type );
     switch( _block.type )
@@ -305,11 +288,9 @@ dmhm::Quasi2dHMat<Scalar,Conjugated>::PackRecursion
     }
 }
 
-
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::Quasi2dHMat<Scalar,Conjugated>::UnpackRecursion
-( const byte*& head )
+Quasi2dHMat<Scalar>::UnpackRecursion( const byte*& head )
 {
     _block.Clear();
     _block.type = Read<BlockType>( head );
@@ -324,7 +305,7 @@ dmhm::Quasi2dHMat<Scalar,Conjugated>::UnpackRecursion
             for( int s=0,sOffset=0; s<4; sOffset+=node.sourceSizes[s],++s )
             {
                 node.children[s+4*t] = 
-                    new Quasi2dHMat<Scalar,Conjugated>
+                    new Quasi2dHMat<Scalar>
                     ( _numLevels-1, _maxRank, _symmetric, _stronglyAdmissible,
                       node.xSourceSizes[s&1], node.xTargetSizes[t&1],
                       node.ySourceSizes[s/2], node.yTargetSizes[t/2],
@@ -347,7 +328,7 @@ dmhm::Quasi2dHMat<Scalar,Conjugated>::UnpackRecursion
             for( int s=0,sOffset=0; s<=t; sOffset+=node.sizes[s],++s )
             {
                 node.children[child++] =  
-                    new Quasi2dHMat<Scalar,Conjugated>
+                    new Quasi2dHMat<Scalar>
                     ( _numLevels-1, _maxRank, _symmetric, _stronglyAdmissible,
                       node.xSizes[s&1], node.xSizes[t&1],
                       node.ySizes[s/2], node.ySizes[t/2],
@@ -362,7 +343,7 @@ dmhm::Quasi2dHMat<Scalar,Conjugated>::UnpackRecursion
     }
     case LOW_RANK:
     {
-        _block.data.F = new LowRank<Scalar,Conjugated>;
+        _block.data.F = new LowRank<Scalar>;
         Dense<Scalar>& U = _block.data.F->U;
         Dense<Scalar>& V = _block.data.F->V;
         const int m = Height();
@@ -404,3 +385,4 @@ dmhm::Quasi2dHMat<Scalar,Conjugated>::UnpackRecursion
     }
 }
 
+} // namespace dmhm

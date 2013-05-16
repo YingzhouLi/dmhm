@@ -1,33 +1,23 @@
 /*
-   Distributed-Memory Hierarchical Matrices (DMHM): a prototype implementation
-   of distributed-memory H-matrix arithmetic. 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   The University of Texas at Austin, and Stanford University
 
-   Copyright (C) 2011 Jack Poulson, Lexing Ying, and
-   The University of Texas at Austin
-
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
+   under the GPLv3 License, which can be found in the LICENSE file in the root
+   directory, or at http://opensource.org/licenses/GPL-3.0
 */
+
+namespace dmhm {
 
 //----------------------------------------------------------------------------//
 // Public static routines                                                     //
 //----------------------------------------------------------------------------//
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 std::size_t
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::PackedSizes
+DistQuasi2dHMat<Scalar>::PackedSizes
 ( std::vector<std::size_t>& packedSizes, 
-  const Quasi2dHMat<Scalar,Conjugated>& H, const Teams& teams )
+  const Quasi2dHMat<Scalar>& H, const Teams& teams )
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::PackedSizes");
@@ -61,11 +51,11 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::PackedSizes
     return totalSize;
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 std::size_t
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::Pack
+DistQuasi2dHMat<Scalar>::Pack
 ( std::vector<byte*>& packedSubs, 
-  const Quasi2dHMat<Scalar,Conjugated>& H, const Teams& teams )
+  const Quasi2dHMat<Scalar>& H, const Teams& teams )
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::Pack");
@@ -112,10 +102,10 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::Pack
     return totalSize;
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 int
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::ComputeLocalHeight
-( int p, int rank, const Quasi2dHMat<Scalar,Conjugated>& H )
+DistQuasi2dHMat<Scalar>::ComputeLocalHeight
+( int p, int rank, const Quasi2dHMat<Scalar>& H )
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::ComputeLocalHeight");
@@ -133,10 +123,10 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::ComputeLocalHeight
     return localHeight;
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 int
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::ComputeLocalWidth
-( int p, int rank, const Quasi2dHMat<Scalar,Conjugated>& H )
+DistQuasi2dHMat<Scalar>::ComputeLocalWidth
+( int p, int rank, const Quasi2dHMat<Scalar>& H )
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::ComputeLocalWidth");
@@ -154,10 +144,10 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::ComputeLocalWidth
     return localWidth;
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 int
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::ComputeFirstLocalRow
-( int p, int rank, const Quasi2dHMat<Scalar,Conjugated>& H )
+DistQuasi2dHMat<Scalar>::ComputeFirstLocalRow
+( int p, int rank, const Quasi2dHMat<Scalar>& H )
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::ComputeFirstLocalRow");
@@ -173,10 +163,10 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::ComputeFirstLocalRow
     return firstLocalRow;
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 int
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::ComputeFirstLocalCol
-( int p, int rank, const Quasi2dHMat<Scalar,Conjugated>& H )
+DistQuasi2dHMat<Scalar>::ComputeFirstLocalCol
+( int p, int rank, const Quasi2dHMat<Scalar>& H )
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::ComputeFirstLocalCol");
@@ -192,10 +182,10 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::ComputeFirstLocalCol
     return firstLocalCol;
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::ComputeLocalSizes
-( std::vector<int>& localSizes, const Quasi2dHMat<Scalar,Conjugated>& H )
+DistQuasi2dHMat<Scalar>::ComputeLocalSizes
+( std::vector<int>& localSizes, const Quasi2dHMat<Scalar>& H )
 {
 #ifndef RELEASE    
     PushCallStack("DistQuasi2dHMat::ComputeLocalSizes");
@@ -218,15 +208,15 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::ComputeLocalSizes
 // Private static routines                                                    //
 //----------------------------------------------------------------------------//
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::PackedSizesRecursion
+DistQuasi2dHMat<Scalar>::PackedSizesRecursion
 ( std::vector<std::size_t>& packedSizes, 
   const std::vector<int>& localSizes,
   int sourceRankOffset, int targetRankOffset, int teamSize,
-  const Quasi2dHMat<Scalar,Conjugated>& H )
+  const Quasi2dHMat<Scalar>& H )
 {
-    typedef Quasi2dHMat<Scalar,Conjugated> Quasi2d;
+    typedef Quasi2dHMat<Scalar> Quasi2d;
 
     for( int i=0; i<teamSize; ++i )
         packedSizes[sourceRankOffset+i] += sizeof(BlockType);
@@ -384,15 +374,15 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::PackedSizesRecursion
     }
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::PackRecursion
+DistQuasi2dHMat<Scalar>::PackRecursion
 ( std::vector<byte**>& headPointers,
   const std::vector<int>& localSizes,
   int sourceRankOffset, int targetRankOffset, int teamSize,
-  const Quasi2dHMat<Scalar,Conjugated>& H )
+  const Quasi2dHMat<Scalar>& H )
 {
-    typedef Quasi2dHMat<Scalar,Conjugated> Quasi2d;
+    typedef Quasi2dHMat<Scalar> Quasi2d;
 
     const typename Quasi2d::Block& block = H._block;
     const int m = H.Height();
@@ -678,9 +668,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::PackRecursion
     }
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::ComputeLocalDimensionRecursion
+DistQuasi2dHMat<Scalar>::ComputeLocalDimensionRecursion
 ( int& localDim, int& xSize, int& ySize, int& zSize, int p, int rank )
 {
     if( p >= 4 )
@@ -717,9 +707,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::ComputeLocalDimensionRecursion
         localDim = xSize*ySize*zSize;
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::ComputeFirstLocalIndexRecursion
+DistQuasi2dHMat<Scalar>::ComputeFirstLocalIndexRecursion
 ( int& firstLocalIndex, int xSize, int ySize, int zSize, int p, int rank )
 {
     if( p >= 4 )
@@ -765,9 +755,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::ComputeFirstLocalIndexRecursion
     }
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::ComputeLocalSizesRecursion
+DistQuasi2dHMat<Scalar>::ComputeLocalSizesRecursion
 ( int* localSizes, int teamSize, int xSize, int ySize, int zSize ) 
 {
     if( teamSize >=4 )
@@ -811,8 +801,8 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::ComputeLocalSizesRecursion
 // Public non-static routines                                                 //
 //----------------------------------------------------------------------------//
 
-template<typename Scalar,bool Conjugated>
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::DistQuasi2dHMat
+template<typename Scalar>
+DistQuasi2dHMat<Scalar>::DistQuasi2dHMat
 ( const byte* packedSub, const Teams& teams )
 : _haveDenseUpdate(false), _storedDenseUpdate(false),
   _beganRowSpaceComp(false), _finishedRowSpaceComp(false),
@@ -827,9 +817,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::DistQuasi2dHMat
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 std::size_t
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::Unpack
+DistQuasi2dHMat<Scalar>::Unpack
 ( const byte* packedDistHMat, const Teams& teams )
 {
 #ifndef RELEASE
@@ -868,10 +858,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::Unpack
     return (head-packedDistHMat);
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::UnpackRecursion
-( const byte*& head )
+DistQuasi2dHMat<Scalar>::UnpackRecursion( const byte*& head )
 {
     MPI_Comm team = _teams->Team( _level );
     if( !_inSourceTeam && !_inTargetTeam )
@@ -906,7 +895,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::UnpackRecursion
                     const int sourceRoot = _sourceRoot + s*(teamSize/4);
 
                     node.children[s+4*t] = 
-                        new DistQuasi2dHMat<Scalar,Conjugated>
+                        new DistQuasi2dHMat<Scalar>
                         ( _numLevels-1, _maxRank, _stronglyAdmissible,
                           _sourceOffset+sOffset, _targetOffset+tOffset,
                           node.xSourceSizes[s&1], node.xTargetSizes[t&1],
@@ -931,7 +920,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::UnpackRecursion
                     const int sourceRoot = _sourceRoot + s*(teamSize/4);
 
                     node.children[s+4*t] = 
-                        new DistQuasi2dHMat<Scalar,Conjugated>
+                        new DistQuasi2dHMat<Scalar>
                         ( _numLevels-1, _maxRank, _stronglyAdmissible,
                           _sourceOffset+sOffset, _targetOffset+tOffset,
                           node.xSourceSizes[s&1], node.xTargetSizes[t&1],
@@ -956,7 +945,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::UnpackRecursion
                     const int sourceRoot = _sourceRoot + s*(teamSize/4);
 
                     node.children[s+4*t] = 
-                        new DistQuasi2dHMat<Scalar,Conjugated>
+                        new DistQuasi2dHMat<Scalar>
                         ( _numLevels-1, _maxRank, _stronglyAdmissible,
                           _sourceOffset+sOffset, _targetOffset+tOffset,
                           node.xSourceSizes[s&1], node.xTargetSizes[t&1],
@@ -982,7 +971,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::UnpackRecursion
                     const int sourceRoot = _sourceRoot + s*(teamSize/4);
 
                     node.children[s+4*t] = 
-                        new DistQuasi2dHMat<Scalar,Conjugated>
+                        new DistQuasi2dHMat<Scalar>
                         ( _numLevels-1, _maxRank, _stronglyAdmissible,
                           _sourceOffset+sOffset, _targetOffset+tOffset,
                           node.xSourceSizes[s&1], node.xTargetSizes[t&1],
@@ -1016,7 +1005,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::UnpackRecursion
                 for( int s=0,sOffset=0; s<2; sOffset+=node.sourceSizes[s],++s )
                 {
                     node.children[s+4*t] = 
-                        new DistQuasi2dHMat<Scalar,Conjugated>
+                        new DistQuasi2dHMat<Scalar>
                         ( _numLevels-1, _maxRank, _stronglyAdmissible,
                           _sourceOffset+sOffset, _targetOffset+tOffset,
                           node.xSourceSizes[s&1], node.xTargetSizes[t&1],
@@ -1037,7 +1026,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::UnpackRecursion
                      s<4; sOffset+=node.sourceSizes[s],++s )
                 {
                     node.children[s+4*t] = 
-                        new DistQuasi2dHMat<Scalar,Conjugated>
+                        new DistQuasi2dHMat<Scalar>
                         ( _numLevels-1, _maxRank, _stronglyAdmissible,
                           _sourceOffset+sOffset, _targetOffset+tOffset,
                           node.xSourceSizes[s&1], node.xTargetSizes[t&1],
@@ -1058,7 +1047,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::UnpackRecursion
                 for( int s=0,sOffset=0; s<2; sOffset+=node.sourceSizes[s],++s )
                 {
                     node.children[s+4*t] =
-                        new DistQuasi2dHMat<Scalar,Conjugated>
+                        new DistQuasi2dHMat<Scalar>
                         ( _numLevels-1, _maxRank, _stronglyAdmissible,
                           _sourceOffset+sOffset, _targetOffset+tOffset,
                           node.xSourceSizes[s&1], node.xTargetSizes[t&1],
@@ -1080,7 +1069,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::UnpackRecursion
                      s<4; sOffset+=node.sourceSizes[s],++s )
                 {
                     node.children[s+4*t] = 
-                        new DistQuasi2dHMat<Scalar,Conjugated>
+                        new DistQuasi2dHMat<Scalar>
                         ( _numLevels-1, _maxRank, _stronglyAdmissible,
                           _sourceOffset+sOffset, _targetOffset+tOffset,
                           node.xSourceSizes[s&1], node.xTargetSizes[t&1],
@@ -1108,7 +1097,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::UnpackRecursion
             for( int s=0,sOffset=0; s<4; sOffset+=node.sourceSizes[s],++s )
             {
                 node.children[s+4*t] = 
-                    new DistQuasi2dHMat<Scalar,Conjugated>
+                    new DistQuasi2dHMat<Scalar>
                     ( _numLevels-1, _maxRank, _stronglyAdmissible,
                       _sourceOffset+sOffset, _targetOffset+tOffset,
                       node.xSourceSizes[s&1], node.xTargetSizes[t&1],
@@ -1195,8 +1184,8 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::UnpackRecursion
     }
     case LOW_RANK:
     {
-        _block.data.F = new LowRank<Scalar,Conjugated>;
-        LowRank<Scalar,Conjugated>& F = *_block.data.F;
+        _block.data.F = new LowRank<Scalar>;
+        LowRank<Scalar>& F = *_block.data.F;
 
         // Read in the rank
         const int r = Read<int>( head );
@@ -1237,3 +1226,4 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::UnpackRecursion
     }
 }
 
+} // namespace dmhm

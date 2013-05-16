@@ -1,27 +1,18 @@
 /*
-   Distributed-Memory Hierarchical Matrices (DMHM): a prototype implementation
-   of distributed-memory H-matrix arithmetic. 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   The University of Texas at Austin, and Stanford University
 
-   Copyright (C) 2011 Jack Poulson, Lexing Ying, and
-   The University of Texas at Austin
-
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
+   under the GPLv3 License, which can be found in the LICENSE file in the root
+   directory, or at http://opensource.org/licenses/GPL-3.0
 */
 #include "dmhm.hpp"
 
+namespace dmhm {
+namespace hmat_tools {
+
 template<typename Scalar>
-void dmhm::hmat_tools::ConvertSubmatrix
+void ConvertSubmatrix
 ( Dense<Scalar>& D, const Sparse<Scalar>& S, 
   int iStart, int jStart, int height, int width )
 {
@@ -34,7 +25,7 @@ void dmhm::hmat_tools::ConvertSubmatrix
     else 
         D.SetType( GENERAL );
     D.Resize( height, width );
-    Scale( (Scalar)0, D );
+    Scale( Scalar(0), D );
 #ifndef RELEASE
     if( D.Symmetric() && height != width )
         throw std::logic_error("Invalid submatrix of symmetric sparse matrix.");
@@ -66,9 +57,9 @@ void dmhm::hmat_tools::ConvertSubmatrix
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
-void dmhm::hmat_tools::ConvertSubmatrix
-( LowRank<Scalar,Conjugated>& F, const Sparse<Scalar>& S,
+template<typename Scalar>
+void ConvertSubmatrix
+( LowRank<Scalar>& F, const Sparse<Scalar>& S,
   int iStart, int jStart, int height, int width )
 {
 #ifndef RELEASE
@@ -96,8 +87,8 @@ void dmhm::hmat_tools::ConvertSubmatrix
     const int r = rankCounter;
     F.U.SetType( GENERAL ); F.U.Resize( height, r );
     F.V.SetType( GENERAL ); F.V.Resize( width, r );
-    Scale( (Scalar)0, F.U );
-    Scale( (Scalar)0, F.V );
+    Scale( Scalar(0), F.U );
+    Scale( Scalar(0), F.V );
 
     // Fill in the representation of each nonzero using the appropriate column
     // of identity in F.U and the appropriate scaled column of identity in 
@@ -119,10 +110,7 @@ void dmhm::hmat_tools::ConvertSubmatrix
                 const int jOffset = thisColIndex - jStart;
                 const Scalar value = S.nonzeros[thisRowOffset+k];
                 F.U.Set(iOffset,rankCounter,1);
-                if( Conjugated )
-                    F.V.Set(jOffset,rankCounter,Conj(value));
-                else
-                    F.V.Set(jOffset,rankCounter,value);
+                F.V.Set(jOffset,rankCounter,value);
                 ++rankCounter;
             }
         }
@@ -134,52 +122,39 @@ void dmhm::hmat_tools::ConvertSubmatrix
 #endif
 }
 
-template void dmhm::hmat_tools::ConvertSubmatrix
+template void ConvertSubmatrix
 (       Dense<float>& D, 
   const Sparse<float>& S,
   int iStart, int iEnd, int jStart, int jEnd );
-template void dmhm::hmat_tools::ConvertSubmatrix
+template void ConvertSubmatrix
 (       Dense<double>& D, 
   const Sparse<double>& S,
   int iStart, int iEnd, int jStart, int jEnd );
-template void dmhm::hmat_tools::ConvertSubmatrix
+template void ConvertSubmatrix
 (       Dense<std::complex<float> >& D, 
   const Sparse<std::complex<float> >& S,
   int iStart, int iEnd, int jStart, int jEnd );
-template void dmhm::hmat_tools::ConvertSubmatrix
+template void ConvertSubmatrix
 (       Dense<std::complex<double> >& D,
   const Sparse<std::complex<double> >& S,
   int iStart, int iEnd, int jStart, int jEnd );
 
-template void dmhm::hmat_tools::ConvertSubmatrix
-(       LowRank<float,false>& F,
+template void ConvertSubmatrix
+(       LowRank<float>& F,
   const Sparse<float>& S,
   int iStart, int iEnd, int jStart, int jEnd );
-template void dmhm::hmat_tools::ConvertSubmatrix
-(       LowRank<float,true>& F,
-  const Sparse<float>& S,
-  int iStart, int iEnd, int jStart, int jEnd );
-template void dmhm::hmat_tools::ConvertSubmatrix
-(       LowRank<double,false>& F,
+template void ConvertSubmatrix
+(       LowRank<double>& F,
   const Sparse<double>& S,
   int iStart, int iEnd, int jStart, int jEnd );
-template void dmhm::hmat_tools::ConvertSubmatrix
-(       LowRank<double,true>& F,
-  const Sparse<double>& S,
-  int iStart, int iEnd, int jStart, int jEnd );
-template void dmhm::hmat_tools::ConvertSubmatrix
-(       LowRank<std::complex<float>,false>& F,
+template void ConvertSubmatrix
+(       LowRank<std::complex<float> >& F,
   const Sparse<std::complex<float> >& S,
   int iStart, int iEnd, int jStart, int jEnd );
-template void dmhm::hmat_tools::ConvertSubmatrix
-(       LowRank<std::complex<float>,true>& F,
-  const Sparse<std::complex<float> >& S,
-  int iStart, int iEnd, int jStart, int jEnd );
-template void dmhm::hmat_tools::ConvertSubmatrix
-(       LowRank<std::complex<double>,false>& F,
+template void ConvertSubmatrix
+(       LowRank<std::complex<double> >& F,
   const Sparse<std::complex<double> >& S,
   int iStart, int iEnd, int jStart, int jEnd );
-template void dmhm::hmat_tools::ConvertSubmatrix
-(       LowRank<std::complex<double>,true>& F,
-  const Sparse<std::complex<double> >& S,
-  int iStart, int iEnd, int jStart, int jEnd );
+
+} // namespace hmat_tools
+} // namespace dmhm

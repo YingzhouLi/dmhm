@@ -1,27 +1,17 @@
 /*
-   Distributed-Memory Hierarchical Matrices (DMHM): a prototype implementation
-   of distributed-memory H-matrix arithmetic. 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   The University of Texas at Austin, and Stanford University
 
-   Copyright (C) 2011 Jack Poulson, Lexing Ying, and
-   The University of Texas at Austin
-
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
+   under the GPLv3 License, which can be found in the LICENSE file in the root
+   directory, or at http://opensource.org/licenses/GPL-3.0
 */
 
-template<typename Scalar,bool Conjugated>
+namespace dmhm {
+
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::Multiply
+DistQuasi2dHMat<Scalar>::Multiply
 ( Scalar alpha, const Vector<Scalar>& xLocal, 
                       Vector<Scalar>& yLocal ) const
 {
@@ -29,45 +19,45 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::Multiply
     PushCallStack("DistQuasi2dHMat::Multiply");
 #endif
     yLocal.Resize( LocalHeight() );
-    Multiply( alpha, xLocal, (Scalar)0, yLocal );
+    Multiply( alpha, xLocal, Scalar(0), yLocal );
 #ifndef RELEASE
     PopCallStack();
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::TransposeMultiply
+DistQuasi2dHMat<Scalar>::TransposeMultiply
 ( Scalar alpha, const Vector<Scalar>& xLocal, Vector<Scalar>& yLocal ) const
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::TransposeMultiply");
 #endif
     yLocal.Resize( LocalWidth() );
-    TransposeMultiply( alpha, xLocal, (Scalar)0, yLocal );
+    TransposeMultiply( alpha, xLocal, Scalar(0), yLocal );
 #ifndef RELEASE
     PopCallStack();
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::AdjointMultiply
+DistQuasi2dHMat<Scalar>::AdjointMultiply
 ( Scalar alpha, const Vector<Scalar>& xLocal, Vector<Scalar>& yLocal ) const
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::AdjointMultiply");
 #endif
     yLocal.Resize( LocalWidth() );
-    AdjointMultiply( alpha, xLocal, (Scalar)0, yLocal );
+    AdjointMultiply( alpha, xLocal, Scalar(0), yLocal );
 #ifndef RELEASE
     PopCallStack();
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::Multiply
+DistQuasi2dHMat<Scalar>::Multiply
 ( Scalar alpha, const Vector<Scalar>& xLocal, 
   Scalar beta,        Vector<Scalar>& yLocal ) const
 {
@@ -90,9 +80,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::Multiply
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::TransposeMultiply
+DistQuasi2dHMat<Scalar>::TransposeMultiply
 ( Scalar alpha, const Vector<Scalar>& xLocal, 
   Scalar beta, Vector<Scalar>& yLocal ) const
 {
@@ -116,9 +106,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::TransposeMultiply
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::AdjointMultiply
+DistQuasi2dHMat<Scalar>::AdjointMultiply
 ( Scalar alpha, const Vector<Scalar>& xLocal, 
   Scalar beta,        Vector<Scalar>& yLocal ) const
 {
@@ -146,9 +136,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::AdjointMultiply
 // Private non-static routines                                                //
 //----------------------------------------------------------------------------//
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyVectorInitialize
+DistQuasi2dHMat<Scalar>::MultiplyVectorInitialize
 ( MultiplyVectorContext& context ) const
 {
 #ifndef RELEASE
@@ -207,9 +197,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyVectorInitialize
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::TransposeMultiplyVectorInitialize
+DistQuasi2dHMat<Scalar>::TransposeMultiplyVectorInitialize
 ( MultiplyVectorContext& context ) const
 {
 #ifndef RELEASE
@@ -222,9 +212,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::TransposeMultiplyVectorInitialize
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::AdjointMultiplyVectorInitialize
+DistQuasi2dHMat<Scalar>::AdjointMultiplyVectorInitialize
 ( MultiplyVectorContext& context ) const
 {
 #ifndef RELEASE
@@ -237,9 +227,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::AdjointMultiplyVectorInitialize
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyVectorPrecompute
+DistQuasi2dHMat<Scalar>::MultiplyVectorPrecompute
 ( MultiplyVectorContext& context,
   Scalar alpha, const Vector<Scalar>& xLocal, Vector<Scalar>& yLocal ) const
 {
@@ -413,30 +403,27 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyVectorPrecompute
         const DistLowRank& DF = *_block.data.DF;
         Vector<Scalar>& z = *context.block.data.z;
         z.Resize( DF.rank );
-        const char option = ( Conjugated ? 'C' : 'T' );
+        const char option = 'T';
         blas::Gemv
         ( option, DF.VLocal.Height(), DF.rank, 
           alpha,     DF.VLocal.LockedBuffer(), DF.VLocal.LDim(), 
                      xLocal.LockedBuffer(),    1,
-          (Scalar)0, z.Buffer(),               1 );
+          Scalar(0), z.Buffer(),               1 );
         break;
     }
     case SPLIT_LOW_RANK:
     {
         const SplitLowRank& SF = *_block.data.SF;
         Vector<Scalar>& z = *context.block.data.z;
-        if( Conjugated )
-            hmat_tools::AdjointMultiply( alpha, SF.D, xLocal, z );
-        else
-            hmat_tools::TransposeMultiply( alpha, SF.D, xLocal, z );
+        hmat_tools::TransposeMultiply( alpha, SF.D, xLocal, z );
         break;
     }
     case LOW_RANK:
     {
         // There is no communication required for this piece, so simply perform
         // the entire update.
-        const LowRank<Scalar,Conjugated>& F = *_block.data.F;
-        hmat_tools::Multiply( alpha, F, xLocal, (Scalar)1, yLocal );
+        const LowRank<Scalar>& F = *_block.data.F;
+        hmat_tools::Multiply( alpha, F, xLocal, Scalar(1), yLocal );
         break;
     }
     case SPLIT_DENSE:
@@ -451,7 +438,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyVectorPrecompute
         // There is no communication required for this piece, so simply perform
         // the entire update.
         const Dense<Scalar>& D = *_block.data.D;
-        hmat_tools::Multiply( alpha, D, xLocal, (Scalar)1, yLocal );
+        hmat_tools::Multiply( alpha, D, xLocal, Scalar(1), yLocal );
         break;
     }
     default:
@@ -462,9 +449,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyVectorPrecompute
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::TransposeMultiplyVectorPrecompute
+DistQuasi2dHMat<Scalar>::TransposeMultiplyVectorPrecompute
 ( MultiplyVectorContext& context,
   Scalar alpha, const Vector<Scalar>& xLocal, Vector<Scalar>& yLocal ) const
 {
@@ -641,7 +628,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::TransposeMultiplyVectorPrecompute
         ( 'T', DF.ULocal.Height(), DF.rank, 
           alpha,     DF.ULocal.LockedBuffer(), DF.ULocal.LDim(), 
                      xLocal.LockedBuffer(),    1,
-          (Scalar)0, z.Buffer(),               1 );
+          Scalar(0), z.Buffer(),               1 );
         break;
     }
     case SPLIT_LOW_RANK:
@@ -655,8 +642,8 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::TransposeMultiplyVectorPrecompute
     {
         // There is no communication required for this piece, so simply perform
         // the entire update.
-        const LowRank<Scalar,Conjugated>& F = *_block.data.F;
-        hmat_tools::TransposeMultiply( alpha, F, xLocal, (Scalar)1, yLocal );
+        const LowRank<Scalar>& F = *_block.data.F;
+        hmat_tools::TransposeMultiply( alpha, F, xLocal, Scalar(1), yLocal );
         break;
     }
     case SPLIT_DENSE:
@@ -666,7 +653,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::TransposeMultiplyVectorPrecompute
         // There is no communication required for this piece, so simply perform
         // the entire update.
         const Dense<Scalar>& D = *_block.data.D;
-        hmat_tools::TransposeMultiply( alpha, D, xLocal, (Scalar)1, yLocal );
+        hmat_tools::TransposeMultiply( alpha, D, xLocal, Scalar(1), yLocal );
         break;
     }
     default:
@@ -677,9 +664,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::TransposeMultiplyVectorPrecompute
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::AdjointMultiplyVectorPrecompute
+DistQuasi2dHMat<Scalar>::AdjointMultiplyVectorPrecompute
 ( MultiplyVectorContext& context,
   Scalar alpha, const Vector<Scalar>& xLocal, Vector<Scalar>& yLocal ) const
 {
@@ -856,7 +843,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::AdjointMultiplyVectorPrecompute
         ( 'C', DF.ULocal.Height(), DF.rank, 
           alpha,     DF.ULocal.LockedBuffer(), DF.ULocal.LDim(), 
                      xLocal.LockedBuffer(),    1,
-          (Scalar)0, z.Buffer(),               1 );
+          Scalar(0), z.Buffer(),               1 );
         break;
     }
     case SPLIT_LOW_RANK:
@@ -870,8 +857,8 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::AdjointMultiplyVectorPrecompute
     {
         // There is no communication required for this piece, so simply perform
         // the entire update.
-        const LowRank<Scalar,Conjugated>& F = *_block.data.F;
-        hmat_tools::AdjointMultiply( alpha, F, xLocal, (Scalar)1, yLocal );
+        const LowRank<Scalar>& F = *_block.data.F;
+        hmat_tools::AdjointMultiply( alpha, F, xLocal, Scalar(1), yLocal );
         break;
     }
     case SPLIT_DENSE:
@@ -881,7 +868,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::AdjointMultiplyVectorPrecompute
         // There is no communication required for this piece, so simply perform
         // the entire update.
         const Dense<Scalar>& D = *_block.data.D;
-        hmat_tools::AdjointMultiply( alpha, D, xLocal, (Scalar)1, yLocal );
+        hmat_tools::AdjointMultiply( alpha, D, xLocal, Scalar(1), yLocal );
         break;
     }
     default:
@@ -892,9 +879,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::AdjointMultiplyVectorPrecompute
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyVectorSums
+DistQuasi2dHMat<Scalar>::MultiplyVectorSums
 ( MultiplyVectorContext& context ) const
 {
 #ifndef RELEASE
@@ -928,9 +915,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyVectorSums
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::TransposeMultiplyVectorSums
+DistQuasi2dHMat<Scalar>::TransposeMultiplyVectorSums
 ( MultiplyVectorContext& context ) const
 {
 #ifndef RELEASE
@@ -964,9 +951,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::TransposeMultiplyVectorSums
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::AdjointMultiplyVectorSums
+DistQuasi2dHMat<Scalar>::AdjointMultiplyVectorSums
 ( MultiplyVectorContext& context ) const
 {
 #ifndef RELEASE
@@ -979,9 +966,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::AdjointMultiplyVectorSums
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyVectorSumsCount
+DistQuasi2dHMat<Scalar>::MultiplyVectorSumsCount
 ( std::vector<int>& sizes ) const
 {
 #ifndef RELEASE
@@ -1016,9 +1003,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyVectorSumsCount
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::TransposeMultiplyVectorSumsCount
+DistQuasi2dHMat<Scalar>::TransposeMultiplyVectorSumsCount
 ( std::vector<int>& sizes ) const
 {
 #ifndef RELEASE
@@ -1053,9 +1040,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::TransposeMultiplyVectorSumsCount
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyVectorSumsPack
+DistQuasi2dHMat<Scalar>::MultiplyVectorSumsPack
 ( const MultiplyVectorContext& context, 
   std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
 {
@@ -1101,9 +1088,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyVectorSumsPack
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::TransposeMultiplyVectorSumsPack
+DistQuasi2dHMat<Scalar>::TransposeMultiplyVectorSumsPack
 ( const MultiplyVectorContext& context,
   std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
 {
@@ -1149,9 +1136,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::TransposeMultiplyVectorSumsPack
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyVectorSumsUnpack
+DistQuasi2dHMat<Scalar>::MultiplyVectorSumsUnpack
 ( MultiplyVectorContext& context,
   const std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
 {
@@ -1202,9 +1189,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyVectorSumsUnpack
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::TransposeMultiplyVectorSumsUnpack
+DistQuasi2dHMat<Scalar>::TransposeMultiplyVectorSumsUnpack
 ( MultiplyVectorContext& context,
   const std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
 {
@@ -1255,9 +1242,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::TransposeMultiplyVectorSumsUnpack
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyVectorPassData
+DistQuasi2dHMat<Scalar>::MultiplyVectorPassData
 ( MultiplyVectorContext& context ) const
 {
 #ifndef RELEASE
@@ -1328,9 +1315,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyVectorPassData
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyVectorPassDataCount
+DistQuasi2dHMat<Scalar>::MultiplyVectorPassDataCount
 ( std::map<int,int>& sendSizes, std::map<int,int>& recvSizes ) const
 {
 #ifndef RELEASE
@@ -1389,9 +1376,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyVectorPassDataCount
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyVectorPassDataPack
+DistQuasi2dHMat<Scalar>::MultiplyVectorPassDataPack
 ( MultiplyVectorContext& context,
   std::vector<Scalar>& buffer, std::map<int,int>& offsets ) const
 {
@@ -1487,9 +1474,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyVectorPassDataPack
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyVectorPassDataUnpack
+DistQuasi2dHMat<Scalar>::MultiplyVectorPassDataUnpack
 ( MultiplyVectorContext& context,
   const std::vector<Scalar>& buffer, std::map<int,int>& offsets ) const
 {
@@ -1585,9 +1572,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyVectorPassDataUnpack
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::TransposeMultiplyVectorPassData
+DistQuasi2dHMat<Scalar>::TransposeMultiplyVectorPassData
 ( MultiplyVectorContext& context, const Vector<Scalar>& xLocal ) const
 {
 #ifndef RELEASE
@@ -1656,9 +1643,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::TransposeMultiplyVectorPassData
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::TransposeMultiplyVectorPassDataCount
+DistQuasi2dHMat<Scalar>::TransposeMultiplyVectorPassDataCount
 ( std::map<int,int>& sendSizes, std::map<int,int>& recvSizes ) const
 {
 #ifndef RELEASE
@@ -1717,9 +1704,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::TransposeMultiplyVectorPassDataCount
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::TransposeMultiplyVectorPassDataPack
+DistQuasi2dHMat<Scalar>::TransposeMultiplyVectorPassDataPack
 ( MultiplyVectorContext& context, const Vector<Scalar>& xLocal,
   std::vector<Scalar>& buffer, std::map<int,int>& offsets ) const
 {
@@ -1858,9 +1845,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::TransposeMultiplyVectorPassDataPack
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::TransposeMultiplyVectorPassDataUnpack
+DistQuasi2dHMat<Scalar>::TransposeMultiplyVectorPassDataUnpack
 ( MultiplyVectorContext& context,
   const std::vector<Scalar>& buffer, std::map<int,int>& offsets ) const
 {
@@ -1956,9 +1943,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::TransposeMultiplyVectorPassDataUnpack
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::AdjointMultiplyVectorPassData
+DistQuasi2dHMat<Scalar>::AdjointMultiplyVectorPassData
 ( MultiplyVectorContext& context, const Vector<Scalar>& xLocal ) const
 {
 #ifndef RELEASE
@@ -1971,9 +1958,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::AdjointMultiplyVectorPassData
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyVectorBroadcasts
+DistQuasi2dHMat<Scalar>::MultiplyVectorBroadcasts
 ( MultiplyVectorContext& context ) const
 {
 #ifndef RELEASE
@@ -2008,9 +1995,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyVectorBroadcasts
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::TransposeMultiplyVectorBroadcasts
+DistQuasi2dHMat<Scalar>::TransposeMultiplyVectorBroadcasts
 ( MultiplyVectorContext& context ) const
 {
 #ifndef RELEASE
@@ -2045,9 +2032,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::TransposeMultiplyVectorBroadcasts
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::AdjointMultiplyVectorBroadcasts
+DistQuasi2dHMat<Scalar>::AdjointMultiplyVectorBroadcasts
 ( MultiplyVectorContext& context ) const
 {
 #ifndef RELEASE
@@ -2060,9 +2047,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::AdjointMultiplyVectorBroadcasts
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyVectorBroadcastsCount
+DistQuasi2dHMat<Scalar>::MultiplyVectorBroadcastsCount
 ( std::vector<int>& sizes ) const
 {
 #ifndef RELEASE
@@ -2097,9 +2084,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyVectorBroadcastsCount
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::TransposeMultiplyVectorBroadcastsCount
+DistQuasi2dHMat<Scalar>::TransposeMultiplyVectorBroadcastsCount
 ( std::vector<int>& sizes ) const
 {
 #ifndef RELEASE
@@ -2135,9 +2122,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::TransposeMultiplyVectorBroadcastsCount
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyVectorBroadcastsPack
+DistQuasi2dHMat<Scalar>::MultiplyVectorBroadcastsPack
 ( const MultiplyVectorContext& context,
   std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
 {
@@ -2188,9 +2175,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyVectorBroadcastsPack
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::TransposeMultiplyVectorBroadcastsPack
+DistQuasi2dHMat<Scalar>::TransposeMultiplyVectorBroadcastsPack
 ( const MultiplyVectorContext& context,
   std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
 {
@@ -2241,9 +2228,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::TransposeMultiplyVectorBroadcastsPack
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyVectorBroadcastsUnpack
+DistQuasi2dHMat<Scalar>::MultiplyVectorBroadcastsUnpack
 ( MultiplyVectorContext& context,
   const std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
 {
@@ -2289,9 +2276,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyVectorBroadcastsUnpack
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::TransposeMultiplyVectorBroadcastsUnpack
+DistQuasi2dHMat<Scalar>::TransposeMultiplyVectorBroadcastsUnpack
 ( MultiplyVectorContext& context,
   const std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
 {
@@ -2337,9 +2324,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::TransposeMultiplyVectorBroadcastsUnpac
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyVectorPostcompute
+DistQuasi2dHMat<Scalar>::MultiplyVectorPostcompute
 ( MultiplyVectorContext& context,
   Scalar alpha, const Vector<Scalar>& xLocal, 
                       Vector<Scalar>& yLocal ) const
@@ -2494,16 +2481,16 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyVectorPostcompute
         const Vector<Scalar>& z = *context.block.data.z;
         blas::Gemv
         ( 'N', DF.ULocal.Height(), DF.rank,
-          (Scalar)1, DF.ULocal.LockedBuffer(), DF.ULocal.LDim(),
+          Scalar(1), DF.ULocal.LockedBuffer(), DF.ULocal.LDim(),
                      z.LockedBuffer(),         1,
-          (Scalar)1, yLocal.Buffer(),          1 );
+          Scalar(1), yLocal.Buffer(),          1 );
         break;
     }
     case SPLIT_LOW_RANK:
     {
         const SplitLowRank& SF = *_block.data.SF;
         const Vector<Scalar>& z = *context.block.data.z;
-        hmat_tools::Multiply( (Scalar)1, SF.D, z, (Scalar)1, yLocal );
+        hmat_tools::Multiply( Scalar(1), SF.D, z, Scalar(1), yLocal );
         break;
     }
     case SPLIT_DENSE:
@@ -2524,9 +2511,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyVectorPostcompute
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::TransposeMultiplyVectorPostcompute
+DistQuasi2dHMat<Scalar>::TransposeMultiplyVectorPostcompute
 ( MultiplyVectorContext& context,
   Scalar alpha, const Vector<Scalar>& xLocal, 
                       Vector<Scalar>& yLocal ) const
@@ -2678,51 +2665,26 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::TransposeMultiplyVectorPostcompute
         // yLocal += (VLocal^[T/H])^T z
         const DistLowRank& DF = *_block.data.DF;
         Vector<Scalar>& z = *context.block.data.z;
-        if( Conjugated )
-        {
-            // yLocal += conj(VLocal) z
-            hmat_tools::Conjugate( z );
-            hmat_tools::Conjugate( yLocal );
-            blas::Gemv
-            ( 'N', DF.VLocal.Height(), DF.rank,
-              (Scalar)1, DF.VLocal.LockedBuffer(), DF.VLocal.LDim(),
-                         z.LockedBuffer(),         1,
-              (Scalar)1, yLocal.Buffer(),          1 );
-            hmat_tools::Conjugate( yLocal );
-        }
-        else
-        {
-            // yLocal += VLocal z
-            blas::Gemv
-            ( 'N', DF.VLocal.Height(), DF.rank,
-              (Scalar)1, DF.VLocal.LockedBuffer(), DF.VLocal.LDim(),
-                         z.LockedBuffer(),         1,
-              (Scalar)1, yLocal.Buffer(),          1 );
-        }
+        // yLocal += VLocal z
+        blas::Gemv
+        ( 'N', DF.VLocal.Height(), DF.rank,
+          Scalar(1), DF.VLocal.LockedBuffer(), DF.VLocal.LDim(),
+                     z.LockedBuffer(),         1,
+          Scalar(1), yLocal.Buffer(),          1 );
         break;
     }
     case SPLIT_LOW_RANK:
     {
         const SplitLowRank& SF = *_block.data.SF;
         Vector<Scalar>& z = *context.block.data.z;
-        if( Conjugated )
-        {
-            // yLocal += conj(V) z
-            hmat_tools::Conjugate( z );
-            hmat_tools::Conjugate( yLocal );
-            hmat_tools::Multiply
-            ( (Scalar)1, SF.D, z, (Scalar)1, yLocal );
-            hmat_tools::Conjugate( yLocal );
-        }
-        else
-            hmat_tools::Multiply( (Scalar)1, SF.D, z, (Scalar)1, yLocal );
+        hmat_tools::Multiply( Scalar(1), SF.D, z, Scalar(1), yLocal );
         break;
     }
     case SPLIT_DENSE:
     {
         const SplitDense& SD = *_block.data.SD;
         const Vector<Scalar>& z = *context.block.data.z;
-        hmat_tools::TransposeMultiply( alpha, SD.D, z, (Scalar)1, yLocal );
+        hmat_tools::TransposeMultiply( alpha, SD.D, z, Scalar(1), yLocal );
         break;
     }
     default:
@@ -2733,9 +2695,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::TransposeMultiplyVectorPostcompute
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::AdjointMultiplyVectorPostcompute
+DistQuasi2dHMat<Scalar>::AdjointMultiplyVectorPostcompute
 ( MultiplyVectorContext& context,
   Scalar alpha, const Vector<Scalar>& xLocal,
                       Vector<Scalar>& yLocal ) const
@@ -2889,51 +2851,33 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::AdjointMultiplyVectorPostcompute
         // yLocal += (VLocal^[T/H])^H z
         const DistLowRank& DF = *_block.data.DF;
         Vector<Scalar>& z = *context.block.data.z;
-        if( Conjugated )
-        {
-            // yLocal += VLocal z
-            blas::Gemv
-            ( 'N', DF.VLocal.Height(), DF.rank,
-              (Scalar)1, DF.VLocal.LockedBuffer(), DF.VLocal.LDim(),
-                         z.LockedBuffer(),         1,
-              (Scalar)1, yLocal.Buffer(),          1 );
-        }
-        else
-        {
-            // yLocal += conj(VLocal) z
-            hmat_tools::Conjugate( z );
-            hmat_tools::Conjugate( yLocal );
-            blas::Gemv
-            ( 'N', DF.VLocal.Height(), DF.rank,
-              (Scalar)1, DF.VLocal.LockedBuffer(), DF.VLocal.LDim(),
-                         z.LockedBuffer(),         1,
-              (Scalar)1, yLocal.Buffer(),          1 );
-            hmat_tools::Conjugate( yLocal );
-        }
+        // yLocal += conj(VLocal) z
+        hmat_tools::Conjugate( z );
+        hmat_tools::Conjugate( yLocal );
+        blas::Gemv
+        ( 'N', DF.VLocal.Height(), DF.rank,
+          Scalar(1), DF.VLocal.LockedBuffer(), DF.VLocal.LDim(),
+                     z.LockedBuffer(),         1,
+          Scalar(1), yLocal.Buffer(),          1 );
+        hmat_tools::Conjugate( yLocal );
         break;
     }
     case SPLIT_LOW_RANK:
     {
         const SplitLowRank& SF = *_block.data.SF;
         Vector<Scalar>& z = *context.block.data.z;
-        if( Conjugated )
-            hmat_tools::Multiply( (Scalar)1, SF.D, z, (Scalar)1, yLocal );
-        else
-        {
-            // yLocal += conj(V) z
-            hmat_tools::Conjugate( z );
-            hmat_tools::Conjugate( yLocal );
-            hmat_tools::Multiply
-            ( (Scalar)1, SF.D, z, (Scalar)1, yLocal );
-            hmat_tools::Conjugate( yLocal );
-        }
+        // yLocal += conj(V) z
+        hmat_tools::Conjugate( z );
+        hmat_tools::Conjugate( yLocal );
+        hmat_tools::Multiply( Scalar(1), SF.D, z, Scalar(1), yLocal );
+        hmat_tools::Conjugate( yLocal );
         break;
     }
     case SPLIT_DENSE:
     {
         const SplitDense& SD = *_block.data.SD;
         const Vector<Scalar>& z = *context.block.data.z;
-        hmat_tools::AdjointMultiply( alpha, SD.D, z, (Scalar)1, yLocal );
+        hmat_tools::AdjointMultiply( alpha, SD.D, z, Scalar(1), yLocal );
         break;
     }
     default:
@@ -2944,3 +2888,4 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::AdjointMultiplyVectorPostcompute
 #endif
 }
 
+} // namespace dmhm

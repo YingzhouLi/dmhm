@@ -1,31 +1,22 @@
 /*
-   Distributed-Memory Hierarchical Matrices (DMHM): a prototype implementation
-   of distributed-memory H-matrix arithmetic. 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   The University of Texas at Austin, and Stanford University
 
-   Copyright (C) 2011 Jack Poulson, Lexing Ying, and
-   The University of Texas at Austin
-
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
+   under the GPLv3 License, which can be found in the LICENSE file in the root
+   directory, or at http://opensource.org/licenses/GPL-3.0
 */
 #include "dmhm.hpp"
 
+namespace dmhm {
+namespace hmat_tools {
+
 // B :~= alpha A + beta B
-template<typename Real,bool Conjugated>
-void dmhm::hmat_tools::RoundedUpdate
+template<typename Real>
+void RoundedUpdate
 ( int maxRank,
-  Real alpha, const LowRank<Real,Conjugated>& A, 
-  Real beta,        LowRank<Real,Conjugated>& B )
+  Real alpha, const LowRank<Real>& A, 
+  Real beta,        LowRank<Real>& B )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::RoundedUpdate (F := F + F)");
@@ -183,13 +174,13 @@ void dmhm::hmat_tools::RoundedUpdate
 #endif
 }
 
-template<typename Real,bool Conjugated>
-void dmhm::hmat_tools::RoundedUpdate
+template<typename Real>
+void RoundedUpdate
 ( int maxRank,
   std::complex<Real> alpha, 
-  const LowRank<std::complex<Real>,Conjugated>& A,
+  const LowRank<std::complex<Real> >& A,
   std::complex<Real> beta,        
-        LowRank<std::complex<Real>,Conjugated>& B )
+        LowRank<std::complex<Real> >& B )
 {
     typedef std::complex<Real> Scalar;
 #ifndef RELEASE
@@ -287,11 +278,11 @@ void dmhm::hmat_tools::RoundedUpdate
         ( &workV[j*r], V.LockedBuffer(0,j), std::min(n,j+1)*sizeof(Scalar) );
 
     // Form W := R1 R2^[T,H]
-    const char option = ( Conjugated ? 'C' : 'T' );
+    const char option = 'T';
     Dense<Scalar> W( minDimU, minDimV );
     blas::Gemm
     ( 'N', option, minDimU, minDimV, r,
-      (Scalar)1, &workU[0], r, &workV[0], r, (Scalar)0, W.Buffer(), W.LDim() );
+      Scalar(1), &workU[0], r, &workV[0], r, Scalar(0), W.Buffer(), W.LDim() );
 
     // Get the SVD of R1 R2^[T,H], overwriting R1 R2^[T,H] with UNew
     std::vector<Real> s( std::min(minDimU,minDimV) );
@@ -311,7 +302,7 @@ void dmhm::hmat_tools::RoundedUpdate
     // Form the rounded B.U by first filling it with 
     //  | S*U_Left |, and then hitting it from the left with Q1
     //  |  0       |
-    Scale( (Scalar)0, B.U );
+    Scale( Scalar(0), B.U );
     for( int j=0; j<roundedRank; ++j )
     {
         const Real sigma = s[j];
@@ -329,28 +320,14 @@ void dmhm::hmat_tools::RoundedUpdate
     // Form the rounded B.V by first filling it with 
     //  | (VH_Top)^[T,H] |, and then hitting it from the left with Q2
     //  |      0         |
-    Scale( (Scalar)0, B.V );
-    if( Conjugated )
+    Scale( Scalar(0), B.V );
+    const int VHLDim = VH.LDim();
+    for( int j=0; j<roundedRank; ++j )
     {
-        const int VHLDim = VH.LDim();
-        for( int j=0; j<roundedRank; ++j )
-        {
-            Scalar* RESTRICT VCol = B.V.Buffer(0,j);
-            const Scalar* RESTRICT VHRow = VH.LockedBuffer(j,0);
-            for( int i=0; i<minDimV; ++i )
-                VCol[i] = Conj( VHRow[i*VHLDim] );
-        }
-    }
-    else
-    {
-        const int VHLDim = VH.LDim();
-        for( int j=0; j<roundedRank; ++j )
-        {
-            Scalar* RESTRICT VColConj = B.V.Buffer(0,j);
-            const Scalar* RESTRICT VHRow = VH.LockedBuffer(j,0);
-            for( int i=0; i<minDimV; ++i )
-                VColConj[i] = VHRow[i*VHLDim];
-        }
+        Scalar* RESTRICT VColConj = B.V.Buffer(0,j);
+        const Scalar* RESTRICT VHRow = VH.LockedBuffer(j,0);
+        for( int i=0; i<minDimV; ++i )
+            VColConj[i] = VHRow[i*VHLDim];
     }
     // Apply Q2
     workV.resize( std::max(1,n*roundedRank) );
@@ -363,43 +340,26 @@ void dmhm::hmat_tools::RoundedUpdate
 #endif
 }
 
-template void dmhm::hmat_tools::RoundedUpdate
+template void RoundedUpdate
 ( int maxRank,
-  float alpha, const LowRank<float,false>& A,
-  float beta,        LowRank<float,false>& B );
-template void dmhm::hmat_tools::RoundedUpdate
+  float alpha, const LowRank<float>& A,
+  float beta,        LowRank<float>& B );
+template void RoundedUpdate
 ( int maxRank,
-  float alpha, const LowRank<float,true>& A,
-  float beta,        LowRank<float,true>& B );
-template void dmhm::hmat_tools::RoundedUpdate
-( int maxRank,
-  double alpha, const LowRank<double,false>& A,
-  double beta,        LowRank<double,false>& B );
-template void dmhm::hmat_tools::RoundedUpdate
-( int maxRank,
-  double alpha, const LowRank<double,true>& A,
-  double beta,        LowRank<double,true>& B );
-template void dmhm::hmat_tools::RoundedUpdate
+  double alpha, const LowRank<double>& A,
+  double beta,        LowRank<double>& B );
+template void RoundedUpdate
 ( int maxRank,
   std::complex<float> alpha, 
-  const LowRank<std::complex<float>,false>& A,
+  const LowRank<std::complex<float> >& A,
   std::complex<float> beta, 
-        LowRank<std::complex<float>,false>& B );
-template void dmhm::hmat_tools::RoundedUpdate
-( int maxRank,
-  std::complex<float> alpha, 
-  const LowRank<std::complex<float>,true>& A,
-  std::complex<float> beta, 
-        LowRank<std::complex<float>,true>& B );
-template void dmhm::hmat_tools::RoundedUpdate
+        LowRank<std::complex<float> >& B );
+template void RoundedUpdate
 ( int maxRank,
   std::complex<double> alpha, 
-  const LowRank<std::complex<double>,false>& A,
+  const LowRank<std::complex<double> >& A,
   std::complex<double> beta, 
-        LowRank<std::complex<double>,false>& B );
-template void dmhm::hmat_tools::RoundedUpdate
-( int maxRank,
-  std::complex<double> alpha, 
-  const LowRank<std::complex<double>,true>& A,
-  std::complex<double> beta, 
-        LowRank<std::complex<double>,true>& B );
+        LowRank<std::complex<double> >& B );
+
+} // namespace hmat_tools
+} // namespace dmhm

@@ -1,23 +1,12 @@
 /*
-   Distributed-Memory Hierarchical Matrices (DMHM): a prototype implementation
-   of distributed-memory H-matrix arithmetic. 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   The University of Texas at Austin, and Stanford University
 
-   Copyright (C) 2011 Jack Poulson, Lexing Ying, and
-   The University of Texas at Austin
-
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
+   under the GPLv3 License, which can be found in the LICENSE file in the root
+   directory, or at http://opensource.org/licenses/GPL-3.0
 */
+#pragma once
 #ifndef DMHM_DENSE_HPP
 #define DMHM_DENSE_HPP 1
 
@@ -51,12 +40,9 @@ public:
     /*
      * Public non-static member functions
      */
-    Dense
-    ( MatrixType type=GENERAL );
-    Dense
-    ( int height, int width, MatrixType type=GENERAL );
-    Dense
-    ( int height, int width, int ldim, MatrixType type=GENERAL );
+    Dense( MatrixType type=GENERAL );
+    Dense( int height, int width, MatrixType type=GENERAL );
+    Dense( int height, int width, int ldim, MatrixType type=GENERAL );
     Dense
     ( Scalar* buffer, int height, int width, int ldim, 
       MatrixType type=GENERAL );
@@ -99,16 +85,13 @@ public:
     ( const Dense<Scalar>& A, int i, int j, int height, int width );
 };
 
-} // namespace dmhm 
-
 //----------------------------------------------------------------------------//
 // Implementation begins here                                                 //
 //----------------------------------------------------------------------------//
 
 template<typename Scalar>
 inline
-dmhm::Dense<Scalar>::Dense
-( MatrixType type )
+Dense<Scalar>::Dense( MatrixType type )
 : _height(0), _width(0), _ldim(1), 
   _viewing(false), _lockedView(false),
   _memory(), _buffer(0), _lockedBuffer(0),
@@ -117,7 +100,7 @@ dmhm::Dense<Scalar>::Dense
 
 template<typename Scalar>
 inline
-dmhm::Dense<Scalar>::Dense
+Dense<Scalar>::Dense
 ( int height, int width, MatrixType type )
 : _height(height), _width(width), _ldim(std::max(height,1)),
   _viewing(false), _lockedView(false),
@@ -136,7 +119,7 @@ dmhm::Dense<Scalar>::Dense
 
 template<typename Scalar>
 inline 
-dmhm::Dense<Scalar>::Dense
+Dense<Scalar>::Dense
 ( int height, int width, int ldim, MatrixType type )
 : _height(height), _width(width), _ldim(ldim), 
   _viewing(false), _lockedView(false),
@@ -157,7 +140,7 @@ dmhm::Dense<Scalar>::Dense
 
 template<typename Scalar>
 inline 
-dmhm::Dense<Scalar>::Dense
+Dense<Scalar>::Dense
 ( Scalar* buffer, int height, int width, int ldim, MatrixType type )
 : _height(height), _width(width), _ldim(ldim), 
   _viewing(true), _lockedView(false),
@@ -178,7 +161,7 @@ dmhm::Dense<Scalar>::Dense
 
 template<typename Scalar>
 inline 
-dmhm::Dense<Scalar>::Dense
+Dense<Scalar>::Dense
 ( const Scalar* lockedBuffer, int height, int width, int ldim, MatrixType type )
 : _height(height), _width(width), _ldim(ldim),
   _viewing(true), _lockedView(true),
@@ -199,12 +182,12 @@ dmhm::Dense<Scalar>::Dense
 
 template<typename Scalar>
 inline 
-dmhm::Dense<Scalar>::~Dense()
+Dense<Scalar>::~Dense()
 { }
 
 template<typename Scalar>
 inline void
-dmhm::Dense<Scalar>::SetType( MatrixType type )
+Dense<Scalar>::SetType( MatrixType type )
 {
 #ifndef RELEASE
     PushCallStack("Dense::SetType");
@@ -217,58 +200,44 @@ dmhm::Dense<Scalar>::SetType( MatrixType type )
 
 template<typename Scalar>
 inline dmhm::MatrixType
-dmhm::Dense<Scalar>::Type() const
-{
-    return _type;
-}
+Dense<Scalar>::Type() const
+{ return _type; }
 
 template<typename Scalar>
 inline bool
-dmhm::Dense<Scalar>::General() const
-{
-    return _type == GENERAL;
-}
+Dense<Scalar>::General() const
+{ return _type == GENERAL; }
 
 template<typename Scalar>
 inline bool
-dmhm::Dense<Scalar>::Symmetric() const
-{
-    return _type == SYMMETRIC;
-}
+Dense<Scalar>::Symmetric() const
+{ return _type == SYMMETRIC; }
 
 /*
 template<typename Scalar>
 inline bool
-dmhm::Dense<Scalar>::Hermitian() const
-{
-    return _type == HERMITIAN;
-}
+Dense<Scalar>::Hermitian() const
+{ return _type == HERMITIAN; }
 */
 
 template<typename Scalar>
 inline int
-dmhm::Dense<Scalar>::Height() const
-{
-    return _height;
-}
+Dense<Scalar>::Height() const
+{ return _height; }
 
 template<typename Scalar>
 inline int
-dmhm::Dense<Scalar>::Width() const
-{
-    return _width;
-}
+Dense<Scalar>::Width() const
+{ return _width; }
 
 template<typename Scalar>
 inline int
-dmhm::Dense<Scalar>::LDim() const
-{
-    return _ldim;
-}
+Dense<Scalar>::LDim() const
+{ return _ldim; }
 
 template<typename Scalar>
 inline void
-dmhm::Dense<Scalar>::Resize( int height, int width )
+Dense<Scalar>::Resize( int height, int width )
 {
 #ifndef RELEASE
     PushCallStack("Dense::Resize");
@@ -295,7 +264,7 @@ dmhm::Dense<Scalar>::Resize( int height, int width )
 
 template<typename Scalar>
 inline void
-dmhm::Dense<Scalar>::Resize( int height, int width, int ldim )
+Dense<Scalar>::Resize( int height, int width, int ldim )
 {
 #ifndef RELEASE
     PushCallStack("Dense::Resize");
@@ -320,7 +289,7 @@ dmhm::Dense<Scalar>::Resize( int height, int width, int ldim )
 
 template<typename Scalar>
 inline void
-dmhm::Dense<Scalar>::EraseCol( int first, int last )
+Dense<Scalar>::EraseCol( int first, int last )
 {
 #ifndef RELEASE
     PushCallStack("Dense::EraseCol");
@@ -334,7 +303,8 @@ dmhm::Dense<Scalar>::EraseCol( int first, int last )
     if( first <= last )
     {
         _width = _width-last+first-1;                                                 
-        _memory.erase( _memory.begin()+first*_ldim, _memory.begin()+(last+1)*_ldim );
+        _memory.erase
+        ( _memory.begin()+first*_ldim, _memory.begin()+(last+1)*_ldim );
         _buffer = &_memory[0];
     }
 #ifndef RELEASE
@@ -344,7 +314,7 @@ dmhm::Dense<Scalar>::EraseCol( int first, int last )
 
 template<typename Scalar>
 inline void
-dmhm::Dense<Scalar>::EraseRow( int first, int last )
+Dense<Scalar>::EraseRow( int first, int last )
 {
 #ifndef RELEASE
     PushCallStack("Dense::EraseRow");
@@ -371,7 +341,7 @@ dmhm::Dense<Scalar>::EraseRow( int first, int last )
 
 template<typename Scalar>
 inline void
-dmhm::Dense<Scalar>::Erase( int colfirst, int collast, int rowfirst, int rowlast )
+Dense<Scalar>::Erase( int colfirst, int collast, int rowfirst, int rowlast )
 {
     MatrixType typetmp = _type;
 #ifndef RELEASE
@@ -396,14 +366,12 @@ dmhm::Dense<Scalar>::Erase( int colfirst, int collast, int rowfirst, int rowlast
 
 template<typename Scalar>
 inline bool
-dmhm::Dense<Scalar>::IsEmpty() const
-{
-    return !(_height|_width);
-}
+Dense<Scalar>::IsEmpty() const
+{ return _height==0 && _width==0; }
 
 template<typename Scalar>
 inline void
-dmhm::Dense<Scalar>::Clear()
+Dense<Scalar>::Clear()
 {
 #ifndef RELEASE
     PushCallStack("Dense::Clear");
@@ -424,7 +392,7 @@ dmhm::Dense<Scalar>::Clear()
 
 template<typename Scalar>
 inline void
-dmhm::Dense<Scalar>::Set( int i, int j, Scalar value )
+Dense<Scalar>::Set( int i, int j, Scalar value )
 {
 #ifndef RELEASE
     PushCallStack("Dense::Set");
@@ -443,7 +411,7 @@ dmhm::Dense<Scalar>::Set( int i, int j, Scalar value )
 
 template<typename Scalar>
 inline Scalar
-dmhm::Dense<Scalar>::Get( int i, int j ) const
+Dense<Scalar>::Get( int i, int j ) const
 {
 #ifndef RELEASE
     PushCallStack("Dense::Get");
@@ -463,7 +431,7 @@ dmhm::Dense<Scalar>::Get( int i, int j ) const
 
 template<typename Scalar>
 inline void
-dmhm::Dense<Scalar>::Print( std::ostream& os, const std::string tag ) const
+Dense<Scalar>::Print( std::ostream& os, const std::string tag ) const
 {
 #ifndef RELEASE
     PushCallStack("Dense::Print");
@@ -497,14 +465,12 @@ dmhm::Dense<Scalar>::Print( std::ostream& os, const std::string tag ) const
 
 template<typename Scalar>
 inline void
-dmhm::Dense<Scalar>::Print( const std::string tag ) const
-{
-    Print( std::cout, tag );
-}
+Dense<Scalar>::Print( const std::string tag ) const
+{ Print( std::cout, tag ); }
 
 template<typename Scalar>
 inline Scalar*
-dmhm::Dense<Scalar>::Buffer( int i, int j )
+Dense<Scalar>::Buffer( int i, int j )
 {
 #ifndef RELEASE
     PushCallStack("Dense::Buffer");
@@ -521,7 +487,7 @@ dmhm::Dense<Scalar>::Buffer( int i, int j )
 
 template<typename Scalar>
 inline const Scalar*
-dmhm::Dense<Scalar>::LockedBuffer( int i, int j ) const
+Dense<Scalar>::LockedBuffer( int i, int j ) const
 {
 #ifndef RELEASE
     PushCallStack("Dense::LockedBuffer");
@@ -539,7 +505,7 @@ dmhm::Dense<Scalar>::LockedBuffer( int i, int j ) const
 
 template<typename Scalar>
 inline void
-dmhm::Dense<Scalar>::View( Dense<Scalar>& A )
+Dense<Scalar>::View( Dense<Scalar>& A )
 {
 #ifndef RELEASE
     PushCallStack("Dense::View");
@@ -558,8 +524,7 @@ dmhm::Dense<Scalar>::View( Dense<Scalar>& A )
 
 template<typename Scalar>
 inline void
-dmhm::Dense<Scalar>::View
-( Dense<Scalar>& A, int i, int j, int height, int width )
+Dense<Scalar>::View( Dense<Scalar>& A, int i, int j, int height, int width )
 {
 #ifndef RELEASE
     PushCallStack("Dense::View");
@@ -590,7 +555,7 @@ dmhm::Dense<Scalar>::View
 
 template<typename Scalar>
 inline void
-dmhm::Dense<Scalar>::LockedView( const Dense<Scalar>& A )
+Dense<Scalar>::LockedView( const Dense<Scalar>& A )
 {
 #ifndef RELEASE
     PushCallStack("Dense::LockedView");
@@ -609,7 +574,7 @@ dmhm::Dense<Scalar>::LockedView( const Dense<Scalar>& A )
 
 template<typename Scalar>
 inline void
-dmhm::Dense<Scalar>::LockedView
+Dense<Scalar>::LockedView
 ( const Dense<Scalar>& A, int i, int j, int height, int width )
 {
 #ifndef RELEASE
@@ -639,4 +604,6 @@ dmhm::Dense<Scalar>::LockedView
 #endif
 }
 
-#endif // DMHM_DENSE_HPP
+} // namespace dmhm
+
+#endif // ifndef DMHM_DENSE_HPP

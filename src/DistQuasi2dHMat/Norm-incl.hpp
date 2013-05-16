@@ -1,29 +1,17 @@
 /*
-   Distributed-Memory Hierarchical Matrices (DMHM): a prototype implementation
-   of distributed-memory H-matrix arithmetic. 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   The University of Texas at Austin, and Stanford University
 
-   Copyright (C) 2011 Jack Poulson, Lexing Ying, and
-   The University of Texas at Austin
-
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
+   under the GPLv3 License, which can be found in the LICENSE file in the root
+   directory, or at http://opensource.org/licenses/GPL-3.0
 */
-#include "dmhm.hpp"
 
-template<typename Scalar, bool Conjugated>
-REALBASE(Scalar)
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::ParallelEstimateTwoNorm
-( Real theta, Real confidence )
+namespace dmhm {
+
+template<typename Scalar>
+BASE(Scalar)
+DistQuasi2dHMat<Scalar>::ParallelEstimateTwoNorm( Real theta, Real confidence )
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::ParallelEstimateTwoNorm");
@@ -71,3 +59,5 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::ParallelEstimateTwoNorm
 #endif
     return estimate;
 }
+
+} // namespace dmhm

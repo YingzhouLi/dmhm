@@ -1,36 +1,26 @@
 /*
-   Distributed-Memory Hierarchical Matrices (DMHM): a prototype implementation
-   of distributed-memory H-matrix arithmetic. 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   The University of Texas at Austin, and Stanford University
 
-   Copyright (C) 2011 Jack Poulson, Lexing Ying, and
-   The University of Texas at Austin
-
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
+   under the GPLv3 License, which can be found in the LICENSE file in the root
+   directory, or at http://opensource.org/licenses/GPL-3.0
 */
 
-template<typename Scalar,bool Conjugated>
+namespace dmhm {
+
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHPrecompute
-( Scalar alpha, DistQuasi2dHMat<Scalar,Conjugated>& B,
-                DistQuasi2dHMat<Scalar,Conjugated>& C,
+DistQuasi2dHMat<Scalar>::MultiplyHMatFHHPrecompute
+( Scalar alpha, DistQuasi2dHMat<Scalar>& B,
+                DistQuasi2dHMat<Scalar>& C,
   int startLevel, int endLevel, 
   int startUpdate, int endUpdate, int update )
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatFHHPrecompute");
 #endif
-    DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    DistQuasi2dHMat<Scalar>& A = *this;
     if(( !A._inTargetTeam && !A._inSourceTeam && !B._inSourceTeam) ||
         A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
     {
@@ -73,7 +63,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHPrecompute
                     C._colXMap.Set
                     ( key, new Dense<Scalar>( A.LocalHeight(), sampleRank ) );
                     Dense<Scalar>& colX = C._colXMap.Get( key );
-                    hmat_tools::Scale( (Scalar)0, colX );
+                    hmat_tools::Scale( Scalar(0), colX );
                     A.MultiplyDenseInitialize( colContext, sampleRank );
                     A.MultiplyDensePrecompute
                     ( colContext, alpha, B._colT, colX );
@@ -85,7 +75,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHPrecompute
                     C._rowXMap.Set
                     ( key, new Dense<Scalar>( B.LocalWidth(), sampleRank ) );
                     Dense<Scalar>& rowX = C._rowXMap.Get( key );
-                    hmat_tools::Scale( (Scalar)0, rowX );
+                    hmat_tools::Scale( Scalar(0), rowX );
                     B.AdjointMultiplyDenseInitialize( rowContext, sampleRank );
                     B.AdjointMultiplyDensePrecompute
                     ( rowContext, Conj(alpha), A._rowT, rowX );
@@ -118,18 +108,18 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHPrecompute
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHSums
-( Scalar alpha, DistQuasi2dHMat<Scalar,Conjugated>& B,
-                DistQuasi2dHMat<Scalar,Conjugated>& C,
+DistQuasi2dHMat<Scalar>::MultiplyHMatFHHSums
+( Scalar alpha, DistQuasi2dHMat<Scalar>& B,
+                DistQuasi2dHMat<Scalar>& C,
   int startLevel, int endLevel, 
   int startUpdate, int endUpdate )
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatFHHSums");
 #endif
-    DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    DistQuasi2dHMat<Scalar>& A = *this;
 
     // Compute the message sizes for each reduce
     const unsigned numTeamLevels = _teams->NumLevels();
@@ -163,11 +153,11 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHSums
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHSumsCount
-( const DistQuasi2dHMat<Scalar,Conjugated>& B,
-        DistQuasi2dHMat<Scalar,Conjugated>& C,
+DistQuasi2dHMat<Scalar>::MultiplyHMatFHHSumsCount
+( const DistQuasi2dHMat<Scalar>& B,
+        DistQuasi2dHMat<Scalar>& C,
         std::vector<int>& sizes,
   int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update ) const
@@ -175,7 +165,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHSumsCount
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatFHHSumsCount");
 #endif
-    const DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    const DistQuasi2dHMat<Scalar>& A = *this;
     if( (!A._inTargetTeam && !A._inSourceTeam && !B._inSourceTeam) ||
         A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
     {
@@ -231,11 +221,11 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHSumsCount
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHSumsPack
-( DistQuasi2dHMat<Scalar,Conjugated>& B,
-  DistQuasi2dHMat<Scalar,Conjugated>& C,
+DistQuasi2dHMat<Scalar>::MultiplyHMatFHHSumsPack
+( DistQuasi2dHMat<Scalar>& B,
+  DistQuasi2dHMat<Scalar>& C,
   std::vector<Scalar>& buffer, std::vector<int>& offsets,
   int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update )
@@ -243,7 +233,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHSumsPack
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatFHHSumsPack");
 #endif
-    DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    DistQuasi2dHMat<Scalar>& A = *this;
     if( (!A._inTargetTeam && !A._inSourceTeam && !B._inSourceTeam) ||
         A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
     {
@@ -302,11 +292,11 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHSumsPack
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHSumsUnpack
-( DistQuasi2dHMat<Scalar,Conjugated>& B,
-  DistQuasi2dHMat<Scalar,Conjugated>& C,
+DistQuasi2dHMat<Scalar>::MultiplyHMatFHHSumsUnpack
+( DistQuasi2dHMat<Scalar>& B,
+  DistQuasi2dHMat<Scalar>& C,
   const std::vector<Scalar>& buffer, std::vector<int>& offsets,
   int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update )
@@ -314,7 +304,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHSumsUnpack
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatFHHSumsUnpack");
 #endif
-    DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    DistQuasi2dHMat<Scalar>& A = *this;
     if( (!A._inTargetTeam && !A._inSourceTeam && !B._inSourceTeam) ||
         A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
     {
@@ -373,18 +363,18 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHSumsUnpack
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHPassData
-( Scalar alpha, DistQuasi2dHMat<Scalar,Conjugated>& B,
-                DistQuasi2dHMat<Scalar,Conjugated>& C,
+DistQuasi2dHMat<Scalar>::MultiplyHMatFHHPassData
+( Scalar alpha, DistQuasi2dHMat<Scalar>& B,
+                DistQuasi2dHMat<Scalar>& C,
   int startLevel, int endLevel, 
   int startUpdate, int endUpdate )
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatFHHPassData");
 #endif
-    DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    DistQuasi2dHMat<Scalar>& A = *this;
 
     // Compute send and recv sizes
     std::map<int,int> sendSizes, recvSizes;
@@ -457,11 +447,11 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHPassData
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void 
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHPassDataCount
-( const DistQuasi2dHMat<Scalar,Conjugated>& B,
-        DistQuasi2dHMat<Scalar,Conjugated>& C,
+DistQuasi2dHMat<Scalar>::MultiplyHMatFHHPassDataCount
+( const DistQuasi2dHMat<Scalar>& B,
+        DistQuasi2dHMat<Scalar>& C,
         std::map<int,int>& sendSizes, std::map<int,int>& recvSizes,
   int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update ) const 
@@ -469,7 +459,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHPassDataCount
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatFHHPassDataCount");
 #endif
-    const DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    const DistQuasi2dHMat<Scalar>& A = *this;
     if( (!A._inTargetTeam && !A._inSourceTeam && !B._inSourceTeam) ||
         A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
     {
@@ -536,11 +526,11 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHPassDataCount
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void 
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHPassDataPack
-( DistQuasi2dHMat<Scalar,Conjugated>& B,
-  DistQuasi2dHMat<Scalar,Conjugated>& C,
+DistQuasi2dHMat<Scalar>::MultiplyHMatFHHPassDataPack
+( DistQuasi2dHMat<Scalar>& B,
+  DistQuasi2dHMat<Scalar>& C,
   std::vector<Scalar>& sendBuffer, std::map<int,int>& offsets,
   int startLevel, int endLevel, 
   int startUpdate, int endUpdate, int update )
@@ -548,7 +538,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHPassDataPack
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatFHHPassDataPack");
 #endif
-    DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    DistQuasi2dHMat<Scalar>& A = *this;
     if( (!A._inTargetTeam && !A._inSourceTeam && !B._inSourceTeam) ||
         A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
     {
@@ -617,11 +607,11 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHPassDataPack
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void 
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHPassDataUnpack
-( DistQuasi2dHMat<Scalar,Conjugated>& B,
-  DistQuasi2dHMat<Scalar,Conjugated>& C,
+DistQuasi2dHMat<Scalar>::MultiplyHMatFHHPassDataUnpack
+( DistQuasi2dHMat<Scalar>& B,
+  DistQuasi2dHMat<Scalar>& C,
   const std::vector<Scalar>& recvBuffer, std::map<int,int>& offsets,
   int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update )
@@ -629,7 +619,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHPassDataUnpack
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatFHHPassDataUnpack");
 #endif
-    DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    DistQuasi2dHMat<Scalar>& A = *this;
     if( (!A._inTargetTeam && !A._inSourceTeam && !B._inSourceTeam) ||
         A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
     {
@@ -697,18 +687,18 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHPassDataUnpack
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHBroadcasts
-( Scalar alpha, DistQuasi2dHMat<Scalar,Conjugated>& B,
-                DistQuasi2dHMat<Scalar,Conjugated>& C,
+DistQuasi2dHMat<Scalar>::MultiplyHMatFHHBroadcasts
+( Scalar alpha, DistQuasi2dHMat<Scalar>& B,
+                DistQuasi2dHMat<Scalar>& C,
   int startLevel, int endLevel,
   int startUpdate, int endUpdate )
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatFHHBroadcasts");
 #endif
-    DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    DistQuasi2dHMat<Scalar>& A = *this;
 
     // Compute the message sizes for each broadcast
     const unsigned numTeamLevels = _teams->NumLevels();
@@ -743,11 +733,11 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHBroadcasts
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHBroadcastsCount
-( const DistQuasi2dHMat<Scalar,Conjugated>& B,
-        DistQuasi2dHMat<Scalar,Conjugated>& C,
+DistQuasi2dHMat<Scalar>::MultiplyHMatFHHBroadcastsCount
+( const DistQuasi2dHMat<Scalar>& B,
+        DistQuasi2dHMat<Scalar>& C,
         std::vector<int>& sizes,
   int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update ) const
@@ -755,7 +745,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHBroadcastsCount
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatFHHBroadcastsCount");
 #endif
-    const DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    const DistQuasi2dHMat<Scalar>& A = *this;
     if( (!A._inTargetTeam && !A._inSourceTeam && !B._inSourceTeam) ||
         A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
     {
@@ -812,11 +802,11 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHBroadcastsCount
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHBroadcastsPack
-( const DistQuasi2dHMat<Scalar,Conjugated>& B,
-        DistQuasi2dHMat<Scalar,Conjugated>& C,
+DistQuasi2dHMat<Scalar>::MultiplyHMatFHHBroadcastsPack
+( const DistQuasi2dHMat<Scalar>& B,
+        DistQuasi2dHMat<Scalar>& C,
   std::vector<Scalar>& buffer, std::vector<int>& offsets,
   int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update ) const
@@ -824,7 +814,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHBroadcastsPack
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatFHHBroadcastsPack");
 #endif
-    const DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    const DistQuasi2dHMat<Scalar>& A = *this;
     if( (!A._inTargetTeam && !A._inSourceTeam && !B._inSourceTeam) ||
         A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
     {
@@ -883,11 +873,11 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHBroadcastsPack
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHBroadcastsUnpack
-( DistQuasi2dHMat<Scalar,Conjugated>& B,
-  DistQuasi2dHMat<Scalar,Conjugated>& C,
+DistQuasi2dHMat<Scalar>::MultiplyHMatFHHBroadcastsUnpack
+( DistQuasi2dHMat<Scalar>& B,
+  DistQuasi2dHMat<Scalar>& C,
   const std::vector<Scalar>& buffer, std::vector<int>& offsets,
   int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update )
@@ -895,7 +885,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHBroadcastsUnpack
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatFHHBroadcastsUnpack");
 #endif
-    DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    DistQuasi2dHMat<Scalar>& A = *this;
     if( (!A._inTargetTeam && !A._inSourceTeam && !B._inSourceTeam) ||
         A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
     {
@@ -954,18 +944,18 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHBroadcastsUnpack
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHPostcompute
-( Scalar alpha, DistQuasi2dHMat<Scalar,Conjugated>& B,
-                DistQuasi2dHMat<Scalar,Conjugated>& C,
+DistQuasi2dHMat<Scalar>::MultiplyHMatFHHPostcompute
+( Scalar alpha, DistQuasi2dHMat<Scalar>& B,
+                DistQuasi2dHMat<Scalar>& C,
   int startLevel, int endLevel, 
   int startUpdate, int endUpdate )
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatFHHPostcompute");
 #endif
-    DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    DistQuasi2dHMat<Scalar>& A = *this;
 
     A.MultiplyHMatFHHPostcomputeC
     ( alpha, B, C, startLevel, endLevel, startUpdate, endUpdate, 0 );
@@ -975,18 +965,18 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHPostcompute
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHPostcomputeC
-( Scalar alpha, const DistQuasi2dHMat<Scalar,Conjugated>& B,
-                      DistQuasi2dHMat<Scalar,Conjugated>& C,
+DistQuasi2dHMat<Scalar>::MultiplyHMatFHHPostcomputeC
+( Scalar alpha, const DistQuasi2dHMat<Scalar>& B,
+                      DistQuasi2dHMat<Scalar>& C,
   int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update ) const
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatFHHPostcomputeC");
 #endif
-    const DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    const DistQuasi2dHMat<Scalar>& A = *this;
     if( (!A._inTargetTeam && !A._inSourceTeam && !B._inSourceTeam) ||
         A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
     {
@@ -1059,15 +1049,15 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHPostcomputeC
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHPostcomputeCCleanup
+DistQuasi2dHMat<Scalar>::MultiplyHMatFHHPostcomputeCCleanup
 ( int startLevel, int endLevel )
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatFHHPostcomputeCCleanup");
 #endif
-    DistQuasi2dHMat<Scalar,Conjugated>& C = *this;
+    DistQuasi2dHMat<Scalar>& C = *this;
     C._colFHHContextMap.Clear();
     C._rowFHHContextMap.Clear();
 
@@ -1098,18 +1088,18 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHPostcomputeCCleanup
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHFinalize
-( const DistQuasi2dHMat<Scalar,Conjugated>& B,
-        DistQuasi2dHMat<Scalar,Conjugated>& C,
+DistQuasi2dHMat<Scalar>::MultiplyHMatFHHFinalize
+( const DistQuasi2dHMat<Scalar>& B,
+        DistQuasi2dHMat<Scalar>& C,
   int startLevel, int endLevel, 
   int startUpdate, int endUpdate ) const
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatFHHFinalize");
 #endif
-    const DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    const DistQuasi2dHMat<Scalar>& A = *this;
 
     const int r = SampleRank( C.MaxRank() );
     const unsigned numTeamLevels = C._teams->NumLevels();
@@ -1225,9 +1215,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHFinalize
                 // Form the identity matrix in the top r x r submatrix
                 // of a zeros (sLast+tLast) x r matrix.
                 Z.Resize( sLast+tLast, r );
-                hmat_tools::Scale( (Scalar)0, Z );
+                hmat_tools::Scale( Scalar(0), Z );
                 for( int j=0; j<std::min(sLast+tLast,r); ++j )
-                    Z.Set(j,j,(Scalar)1 );
+                    Z.Set(j,j,Scalar(1) );
 
                 // Backtransform the last stage
                 qrWork.resize( r );
@@ -1278,7 +1268,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHFinalize
                 const int m = X.Height();
                 Dense<Scalar> Y;
                 hmat_tools::Copy( X, Y );
-                hmat_tools::Scale( (Scalar)0, X );
+                hmat_tools::Scale( Scalar(0), X );
                 const bool rootOfPrevStage = !(teamRank & 0x1);
                 if( rootOfPrevStage )
                 {
@@ -1310,9 +1300,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHFinalize
                 const int m = X.Height();
                 Dense<Scalar> Y; 
                 hmat_tools::Copy( X, Y );
-                hmat_tools::Scale( (Scalar)0, X );
+                hmat_tools::Scale( Scalar(0), X );
                 for( int j=0; j<std::min(m,r); ++j )
-                    X.Set(j,j,(Scalar)1);
+                    X.Set(j,j,Scalar(1));
                 // Backtransform the last stage
                 qrWork.resize( lapack::ApplyQWorkSize('L',m,r) );
                 lapack::ApplyQ
@@ -1366,9 +1356,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHFinalize
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHFinalizeCounts
+DistQuasi2dHMat<Scalar>::MultiplyHMatFHHFinalizeCounts
 ( std::vector<int>& numQRs, 
   std::vector<int>& numTargetFHH, std::vector<int>& numSourceFHH,
   int startLevel, int endLevel )
@@ -1431,11 +1421,11 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHFinalizeCounts
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHFinalizeMiddleUpdates
-( const DistQuasi2dHMat<Scalar,Conjugated>& B,
-        DistQuasi2dHMat<Scalar,Conjugated>& C,
+DistQuasi2dHMat<Scalar>::MultiplyHMatFHHFinalizeMiddleUpdates
+( const DistQuasi2dHMat<Scalar>& B,
+        DistQuasi2dHMat<Scalar>& C,
         std::vector<Scalar>& allReduceBuffer,
         std::vector<int>& middleOffsets,
   int startLevel, int endLevel,
@@ -1444,7 +1434,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHFinalizeMiddleUpdates
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatFHHFinalizeMiddleUpdates");
 #endif
-    const DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    const DistQuasi2dHMat<Scalar>& A = *this;
     if( (!A._inTargetTeam && !A._inSourceTeam && !B._inSourceTeam) ||
         A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
     {
@@ -1485,9 +1475,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHFinalizeMiddleUpdates
                         &allReduceBuffer[middleOffsets[teamLevel]];
                     blas::Gemm
                     ( 'C', 'N', rank, rank, X.Height(),
-                      (Scalar)1, Omega2.LockedBuffer(), Omega2.LDim(),
+                      Scalar(1), Omega2.LockedBuffer(), Omega2.LDim(),
                                  X.LockedBuffer(),      X.LDim(),
-                      (Scalar)0, middleUpdate,          rank );
+                      Scalar(0), middleUpdate,          rank );
                     middleOffsets[teamLevel] += rank*rank;
                 }
             }
@@ -1518,9 +1508,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHFinalizeMiddleUpdates
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHFinalizeLocalQR
+DistQuasi2dHMat<Scalar>::MultiplyHMatFHHFinalizeLocalQR
 ( std::vector<Dense<Scalar>*>& Xs, std::vector<int>& XOffsets,
   std::vector<Scalar>& tauBuffer, std::vector<int>& tauOffsets,
   std::vector<Scalar>& qrWork,
@@ -1608,11 +1598,11 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHFinalizeLocalQR
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHFinalizeOuterUpdates
-( const DistQuasi2dHMat<Scalar,Conjugated>& B,
-        DistQuasi2dHMat<Scalar,Conjugated>& C,
+DistQuasi2dHMat<Scalar>::MultiplyHMatFHHFinalizeOuterUpdates
+( const DistQuasi2dHMat<Scalar>& B,
+        DistQuasi2dHMat<Scalar>& C,
         std::vector<Scalar>& allReduceBuffer,
         std::vector<int>& leftOffsets,
         std::vector<int>& rightOffsets,
@@ -1622,7 +1612,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHFinalizeOuterUpdates
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatFHHFinalizeOuterUpdates");
 #endif
-    const DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    const DistQuasi2dHMat<Scalar>& A = *this;
     if( (!A._inTargetTeam && !A._inSourceTeam && !B._inSourceTeam) ||
         A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
     {
@@ -1664,9 +1654,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHFinalizeOuterUpdates
                             &allReduceBuffer[leftOffsets[teamLevel]];
                         blas::Gemm
                         ( 'C', 'N', Q1.Width(), rank, A.LocalHeight(),
-                          (Scalar)1, Q1.LockedBuffer(),     Q1.LDim(),
+                          Scalar(1), Q1.LockedBuffer(),     Q1.LDim(),
                                      Omega2.LockedBuffer(), Omega2.LDim(),
-                          (Scalar)0, leftUpdate,            rank );
+                          Scalar(0), leftUpdate,            rank );
                         leftOffsets[teamLevel] += rank*rank;
                     }
                     if( C._inSourceTeam )
@@ -1679,9 +1669,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHFinalizeOuterUpdates
 
                         blas::Gemm
                         ( 'C', 'N', Q2.Width(), rank, B.LocalWidth(),
-                          (Scalar)1, Q2.LockedBuffer(),     Q2.LDim(),
+                          Scalar(1), Q2.LockedBuffer(),     Q2.LDim(),
                                      Omega1.LockedBuffer(), Omega1.LDim(),
-                          (Scalar)0, rightUpdate,           rank );
+                          Scalar(0), rightUpdate,           rank );
                         rightOffsets[teamLevel] += rank*rank;
                     }
                 }
@@ -1713,11 +1703,11 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHFinalizeOuterUpdates
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHFinalizeFormLowRank
-( const DistQuasi2dHMat<Scalar,Conjugated>& B,
-        DistQuasi2dHMat<Scalar,Conjugated>& C,
+DistQuasi2dHMat<Scalar>::MultiplyHMatFHHFinalizeFormLowRank
+( const DistQuasi2dHMat<Scalar>& B,
+        DistQuasi2dHMat<Scalar>& C,
         std::vector<Scalar>& allReduceBuffer,
         std::vector<int>& leftOffsets,
         std::vector<int>& middleOffsets,
@@ -1733,7 +1723,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHFinalizeFormLowRank
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatFHHFinalizeFormLowRank");
 #endif
-    const DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    const DistQuasi2dHMat<Scalar>& A = *this;
     if( (!A._inTargetTeam && !A._inSourceTeam && !B._inSourceTeam) ||
         A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
     {
@@ -1785,9 +1775,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHFinalizeFormLowRank
                         // pinv(Q1' Omega2)' (Omega2' alpha A B Omega1)
                         blas::Gemm
                         ( 'N', 'N', X.Width(), rank, rank, 
-                          (Scalar)1, leftUpdate,   rank, 
+                          Scalar(1), leftUpdate,   rank, 
                                      middleUpdate, rank, 
-                          (Scalar)0, &VH[0],       rank );
+                          Scalar(0), &VH[0],       rank );
 
                         // Q1 := X.
                         Dense<Scalar> Q1;
@@ -1798,9 +1788,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHFinalizeFormLowRank
                         // X := Q1 pinv(Q1' Omega2)' (Omega2' alpha A B Omega1)
                         blas::Gemm
                         ( 'N', 'N', Q1.Height(), rank, Q1.Width(),
-                          (Scalar)1, Q1.LockedBuffer(), Q1.LDim(),
+                          Scalar(1), Q1.LockedBuffer(), Q1.LDim(),
                                      &VH[0],            rank, 
-                          (Scalar)0, X.Buffer(),        X.LDim() );
+                          Scalar(0), X.Buffer(),        X.LDim() );
 
                         leftOffsets[teamLevel] += rank*rank;
                         middleOffsets[teamLevel] += rank*rank;
@@ -1825,11 +1815,10 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHFinalizeFormLowRank
 
                         blas::Gemm
                         ( 'N', 'N', Q2.Height(), rank, Q2.Width(),
-                          (Scalar)1, Q2.LockedBuffer(), Q2.LDim(),
+                          Scalar(1), Q2.LockedBuffer(), Q2.LDim(),
                                      rightUpdate,       rank,
-                          (Scalar)0, X.Buffer(),        X.LDim() );
-                        if( !Conjugated )
-                            hmat_tools::Conjugate( X );
+                          Scalar(0), X.Buffer(),        X.LDim() );
+                        hmat_tools::Conjugate( X );
 
                         rightOffsets[teamLevel] += rank*rank;
                     }
@@ -1863,3 +1852,4 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFHHFinalizeFormLowRank
 #endif
 }
 
+} // namespace dmhm

@@ -1,22 +1,10 @@
 /*
-   Distributed-Memory Hierarchical Matrices (DMHM): a prototype implementation
-   of distributed-memory H-matrix arithmetic. 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   The University of Texas at Austin, and Stanford University
 
-   Copyright (C) 2011 Jack Poulson, Lexing Ying, and
-   The University of Texas at Austin
-
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
+   under the GPLv3 License, which can be found in the LICENSE file in the root
+   directory, or at http://opensource.org/licenses/GPL-3.0
 */
 #include "dmhm.hpp"
 
@@ -105,7 +93,7 @@ std::complex<Real> Householder( const int m, std::complex<Real>* buffer )
         do
         {
             ++count;
-            dmhm::blas::Scal( m-1, (Scalar)invOfSafeMin, &buffer[1], 1 );
+            dmhm::blas::Scal( m-1, Scalar(invOfSafeMin), &buffer[1], 1 );
             alpha *= invOfSafeMin;
             beta *= invOfSafeMin;
         } while( dmhm::Abs( beta ) < safeMin );
@@ -130,13 +118,16 @@ std::complex<Real> Householder( const int m, std::complex<Real>* buffer )
 
 } // anonymous namespace
 
+namespace dmhm {
+namespace hmat_tools {
+
 // Perform a QR factorization of size (s+t) x r where only the upper triangles
 // of the s x r and t x r submatrices are nonzero, and the nonzeros are packed 
 // columnwise.
 //
 // The work buffer must be of size t-1.
 template<typename Scalar>
-void dmhm::hmat_tools::PackedQR
+void PackedQR
 ( const int r, const int s, const int t,
   Scalar* RESTRICT packedA, Scalar* RESTRICT tau, Scalar* RESTRICT work )
 {
@@ -199,7 +190,7 @@ void dmhm::hmat_tools::PackedQR
 }
 
 template<typename Scalar>
-void dmhm::hmat_tools::ApplyPackedQFromLeft
+void ApplyPackedQFromLeft
 ( const int r, const int s, const int t,
   const Scalar* RESTRICT packedA, const Scalar* RESTRICT tau, 
   Dense<Scalar>& B, Scalar* work )
@@ -236,9 +227,9 @@ void dmhm::hmat_tools::ApplyPackedQFromLeft
             work[i] = Conj(BBuffer[j+i*BLDim]);
         blas::Gemv
         ( 'C', T-overlap, n, 
-          (Scalar)1, &BBuffer[s+overlap],      BLDim,
+          Scalar(1), &BBuffer[s+overlap],      BLDim,
                      &packedA[jCol+S+overlap], 1,
-          (Scalar)1, work,                     1 );
+          Scalar(1), work,                     1 );
 
         // 2) B := B - tau_j v_j w_j'
         // Since v_j has the structure described above, we only need to 
@@ -260,7 +251,7 @@ void dmhm::hmat_tools::ApplyPackedQFromLeft
 }
 
 template<typename Scalar>
-void dmhm::hmat_tools::ApplyPackedQAdjointFromLeft
+void ApplyPackedQAdjointFromLeft
 ( const int r, const int s, const int t,
   const Scalar* RESTRICT packedA, const Scalar* RESTRICT tau, 
   Dense<Scalar>& B, Scalar* work )
@@ -296,9 +287,9 @@ void dmhm::hmat_tools::ApplyPackedQAdjointFromLeft
             work[i] = Conj(BBuffer[j+i*BLDim]);
         blas::Gemv
         ( 'C', T-overlap, n, 
-          (Scalar)1, &BBuffer[s+overlap],      BLDim,
+          Scalar(1), &BBuffer[s+overlap],      BLDim,
                      &packedA[jCol+S+overlap], 1,
-          (Scalar)1, work,                     1 );
+          Scalar(1), work,                     1 );
 
         // 2) B := B - tau_j v_j w_j'
         // Since v_j has the structure described above, we only need to 
@@ -322,7 +313,7 @@ void dmhm::hmat_tools::ApplyPackedQAdjointFromLeft
 }
 
 template<typename Scalar>
-void dmhm::hmat_tools::ApplyPackedQFromRight
+void ApplyPackedQFromRight
 ( const int r, const int s, const int t,
   const Scalar* RESTRICT packedA, const Scalar* RESTRICT tau, 
   Dense<Scalar>& B, Scalar* work )
@@ -357,14 +348,14 @@ void dmhm::hmat_tools::ApplyPackedQFromRight
         ( 'N', m, T-overlap,
           tauj,      &BBuffer[(s+overlap)*BLDim], BLDim,
                      &packedA[jCol+S+overlap],    1,
-          (Scalar)1, work,                        1 );
+          Scalar(1), work,                        1 );
 
         // 2) B := B - w_j v_j'
         for( int i=0; i<m; ++i )
             BBuffer[i+j*BLDim] -= work[i];
         blas::Ger
         ( m, T-overlap,
-         (Scalar)-1, work,                        1,
+         Scalar(-1), work,                        1,
                      &packedA[jCol+S+overlap],    1,
                      &BBuffer[(s+overlap)*BLDim], BLDim );
 
@@ -376,7 +367,7 @@ void dmhm::hmat_tools::ApplyPackedQFromRight
 }
 
 template<typename Scalar>
-void dmhm::hmat_tools::ApplyPackedQAdjointFromRight
+void ApplyPackedQAdjointFromRight
 ( const int r, const int s, const int t,
   const Scalar* RESTRICT packedA, const Scalar* RESTRICT tau, 
   Dense<Scalar>& B, Scalar* work )
@@ -412,14 +403,14 @@ void dmhm::hmat_tools::ApplyPackedQAdjointFromRight
         ( 'N', m, T-overlap,
           conjTauj,  &BBuffer[(s+overlap)*BLDim], BLDim,
                      &packedA[jCol+S+overlap],    1,
-          (Scalar)1, work,              1 );
+          Scalar(1), work,              1 );
 
         // 2) B := B - w_j v_j'
         for( int i=0; i<m; ++i )
             BBuffer[i+j*BLDim] -= work[i];
         blas::Ger
         ( m, T-overlap,
-         (Scalar)-1, work,                        1,
+         Scalar(-1), work,                        1,
                      &packedA[jCol+S+overlap],    1,
                      &BBuffer[(s+overlap)*BLDim], BLDim );
     }
@@ -429,7 +420,7 @@ void dmhm::hmat_tools::ApplyPackedQAdjointFromRight
 }
 
 template<typename Scalar>
-void dmhm::hmat_tools::PrintPacked
+void PrintPacked
 ( std::ostream& os, const std::string msg, 
   const int r, const int s, const int t,
   const Scalar* packedA )
@@ -498,7 +489,7 @@ void dmhm::hmat_tools::PrintPacked
 }
 
 template<typename Scalar>
-void dmhm::hmat_tools::PrintPacked
+void PrintPacked
 ( const std::string msg, 
   const int r, const int s, const int t,
   const Scalar* packedA )
@@ -506,150 +497,152 @@ void dmhm::hmat_tools::PrintPacked
     PrintPacked( std::cout, msg, r, s, t, packedA );
 }
 
-template void dmhm::hmat_tools::PackedQR
+template void PackedQR
 ( const int r, const int s, const int t,
   float* RESTRICT A, 
   float* RESTRICT tau,
   float* RESTRICT work );
-template void dmhm::hmat_tools::PackedQR
+template void PackedQR
 ( const int r, const int s, const int t,
   double* RESTRICT A, 
   double* RESTRICT tau,
   double* RESTRICT work );
-template void dmhm::hmat_tools::PackedQR
+template void PackedQR
 ( const int r, const int s, const int t,
   std::complex<float>* RESTRICT A, 
   std::complex<float>* RESTRICT tau,
   std::complex<float>* RESTRICT work );
-template void dmhm::hmat_tools::PackedQR
+template void PackedQR
 ( const int r, const int s, const int t,
   std::complex<double>* RESTRICT A, 
   std::complex<double>* RESTRICT tau,
   std::complex<double>* RESTRICT work );
 
-template void dmhm::hmat_tools::ApplyPackedQFromLeft
+template void ApplyPackedQFromLeft
 ( const int r, const int s, const int t,
   const float* RESTRICT A, 
   const float* RESTRICT tau,
         Dense<float>& B, 
         float* RESTRICT work );
-template void dmhm::hmat_tools::ApplyPackedQFromLeft
+template void ApplyPackedQFromLeft
 ( const int r, const int s, const int t,
   const double* RESTRICT A, 
   const double* RESTRICT tau,
         Dense<double>& B, 
         double* RESTRICT work );
-template void dmhm::hmat_tools::ApplyPackedQFromLeft
+template void ApplyPackedQFromLeft
 ( const int r, const int s, const int t,
   const std::complex<float>* RESTRICT A, 
   const std::complex<float>* RESTRICT tau,
         Dense<std::complex<float> >& B,
         std::complex<float>* RESTRICT work );
-template void dmhm::hmat_tools::ApplyPackedQFromLeft
+template void ApplyPackedQFromLeft
 ( const int r, const int s, const int t,
   const std::complex<double>* RESTRICT A, 
   const std::complex<double>* RESTRICT tau,
         Dense<std::complex<double> >& B,
         std::complex<double>* RESTRICT work );
 
-template void dmhm::hmat_tools::ApplyPackedQAdjointFromLeft
+template void ApplyPackedQAdjointFromLeft
 ( const int r, const int s, const int t,
   const float* RESTRICT A, 
   const float* RESTRICT tau,
         Dense<float>& B, 
         float* RESTRICT work );
-template void dmhm::hmat_tools::ApplyPackedQAdjointFromLeft
+template void ApplyPackedQAdjointFromLeft
 ( const int r, const int s, const int t,
   const double* RESTRICT A, 
   const double* RESTRICT tau,
         Dense<double>& B, 
         double* RESTRICT work );
-template void dmhm::hmat_tools::ApplyPackedQAdjointFromLeft
+template void ApplyPackedQAdjointFromLeft
 ( const int r, const int s, const int t,
   const std::complex<float>* RESTRICT A, 
   const std::complex<float>* RESTRICT tau,
         Dense<std::complex<float> >& B,
         std::complex<float>* RESTRICT work );
-template void dmhm::hmat_tools::ApplyPackedQAdjointFromLeft
+template void ApplyPackedQAdjointFromLeft
 ( const int r, const int s, const int t,
   const std::complex<double>* RESTRICT A, 
   const std::complex<double>* RESTRICT tau,
         Dense<std::complex<double> >& B,
         std::complex<double>* RESTRICT work );
 
-template void dmhm::hmat_tools::ApplyPackedQFromRight
+template void ApplyPackedQFromRight
 ( const int r, const int s, const int t,
   const float* RESTRICT A, 
   const float* RESTRICT tau,
         Dense<float>& B, 
         float* RESTRICT work );
-template void dmhm::hmat_tools::ApplyPackedQFromRight
+template void ApplyPackedQFromRight
 ( const int r, const int s, const int t,
   const double* RESTRICT A, 
   const double* RESTRICT tau,
         Dense<double>& B, 
         double* RESTRICT work );
-template void dmhm::hmat_tools::ApplyPackedQFromRight
+template void ApplyPackedQFromRight
 ( const int r, const int s, const int t,
   const std::complex<float>* RESTRICT A, 
   const std::complex<float>* RESTRICT tau,
         Dense<std::complex<float> >& B,
         std::complex<float>* RESTRICT work );
-template void dmhm::hmat_tools::ApplyPackedQFromRight
+template void ApplyPackedQFromRight
 ( const int r, const int s, const int t,
   const std::complex<double>* RESTRICT A, 
   const std::complex<double>* RESTRICT tau,
         Dense<std::complex<double> >& B,
         std::complex<double>* RESTRICT work );
 
-template void dmhm::hmat_tools::ApplyPackedQAdjointFromRight
+template void ApplyPackedQAdjointFromRight
 ( const int r, const int s, const int t,
   const float* RESTRICT A, 
   const float* RESTRICT tau,
         Dense<float>& B, 
         float* RESTRICT work );
-template void dmhm::hmat_tools::ApplyPackedQAdjointFromRight
+template void ApplyPackedQAdjointFromRight
 ( const int r, const int s, const int t,
   const double* RESTRICT A, 
   const double* RESTRICT tau,
         Dense<double>& B, 
         double* RESTRICT work );
-template void dmhm::hmat_tools::ApplyPackedQAdjointFromRight
+template void ApplyPackedQAdjointFromRight
 ( const int r, const int s, const int t,
   const std::complex<float>* RESTRICT A, 
   const std::complex<float>* RESTRICT tau,
         Dense<std::complex<float> >& B,
         std::complex<float>* RESTRICT work );
-template void dmhm::hmat_tools::ApplyPackedQAdjointFromRight
+template void ApplyPackedQAdjointFromRight
 ( const int r, const int s, const int t,
   const std::complex<double>* RESTRICT A, 
   const std::complex<double>* RESTRICT tau,
         Dense<std::complex<double> >& B,
         std::complex<double>* RESTRICT work );
 
-template void dmhm::hmat_tools::PrintPacked
+template void PrintPacked
 ( std::ostream& os, const std::string msg,
   const int r, const int s, const int t, const float* packedA );
-template void dmhm::hmat_tools::PrintPacked
+template void PrintPacked
 ( std::ostream& os, const std::string msg,
   const int r, const int s, const int t, const double* packedA );
-template void dmhm::hmat_tools::PrintPacked
+template void PrintPacked
 ( std::ostream& os, const std::string msg,
   const int r, const int s, const int t, const std::complex<float>* packedA );
-template void dmhm::hmat_tools::PrintPacked
+template void PrintPacked
 ( std::ostream& os, const std::string msg,
   const int r, const int s, const int t, const std::complex<double>* packedA );
 
-template void dmhm::hmat_tools::PrintPacked
+template void PrintPacked
 ( const std::string msg,
   const int r, const int s, const int t, const float* packedA );
-template void dmhm::hmat_tools::PrintPacked
+template void PrintPacked
 ( const std::string msg,
   const int r, const int s, const int t, const double* packedA );
-template void dmhm::hmat_tools::PrintPacked
+template void PrintPacked
 ( const std::string msg,
   const int r, const int s, const int t, const std::complex<float>* packedA );
-template void dmhm::hmat_tools::PrintPacked
+template void PrintPacked
 ( const std::string msg,
   const int r, const int s, const int t, const std::complex<double>* packedA );
 
+} // namespace hmat_tools
+} // namespace dmhm

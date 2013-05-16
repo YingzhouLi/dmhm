@@ -1,23 +1,12 @@
 /*
-   Distributed-Memory Hierarchical Matrices (DMHM): a prototype implementation
-   of distributed-memory H-matrix arithmetic. 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   The University of Texas at Austin, and Stanford University
 
-   Copyright (C) 2011 Jack Poulson, Lexing Ying, and
-   The University of Texas at Austin
-
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
+   under the GPLv3 License, which can be found in the LICENSE file in the root
+   directory, or at http://opensource.org/licenses/GPL-3.0
 */
+#pragma once
 #ifndef DMHM_TIMER_HPP
 #define DMHM_TIMER_HPP 1
 
@@ -37,14 +26,12 @@ private:
     std::map<int,bool> _running;
 };
 
-} // namespace dmhm
-
 //----------------------------------------------------------------------------//
 // Implementation begins here                                                 //
 //----------------------------------------------------------------------------//
 
 inline void
-dmhm::Timer::Start( int key )
+Timer::Start( int key )
 {
 #ifndef RELEASE
     PushCallStack("Timer::Start");
@@ -70,7 +57,7 @@ dmhm::Timer::Start( int key )
 }
 
 inline double
-dmhm::Timer::Stop( int key )
+Timer::Stop( int key )
 {
 #ifndef RELEASE
     PushCallStack("Timer::Stop");
@@ -101,7 +88,7 @@ dmhm::Timer::Stop( int key )
 }
 
 inline double
-dmhm::Timer::GetTime( int key )
+Timer::GetTime( int key )
 {
 #ifndef RELEASE
     PushCallStack("Timer::GetTime");
@@ -120,18 +107,20 @@ dmhm::Timer::GetTime( int key )
     return time;
 }
 
-inline void dmhm::Timer::Clear()
+inline void Timer::Clear()
 {
     _running.clear();
     _startTimes.clear();
     _times.clear();
 }
 
-inline void dmhm::Timer::Clear( int key )
+inline void Timer::Clear( int key )
 {
     _running.erase( key );
     _startTimes.erase( key );
     _times.erase( key );
 }
 
-#endif // DMHM_TIMER_HPP
+} // namespace dmhm
+
+#endif // ifndef DMHM_TIMER_HPP

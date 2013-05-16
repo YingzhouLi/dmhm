@@ -1,22 +1,10 @@
 /*
-   Distributed-Memory Hierarchical Matrices (DMHM): a prototype implementation
-   of distributed-memory H-matrix arithmetic. 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   The University of Texas at Austin, and Stanford University
 
-   Copyright (C) 2011 Jack Poulson, Lexing Ying, and
-   The University of Texas at Austin
-
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
+   under the GPLv3 License, which can be found in the LICENSE file in the root
+   directory, or at http://opensource.org/licenses/GPL-3.0
 */
 
 #include "./MultiplyHMatFormGhostRanks-incl.hpp"
@@ -27,12 +15,14 @@
 #include "./MultiplyHMatCompress-incl.hpp"
 #include "./MultiplyHMatFHHCompress-incl.hpp"
 
+namespace dmhm {
+
 // C := alpha A B
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::Multiply
-( Scalar alpha, DistQuasi2dHMat<Scalar,Conjugated>& B,
-                DistQuasi2dHMat<Scalar,Conjugated>& C,
+DistQuasi2dHMat<Scalar>::Multiply
+( Scalar alpha, DistQuasi2dHMat<Scalar>& B,
+                DistQuasi2dHMat<Scalar>& C,
   int multType )
 {
 #ifndef RELEASE
@@ -40,7 +30,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::Multiply
     if( multType < 0 || multType > 2 )
         throw std::logic_error("Invalid multiplication type");
 #endif
-    DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    DistQuasi2dHMat<Scalar>& A = *this;
 
     if( multType == 0 )
         A.MultiplyHMatSingleUpdateAccumulate( alpha, B, C );
@@ -53,11 +43,11 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::Multiply
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFullAccumulate
-( Scalar alpha, DistQuasi2dHMat<Scalar,Conjugated>& B,
-                DistQuasi2dHMat<Scalar,Conjugated>& C )
+DistQuasi2dHMat<Scalar>::MultiplyHMatFullAccumulate
+( Scalar alpha, DistQuasi2dHMat<Scalar>& B,
+                DistQuasi2dHMat<Scalar>& C )
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatFullAccumulate");
@@ -70,7 +60,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFullAccumulate
     if( _level != B._level )
         throw std::logic_error("Mismatched levels");
 #endif
-    DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    DistQuasi2dHMat<Scalar>& A = *this;
     A.RequireRoot();
     A.PruneGhostNodes();
     B.PruneGhostNodes();
@@ -223,11 +213,11 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFullAccumulate
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatSingleLevelAccumulate
-( Scalar alpha, DistQuasi2dHMat<Scalar,Conjugated>& B,
-                DistQuasi2dHMat<Scalar,Conjugated>& C )
+DistQuasi2dHMat<Scalar>::MultiplyHMatSingleLevelAccumulate
+( Scalar alpha, DistQuasi2dHMat<Scalar>& B,
+                DistQuasi2dHMat<Scalar>& C )
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatSingleLevelAccumulate");
@@ -240,7 +230,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatSingleLevelAccumulate
     if( _level != B._level )
         throw std::logic_error("Mismatched levels");
 #endif
-    DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    DistQuasi2dHMat<Scalar>& A = *this;
     A.RequireRoot();
     A.PruneGhostNodes();
     B.PruneGhostNodes();
@@ -397,11 +387,11 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatSingleLevelAccumulate
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatSingleUpdateAccumulate
-( Scalar alpha, DistQuasi2dHMat<Scalar,Conjugated>& B,
-                DistQuasi2dHMat<Scalar,Conjugated>& C )
+DistQuasi2dHMat<Scalar>::MultiplyHMatSingleUpdateAccumulate
+( Scalar alpha, DistQuasi2dHMat<Scalar>& B,
+                DistQuasi2dHMat<Scalar>& C )
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatSingleUpdateAccumulate");
@@ -414,7 +404,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatSingleUpdateAccumulate
     if( _level != B._level )
         throw std::logic_error("Mismatched levels");
 #endif
-    DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    DistQuasi2dHMat<Scalar>& A = *this;
     A.RequireRoot();
     A.PruneGhostNodes();
     B.PruneGhostNodes();
@@ -574,3 +564,4 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatSingleUpdateAccumulate
 #endif
 }
 
+} // namespace dmhm

@@ -1,30 +1,20 @@
 /*
-   Distributed-Memory Hierarchical Matrices (DMHM): a prototype implementation
-   of distributed-memory H-matrix arithmetic. 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   The University of Texas at Austin, and Stanford University
 
-   Copyright (C) 2011 Jack Poulson, Lexing Ying, and
-   The University of Texas at Austin
-
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
+   under the GPLv3 License, which can be found in the LICENSE file in the root
+   directory, or at http://opensource.org/licenses/GPL-3.0
 */
 
+namespace dmhm {
+
 // C := alpha A B
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::Quasi2dHMat<Scalar,Conjugated>::Multiply
-( Scalar alpha, const Quasi2dHMat<Scalar,Conjugated>& B,
-                      Quasi2dHMat<Scalar,Conjugated>& C ) const
+Quasi2dHMat<Scalar>::Multiply
+( Scalar alpha, const Quasi2dHMat<Scalar>& B,
+                      Quasi2dHMat<Scalar>& C ) const
 {
 #ifndef RELEASE
     PushCallStack("Quasi2dHMat::Multiply H := H H");
@@ -35,7 +25,7 @@ dmhm::Quasi2dHMat<Scalar,Conjugated>::Multiply
     if( _zSize != B._zSize )
         throw std::logic_error("Mismatched z size");
 #endif
-    const Quasi2dHMat<Scalar,Conjugated>& A = *this;
+    const Quasi2dHMat<Scalar>& A = *this;
 
     C._numLevels = A._numLevels;
     C._maxRank = A._maxRank;
@@ -58,31 +48,21 @@ dmhm::Quasi2dHMat<Scalar,Conjugated>::Multiply
     if( C.Admissible() )
     {
         C._block.type = LOW_RANK;
-        C._block.data.F = new LowRank<Scalar,Conjugated>;
+        C._block.data.F = new LowRank<Scalar>;
         if( A.IsLowRank() && B.IsLowRank() )
             hmat_tools::Multiply
             ( alpha, *A._block.data.F, *B._block.data.F, *C._block.data.F );
         else if( A.IsLowRank() && B.IsHierarchical() )
         {
             hmat_tools::Copy( A._block.data.F->U, C._block.data.F->U );
-            if( Conjugated )
-                B.AdjointMultiply
-                ( Conj(alpha), A._block.data.F->V, C._block.data.F->V );
-            else
-                B.TransposeMultiply
-                ( alpha, A._block.data.F->V, C._block.data.F->V );
+            B.TransposeMultiply
+            ( alpha, A._block.data.F->V, C._block.data.F->V );
         }
         else if( A.IsLowRank() && B.IsDense() )
         {
             hmat_tools::Copy( A._block.data.F->U, C._block.data.F->U );
-            if( Conjugated )
-                hmat_tools::AdjointMultiply
-                ( Conj(alpha), *B._block.data.D, A._block.data.F->V, 
-                  C._block.data.F->V );
-            else
-                hmat_tools::TransposeMultiply
-                ( alpha, *B._block.data.D, A._block.data.F->V,
-                  C._block.data.F->V );
+            hmat_tools::TransposeMultiply
+            ( alpha, *B._block.data.D, A._block.data.F->V, C._block.data.F->V );
         }
         else if( A.IsHierarchical() && B.IsLowRank() )
         {
@@ -129,7 +109,7 @@ dmhm::Quasi2dHMat<Scalar,Conjugated>::Multiply
         if( A.IsLowRank() && B.IsLowRank() )
         {
             // Form W := alpha A B
-            LowRank<Scalar,Conjugated> W;
+            LowRank<Scalar> W;
             hmat_tools::Multiply
             ( alpha, *A._block.data.F, *B._block.data.F, W );
 
@@ -139,14 +119,9 @@ dmhm::Quasi2dHMat<Scalar,Conjugated>::Multiply
         else if( A.IsLowRank() && B.IsHierarchical() )
         {
             // Form W := alpha A B
-            LowRank<Scalar,Conjugated> W;
+            LowRank<Scalar> W;
             hmat_tools::Copy( A._block.data.F->U, W.U );
-            if( Conjugated )
-                B.AdjointMultiply
-                ( Conj(alpha), A._block.data.F->V, W.V );
-            else
-                B.TransposeMultiply
-                ( alpha, A._block.data.F->V, W.V );
+            B.TransposeMultiply( alpha, A._block.data.F->V, W.V );
 
             // Form C :=~ W
             C.ImportLowRank( W );
@@ -154,7 +129,7 @@ dmhm::Quasi2dHMat<Scalar,Conjugated>::Multiply
         else if( A.IsHierarchical() && B.IsLowRank() )
         {
             // Form W := alpha A B    
-            LowRank<Scalar,Conjugated> W;
+            LowRank<Scalar> W;
             Multiply( alpha, B._block.data.F->U, W.U );
             hmat_tools::Copy( B._block.data.F->V, W.V );
 
@@ -176,7 +151,7 @@ dmhm::Quasi2dHMat<Scalar,Conjugated>::Multiply
                 for( int s=0; s<4; ++s )
                 {
                     // Create the H-matrix here
-                    nodeC.children[s+4*t] = new Quasi2dHMat<Scalar,Conjugated>;
+                    nodeC.children[s+4*t] = new Quasi2dHMat<Scalar>;
 
                     // Initialize the [t,s] box of C with the first product
                     nodeA.Child(t,0).Multiply
@@ -218,11 +193,11 @@ dmhm::Quasi2dHMat<Scalar,Conjugated>::Multiply
 }
 
 // C := alpha A B + beta C
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::Quasi2dHMat<Scalar,Conjugated>::Multiply
-( Scalar alpha, const Quasi2dHMat<Scalar,Conjugated>& B,
-  Scalar beta,        Quasi2dHMat<Scalar,Conjugated>& C ) const
+Quasi2dHMat<Scalar>::Multiply
+( Scalar alpha, const Quasi2dHMat<Scalar>& B,
+  Scalar beta,        Quasi2dHMat<Scalar>& C ) const
 {
 #ifndef RELEASE
     PushCallStack("Quasi2dHMat::Multiply (H := H H + H)");
@@ -236,83 +211,76 @@ dmhm::Quasi2dHMat<Scalar,Conjugated>::Multiply
     if( C.Symmetric() )
         throw std::logic_error("Symmetric updates not yet supported.");
 #endif
-    const Quasi2dHMat<Scalar,Conjugated>& A = *this;
+    const Quasi2dHMat<Scalar>& A = *this;
     if( C.Admissible() )
     {
         if( A.IsLowRank() && B.IsLowRank() )
         {
             // W := alpha A.F B.F
-            LowRank<Scalar,Conjugated> W;
+            LowRank<Scalar> W;
             hmat_tools::Multiply
             ( alpha, *A._block.data.F, *B._block.data.F, W );
 
             // C.F :~= W + beta C.F
             hmat_tools::RoundedUpdate
-            ( C.MaxRank(), (Scalar)1, W, beta, *C._block.data.F );
+            ( C.MaxRank(), Scalar(1), W, beta, *C._block.data.F );
         }
         else if( A.IsLowRank() && B.IsHierarchical() )
         {
             // W := alpha A.F B
-            LowRank<Scalar,Conjugated> W;
+            LowRank<Scalar> W;
             hmat_tools::Copy( A._block.data.F->U, W.U );
-            if( Conjugated )
-                B.AdjointMultiply( Conj(alpha), A._block.data.F->V, W.V );
-            else
-                B.TransposeMultiply( alpha, A._block.data.F->V, W.V );
+            B.TransposeMultiply( alpha, A._block.data.F->V, W.V );
 
             // C.F :~= W + beta C.F
             hmat_tools::RoundedUpdate
-            ( C.MaxRank(), (Scalar)1, W, beta, *C._block.data.F );
+            ( C.MaxRank(), Scalar(1), W, beta, *C._block.data.F );
         }
         else if( A.IsLowRank() && B.IsDense() )
         {
             // W := alpha A.F B.D
-            LowRank<Scalar,Conjugated> W;
+            LowRank<Scalar> W;
             hmat_tools::Copy( A._block.data.F->U, W.U );
-            if( Conjugated )
-                hmat_tools::AdjointMultiply
-                ( Conj(alpha), *B._block.data.D, A._block.data.F->V, W.V );
-            else
-                hmat_tools::TransposeMultiply
-                ( alpha, *B._block.data.D, A._block.data.F->V, W.V );
+            hmat_tools::TransposeMultiply
+            ( alpha, *B._block.data.D, A._block.data.F->V, W.V );
 
             // C.F :~= W + beta C.F
             hmat_tools::RoundedUpdate
-            ( C.MaxRank(), (Scalar)1, W, beta, *C._block.data.F );
+            ( C.MaxRank(), Scalar(1), W, beta, *C._block.data.F );
         }
         else if( A.IsHierarchical() && B.IsLowRank() )
         {
             // W := alpha A B.F
-            LowRank<Scalar,Conjugated> W;
+            LowRank<Scalar> W;
             Multiply( alpha, B._block.data.F->U, W.U );
             hmat_tools::Copy( B._block.data.F->V, W.V );
 
             // C.F :~= W + beta C.F
             hmat_tools::RoundedUpdate
-            ( C.MaxRank(), (Scalar)1, W, beta, *C._block.data.F );
+            ( C.MaxRank(), Scalar(1), W, beta, *C._block.data.F );
         }
         else if( A.IsHierarchical() && B.IsHierarchical() )
         {
             // W := alpha A B
-            LowRank<Scalar,Conjugated> W;
+            LowRank<Scalar> W;
             const int sampleRank = SampleRank( C.MaxRank() );
             hmat_tools::Multiply( sampleRank, alpha, *this, B, W );
 
             // C.F :~= W + beta C.F
             hmat_tools::RoundedUpdate
-            ( C.MaxRank(), (Scalar)1, W, beta, *C._block.data.F );
+            ( C.MaxRank(), Scalar(1), W, beta, *C._block.data.F );
         }
         else if( A.IsDense() && B.IsLowRank() )
         {
             // W := alpha A.D B.F
-            LowRank<Scalar,Conjugated> W;
+            LowRank<Scalar> W;
             hmat_tools::Multiply
             ( alpha, *A._block.data.D, B._block.data.F->U, W.U );
             hmat_tools::Copy( B._block.data.F->V, W.V );
 
             // C.F :=~ W + beta C.F
             hmat_tools::RoundedUpdate
-            ( C.MaxRank(), (Scalar)1, W, beta, *C._block.data.F );
+            ( C.MaxRank(), Scalar(1), W, beta, *C._block.data.F );
         }
         else if( A.IsDense() && B.IsDense() )
             hmat_tools::Multiply
@@ -334,40 +302,35 @@ dmhm::Quasi2dHMat<Scalar,Conjugated>::Multiply
         if( A.IsLowRank() && B.IsLowRank() )
         {
             // Form W := alpha A B 
-            LowRank<Scalar,Conjugated> W;
+            LowRank<Scalar> W;
             hmat_tools::Multiply
             ( alpha, *A._block.data.F, *B._block.data.F, W );
 
             // C :~= W + beta C
             C.Scale( beta );
-            C.UpdateWithLowRank( (Scalar)1, W );
+            C.UpdateWithLowRank( Scalar(1), W );
         }
         else if( A.IsLowRank() && B.IsHierarchical() )
         {
             // Form W := alpha A B
-            LowRank<Scalar,Conjugated> W;
+            LowRank<Scalar> W;
             hmat_tools::Copy( A._block.data.F->U, W.U );
-            if( Conjugated )
-                B.AdjointMultiply
-                ( Conj(alpha), A._block.data.F->V, W.V );
-            else
-                B.TransposeMultiply
-                ( alpha, A._block.data.F->V, W.V );
+            B.TransposeMultiply( alpha, A._block.data.F->V, W.V );
 
             // C :~= W + beta C
             C.Scale( beta );
-            C.UpdateWithLowRank( (Scalar)1, W );
+            C.UpdateWithLowRank( Scalar(1), W );
         }
         else if( A.IsHierarchical() && B.IsLowRank() )
         {
             // Form W := alpha A B    
-            LowRank<Scalar,Conjugated> W;
+            LowRank<Scalar> W;
             Multiply( alpha, B._block.data.F->U, W.U );
             hmat_tools::Copy( B._block.data.F->V, W.V );
 
             // Form C :~= W + beta C
             C.Scale( beta );
-            C.UpdateWithLowRank( (Scalar)1, W );
+            C.UpdateWithLowRank( Scalar(1), W );
         }
         else
         {
@@ -391,7 +354,7 @@ dmhm::Quasi2dHMat<Scalar,Conjugated>::Multiply
                         for( int u=1; u<4; ++u )
                             nodeA.Child(t,u).Multiply
                             ( alpha, nodeB.Child(u,s), 
-                              (Scalar)1, nodeC.Child(t,s) ); 
+                              Scalar(1), nodeC.Child(t,s) ); 
                     }
                 }
             }
@@ -425,3 +388,4 @@ dmhm::Quasi2dHMat<Scalar,Conjugated>::Multiply
 #endif
 }
 
+} // namespace dmhm

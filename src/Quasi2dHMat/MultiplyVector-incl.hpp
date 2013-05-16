@@ -1,27 +1,17 @@
 /*
-   Distributed-Memory Hierarchical Matrices (DMHM): a prototype implementation
-   of distributed-memory H-matrix arithmetic. 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   The University of Texas at Austin, and Stanford University
 
-   Copyright (C) 2011 Jack Poulson, Lexing Ying, and
-   The University of Texas at Austin
-
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
+   under the GPLv3 License, which can be found in the LICENSE file in the root
+   directory, or at http://opensource.org/licenses/GPL-3.0
 */
 
-template<typename Scalar,bool Conjugated>
+namespace dmhm {
+
+template<typename Scalar>
 void
-dmhm::Quasi2dHMat<Scalar,Conjugated>::Multiply
+Quasi2dHMat<Scalar>::Multiply
 ( Scalar alpha, const Vector<Scalar>& x, Scalar beta, Vector<Scalar>& y ) const
 {
 #ifndef RELEASE
@@ -44,7 +34,7 @@ dmhm::Quasi2dHMat<Scalar,Conjugated>::Multiply
                 Vector<Scalar> xSub;
                 xSub.LockedView( x, sOffset, node.sourceSizes[s] );
 
-                node.Child(t,s).Multiply( alpha, xSub, (Scalar)1, ySub );
+                node.Child(t,s).Multiply( alpha, xSub, Scalar(1), ySub );
             }
         }
         break;
@@ -53,10 +43,10 @@ dmhm::Quasi2dHMat<Scalar,Conjugated>::Multiply
         UpdateVectorWithNodeSymmetric( alpha, x, y );
         break;
     case LOW_RANK:
-        hmat_tools::Multiply( alpha, *_block.data.F, x, (Scalar)1, y );
+        hmat_tools::Multiply( alpha, *_block.data.F, x, Scalar(1), y );
         break;
     case DENSE:
-        hmat_tools::Multiply( alpha, *_block.data.D, x, (Scalar)1, y );
+        hmat_tools::Multiply( alpha, *_block.data.D, x, Scalar(1), y );
         break;
     }
 #ifndef RELEASE
@@ -64,9 +54,9 @@ dmhm::Quasi2dHMat<Scalar,Conjugated>::Multiply
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::Quasi2dHMat<Scalar,Conjugated>::Multiply
+Quasi2dHMat<Scalar>::Multiply
 ( Scalar alpha, const Vector<Scalar>& x, Vector<Scalar>& y ) const
 {
 #ifndef RELEASE
@@ -79,9 +69,9 @@ dmhm::Quasi2dHMat<Scalar,Conjugated>::Multiply
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::Quasi2dHMat<Scalar,Conjugated>::TransposeMultiply
+Quasi2dHMat<Scalar>::TransposeMultiply
 ( Scalar alpha, const Vector<Scalar>& x, Scalar beta, Vector<Scalar>& y ) const
 {
 #ifndef RELEASE
@@ -105,7 +95,7 @@ dmhm::Quasi2dHMat<Scalar,Conjugated>::TransposeMultiply
                 xSub.LockedView( x, sOffset, node.targetSizes[s] );
 
                 node.Child(s,t).TransposeMultiply
-                ( alpha, xSub, (Scalar)1, ySub );
+                ( alpha, xSub, Scalar(1), ySub );
             }
         }
         break;
@@ -114,10 +104,10 @@ dmhm::Quasi2dHMat<Scalar,Conjugated>::TransposeMultiply
         UpdateVectorWithNodeSymmetric( alpha, x, y );
         break;
     case LOW_RANK:
-        hmat_tools::TransposeMultiply( alpha, *_block.data.F, x, (Scalar)1, y );
+        hmat_tools::TransposeMultiply( alpha, *_block.data.F, x, Scalar(1), y );
         break;
     case DENSE:
-        hmat_tools::TransposeMultiply( alpha, *_block.data.D, x, (Scalar)1, y );
+        hmat_tools::TransposeMultiply( alpha, *_block.data.D, x, Scalar(1), y );
         break;
     }
 #ifndef RELEASE
@@ -125,9 +115,9 @@ dmhm::Quasi2dHMat<Scalar,Conjugated>::TransposeMultiply
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::Quasi2dHMat<Scalar,Conjugated>::TransposeMultiply
+Quasi2dHMat<Scalar>::TransposeMultiply
 ( Scalar alpha, const Vector<Scalar>& x, Vector<Scalar>& y ) const
 {
 #ifndef RELEASE
@@ -140,9 +130,9 @@ dmhm::Quasi2dHMat<Scalar,Conjugated>::TransposeMultiply
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::Quasi2dHMat<Scalar,Conjugated>::AdjointMultiply
+Quasi2dHMat<Scalar>::AdjointMultiply
 ( Scalar alpha, const Vector<Scalar>& x, Scalar beta, Vector<Scalar>& y ) const
 {
 #ifndef RELEASE
@@ -166,7 +156,7 @@ dmhm::Quasi2dHMat<Scalar,Conjugated>::AdjointMultiply
                 xSub.LockedView( x, sOffset, node.targetSizes[s] );
 
                 node.Child(s,t).AdjointMultiply
-                ( alpha, xSub, (Scalar)1, ySub );
+                ( alpha, xSub, Scalar(1), ySub );
             }
         }
         break;
@@ -182,11 +172,11 @@ dmhm::Quasi2dHMat<Scalar,Conjugated>::AdjointMultiply
     }
     case LOW_RANK:
         hmat_tools::AdjointMultiply
-        ( alpha, *_block.data.F, x, (Scalar)1, y );
+        ( alpha, *_block.data.F, x, Scalar(1), y );
         break;
     case DENSE:
         hmat_tools::AdjointMultiply
-        ( alpha, *_block.data.D, x, (Scalar)1, y );
+        ( alpha, *_block.data.D, x, Scalar(1), y );
         break;
     }
 #ifndef RELEASE
@@ -196,9 +186,9 @@ dmhm::Quasi2dHMat<Scalar,Conjugated>::AdjointMultiply
 
 // Having a non-const x allows us to conjugate x in place for the 
 // NODE_SYMMETRIC updates.
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::Quasi2dHMat<Scalar,Conjugated>::AdjointMultiply
+Quasi2dHMat<Scalar>::AdjointMultiply
 ( Scalar alpha, Vector<Scalar>& x, Scalar beta, Vector<Scalar>& y ) const
 {
 #ifndef RELEASE
@@ -223,7 +213,7 @@ dmhm::Quasi2dHMat<Scalar,Conjugated>::AdjointMultiply
                 xSub.LockedView( x, sOffset, node.targetSizes[s] );
 
                 node.Child(s,t).AdjointMultiply
-                ( alpha, xSub, (Scalar)1, ySub );
+                ( alpha, xSub, Scalar(1), ySub );
             }
         }
         break;
@@ -236,10 +226,10 @@ dmhm::Quasi2dHMat<Scalar,Conjugated>::AdjointMultiply
         hmat_tools::Conjugate( y );
         break;
     case LOW_RANK:
-        hmat_tools::AdjointMultiply( alpha, *_block.data.F, x, (Scalar)1, y );
+        hmat_tools::AdjointMultiply( alpha, *_block.data.F, x, Scalar(1), y );
         break;
     case DENSE:
-        hmat_tools::AdjointMultiply( alpha, *_block.data.D, x, (Scalar)1, y );
+        hmat_tools::AdjointMultiply( alpha, *_block.data.D, x, Scalar(1), y );
         break;
     }
 #ifndef RELEASE
@@ -247,9 +237,9 @@ dmhm::Quasi2dHMat<Scalar,Conjugated>::AdjointMultiply
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::Quasi2dHMat<Scalar,Conjugated>::AdjointMultiply
+Quasi2dHMat<Scalar>::AdjointMultiply
 ( Scalar alpha, const Vector<Scalar>& x, Vector<Scalar>& y ) const
 {
 #ifndef RELEASE
@@ -263,9 +253,9 @@ dmhm::Quasi2dHMat<Scalar,Conjugated>::AdjointMultiply
 }
 
 // This version allows for temporary in-place conjugation of x
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::Quasi2dHMat<Scalar,Conjugated>::AdjointMultiply
+Quasi2dHMat<Scalar>::AdjointMultiply
 ( Scalar alpha, Vector<Scalar>& x, Vector<Scalar>& y ) const
 {
 #ifndef RELEASE
@@ -278,3 +268,4 @@ dmhm::Quasi2dHMat<Scalar,Conjugated>::AdjointMultiply
 #endif
 }
 
+} // namespace dmhm

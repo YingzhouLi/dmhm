@@ -1,40 +1,27 @@
 /*
-   Distributed-Memory Hierarchical Matrices (DMHM): a prototype implementation
-   of distributed-memory H-matrix arithmetic. 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   The University of Texas at Austin, and Stanford University
 
-   Copyright (C) 2011 Jack Poulson, Lexing Ying, and
-   The University of Texas at Austin
-
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
+   under the GPLv3 License, which can be found in the LICENSE file in the root
+   directory, or at http://opensource.org/licenses/GPL-3.0
 */
 
 #include "./Truncation-incl.hpp"
 
 int EVD_Count;
 
-template<typename Scalar,bool Conjugated>
+namespace dmhm {
+
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompress
-(  int startLevel, int endLevel )
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompress( int startLevel, int endLevel )
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatCompress");
 #endif
-
-
     Real error = lapack::MachineEpsilon<Real>();
-    //Wrote By Ryan
+    //Written By Ryan Li
     // Compress low-rank F matrix into much lower form.
     // Our low-rank matrix is UV', we want to compute eigenvalues and 
     // eigenvectors of U'U and V'V.
@@ -45,47 +32,16 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompress
 //    MultiplyHMatCompressFCompressless( startLevel, endLevel );
     MPI_Comm team = _teams->Team( _level );
     const int teamRank = mpi::CommRank( team );
-    int print;
-    if(teamRank == 0)
-    {
-        print = 0;
-        //std::cout << startLevel << " " << endLevel << " " << error << std::endl;
-    }
-    else
-        print = 0;
-    if( print )
-        std::cout << teamRank << "CountAndResize" << std::endl;
     MultiplyHMatCompressLowRankCountAndResize(0);
-
-    if( print )
-        std::cout << teamRank << "LowRankImport" << std::endl;
     MultiplyHMatCompressLowRankImport(0);
-
-    if( print )
-        std::cout << teamRank << "Precompute" << std::endl;
     MultiplyHMatCompressFPrecompute( startLevel, endLevel);
-
-    if( print )
-        std::cout << teamRank << "Reduces" << std::endl;
     MultiplyHMatCompressFReduces( startLevel, endLevel );
 
     EVD_Count=0;
-    if( print )
-        std::cout << teamRank << "EigenDecomp" << std::endl;
     MultiplyHMatCompressFEigenDecomp( startLevel, endLevel );
-    if( print )
-        std::cout << teamRank << " EVD_COUNT: " << EVD_Count << std::endl;
-
-    if( print )
-        std::cout << teamRank << "PassMatrix" << std::endl;
     MultiplyHMatCompressFPassMatrix( startLevel, endLevel );
-
-    if( print )
-        std::cout << teamRank << "PassVector" << std::endl;
     MultiplyHMatCompressFPassVector( startLevel, endLevel );
 
-    if( print )
-        std::cout << teamRank << "Midcompute" << std::endl;
     // Compute sigma_1 V1' V2 sigma_2, the middle part of UV'
     // We use B to state the mid part of UV' that is 
     // B = sigma_1 V1' V2 sigma_2.
@@ -93,17 +49,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompress
     // Then _BSqr also will be used to store the eigenvectors
     // of B. _BSqrEig stores eigenvalues of B.
     MultiplyHMatCompressFMidcompute( error, startLevel, endLevel );
-
-    if( print )
-        std::cout << teamRank << "PassbackNum" << std::endl;
     MultiplyHMatCompressFPassbackNum( startLevel, endLevel );
-
-    if( print )
-        std::cout << teamRank << "PassbackData" << std::endl;
     MultiplyHMatCompressFPassbackData( startLevel, endLevel );
 
-    if( print )
-        std::cout << teamRank << "Postcompute" << std::endl;
     // Compute USqr*sqrt(USqrEig)^-1 BSqrU BSigma = BL
     // We overwrite the USqr = USqr*sqrt(USqrEig)^-1
     // Also overwrite the BSqrU = BSqrU BSigma
@@ -113,36 +61,22 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompress
 
 //    Real zeroerror = (Real) 0.1;
 //    MultiplyHMatCompressFEigenTrunc( zeroerror );
-
-    if( print )
-        std::cout << teamRank << "BroadcastsNum" << std::endl;
     MultiplyHMatCompressFBroadcastsNum( startLevel, endLevel );
-
-    if( print )
-        std::cout << teamRank << "Broadcasts" << std::endl;
     MultiplyHMatCompressFBroadcasts( startLevel, endLevel );
-    
-    if( print )
-        std::cout << teamRank << "Finalcompute" << std::endl;
     // Compute the final U and V store in the usual space.
     MultiplyHMatCompressFFinalcompute( startLevel, endLevel );
     
-    if( print )
-        std::cout << teamRank << "Cleanup" << std::endl;
     // Clean up all the space used in this file
     // Also, clean up the _colXMap, _rowXMap, _UMap, _VMap, _ZMap
     //MultiplyHMatCompressFCleanup( startLevel, endLevel );
-
-   // throw std::logic_error("This routine is in a state of flux.");
 #ifndef RELEASE
     PopCallStack();
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressLowRankCountAndResize
-( int rank )
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatCompressLowRankCountAndResize");
@@ -328,7 +262,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressLowRankCountAndRes
     }
     case LOW_RANK:
     {
-        LowRank<Scalar,Conjugated>& F = *_block.data.F;
+        LowRank<Scalar>& F = *_block.data.F;
         const unsigned teamLevel = _teams->TeamLevel( _level );
         
         // Compute the total new rank
@@ -484,12 +418,12 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressLowRankCountAndRes
             const Dense<Scalar>& U = *_UMap.CurrentEntry();
             const Dense<Scalar>& V = *_VMap.CurrentEntry();
             const int r = U.Width();
-            const char option = ( Conjugated ? 'C' : 'T' );
+            const char option = 'T';
             blas::Gemm
             ( 'N', option, m, n, r,
-              (Scalar)1, U.LockedBuffer(), U.LDim(),
+              Scalar(1), U.LockedBuffer(), U.LDim(),
                          V.LockedBuffer(), V.LDim(),
-              (Scalar)1, D.Buffer(),       D.LDim() );
+              Scalar(1), D.Buffer(),       D.LDim() );
             _UMap.EraseCurrentEntry();
             _VMap.EraseCurrentEntry();
         }
@@ -508,10 +442,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressLowRankCountAndRes
 }
 
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressLowRankImport
-( int rank )
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressLowRankImport( int rank )
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatCompressLowRankImport");
@@ -795,9 +728,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressLowRankImport
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressImportU
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressImportU
 ( int rank, const Dense<Scalar>& U )
 {
 #ifndef RELEASE
@@ -879,7 +812,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressImportU
     }
     case LOW_RANK:
     {
-        LowRank<Scalar,Conjugated>& F = *_block.data.F;
+        LowRank<Scalar>& F = *_block.data.F;
         const int m = U.Height();
         const int r = U.Width();
         for( int j=0; j<r; ++j )
@@ -909,9 +842,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressImportU
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressImportV
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressImportV
 ( int rank, const Dense<Scalar>& V )
 {
 #ifndef RELEASE
@@ -993,7 +926,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressImportV
     }
     case LOW_RANK:
     {
-        LowRank<Scalar,Conjugated>& F = *_block.data.F;
+        LowRank<Scalar>& F = *_block.data.F;
         const int n = V.Height();
         const int r = V.Width();
         for( int j=0; j<r; ++j )
@@ -1024,9 +957,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressImportV
 }
 
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPrecompute
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressFPrecompute
 ( int startLevel, int endLevel )
 {
 #ifndef RELEASE
@@ -1064,7 +997,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPrecompute
         int LH=LocalHeight();
         int LW=LocalWidth();
         int offset=0;
-        const char option = (Conjugated ? 'C' : 'T' );
+        const char option = 'T';
         int totalrank=_colXMap.TotalWidth() + _UMap.TotalWidth() + DF.ULocal.Width();
         
         if( _inTargetTeam && totalrank > 0 && LH > 0 )
@@ -1101,9 +1034,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPrecompute
 
             blas::Gemm
             ( 'C', 'N', totalrank, totalrank, LH,
-             (Scalar)1, _Utmp.LockedBuffer(), _Utmp.LDim(),
+             Scalar(1), _Utmp.LockedBuffer(), _Utmp.LDim(),
                         _Utmp.LockedBuffer(), _Utmp.LDim(),
-             (Scalar)0, _USqr.Buffer(),       _USqr.LDim() );
+             Scalar(0), _USqr.Buffer(),       _USqr.LDim() );
         }
 
         totalrank=_rowXMap.TotalWidth() + _VMap.TotalWidth() + DF.VLocal.Width();
@@ -1142,9 +1075,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPrecompute
 
             blas::Gemm
             ( 'C', 'N', totalrank, totalrank, LW,
-             (Scalar)1, _Vtmp.LockedBuffer(), _Vtmp.LDim(),
+             Scalar(1), _Vtmp.LockedBuffer(), _Vtmp.LDim(),
                         _Vtmp.LockedBuffer(), _Vtmp.LDim(),
-             (Scalar)0, _VSqr.Buffer(),       _VSqr.LDim() );
+             Scalar(0), _VSqr.Buffer(),       _VSqr.LDim() );
         }
         break;
     }
@@ -1158,8 +1091,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPrecompute
         int LH=LocalHeight();
         int LW=LocalWidth();
         int offset=0;
-        const char option = (Conjugated ? 'C' : 'T' );
-        int totalrank = _colXMap.TotalWidth() + _UMap.TotalWidth() + SF.D.Width();
+        const char option = 'T';
+        int totalrank = _colXMap.TotalWidth() + 
+                        _UMap.TotalWidth() + SF.D.Width();
         
         if( _inTargetTeam && totalrank > 0 && LH > 0 )
         {
@@ -1195,9 +1129,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPrecompute
 
             blas::Gemm
             ('C', 'N', totalrank, totalrank, LH,
-             (Scalar)1, _Utmp.LockedBuffer(), _Utmp.LDim(),
+             Scalar(1), _Utmp.LockedBuffer(), _Utmp.LDim(),
                         _Utmp.LockedBuffer(), _Utmp.LDim(),
-             (Scalar)0, _USqr.Buffer(),       _USqr.LDim() );
+             Scalar(0), _USqr.Buffer(),       _USqr.LDim() );
         }
 
         totalrank=_rowXMap.TotalWidth() + _VMap.TotalWidth() + SF.D.Width();
@@ -1236,9 +1170,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPrecompute
 
             blas::Gemm
             ('C', 'N', totalrank, totalrank, LW,
-             (Scalar)1, _Vtmp.LockedBuffer(), _Vtmp.LDim(),
+             Scalar(1), _Vtmp.LockedBuffer(), _Vtmp.LDim(),
                         _Vtmp.LockedBuffer(), _Vtmp.LDim(),
-             (Scalar)0, _VSqr.Buffer(),       _VSqr.LDim() );
+             Scalar(0), _VSqr.Buffer(),       _VSqr.LDim() );
         }
         break;
     }
@@ -1248,11 +1182,11 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPrecompute
             break;
         if( _haveDenseUpdate )
             break;
-        LowRank<Scalar,Conjugated> &F = *_block.data.F;
+        LowRank<Scalar> &F = *_block.data.F;
         int LH=LocalHeight();
         int LW=LocalWidth();
         int offset=0;
-        const char option = (Conjugated ? 'C' : 'T' );
+        const char option = 'T';
         int totalrank = F.U.Width();
         
         if( totalrank > MaxRank() && LH > 0 )
@@ -1269,9 +1203,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPrecompute
 //_Utmp.Print("_Utmp");
             blas::Gemm
             ( 'C', 'N', totalrank, totalrank, LH,
-             (Scalar)1, _Utmp.LockedBuffer(), _Utmp.LDim(),
+             Scalar(1), _Utmp.LockedBuffer(), _Utmp.LDim(),
                         _Utmp.LockedBuffer(), _Utmp.LDim(),
-             (Scalar)0, _USqr.Buffer(),       _USqr.LDim() );
+             Scalar(0), _USqr.Buffer(),       _USqr.LDim() );
         }
 
         totalrank = F.V.Width();
@@ -1291,9 +1225,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPrecompute
 //_Vtmp.Print("_Vtmp");
             blas::Gemm
             ( 'C', 'N', totalrank, totalrank, LW,
-             (Scalar)1, _Vtmp.LockedBuffer(), _Vtmp.LDim(),
+             Scalar(1), _Vtmp.LockedBuffer(), _Vtmp.LDim(),
                         _Vtmp.LockedBuffer(), _Vtmp.LDim(),
-             (Scalar)0, _VSqr.Buffer(),       _VSqr.LDim() );
+             Scalar(0), _VSqr.Buffer(),       _VSqr.LDim() );
         }
         break;
     }
@@ -1314,9 +1248,9 @@ _VSqr.Print("_VSqr******************************************");
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFReduces
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressFReduces
 ( int startLevel, int endLevel )
 {
 #ifndef RELEASE
@@ -1350,11 +1284,10 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFReduces
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFReducesCount
-( std::vector<int>& sizes,
-  int startLevel, int endLevel ) const
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressFReducesCount
+( std::vector<int>& sizes, int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatCompressFReduceCount");
@@ -1398,9 +1331,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFReducesCount
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFReducesPack
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressFReducesPack
 ( std::vector<Scalar>& buffer, std::vector<int>& offsets,
   int startLevel, int endLevel ) const
 {
@@ -1460,27 +1393,23 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFReducesPack
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFTreeReduces
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressFTreeReduces
 ( std::vector<Scalar>& buffer, std::vector<int>& sizes ) const
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatCompressFTreeReduces");
 #endif
-
     _teams-> TreeSumToRoots( buffer, sizes );
-    
 #ifndef RELEASE
-        PopCallStack();
+    PopCallStack();
 #endif
 }
 
-
-
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFReducesUnpack
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressFReducesUnpack
 ( const std::vector<Scalar>& buffer, std::vector<int>& offsets,
   int startLevel, int endLevel )
 {
@@ -1545,9 +1474,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFReducesUnpack
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFEigenDecomp
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressFEigenDecomp
 ( int startLevel, int endLevel )
 {
 #ifndef RELEASE
@@ -1650,9 +1579,9 @@ std::cout << "MaxEig before pass: " << *std::max_element( _USqrEig.begin(), _USq
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPassMatrix
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressFPassMatrix
 ( int startLevel, int endLevel )
 {
 #ifndef RELEASE
@@ -1726,9 +1655,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPassMatrix
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void 
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPassMatrixCount
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressFPassMatrixCount
 ( std::map<int,int>& sendSizes, std::map<int,int>& recvSizes,
   int startLevel, int endLevel ) const
 {
@@ -1786,9 +1715,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPassMatrixCount
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void 
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPassMatrixPack
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressFPassMatrixPack
 ( std::vector<Scalar>& buffer, std::map<int,int>& offsets,
   int startLevel, int endLevel ) const
 {
@@ -1846,9 +1775,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPassMatrixPack
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void 
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPassMatrixUnpack
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressFPassMatrixUnpack
 ( const std::vector<Scalar>& buffer, std::map<int,int>& offsets,
   int startLevel, int endLevel )
 {
@@ -1908,10 +1837,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPassMatrixUnpack
 #endif
 }
 
-
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPassVector
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressFPassVector
 ( int startLevel, int endLevel )
 {
 #ifndef RELEASE
@@ -1985,9 +1913,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPassVector
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void 
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPassVectorCount
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressFPassVectorCount
 ( std::map<int,int>& sendSizes, std::map<int,int>& recvSizes,
   int startLevel, int endLevel ) const
 {
@@ -2045,9 +1973,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPassVectorCount
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void 
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPassVectorPack
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressFPassVectorPack
 ( std::vector<Real>& buffer, std::map<int,int>& offsets,
   int startLevel, int endLevel ) const
 {
@@ -2105,9 +2033,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPassVectorPack
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void 
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPassVectorUnpack
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressFPassVectorUnpack
 ( const std::vector<Real>& buffer, std::map<int,int>& offsets,
   int startLevel, int endLevel )
 {
@@ -2167,9 +2095,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPassVectorUnpack
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFMidcompute
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressFMidcompute
 ( Real error, int startLevel, int endLevel )
 {
 #ifndef RELEASE
@@ -2223,7 +2151,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFMidcompute
                 throw std::logic_error("Dimension error during calculation");
 #endif
             }
-            const char option = ( Conjugated ? 'C' : 'T' );
+            const char option = 'T';
 
           //  EVDTrunc(_USqr, _USqrEig, error);
           //  EVDTrunc(_VSqr, _VSqrEig, error);
@@ -2232,14 +2160,13 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFMidcompute
 
             blas::Gemm
             ( option, 'N', _USqr.Width(), _VSqr.Width(), _USqr.LDim(),
-              (Scalar)1, _USqr.LockedBuffer(), _USqr.LDim(),
+              Scalar(1), _USqr.LockedBuffer(), _USqr.LDim(),
                          _VSqr.LockedBuffer(), _VSqr.LDim(),
-              (Scalar)0, _BSqr.Buffer(),       _BSqr.LDim() );
+              Scalar(0), _BSqr.Buffer(),       _BSqr.LDim() );
 
 //Print
 //_BSqr.Print("BSqr");
-            if( !Conjugated )
-                hmat_tools::Conjugate(_BSqr);
+            hmat_tools::Conjugate(_BSqr);
 //Print
 //_BSqr.Print("BSqr");
 /*//Print
@@ -2325,9 +2252,9 @@ _BSqrVH.Print("_BSqrVH After svd");*/
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPassbackNum
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressFPassbackNum
 ( int startLevel, int endLevel )
 {
 #ifndef RELEASE
@@ -2402,9 +2329,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPassbackNum
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void 
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPassbackNumCount
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressFPassbackNumCount
 ( std::map<int,int>& sendSizes, std::map<int,int>& recvSizes,
   int startLevel, int endLevel ) const
 {
@@ -2462,9 +2389,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPassbackNumCount
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void 
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPassbackNumPack
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressFPassbackNumPack
 ( std::vector<int>& buffer, std::map<int,int>& offsets,
   int startLevel, int endLevel ) const
 {
@@ -2520,9 +2447,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPassbackNumPack
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void 
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPassbackNumUnpack
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressFPassbackNumUnpack
 ( const std::vector<int>& buffer, std::map<int,int>& offsets,
   int startLevel, int endLevel )
 {
@@ -2580,10 +2507,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPassbackNumUnpack
 #endif
 }
 
-
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPassbackData
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressFPassbackData
 ( int startLevel, int endLevel )
 {
 #ifndef RELEASE
@@ -2658,9 +2584,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPassbackData
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void 
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPassbackDataCount
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressFPassbackDataCount
 ( std::map<int,int>& sendSizes, std::map<int,int>& recvSizes,
   int startLevel, int endLevel )
 {
@@ -2752,9 +2678,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPassbackDataCount
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void 
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPassbackDataPack
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressFPassbackDataPack
 ( std::vector<Scalar>& buffer, std::map<int,int>& offsets,
   int startLevel, int endLevel )
 {
@@ -2862,9 +2788,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPassbackDataPack
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void 
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPassbackDataUnpack
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressFPassbackDataUnpack
 ( const std::vector<Scalar>& buffer, std::map<int,int>& offsets,
   int startLevel, int endLevel )
 {
@@ -2975,9 +2901,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPassbackDataUnpac
 }
 
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPostcompute
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressFPostcompute
 ( Real error, int startLevel, int endLevel )
 {
 #ifndef RELEASE
@@ -3017,6 +2943,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFPostcompute
             break;
         MPI_Comm team = _teams->Team( _level );
         const int teamRank = mpi::CommRank( team );
+// RYAN: Please do not check in code like this...
 MPI_Comm teamp = _teams->Team( 0 );
 const int teamRankp = mpi::CommRank( teamp );
 int print;
@@ -3026,7 +2953,7 @@ else
 print=0;
         if( teamRank == 0 )
         {
-            const char option = ( Conjugated ? 'C' : 'T' );
+            const char option = 'T';
 //print
 if(print)
 std::cout << "Run until here 1" << std::endl;
@@ -3055,7 +2982,7 @@ std::cout << _USqrEig.size() << " " << _VSqrEig.size() << " " << _block.type << 
                     else
                     {
                         for(int i=0; i<_USqr.Height(); ++i)
-                            _USqr.Set(i,j, (Scalar)0);
+                            _USqr.Set(i,j, Scalar(0));
                     }
 
 //print
@@ -3074,16 +3001,16 @@ if(print)
 std::cout << "Run until here 1.8" << std::endl;
                 blas::Gemm
                 ( 'N', 'N', _USqr.Height(), _BSqrU.Width(), _USqr.Width(), 
-                  (Scalar)1, _USqr.LockedBuffer(),  _USqr.LDim(),
+                  Scalar(1), _USqr.LockedBuffer(),  _USqr.LDim(),
                              _BSqrU.LockedBuffer(), _BSqrU.LDim(),
-                  (Scalar)0, _BL.Buffer(), _BL.LDim() );
+                  Scalar(0), _BL.Buffer(), _BL.LDim() );
 /*
                 _BL.Resize(_USqr.Height(), _BSqrU.Width(), _USqr.Height());
                 blas::Gemm
                 ( 'N', option, _USqr.Height(), _BSqrU.Width(), _USqr.Width(), 
-                  (Scalar)1, _USqr.LockedBuffer(),  _USqr.LDim(),
+                  Scalar(1), _USqr.LockedBuffer(),  _USqr.LDim(),
                              _USqr.LockedBuffer(), _USqr.LDim(),
-                  (Scalar)0, _BL.Buffer(), _BL.LDim() );
+                  Scalar(0), _BL.Buffer(), _BL.LDim() );
             */
             }
 
@@ -3112,7 +3039,7 @@ _BSqrVH.Print("_BSqrVH_Post");*/
                     else
                     {
                         for(int i=0; i<_VSqr.Height(); ++i)
-                            _VSqr.Set(i,j, (Scalar)0);
+                            _VSqr.Set(i,j, Scalar(0));
                     }
 
 /*MPI_Comm teamp = _teams->Team( 0 );
@@ -3125,9 +3052,9 @@ if( _level == 3 && teamRankp == 0 && _block.type==LOW_RANK && _Vtmp.Height() == 
     BLRT.Resize(_VSqr.Height(), _VSqr.Height(), _VSqr.Height());
     blas::Gemm
     ( option, 'N', _VSqr.Height(), _VSqr.Height(), _VSqr.Width(),
-      (Scalar)1, _VSqr.LockedBuffer(), _VSqr.LDim(),
+      Scalar(1), _VSqr.LockedBuffer(), _VSqr.LDim(),
                  _VSqr.LockedBuffer(), _VSqr.LDim(),
-      (Scalar)0, BLRT.Buffer(), BLRT.LDim());
+      Scalar(0), BLRT.Buffer(), BLRT.LDim());
     BLRT.Print("BLRT********************************************************");
     _VSqr.Print("_VSqr*****************************************");
 }*/
@@ -3136,16 +3063,16 @@ if( _level == 3 && teamRankp == 0 && _block.type==LOW_RANK && _Vtmp.Height() == 
 
                 blas::Gemm
                 ( 'N', option, _VSqr.Height(), _BSqrVH.Height(), _VSqr.Width(),
-                  (Scalar)1, _VSqr.LockedBuffer(),  _VSqr.LDim(),
+                  Scalar(1), _VSqr.LockedBuffer(),  _VSqr.LDim(),
                              _BSqrVH.LockedBuffer(), _BSqrVH.LDim(),
-                  (Scalar)0, _BR.Buffer(), _BR.LDim() );
+                  Scalar(0), _BR.Buffer(), _BR.LDim() );
 /*
                 _BR.Resize(_VSqr.Height(), _BSqrVH.Height(), _VSqr.Height());
                 blas::Gemm
                 ( 'N', option, _VSqr.Height(), _BSqrVH.Height(), _VSqr.Width(),
-                  (Scalar)1, _VSqr.LockedBuffer(),  _VSqr.LDim(),
+                  Scalar(1), _VSqr.LockedBuffer(),  _VSqr.LDim(),
                              _VSqr.LockedBuffer(), _VSqr.LDim(),
-                  (Scalar)0, _BR.Buffer(), _BR.LDim() );
+                  Scalar(0), _BR.Buffer(), _BR.LDim() );
 //                _BR.Print("_BR");*/
 //Print
 MPI_Comm teamp = _teams->Team( 0 );
@@ -3160,9 +3087,9 @@ if( _level == 3 && teamRankp == 0 && _block.type==LOW_RANK )
     BLRT.Resize(_BL.Height(), _BR.Height(), _BL.Height());
     blas::Gemm
     ( 'N', option, _BL.Height(), _BR.Height(), _BL.Width(),
-      (Scalar)1, _BL.LockedBuffer(), _BL.LDim(),
+      Scalar(1), _BL.LockedBuffer(), _BL.LDim(),
                  _BR.LockedBuffer(), _BR.LDim(),
-      (Scalar)0, BLRT.Buffer(), BLRT.LDim());
+      Scalar(0), BLRT.Buffer(), BLRT.LDim());
     BLRT.Print(myfile,"BLRT********************************************************");
     myfile.close();
 }
@@ -3180,10 +3107,9 @@ if( _level == 3 && teamRankp == 0 && _block.type==LOW_RANK )
 #endif
 }
 
-
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFBroadcastsNum
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressFBroadcastsNum
 ( int startLevel, int endLevel )
 {
 #ifndef RELEASE
@@ -3216,9 +3142,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFBroadcastsNum
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFBroadcastsNumCount
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressFBroadcastsNumCount
 ( std::vector<int>& sizes, int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
@@ -3267,9 +3193,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFBroadcastsNumCoun
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFBroadcastsNumPack
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressFBroadcastsNumPack
 ( std::vector<int>& buffer, std::vector<int>& offsets,
   int startLevel, int endLevel ) const
 {
@@ -3327,26 +3253,23 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFBroadcastsNumPack
 #endif
 }
 
-
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFTreeBroadcastsNum
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressFTreeBroadcastsNum
 ( std::vector<int>& buffer, std::vector<int>& sizes ) const
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatCompressFTreeBroadcastsNum");
 #endif
-
     _teams-> TreeBroadcasts( buffer, sizes );
-    
 #ifndef RELEASE
-        PopCallStack();
+    PopCallStack();
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFBroadcastsNumUnpack
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressFBroadcastsNumUnpack
 ( std::vector<int>& buffer, std::vector<int>& offsets,
   int startLevel, int endLevel )
 {
@@ -3410,9 +3333,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFBroadcastsNumUnpa
 }
 
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFBroadcasts
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressFBroadcasts
 ( int startLevel, int endLevel )
 {
 #ifndef RELEASE
@@ -3445,9 +3368,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFBroadcasts
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFBroadcastsCount
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressFBroadcastsCount
 ( std::vector<int>& sizes, int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
@@ -3493,9 +3416,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFBroadcastsCount
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFBroadcastsPack
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressFBroadcastsPack
 ( std::vector<Scalar>& buffer, std::vector<int>& offsets,
   int startLevel, int endLevel ) const
 {
@@ -3559,26 +3482,23 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFBroadcastsPack
 #endif
 }
 
-
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFTreeBroadcasts
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressFTreeBroadcasts
 ( std::vector<Scalar>& buffer, std::vector<int>& sizes ) const
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatCompressFTreeBroadcasts");
 #endif
-
     _teams-> TreeBroadcasts( buffer, sizes );
-    
 #ifndef RELEASE
-        PopCallStack();
+    PopCallStack();
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFBroadcastsUnpack
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressFBroadcastsUnpack
 ( std::vector<Scalar>& buffer, std::vector<int>& offsets,
   int startLevel, int endLevel )
 {
@@ -3637,9 +3557,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFBroadcastsUnpack
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFFinalcompute
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressFFinalcompute
 ( int startLevel, int endLevel )
 {
 #ifndef RELEASE
@@ -3681,9 +3601,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFFinalcompute
             U.Resize(_Utmp.Height(), _BL.Width(), _Utmp.Height());
             blas::Gemm
             ('N', 'N', _Utmp.Height(), _BL.Width(), _Utmp.Width(), 
-             (Scalar)1, _Utmp.LockedBuffer(), _Utmp.LDim(),
+             Scalar(1), _Utmp.LockedBuffer(), _Utmp.LDim(),
                         _BL.LockedBuffer(), _BL.LDim(),
-             (Scalar)0, U.Buffer(),         U.LDim() );
+             Scalar(0), U.Buffer(),         U.LDim() );
         }
         if( _inSourceTeam )
         {                                                      
@@ -3694,9 +3614,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFFinalcompute
             
             blas::Gemm
             ('N', 'N', _Vtmp.Height(), _BR.Width(), _Vtmp.Width(),
-             (Scalar)1, _Vtmp.LockedBuffer(), _Vtmp.LDim(),
+             Scalar(1), _Vtmp.LockedBuffer(), _Vtmp.LDim(),
                         _BR.LockedBuffer(), _BR.LDim(),
-             (Scalar)0, V.Buffer(),         V.LDim() );
+             Scalar(0), V.Buffer(),         V.LDim() );
         }
         break;
     }
@@ -3715,9 +3635,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFFinalcompute
                 
                 blas::Gemm
                 ('N', 'N', _Utmp.Height(), _BL.Width(), _Utmp.Width(),
-                 (Scalar)1, _Utmp.LockedBuffer(), _Utmp.LDim(),
+                 Scalar(1), _Utmp.LockedBuffer(), _Utmp.LDim(),
                             _BL.LockedBuffer(), _BL.LDim(),
-                 (Scalar)0, U.Buffer(),         U.LDim() );
+                 Scalar(0), U.Buffer(),         U.LDim() );
             }
             if( _inSourceTeam )
             {                                                      
@@ -3728,9 +3648,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFFinalcompute
                 
                 blas::Gemm
                 ('N', 'N', _Vtmp.Height(), _BR.Width(), _Vtmp.Width(),
-                 (Scalar)1, _Vtmp.LockedBuffer(), _Vtmp.LDim(),
+                 Scalar(1), _Vtmp.LockedBuffer(), _Vtmp.LDim(),
                             _BR.LockedBuffer(), _BR.LDim(),
-                 (Scalar)0, V.Buffer(),         V.LDim() );
+                 Scalar(0), V.Buffer(),         V.LDim() );
             }
         }
         else
@@ -3738,16 +3658,16 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFFinalcompute
             SplitLowRank &SF = *_block.data.SF;
             const int m = Height();
             const int n = Width();
-            const char option = ( Conjugated ? 'C' : 'T' );
+            const char option = 'T';
             if( _inTargetTeam )
             {
                 Dense<Scalar>& SFU = SF.D;
                 Dense<Scalar>& SFV = _SFD;
                 blas::Gemm                                   
                 ('N', option, m, n, SF.rank,
-                 (Scalar)1, SFU.LockedBuffer(), SFU.LDim(),
+                 Scalar(1), SFU.LockedBuffer(), SFU.LDim(),
                             SFV.LockedBuffer(), SFV.LDim(),
-                 (Scalar)1, _D.Buffer(),        _D.LDim() );
+                 Scalar(1), _D.Buffer(),        _D.LDim() );
             }
             else
             {
@@ -3755,9 +3675,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFFinalcompute
                 Dense<Scalar>& SFV = SF.D;
                 blas::Gemm                                   
                 ('N', option, m, n, SF.rank,
-                 (Scalar)1, SFU.LockedBuffer(), SFU.LDim(),
+                 Scalar(1), SFU.LockedBuffer(), SFU.LDim(),
                             SFV.LockedBuffer(), SFV.LDim(),
-                 (Scalar)1, _D.Buffer(),        _D.LDim() );
+                 Scalar(1), _D.Buffer(),        _D.LDim() );
             }
             
 
@@ -3771,9 +3691,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFFinalcompute
                     if( m == minDim )
                     {
                         SF.D.Resize( m, m, m );
-                        hmat_tools::Scale( (Scalar)0, SF.D );
+                        hmat_tools::Scale( Scalar(0), SF.D );
                         for( int i=0; i<m; i++)
-                            SF.D.Set(i,i,(Scalar)1);
+                            SF.D.Set(i,i,Scalar(1));
                     }
                     else
                     {
@@ -3785,17 +3705,14 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFFinalcompute
                     SF.rank = minDim;
                     if( m == minDim )
                     {
-                        if( Conjugated )
-                            hmat_tools::Adjoint( _D, SF.D );
-                        else
-                            hmat_tools::Transpose( _D, SF.D );
+                        hmat_tools::Transpose( _D, SF.D );
                     }
                     else
                     {
                         SF.D.Resize( n, n, n);
-                        hmat_tools::Scale( (Scalar)0, SF.D );
+                        hmat_tools::Scale( Scalar(0), SF.D );
                         for( int i=0; i<n; i++)
-                            SF.D.Set(i,i,(Scalar)1);
+                            SF.D.Set(i,i,Scalar(1));
                     }
                 }
             }
@@ -3827,10 +3744,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFFinalcompute
                     SF.D.Resize( n, maxRank );
                     for( int j=0; j<maxRank; j++ )
                         for( int i=0; i<n; i++)
-                            if( Conjugated )
-                                SF.D.Set(i,j,Conj(_D.Get(j,i)));
-                            else
-                                SF.D.Set(i,j,_D.Get(j,i));
+                            SF.D.Set(i,j,_D.Get(j,i));
                 }
             }
 
@@ -3860,34 +3774,34 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFFinalcompute
             { 
 //Print                                                                
 //_BL.Print("_BL");
-                LowRank<Scalar,Conjugated> &F = *_block.data.F;
+                LowRank<Scalar> &F = *_block.data.F;
                 Dense<Scalar> &U = F.U;
                 U.Resize(_Utmp.Height(), _BL.Width(), _Utmp.Height());
                 
                 blas::Gemm
                 ('N', 'N', _Utmp.Height(), _BL.Width(), _Utmp.Width(),
-                 (Scalar)1, _Utmp.LockedBuffer(), _Utmp.LDim(),
+                 Scalar(1), _Utmp.LockedBuffer(), _Utmp.LDim(),
                             _BL.LockedBuffer(), _BL.LDim(),
-                 (Scalar)0, U.Buffer(),         U.LDim() );
+                 Scalar(0), U.Buffer(),         U.LDim() );
             }
             if( !_BR.IsEmpty() )
             {                                                      
 //Print                                                                
 //_BR.Print("_BR");
-                LowRank<Scalar,Conjugated> &F = *_block.data.F;
+                LowRank<Scalar> &F = *_block.data.F;
                 Dense<Scalar> &V = F.V;
                 V.Resize(_Vtmp.Height(), _BR.Width(), _Vtmp.Height());
                 
                 blas::Gemm
                 ('N', 'N', _Vtmp.Height(), _BR.Width(), _Vtmp.Width(),
-                 (Scalar)1, _Vtmp.LockedBuffer(), _Vtmp.LDim(),
+                 Scalar(1), _Vtmp.LockedBuffer(), _Vtmp.LDim(),
                             _BR.LockedBuffer(), _BR.LDim(),
-                 (Scalar)0, V.Buffer(),         V.LDim() );
+                 Scalar(0), V.Buffer(),         V.LDim() );
             }
         }
         else
         {
-            LowRank<Scalar,Conjugated> &F = *_block.data.F;
+            LowRank<Scalar> &F = *_block.data.F;
             const int m = F.Height();
             const int n = F.Width();
             const int minDim = std::min( m, n );
@@ -3895,12 +3809,12 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFFinalcompute
             const int r = F.Rank();
 
             // Add U V^[T/H] onto the dense update
-            const char option = ( Conjugated ? 'C' : 'T' );
+            const char option = 'T';
             blas::Gemm
             ( 'N', option, m, n, r, 
-              (Scalar)1, F.U.LockedBuffer(), F.U.LDim(),
+              Scalar(1), F.U.LockedBuffer(), F.U.LDim(),
                          F.V.LockedBuffer(), F.V.LDim(),
-              (Scalar)1, _D.Buffer(),        _D.LDim() );
+              Scalar(1), _D.Buffer(),        _D.LDim() );
 
             if( minDim <= maxRank )
             {
@@ -3908,22 +3822,19 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFFinalcompute
                 {
                     // Make U := I and V := _D^[T/H]
                     F.U.Resize( minDim, minDim );
-                    hmat_tools::Scale( (Scalar)0, F.U );
+                    hmat_tools::Scale( Scalar(0), F.U );
                     for( int j=0; j<minDim; ++j )
-                        F.U.Set(j,j,(Scalar)1);
-                    if( Conjugated )
-                        hmat_tools::Adjoint( _D, F.V );
-                    else
-                        hmat_tools::Transpose( _D, F.V );
+                        F.U.Set(j,j,Scalar(1));
+                    hmat_tools::Transpose( _D, F.V );
                 }
                 else
                 {
                     // Make U := _D and V := I
                     hmat_tools::Copy( _D, F.U );
                     F.V.Resize( minDim, minDim );
-                    hmat_tools::Scale( (Scalar)0, F.V );
+                    hmat_tools::Scale( Scalar(0), F.V );
                     for( int j=0; j<minDim; ++j )
-                        F.V.Set(j,j,(Scalar)1);
+                        F.V.Set(j,j,Scalar(1));
                 }
             }
             else // minDim > maxRank
@@ -3951,10 +3862,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFFinalcompute
                 F.V.Resize( n, maxRank );
                 for( int j=0; j<maxRank; ++j )
                     for( int i=0; i<n; ++i )
-                        if( Conjugated )
-                            F.V.Set(i,j,Conj(VH.Get(j,i)));
-                        else
-                            F.V.Set(i,j,VH.Get(j,i));
+                        F.V.Set(i,j,VH.Get(j,i));
             }
             _D.Clear();
             _haveDenseUpdate = false;
@@ -3977,13 +3885,13 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFFinalcompute
             const Dense<Scalar>& U = *_UMap.CurrentEntry();
             const Dense<Scalar>& V = *_VMap.CurrentEntry();
 
-            const char option = ( Conjugated ? 'C' : 'T' );
+            const char option = 'T';
 
             blas::Gemm
             ('N', option, m, n, U.Width(),
-             (Scalar)1, U.LockedBuffer(), U.LDim(),
+             Scalar(1), U.LockedBuffer(), U.LDim(),
                         V.LockedBuffer(), V.LDim(),
-             (Scalar)1, SD.D.Buffer(), SD.D.LDim() );
+             Scalar(1), SD.D.Buffer(), SD.D.LDim() );
 
             _VMap.Clear();
         }
@@ -4002,13 +3910,13 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFFinalcompute
             const Dense<Scalar>& U = *_UMap.CurrentEntry();
             const Dense<Scalar>& V = *_VMap.CurrentEntry();
 
-            const char option = ( Conjugated ? 'C' : 'T' );
+            const char option = 'T';
 
             blas::Gemm
             ('N', option, m, n, U.Width(),
-             (Scalar)1, U.LockedBuffer(), U.LDim(),
+             Scalar(1), U.LockedBuffer(), U.LDim(),
                         V.LockedBuffer(), V.LDim(),
-             (Scalar)1, D.Buffer(), D.LDim() );
+             Scalar(1), D.Buffer(), D.LDim() );
 
             _UMap.Clear();
             _VMap.Clear();
@@ -4022,9 +3930,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFFinalcompute
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFCleanup
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressFCleanup
 ( int startLevel, int endLevel )
 {
 #ifndef RELEASE
@@ -4085,11 +3993,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFCleanup
 #endif
 }
 
-
-
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFCompressless
+DistQuasi2dHMat<Scalar>::MultiplyHMatCompressFCompressless
 ( int startLevel, int endLevel )
 {
 #ifndef RELEASE
@@ -4293,7 +4199,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFCompressless
         {
             int offset=0;
             int totalrank=_colXMap.TotalWidth() + _UMap.TotalWidth();
-            LowRank<Scalar,Conjugated> &F = *_block.data.F;
+            LowRank<Scalar> &F = *_block.data.F;
             Dense<Scalar> &Utmp = F.U;
 //Print
 //std::cout << Utmp.Height()*Utmp.Width() << std::endl;
@@ -4329,7 +4235,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFCompressless
         {                                                      
             int offset=0;
             int totalrank=_rowXMap.TotalWidth() + _VMap.TotalWidth();
-            LowRank<Scalar,Conjugated> &F = *_block.data.F;
+            LowRank<Scalar> &F = *_block.data.F;
             Dense<Scalar> &Vtmp = F.V;
 //Print
 //std::cout << Vtmp.Height()*Vtmp.Width() << std::endl;
@@ -4370,3 +4276,5 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatCompressFCompressless
     PopCallStack();
 #endif
 }
+
+} // namespace dmhm

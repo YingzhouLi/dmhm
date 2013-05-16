@@ -1,23 +1,12 @@
 /*
-   Distributed-Memory Hierarchical Matrices (DMHM): a prototype implementation
-   of distributed-memory H-matrix arithmetic. 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   The University of Texas at Austin, and Stanford University
 
-   Copyright (C) 2011 Jack Poulson, Lexing Ying, and
-   The University of Texas at Austin
-
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
+   under the GPLv3 License, which can be found in the LICENSE file in the root
+   directory, or at http://opensource.org/licenses/GPL-3.0
 */
+#pragma once
 #ifndef DMHM_ENVIRONMENT_HPP
 #define DMHM_ENVIRONMENT_HPP 1
 
@@ -43,12 +32,12 @@ namespace dmhm {
 typedef unsigned char byte;
 
 template<typename Real>
-Real
+inline Real 
 Abs( Real alpha )
 { return std::abs(alpha); }
 
 template<typename Real>
-Real
+inline Real 
 Abs( std::complex<Real> alpha )
 { return std::abs(alpha); }
 
@@ -122,14 +111,16 @@ inline void Read( T* writeHead, const byte** readHead, int n )
 }
 
 // For extracting the underlying real datatype, 
-// e.g., typename RealBase<Scalar>::type a = 3.0;
+// e.g., typename Base<Scalar>::type a = 3.0;
 template<typename Real>
-struct RealBase
+struct Base
 { typedef Real type; };
 
 template<typename Real>
-struct RealBase<std::complex<Real> >
+struct Base<std::complex<Real> >
 { typedef Real type; };
+
+#define BASE(F) typename dmhm::Base<F>::type
 
 // Create a wrappers around real and std::complex<real> types so that they
 // can be conveniently printed in a more Matlab-compatible format.
@@ -174,7 +165,7 @@ WrapScalar( const Real alpha )
 { return ScalarWrapper<Real>( alpha ); }
 
 template<typename Real>
-const ScalarWrapper<std::complex<Real> >
+inline const ScalarWrapper<std::complex<Real> >
 WrapScalar( const std::complex<Real> alpha )
 { return ScalarWrapper<std::complex<Real> >( alpha ); }
 
@@ -216,5 +207,4 @@ inline void AddToMap
 
 } // namespace dmhm
 
-#endif // DMHM_ENVIRONMENT_HPP
-
+#endif // ifndef DMHM_ENVIRONMENT_HPP

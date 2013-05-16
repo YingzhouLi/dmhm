@@ -1,27 +1,17 @@
 /*
-   Distributed-Memory Hierarchical Matrices (DMHM): a prototype implementation
-   of distributed-memory H-matrix arithmetic. 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   The University of Texas at Austin, and Stanford University
 
-   Copyright (C) 2011 Jack Poulson, Lexing Ying, and
-   The University of Texas at Austin
-
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
+   under the GPLv3 License, which can be found in the LICENSE file in the root
+   directory, or at http://opensource.org/licenses/GPL-3.0
 */
 
-template<typename Scalar,bool Conjugated>
+namespace dmhm {
+
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::FormTargetGhostNodes()
+DistQuasi2dHMat<Scalar>::FormTargetGhostNodes()
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::FormTargetGhostNodes");
@@ -30,7 +20,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::FormTargetGhostNodes()
 
     // Each level will have a set of target offsets where the structure
     // is known.
-    std::vector< std::set<int> > targetStructure( _numLevels );
+    std::vector<std::set<int> > targetStructure( _numLevels );
     FillTargetStructureRecursion( targetStructure );
     
     // Fill in the local ghosted structure (but without the ghosts' ranks)
@@ -40,9 +30,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::FormTargetGhostNodes()
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::FormSourceGhostNodes()
+DistQuasi2dHMat<Scalar>::FormSourceGhostNodes()
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::FormSourceGhostNodes");
@@ -51,7 +41,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::FormSourceGhostNodes()
 
     // Each level will have a set of source offsets where the structure
     // is known.
-    std::vector< std::set<int> > sourceStructure( _numLevels );
+    std::vector<std::set<int> > sourceStructure( _numLevels );
     FillSourceStructureRecursion( sourceStructure );
     
     // Fill in the local ghosted structure (but without the ghosts' ranks)
@@ -61,9 +51,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::FormSourceGhostNodes()
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::PruneGhostNodes()
+DistQuasi2dHMat<Scalar>::PruneGhostNodes()
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::PruneGhostNodes");
@@ -100,10 +90,10 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::PruneGhostNodes()
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::FillTargetStructureRecursion
-( std::vector< std::set<int> >& targetStructure ) const
+DistQuasi2dHMat<Scalar>::FillTargetStructureRecursion
+( std::vector<std::set<int> >& targetStructure ) const
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::FillTargetStructureRecursion");
@@ -188,10 +178,10 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::FillTargetStructureRecursion
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::FillSourceStructureRecursion
-( std::vector< std::set<int> >& sourceStructure ) const
+DistQuasi2dHMat<Scalar>::FillSourceStructureRecursion
+( std::vector<std::set<int> >& sourceStructure ) const
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::FillSourceStructureRecursion");
@@ -276,10 +266,10 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::FillSourceStructureRecursion
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::FindTargetGhostNodesRecursion
-( const std::vector< std::set<int> >& targetStructure,
+DistQuasi2dHMat<Scalar>::FindTargetGhostNodesRecursion
+( const std::vector<std::set<int> >& targetStructure,
   int sourceRoot, int targetRoot )
 {
 #ifndef RELEASE
@@ -390,7 +380,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::FindTargetGhostNodesRecursion
                         newTargetRoot = targetRoot;
                     }
                     node.children[s+4*t] = 
-                        new DistQuasi2dHMat<Scalar,Conjugated>
+                        new DistQuasi2dHMat<Scalar>
                         ( _numLevels-1, _maxRank, _stronglyAdmissible,
                           _sourceOffset+sOffset, _targetOffset+tOffset,
                           node.xSourceSizes[s&1], node.xTargetSizes[t&1],
@@ -423,10 +413,10 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::FindTargetGhostNodesRecursion
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::FindSourceGhostNodesRecursion
-( const std::vector< std::set<int> >& sourceStructure,
+DistQuasi2dHMat<Scalar>::FindSourceGhostNodesRecursion
+( const std::vector<std::set<int> >& sourceStructure,
   int sourceRoot, int targetRoot )
 {
 #ifndef RELEASE
@@ -536,7 +526,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::FindSourceGhostNodesRecursion
                         newTargetRoot = targetRoot;
                     }
                     node.children[s+4*t] = 
-                        new DistQuasi2dHMat<Scalar,Conjugated>
+                        new DistQuasi2dHMat<Scalar>
                         ( _numLevels-1, _maxRank, _stronglyAdmissible,
                           _sourceOffset+sOffset, _targetOffset+tOffset,
                           node.xSourceSizes[s&1], node.xTargetSizes[t&1],
@@ -569,3 +559,4 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::FindSourceGhostNodesRecursion
 #endif
 }
 
+} // namespace dmhm

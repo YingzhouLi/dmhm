@@ -1,34 +1,24 @@
 /*
-   Distributed-Memory Hierarchical Matrices (DMHM): a prototype implementation
-   of distributed-memory H-matrix arithmetic. 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   The University of Texas at Austin, and Stanford University
 
-   Copyright (C) 2011 Jack Poulson, Lexing Ying, and
-   The University of Texas at Austin
-
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
+   under the GPLv3 License, which can be found in the LICENSE file in the root
+   directory, or at http://opensource.org/licenses/GPL-3.0
 */
 
-template<typename Scalar,bool Conjugated>
+namespace dmhm {
+
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainSetUp
-( const DistQuasi2dHMat<Scalar,Conjugated>& B,
-        DistQuasi2dHMat<Scalar,Conjugated>& C ) const
+DistQuasi2dHMat<Scalar>::MultiplyHMatMainSetUp
+( const DistQuasi2dHMat<Scalar>& B,
+        DistQuasi2dHMat<Scalar>& C ) const
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatMainSetUp");
 #endif
-    const DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    const DistQuasi2dHMat<Scalar>& A = *this;
 
     C._numLevels = A._numLevels;
     C._maxRank = A._maxRank;
@@ -84,8 +74,8 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainSetUp
                 if( C._inSourceTeam || C._inTargetTeam )
                 {
                     C._block.type = LOW_RANK;
-                    C._block.data.F = new LowRank<Scalar,Conjugated>;
-                    LowRank<Scalar,Conjugated>& F = *C._block.data.F;
+                    C._block.data.F = new LowRank<Scalar>;
+                    LowRank<Scalar>& F = *C._block.data.F;
                     F.U.Resize( C.Height(), 0 );
                     F.V.Resize( C.Width(), 0 );
                 }
@@ -130,7 +120,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainSetUp
                 C._block.data.N = C.NewNode();
                 Node& node = *C._block.data.N;
                 for( int j=0; j<16; ++j )
-                    node.children[j] = new DistQuasi2dHMat<Scalar,Conjugated>;
+                    node.children[j] = new DistQuasi2dHMat<Scalar>;
             }
             else
             {
@@ -138,7 +128,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainSetUp
                 C._block.data.N = C.NewNode();
                 Node& node = *C._block.data.N;
                 for( int j=0; j<16; ++j )
-                    node.children[j] = new DistQuasi2dHMat<Scalar,Conjugated>;
+                    node.children[j] = new DistQuasi2dHMat<Scalar>;
             }
         }
         else
@@ -152,7 +142,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainSetUp
                     Node& node = *C._block.data.N;
                     for( int j=0; j<16; ++j )
                         node.children[j] = 
-                            new DistQuasi2dHMat<Scalar,Conjugated>;
+                            new DistQuasi2dHMat<Scalar>;
                 }
                 else
                 {
@@ -161,7 +151,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainSetUp
                     Node& node = *C._block.data.N;
                     for( int j=0; j<16; ++j )
                         node.children[j] = 
-                            new DistQuasi2dHMat<Scalar,Conjugated>;
+                            new DistQuasi2dHMat<Scalar>;
                 }
             }
             else
@@ -173,7 +163,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainSetUp
                     Node& node = *C._block.data.N;
                     for( int j=0; j<16; ++j )
                         node.children[j] = 
-                            new DistQuasi2dHMat<Scalar,Conjugated>;
+                            new DistQuasi2dHMat<Scalar>;
                 }
                 else
                 {
@@ -182,7 +172,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainSetUp
                     Node& node = *C._block.data.N;
                     for( int j=0; j<16; ++j )
                         node.children[j] = 
-                            new DistQuasi2dHMat<Scalar,Conjugated>;
+                            new DistQuasi2dHMat<Scalar>;
                 }
             }
         }
@@ -195,7 +185,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainSetUp
             {
                 C._block.type = DENSE;
                 C._block.data.D = new Dense<Scalar>( A.Height(), B.Width() );
-                hmat_tools::Scale( (Scalar)0, *C._block.data.D );
+                hmat_tools::Scale( Scalar(0), *C._block.data.D );
             }
             else
                 C._block.type = DENSE_GHOST;
@@ -209,7 +199,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainSetUp
                 if( C._inSourceTeam )
                 {
                     C._block.data.SD->D.Resize( A.Height(), B.Width() );
-                    hmat_tools::Scale( (Scalar)0, C._block.data.SD->D );
+                    hmat_tools::Scale( Scalar(0), C._block.data.SD->D );
                 }
             }
             else
@@ -221,18 +211,18 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainSetUp
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPrecompute
-( Scalar alpha, DistQuasi2dHMat<Scalar,Conjugated>& B,
-                DistQuasi2dHMat<Scalar,Conjugated>& C,
+DistQuasi2dHMat<Scalar>::MultiplyHMatMainPrecompute
+( Scalar alpha, DistQuasi2dHMat<Scalar>& B,
+                DistQuasi2dHMat<Scalar>& C,
   int startLevel, int endLevel, 
   int startUpdate, int endUpdate, int update )
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatMainPrecompute");
 #endif
-    DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    DistQuasi2dHMat<Scalar>& A = *this;
     if( !A._inTargetTeam && !A._inSourceTeam && !B._inSourceTeam )
     {
         C._block.type = EMPTY;
@@ -324,13 +314,13 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPrecompute
                     ParallelGaussianRandomVectors( A._rowOmega );
 
                     A._rowT.Resize( A.LocalWidth(), sampleRank );
-                    hmat_tools::Scale( (Scalar)0, A._rowT );
+                    hmat_tools::Scale( Scalar(0), A._rowT );
 
                     A.AdjointMultiplyDenseInitialize
                     ( A._rowContext, sampleRank );
 
                     A.AdjointMultiplyDensePrecompute
-                    ( A._rowContext, (Scalar)1, A._rowOmega, A._rowT );
+                    ( A._rowContext, Scalar(1), A._rowOmega, A._rowT );
 
                     A._beganRowSpaceComp = true;
                     break;
@@ -364,11 +354,11 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPrecompute
                     ParallelGaussianRandomVectors( B._colOmega );
 
                     B._colT.Resize( B.LocalHeight(), sampleRank );
-                    hmat_tools::Scale( (Scalar)0, B._colT );
+                    hmat_tools::Scale( Scalar(0), B._colT );
 
                     B.MultiplyDenseInitialize( B._colContext, sampleRank );
                     B.MultiplyDensePrecompute
-                    ( B._colContext, (Scalar)1, B._colOmega, B._colT );
+                    ( B._colContext, Scalar(1), B._colOmega, B._colT );
 
                     B._beganColSpaceComp = true;
                     break;
@@ -409,7 +399,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPrecompute
             C._mainContextMap.Set( key, new MultiplyDenseContext );
             MultiplyDenseContext& context = C._mainContextMap.Get(key);
 
-            hmat_tools::Scale( (Scalar)0, C._UMap.Get(key) );
+            hmat_tools::Scale( Scalar(0), C._UMap.Get(key) );
             A.MultiplyDenseInitialize( context, DFB.rank );
             A.MultiplyDensePrecompute
             ( context, alpha, DFB.ULocal, C._UMap.Get(key) );
@@ -490,7 +480,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPrecompute
         {
             // Start H/F += H F
             // We are the middle and right processes
-            const LowRank<Scalar,Conjugated>& FB = *B._block.data.F;
+            const LowRank<Scalar>& FB = *B._block.data.F;
             C._mainContextMap.Set( key, new MultiplyDenseContext );
             MultiplyDenseContext& context = C._mainContextMap.Get( key );
 
@@ -541,7 +531,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPrecompute
             C._mainContextMap.Set( key, new MultiplyDenseContext );
             MultiplyDenseContext& context = C._mainContextMap.Get( key );
 
-            hmat_tools::Scale( (Scalar)0, C._UMap.Get( key ) );
+            hmat_tools::Scale( Scalar(0), C._UMap.Get( key ) );
             A.MultiplyDenseInitialize( context, SFB.rank );
             A.MultiplyDensePrecompute
             ( context, alpha, SFB.D, C._UMap.Get( key ) );
@@ -551,12 +541,12 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPrecompute
         {
             // Start H/F += H F
             // We own all of A, B, and C
-            const LowRank<Scalar,Conjugated>& FB = *B._block.data.F;
+            const LowRank<Scalar>& FB = *B._block.data.F;
             C._UMap.Set( key, new Dense<Scalar>( C.Height(), FB.Rank() ) );
             C._mainContextMap.Set( key, new MultiplyDenseContext );
             MultiplyDenseContext& context = C._mainContextMap.Get( key );
 
-            hmat_tools::Scale( (Scalar)0, C._UMap.Get( key ) );
+            hmat_tools::Scale( Scalar(0), C._UMap.Get( key ) );
             A.MultiplyDenseInitialize( context, FB.Rank() );
             A.MultiplyDensePrecompute
             ( context, alpha, FB.U, C._UMap.Get( key ) );
@@ -590,21 +580,12 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPrecompute
         {
             // Start H/F += F H
             C._VMap.Set( key, new Dense<Scalar>( C.LocalWidth(), DFA.rank ) );
-            hmat_tools::Scale( (Scalar)0, C._VMap.Get( key ) );
+            hmat_tools::Scale( Scalar(0), C._VMap.Get( key ) );
             C._mainContextMap.Set( key, new MultiplyDenseContext );
             MultiplyDenseContext& context = C._mainContextMap.Get( key );
-            if( Conjugated )
-            {
-                B.AdjointMultiplyDenseInitialize( context, DFA.rank );
-                B.AdjointMultiplyDensePrecompute
-                ( context, Conj(alpha), DFA.VLocal, C._VMap.Get( key ) );
-            }
-            else
-            {
-                B.TransposeMultiplyDenseInitialize( context, DFA.rank );
-                B.TransposeMultiplyDensePrecompute
-                ( context, alpha, DFA.VLocal, C._VMap.Get( key ) );
-            }
+            B.TransposeMultiplyDenseInitialize( context, DFA.rank );
+            B.TransposeMultiplyDensePrecompute
+            ( context, alpha, DFA.VLocal, C._VMap.Get( key ) );
             break;
         }
         case DIST_LOW_RANK:
@@ -618,12 +599,12 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPrecompute
                 {
                     C._ZMap.Set( key, new Dense<Scalar>( DFA.rank, DFB.rank ) );
                     Dense<Scalar>& ZC = C._ZMap.Get( key );
-                    const char option = ( Conjugated ? 'C' : 'T' );
+                    const char option = 'T';
                     blas::Gemm
                     ( option, 'N', DFA.rank, DFB.rank, kLocal,
-                      (Scalar)1, DFA.VLocal.LockedBuffer(), DFA.VLocal.LDim(),
+                      Scalar(1), DFA.VLocal.LockedBuffer(), DFA.VLocal.LDim(),
                                  DFB.ULocal.LockedBuffer(), DFB.ULocal.LDim(),
-                      (Scalar)0, ZC.Buffer(),               ZC.LDim() );
+                      Scalar(0), ZC.Buffer(),               ZC.LDim() );
                 }
             }
             break;
@@ -657,10 +638,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPrecompute
             const DistLowRankGhost& DFGA = *A._block.data.DFG;
             C._mainContextMap.Set( key, new MultiplyDenseContext );
             MultiplyDenseContext& context = C._mainContextMap.Get( key );
-            if( Conjugated )
-                B.AdjointMultiplyDenseInitialize( context, DFGA.rank );
-            else
-                B.TransposeMultiplyDenseInitialize( context, DFGA.rank );
+            B.TransposeMultiplyDenseInitialize( context, DFGA.rank );
             break;
         }
         case DIST_LOW_RANK:
@@ -693,27 +671,15 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPrecompute
                 Dense<Scalar> dummy( 0, SFA.rank );
                 C._mainContextMap.Set( key, new MultiplyDenseContext );
                 MultiplyDenseContext& context = C._mainContextMap.Get( key );
-                if( Conjugated )
-                {
-                    B.AdjointMultiplyDenseInitialize( context, SFA.rank );
-                    B.AdjointMultiplyDensePrecompute
-                    ( context, Conj(alpha), SFA.D, dummy );
-                }
-                else
-                {
-                    B.TransposeMultiplyDenseInitialize( context, SFA.rank );
-                    B.TransposeMultiplyDensePrecompute
-                    ( context, alpha, SFA.D, dummy );
-                }
+                B.TransposeMultiplyDenseInitialize( context, SFA.rank );
+                B.TransposeMultiplyDensePrecompute
+                ( context, alpha, SFA.D, dummy );
             }
             else
             {
                 C._mainContextMap.Set( key, new MultiplyDenseContext );
                 MultiplyDenseContext& context = C._mainContextMap.Get( key );
-                if( Conjugated )
-                    B.AdjointMultiplyDenseInitialize( context, SFA.rank );
-                else
-                    B.TransposeMultiplyDenseInitialize( context, SFA.rank );
+                B.TransposeMultiplyDenseInitialize( context, SFA.rank );
             }
             break;
         }
@@ -723,20 +689,11 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPrecompute
             C._VMap.Set( key, new Dense<Scalar>( B.Width(), SFA.rank ) );
             Dense<Scalar>& CV = C._VMap.Get( key );
                 
-            hmat_tools::Scale( (Scalar)0, CV );
+            hmat_tools::Scale( Scalar(0), CV );
             C._mainContextMap.Set( key, new MultiplyDenseContext );
             MultiplyDenseContext& context = C._mainContextMap.Get( key );
-            if( Conjugated )
-            {
-                B.AdjointMultiplyDenseInitialize( context, SFA.rank );
-                B.AdjointMultiplyDensePrecompute
-                ( context, Conj(alpha), SFA.D, CV );
-            }
-            else
-            {
-                B.TransposeMultiplyDenseInitialize( context, SFA.rank );
-                B.TransposeMultiplyDensePrecompute( context, alpha, SFA.D, CV );
-            }
+            B.TransposeMultiplyDenseInitialize( context, SFA.rank );
+            B.TransposeMultiplyDensePrecompute( context, alpha, SFA.D, CV );
             break;
         }
         case SPLIT_LOW_RANK:
@@ -750,12 +707,12 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPrecompute
                 {
                     C._ZMap.Set( key, new Dense<Scalar>( SFA.rank, SFB.rank ) );
                     Dense<Scalar>& ZC = C._ZMap.Get( key );
-                    const char option = ( Conjugated ? 'C' : 'T' );
+                    const char option = 'T';
                     blas::Gemm
                     ( option, 'N', SFA.rank, SFB.rank, k,
-                      (Scalar)1, SFA.D.LockedBuffer(), SFA.D.LDim(),
+                      Scalar(1), SFA.D.LockedBuffer(), SFA.D.LDim(),
                                  SFB.D.LockedBuffer(), SFB.D.LDim(),
-                      (Scalar)0, ZC.Buffer(),          ZC.LDim() );
+                      Scalar(0), ZC.Buffer(),          ZC.LDim() );
                 }
             }
             break;
@@ -763,18 +720,18 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPrecompute
         case LOW_RANK:
         {
             // We must be the middle and right process
-            const LowRank<Scalar,Conjugated>& FB = *B._block.data.F;
+            const LowRank<Scalar>& FB = *B._block.data.F;
             const int k = A.Width();
             if( SFA.rank != 0 && FB.Rank() != 0 )
             {
                 C._ZMap.Set( key, new Dense<Scalar>( SFA.rank, FB.Rank() ) );
                 Dense<Scalar>& ZC = C._ZMap.Get( key );
-                const char option = ( Conjugated ? 'C' : 'T' );
+                const char option = 'T';
                 blas::Gemm
                 ( option, 'N', SFA.rank, FB.Rank(), k,
-                  (Scalar)1, SFA.D.LockedBuffer(), SFA.D.LDim(),
+                  Scalar(1), SFA.D.LockedBuffer(), SFA.D.LDim(),
                              FB.U.LockedBuffer(),  FB.U.LDim(),
-                  (Scalar)0, ZC.Buffer(),          ZC.LDim() );
+                  Scalar(0), ZC.Buffer(),          ZC.LDim() );
             }
             break;
         }
@@ -786,13 +743,12 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPrecompute
             C._VMap.Set( key, new Dense<Scalar>( n, SFA.rank ) );
             const Dense<Scalar>& DB = *B._block.data.D;
             Dense<Scalar>& VC = C._VMap.Get( key );
-            const char option = ( Conjugated ? 'C' : 'T' );
-            const Scalar scale = ( Conjugated ? Conj(alpha) : alpha );
+            const char option = 'T';
             blas::Gemm
             ( option, 'N', n, SFA.rank, k,
-              scale,     DB.LockedBuffer(),    DB.LDim(),
+              alpha,     DB.LockedBuffer(),    DB.LDim(),
                          SFA.D.LockedBuffer(), SFA.D.LDim(),
-              (Scalar)0, VC.Buffer(),          VC.LDim() );
+              Scalar(0), VC.Buffer(),          VC.LDim() );
             break;
         }
         case SPLIT_NODE_GHOST:
@@ -829,10 +785,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPrecompute
             const SplitLowRankGhost& SFGA = *A._block.data.SFG;
             C._mainContextMap.Set( key, new MultiplyDenseContext );
             MultiplyDenseContext& context = C._mainContextMap.Get( key );
-            if( Conjugated )
-                B.AdjointMultiplyDenseInitialize( context, SFGA.rank );
-            else
-                B.TransposeMultiplyDenseInitialize( context, SFGA.rank );
+            B.TransposeMultiplyDenseInitialize( context, SFGA.rank );
             break;
         }
         case SPLIT_LOW_RANK:
@@ -855,7 +808,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPrecompute
     }
     case LOW_RANK:
     {
-        const LowRank<Scalar,Conjugated>& FA = *A._block.data.F;
+        const LowRank<Scalar>& FA = *A._block.data.F;
         switch( B._block.type )
         {
         case SPLIT_NODE:
@@ -864,39 +817,21 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPrecompute
             Dense<Scalar> dummy( 0, FA.Rank() );
             C._mainContextMap.Set( key, new MultiplyDenseContext );
             MultiplyDenseContext& context = C._mainContextMap.Get( key );
-            if( Conjugated )
-            {
-                B.AdjointMultiplyDenseInitialize( context, FA.Rank() );
-                B.AdjointMultiplyDensePrecompute
-                ( context, Conj(alpha), FA.V, dummy );
-            }
-            else
-            {
-                B.TransposeMultiplyDenseInitialize( context, FA.Rank() );
-                B.TransposeMultiplyDensePrecompute
-                ( context, alpha, FA.V, dummy );
-            }
+            B.TransposeMultiplyDenseInitialize( context, FA.Rank() );
+            B.TransposeMultiplyDensePrecompute
+            ( context, alpha, FA.V, dummy );
             break;
         }
         case NODE:
         {
             // We must own all of A, B, and C
             C._VMap.Set( key, new Dense<Scalar>( B.Width(), FA.Rank() ) );
-            hmat_tools::Scale( (Scalar)0, C._VMap.Get( key ) );
+            hmat_tools::Scale( Scalar(0), C._VMap.Get( key ) );
             C._mainContextMap.Set( key, new MultiplyDenseContext );
             MultiplyDenseContext& context = C._mainContextMap.Get( key );
-            if( Conjugated )
-            {
-                B.AdjointMultiplyDenseInitialize( context, FA.Rank() );
-                B.AdjointMultiplyDensePrecompute
-                ( context, Conj(alpha), FA.V, C._VMap.Get( key ) );
-            }
-            else
-            {
-                B.TransposeMultiplyDenseInitialize( context, FA.Rank() );
-                B.TransposeMultiplyDensePrecompute
-                ( context, alpha, FA.V, C._VMap.Get( key ) );
-            }
+            B.TransposeMultiplyDenseInitialize( context, FA.Rank() );
+            B.TransposeMultiplyDensePrecompute
+            ( context, alpha, FA.V, C._VMap.Get( key ) );
             break;
         }
         case SPLIT_LOW_RANK:
@@ -908,30 +843,30 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPrecompute
             {
                 C._ZMap.Set( key, new Dense<Scalar>( FA.Rank(), SFB.rank ) );
                 Dense<Scalar>& ZC = C._ZMap.Get( key );
-                const char option = ( Conjugated ? 'C' : 'T' );
+                const char option = 'T';
                 blas::Gemm
                 ( option, 'N', FA.Rank(), SFB.rank, k,
-                  (Scalar)1, FA.V.LockedBuffer(),  FA.V.LDim(),
+                  Scalar(1), FA.V.LockedBuffer(),  FA.V.LDim(),
                              SFB.D.LockedBuffer(), SFB.D.LDim(),
-                  (Scalar)0, ZC.Buffer(),          ZC.LDim() );
+                  Scalar(0), ZC.Buffer(),          ZC.LDim() );
             }
             break;
         }
         case LOW_RANK:
         {
             // We must own all of A, B, and C
-            const LowRank<Scalar,Conjugated>& FB = *B._block.data.F;
+            const LowRank<Scalar>& FB = *B._block.data.F;
             const int k = B.Height();
             if( FA.Rank() != 0 && FB.Rank() != 0 )
             {
                 C._ZMap.Set( key, new Dense<Scalar>( FA.Rank(), FB.Rank() ) );
                 Dense<Scalar>& ZC = C._ZMap.Get( key );
-                const char option = ( Conjugated ? 'C' : 'T' );
+                const char option = 'T';
                 blas::Gemm
                 ( option, 'N', FA.Rank(), FB.Rank(), k,
-                  (Scalar)1, FA.V.LockedBuffer(), FA.V.LDim(),
+                  Scalar(1), FA.V.LockedBuffer(), FA.V.LDim(),
                              FB.U.LockedBuffer(), FB.U.LDim(),
-                  (Scalar)0, ZC.Buffer(),         ZC.LDim() );
+                  Scalar(0), ZC.Buffer(),         ZC.LDim() );
             }
             break;
         }
@@ -947,13 +882,12 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPrecompute
             C._VMap.Set( key, new Dense<Scalar>( n, FA.Rank() ) );
             const Dense<Scalar>& DB = *B._block.data.D;
             Dense<Scalar>& VC = C._VMap.Get( key );
-            const char option = ( Conjugated ? 'C' : 'T' );
-            const Scalar scale = ( Conjugated ? Conj(alpha) : alpha );
+            const char option = 'T';
             blas::Gemm
             ( option, 'N', n, FA.Rank(), k,
-              scale,     DB.LockedBuffer(),   DB.LDim(),
+              alpha,     DB.LockedBuffer(),   DB.LDim(),
                          FA.V.LockedBuffer(), FA.V.LDim(),
-              (Scalar)0, VC.Buffer(),         VC.LDim() );
+              Scalar(0), VC.Buffer(),         VC.LDim() );
             break;
         }
         default:
@@ -981,10 +915,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPrecompute
             const LowRankGhost& FGA = *A._block.data.FG;
             C._mainContextMap.Set( key, new MultiplyDenseContext );
             MultiplyDenseContext& context = C._mainContextMap.Get( key );
-            if( Conjugated )
-                B.AdjointMultiplyDenseInitialize( context, FGA.rank );
-            else
-                B.TransposeMultiplyDenseInitialize( context, FGA.rank );
+            B.TransposeMultiplyDenseInitialize( context, FGA.rank );
             break;
         }
         case SPLIT_LOW_RANK:
@@ -1026,14 +957,14 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPrecompute
                     ( 'N', 'N', m, SFB.rank, k,
                       alpha,     SDA.D.LockedBuffer(), SDA.D.LDim(),
                                  SFB.D.LockedBuffer(), SFB.D.LDim(),
-                      (Scalar)0, ZC.Buffer(),          ZC.LDim() );
+                      Scalar(0), ZC.Buffer(),          ZC.LDim() );
                 }
             }
             break;
         }
         case LOW_RANK:
         {
-            const LowRank<Scalar,Conjugated>& FB = *B._block.data.F;
+            const LowRank<Scalar>& FB = *B._block.data.F;
             const int m = A.Height();
             const int k = A.Width();
             if( m != 0 && FB.Rank() != 0 )
@@ -1044,7 +975,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPrecompute
                 ( 'N', 'N', m, FB.Rank(), k,
                   alpha,     SDA.D.LockedBuffer(), SDA.D.LDim(),
                              FB.U.LockedBuffer(),  FB.U.LDim(),
-                  (Scalar)0, ZC.Buffer(),          ZC.LDim() );
+                  Scalar(0), ZC.Buffer(),          ZC.LDim() );
             }
             break;
         }
@@ -1055,7 +986,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPrecompute
             {
                 // F += D D
                 if( C._storedDenseUpdate )
-                    hmat_tools::Multiply( alpha, SDA.D, DB, (Scalar)1, C._D );
+                    hmat_tools::Multiply( alpha, SDA.D, DB, Scalar(1), C._D );
                 else
                 {
                     hmat_tools::Multiply( alpha, SDA.D, DB, C._D );
@@ -1068,7 +999,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPrecompute
                 // D += D D
                 SplitDense& SDC = *C._block.data.SD;
                 hmat_tools::Multiply
-                ( alpha, SDA.D, DB, (Scalar)1, SDC.D );
+                ( alpha, SDA.D, DB, Scalar(1), SDC.D );
             }
             break;
         }
@@ -1120,24 +1051,24 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPrecompute
             ( 'N', 'N', m, SFB.rank, k,
               alpha,     DA.LockedBuffer(),    DA.LDim(),
                          SFB.D.LockedBuffer(), SFB.D.LDim(),
-              (Scalar)0, UC.Buffer(),          UC.LDim() );
+              Scalar(0), UC.Buffer(),          UC.LDim() );
             break;
         }
         case LOW_RANK:
         {
-            const LowRank<Scalar,Conjugated>& FB = *B._block.data.F;
+            const LowRank<Scalar>& FB = *B._block.data.F;
             if( admissibleC )
             {
-                LowRank<Scalar,Conjugated>& FC = *C._block.data.F;
-                LowRank<Scalar,Conjugated> temp;
+                LowRank<Scalar>& FC = *C._block.data.F;
+                LowRank<Scalar> temp;
                 hmat_tools::Multiply( alpha, DA, FB, temp );
                 hmat_tools::RoundedUpdate
-                ( C.MaxRank(), (Scalar)1, temp, (Scalar)1, FC );
+                ( C.MaxRank(), Scalar(1), temp, Scalar(1), FC );
             }
             else
             {
                 Dense<Scalar>& DC = *C._block.data.D;
-                hmat_tools::Multiply( alpha, DA, FB, (Scalar)1, DC );
+                hmat_tools::Multiply( alpha, DA, FB, Scalar(1), DC );
             }
             break;
         }
@@ -1152,7 +1083,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPrecompute
             {
                 // F += D D
                 if( C._storedDenseUpdate )
-                    hmat_tools::Multiply( alpha, DA, DB, (Scalar)1, C._D );
+                    hmat_tools::Multiply( alpha, DA, DB, Scalar(1), C._D );
                 else
                 {
                     hmat_tools::Multiply( alpha, DA, DB, C._D );
@@ -1164,7 +1095,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPrecompute
             {
                 // D += D D
                 Dense<Scalar>& DC = *C._block.data.D;
-                hmat_tools::Multiply( alpha, DA, DB, (Scalar)1, DC );
+                hmat_tools::Multiply( alpha, DA, DB, Scalar(1), DC );
             }
             break;
         }
@@ -1195,17 +1126,17 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPrecompute
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainSums
-( DistQuasi2dHMat<Scalar,Conjugated>& B, DistQuasi2dHMat<Scalar,Conjugated>& C,
+DistQuasi2dHMat<Scalar>::MultiplyHMatMainSums
+( DistQuasi2dHMat<Scalar>& B, DistQuasi2dHMat<Scalar>& C,
   int startLevel, int endLevel,
   int startUpdate, int endUpdate )
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatMainSums");
 #endif
-    DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    DistQuasi2dHMat<Scalar>& A = *this;
 
     // Compute the message sizes for each reduce
     const unsigned numTeamLevels = _teams->NumLevels();
@@ -1245,9 +1176,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainSums
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainSumsCountA
+DistQuasi2dHMat<Scalar>::MultiplyHMatMainSumsCountA
 ( std::vector<int>& sizes, int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
@@ -1280,9 +1211,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainSumsCountA
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainSumsPackA
+DistQuasi2dHMat<Scalar>::MultiplyHMatMainSumsPackA
 ( std::vector<Scalar>& buffer, std::vector<int>& offsets, 
   int startLevel, int endLevel ) const
 {
@@ -1316,9 +1247,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainSumsPackA
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainSumsUnpackA
+DistQuasi2dHMat<Scalar>::MultiplyHMatMainSumsUnpackA
 ( const std::vector<Scalar>& buffer, std::vector<int>& offsets,
   int startLevel, int endLevel )
 {
@@ -1352,9 +1283,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainSumsUnpackA
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainSumsCountB
+DistQuasi2dHMat<Scalar>::MultiplyHMatMainSumsCountB
 ( std::vector<int>& sizes, int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
@@ -1387,9 +1318,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainSumsCountB
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainSumsPackB
+DistQuasi2dHMat<Scalar>::MultiplyHMatMainSumsPackB
 ( std::vector<Scalar>& buffer, std::vector<int>& offsets,
   int startLevel, int endLevel ) const
 {
@@ -1423,9 +1354,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainSumsPackB
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainSumsUnpackB
+DistQuasi2dHMat<Scalar>::MultiplyHMatMainSumsUnpackB
 ( const std::vector<Scalar>& buffer, std::vector<int>& offsets,
   int startLevel, int endLevel )
 {
@@ -1459,11 +1390,11 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainSumsUnpackB
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainSumsCountC
-( const DistQuasi2dHMat<Scalar,Conjugated>& B,
-  const DistQuasi2dHMat<Scalar,Conjugated>& C,
+DistQuasi2dHMat<Scalar>::MultiplyHMatMainSumsCountC
+( const DistQuasi2dHMat<Scalar>& B,
+  const DistQuasi2dHMat<Scalar>& C,
   std::vector<int>& sizes, 
   int startLevel, int endLevel, 
   int startUpdate, int endUpdate, int update ) const
@@ -1471,7 +1402,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainSumsCountC
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatMainSumsCountC");
 #endif
-    const DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    const DistQuasi2dHMat<Scalar>& A = *this;
     const bool admissibleC = C.Admissible();
     switch( A._block.type )
     {
@@ -1546,11 +1477,11 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainSumsCountC
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainSumsPackC
-( const DistQuasi2dHMat<Scalar,Conjugated>& B, 
-        DistQuasi2dHMat<Scalar,Conjugated>& C,
+DistQuasi2dHMat<Scalar>::MultiplyHMatMainSumsPackC
+( const DistQuasi2dHMat<Scalar>& B, 
+        DistQuasi2dHMat<Scalar>& C,
   std::vector<Scalar>& buffer, std::vector<int>& offsets,
   int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update ) const
@@ -1558,7 +1489,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainSumsPackC
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatMainSumsPackC");
 #endif
-    const DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    const DistQuasi2dHMat<Scalar>& A = *this;
     const int key = A._sourceOffset;
     const bool admissibleC = C.Admissible();
     switch( A._block.type )
@@ -1638,11 +1569,11 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainSumsPackC
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainSumsUnpackC
-( const DistQuasi2dHMat<Scalar,Conjugated>& B,
-        DistQuasi2dHMat<Scalar,Conjugated>& C,
+DistQuasi2dHMat<Scalar>::MultiplyHMatMainSumsUnpackC
+( const DistQuasi2dHMat<Scalar>& B,
+        DistQuasi2dHMat<Scalar>& C,
   const std::vector<Scalar>& buffer, std::vector<int>& offsets,
   int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update ) const 
@@ -1650,7 +1581,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainSumsUnpackC
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatMainSumsUnpackC");
 #endif
-    const DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    const DistQuasi2dHMat<Scalar>& A = *this;
     const int key = A._sourceOffset;
     const bool admissibleC = C.Admissible();
     switch( A._block.type )
@@ -1729,17 +1660,17 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainSumsUnpackC
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPassData
-( Scalar alpha, DistQuasi2dHMat<Scalar,Conjugated>& B,
-                DistQuasi2dHMat<Scalar,Conjugated>& C,
+DistQuasi2dHMat<Scalar>::MultiplyHMatMainPassData
+( Scalar alpha, DistQuasi2dHMat<Scalar>& B,
+                DistQuasi2dHMat<Scalar>& C,
   int startLevel, int endLevel, int startUpdate, int endUpdate )
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatMainPassData");
 #endif
-    DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    DistQuasi2dHMat<Scalar>& A = *this;
 
 #ifdef TIME_MULTIPLY
     Timer timer;    
@@ -1887,9 +1818,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPassData
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPassDataCountA
+DistQuasi2dHMat<Scalar>::MultiplyHMatMainPassDataCountA
 ( std::map<int,int>& sendSizes, std::map<int,int>& recvSizes,
   int startLevel, int endLevel ) const
 {
@@ -1924,9 +1855,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPassDataCountA
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPassDataPackA
+DistQuasi2dHMat<Scalar>::MultiplyHMatMainPassDataPackA
 ( std::vector<Scalar>& sendBuffer, std::map<int,int>& offsets,
   int startLevel, int endLevel ) 
 {
@@ -1961,9 +1892,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPassDataPackA
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPassDataUnpackA
+DistQuasi2dHMat<Scalar>::MultiplyHMatMainPassDataUnpackA
 ( const std::vector<Scalar>& recvBuffer, std::map<int,int>& offsets,
   int startLevel, int endLevel ) 
 {
@@ -1998,9 +1929,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPassDataUnpackA
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPassDataCountB
+DistQuasi2dHMat<Scalar>::MultiplyHMatMainPassDataCountB
 ( std::map<int,int>& sendSizes, std::map<int,int>& recvSizes,
   int startLevel, int endLevel ) const
 {
@@ -2035,9 +1966,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPassDataCountB
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPassDataPackB
+DistQuasi2dHMat<Scalar>::MultiplyHMatMainPassDataPackB
 ( std::vector<Scalar>& sendBuffer, std::map<int,int>& offsets,
   int startLevel, int endLevel )
 {
@@ -2071,9 +2002,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPassDataPackB
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPassDataUnpackB
+DistQuasi2dHMat<Scalar>::MultiplyHMatMainPassDataUnpackB
 ( const std::vector<Scalar>& recvBuffer, std::map<int,int>& offsets,
   int startLevel, int endLevel )
 {
@@ -2107,11 +2038,11 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPassDataUnpackB
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPassDataCountC
-( const DistQuasi2dHMat<Scalar,Conjugated>& B,
-  const DistQuasi2dHMat<Scalar,Conjugated>& C,
+DistQuasi2dHMat<Scalar>::MultiplyHMatMainPassDataCountC
+( const DistQuasi2dHMat<Scalar>& B,
+  const DistQuasi2dHMat<Scalar>& C,
   std::map<int,int>& sendSizes, std::map<int,int>& recvSizes,
   int startLevel, int endLevel, 
   int startUpdate, int endUpdate, int update ) const
@@ -2119,7 +2050,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPassDataCountC
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatMainPassDataCountC");
 #endif
-    const DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    const DistQuasi2dHMat<Scalar>& A = *this;
     if( (!A._inTargetTeam && !A._inSourceTeam && !B._inSourceTeam) ||
         A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
     {
@@ -2259,7 +2190,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPassDataCountC
         case LOW_RANK:
         {
             // Pass data for H/F += H F
-            const LowRank<Scalar,Conjugated>& FB = *B._block.data.F;
+            const LowRank<Scalar>& FB = *B._block.data.F;
             A.MultiplyDensePassDataCount( sendSizes, recvSizes, FB.Rank() );
             break;
         }
@@ -2409,7 +2340,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPassDataCountC
         case LOW_RANK:
         {
             // Pass data for H/D/F += F F
-            const LowRank<Scalar,Conjugated>& FB = *B._block.data.F;
+            const LowRank<Scalar>& FB = *B._block.data.F;
             AddToMap( sendSizes, A._targetRoot, SFA.rank*FB.Rank() );
             break;
         }
@@ -2482,7 +2413,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPassDataCountC
     }
     case LOW_RANK:
     {
-        const LowRank<Scalar,Conjugated>& FA = *A._block.data.F;
+        const LowRank<Scalar>& FA = *A._block.data.F;
         switch( B._block.type )
         {
         case SPLIT_NODE:
@@ -2573,7 +2504,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPassDataCountC
         case LOW_RANK:
         {
             // Pass data for D/F += D F
-            const LowRank<Scalar,Conjugated>& FB = *B._block.data.F;
+            const LowRank<Scalar>& FB = *B._block.data.F;
             AddToMap( sendSizes, A._targetRoot, A.Height()*FB.Rank() );
             break;
         }
@@ -2694,11 +2625,11 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPassDataCountC
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPassDataPackC
-( const DistQuasi2dHMat<Scalar,Conjugated>& B,
-        DistQuasi2dHMat<Scalar,Conjugated>& C,
+DistQuasi2dHMat<Scalar>::MultiplyHMatMainPassDataPackC
+( const DistQuasi2dHMat<Scalar>& B,
+        DistQuasi2dHMat<Scalar>& C,
   std::vector<Scalar>& sendBuffer, std::map<int,int>& offsets,
   int startLevel, int endLevel, 
   int startUpdate, int endUpdate, int update ) const
@@ -2706,7 +2637,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPassDataPackC
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatMainPassDataPackC");
 #endif
-    const DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    const DistQuasi2dHMat<Scalar>& A = *this;
     if( (!A._inTargetTeam && !A._inSourceTeam && !B._inSourceTeam) ||
         A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
     {
@@ -2949,7 +2880,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPassDataPackC
         case LOW_RANK:
         {
             // Pass data for H/D/F += F F
-            const LowRank<Scalar,Conjugated>& FB = *B._block.data.F;
+            const LowRank<Scalar>& FB = *B._block.data.F;
             if( SFA.rank != 0 && FB.Rank() != 0 )
             {
                 Dense<Scalar>& ZC = C._ZMap.Get( key );
@@ -3001,7 +2932,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPassDataPackC
         break;
     case LOW_RANK:
     {
-        const LowRank<Scalar,Conjugated>& FA = *A._block.data.F;
+        const LowRank<Scalar>& FA = *A._block.data.F;
         switch( B._block.type )
         {
         case SPLIT_NODE:
@@ -3071,7 +3002,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPassDataPackC
         case LOW_RANK:
         {
             // Pass data for D/F += D F
-            const LowRank<Scalar,Conjugated>& FB = *B._block.data.F;
+            const LowRank<Scalar>& FB = *B._block.data.F;
             if( A.Height() != 0 && FB.Rank() != 0 )
             {
                 Dense<Scalar>& ZC = C._ZMap.Get( key );
@@ -3165,11 +3096,11 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPassDataPackC
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPassDataUnpackC
-( const DistQuasi2dHMat<Scalar,Conjugated>& B,
-        DistQuasi2dHMat<Scalar,Conjugated>& C,
+DistQuasi2dHMat<Scalar>::MultiplyHMatMainPassDataUnpackC
+( const DistQuasi2dHMat<Scalar>& B,
+        DistQuasi2dHMat<Scalar>& C,
   const std::vector<Scalar>& recvBuffer, std::map<int,int>& offsets,
   int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update ) const
@@ -3177,7 +3108,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPassDataUnpackC
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatMainPassDataUnpackC");
 #endif
-    const DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    const DistQuasi2dHMat<Scalar>& A = *this;
     if( (!A._inTargetTeam && !A._inSourceTeam && !B._inSourceTeam) ||
         A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
     {
@@ -3742,17 +3673,17 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPassDataUnpackC
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainBroadcasts
-( DistQuasi2dHMat<Scalar,Conjugated>& B,
-  DistQuasi2dHMat<Scalar,Conjugated>& C, 
+DistQuasi2dHMat<Scalar>::MultiplyHMatMainBroadcasts
+( DistQuasi2dHMat<Scalar>& B,
+  DistQuasi2dHMat<Scalar>& C, 
   int startLevel, int endLevel, int startUpdate, int endUpdate )
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatMainBroadcasts");
 #endif
-    DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    DistQuasi2dHMat<Scalar>& A = *this;
 
     // Compute the message sizes for each broadcast
     const unsigned numTeamLevels = _teams->NumLevels();
@@ -3797,9 +3728,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainBroadcasts
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainBroadcastsCountA
+DistQuasi2dHMat<Scalar>::MultiplyHMatMainBroadcastsCountA
 ( std::vector<int>& sizes, int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
@@ -3832,9 +3763,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainBroadcastsCountA
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainBroadcastsPackA
+DistQuasi2dHMat<Scalar>::MultiplyHMatMainBroadcastsPackA
 ( std::vector<Scalar>& buffer, std::vector<int>& offsets,
   int startLevel, int endLevel ) const
 {
@@ -3869,9 +3800,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainBroadcastsPackA
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainBroadcastsUnpackA
+DistQuasi2dHMat<Scalar>::MultiplyHMatMainBroadcastsUnpackA
 ( const std::vector<Scalar>& buffer, std::vector<int>& offsets,
   int startLevel, int endLevel )
 {
@@ -3906,9 +3837,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainBroadcastsUnpackA
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainBroadcastsCountB
+DistQuasi2dHMat<Scalar>::MultiplyHMatMainBroadcastsCountB
 ( std::vector<int>& sizes, int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
@@ -3941,9 +3872,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainBroadcastsCountB
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainBroadcastsPackB
+DistQuasi2dHMat<Scalar>::MultiplyHMatMainBroadcastsPackB
 ( std::vector<Scalar>& buffer, std::vector<int>& offsets, 
   int startLevel, int endLevel ) const
 {
@@ -3977,9 +3908,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainBroadcastsPackB
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainBroadcastsUnpackB
+DistQuasi2dHMat<Scalar>::MultiplyHMatMainBroadcastsUnpackB
 ( const std::vector<Scalar>& buffer, std::vector<int>& offsets,
   int startLevel, int endLevel )
 {
@@ -4013,11 +3944,11 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainBroadcastsUnpackB
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainBroadcastsCountC
-( const DistQuasi2dHMat<Scalar,Conjugated>& B,
-  const DistQuasi2dHMat<Scalar,Conjugated>& C, 
+DistQuasi2dHMat<Scalar>::MultiplyHMatMainBroadcastsCountC
+( const DistQuasi2dHMat<Scalar>& B,
+  const DistQuasi2dHMat<Scalar>& C, 
   std::vector<int>& sizes, 
   int startLevel, int endLevel, 
   int startUpdate, int endUpdate, int update ) const
@@ -4025,7 +3956,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainBroadcastsCountC
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatMainBroadcastsCountC");
 #endif
-    const DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    const DistQuasi2dHMat<Scalar>& A = *this;
     if( (!A._inTargetTeam && !A._inSourceTeam && !B._inSourceTeam) ||
         A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
     {
@@ -4121,11 +4052,11 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainBroadcastsCountC
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainBroadcastsPackC
-( const DistQuasi2dHMat<Scalar,Conjugated>& B, 
-        DistQuasi2dHMat<Scalar,Conjugated>& C,
+DistQuasi2dHMat<Scalar>::MultiplyHMatMainBroadcastsPackC
+( const DistQuasi2dHMat<Scalar>& B, 
+        DistQuasi2dHMat<Scalar>& C,
   std::vector<Scalar>& buffer, std::vector<int>& offsets,
   int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update ) const
@@ -4133,7 +4064,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainBroadcastsPackC
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatMainBroadcastsPackC");
 #endif
-    const DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    const DistQuasi2dHMat<Scalar>& A = *this;
     if( (!A._inTargetTeam && !A._inSourceTeam && !B._inSourceTeam) ||
         A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
     {
@@ -4241,11 +4172,11 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainBroadcastsPackC
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainBroadcastsUnpackC
-( const DistQuasi2dHMat<Scalar,Conjugated>& B,
-        DistQuasi2dHMat<Scalar,Conjugated>& C,
+DistQuasi2dHMat<Scalar>::MultiplyHMatMainBroadcastsUnpackC
+( const DistQuasi2dHMat<Scalar>& B,
+        DistQuasi2dHMat<Scalar>& C,
   const std::vector<Scalar>& buffer, std::vector<int>& offsets,
   int startLevel, int endLevel, 
   int startUpdate, int endUpdate, int update ) const
@@ -4253,7 +4184,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainBroadcastsUnpackC
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatMainBroadcastsUnpackC");
 #endif
-    const DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    const DistQuasi2dHMat<Scalar>& A = *this;
     if( (!A._inTargetTeam && !A._inSourceTeam && !B._inSourceTeam) ||
         A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
     {
@@ -4353,17 +4284,17 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainBroadcastsUnpackC
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcompute
-( Scalar alpha, DistQuasi2dHMat<Scalar,Conjugated>& B,
-                DistQuasi2dHMat<Scalar,Conjugated>& C,
+DistQuasi2dHMat<Scalar>::MultiplyHMatMainPostcompute
+( Scalar alpha, DistQuasi2dHMat<Scalar>& B,
+                DistQuasi2dHMat<Scalar>& C,
   int startLevel, int endLevel, int startUpdate, int endUpdate )
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatMainPostcompute");
 #endif
-    DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    DistQuasi2dHMat<Scalar>& A = *this;
 
     A.MultiplyHMatMainPostcomputeA( startLevel, endLevel );
     B.MultiplyHMatMainPostcomputeB( startLevel, endLevel );
@@ -4375,22 +4306,22 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcompute
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeA
+DistQuasi2dHMat<Scalar>::MultiplyHMatMainPostcomputeA
 ( int startLevel, int endLevel )
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatMainPostcomputeA");
 #endif
-    DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    DistQuasi2dHMat<Scalar>& A = *this;
 
     // Handle postcomputation of A's row space
     if( A._level >= startLevel && A._level < endLevel &&
         A._beganRowSpaceComp && !A._finishedRowSpaceComp )
     {
         A.AdjointMultiplyDensePostcompute
-        ( A._rowContext, (Scalar)1, A._rowOmega, A._rowT );
+        ( A._rowContext, Scalar(1), A._rowOmega, A._rowT );
         A._rowContext.Clear();
         A._finishedRowSpaceComp = true;
     }
@@ -4418,22 +4349,22 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeA
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeB
+DistQuasi2dHMat<Scalar>::MultiplyHMatMainPostcomputeB
 ( int startLevel, int endLevel )
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatMainPostcomputeB");
 #endif
-    DistQuasi2dHMat<Scalar,Conjugated>& B = *this;
+    DistQuasi2dHMat<Scalar>& B = *this;
 
     // Handle postcomputation of B's column space
     if( B._level >= startLevel && B._level < endLevel &&
         B._beganColSpaceComp && !B._finishedColSpaceComp )
     {
         B.MultiplyDensePostcompute
-        ( B._colContext, (Scalar)1, B._colOmega, B._colT );
+        ( B._colContext, Scalar(1), B._colOmega, B._colT );
         B._colContext.Clear();
         B._finishedColSpaceComp = true;
     }
@@ -4461,18 +4392,18 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeB
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeC
-( Scalar alpha, const DistQuasi2dHMat<Scalar,Conjugated>& B,
-                      DistQuasi2dHMat<Scalar,Conjugated>& C,
+DistQuasi2dHMat<Scalar>::MultiplyHMatMainPostcomputeC
+( Scalar alpha, const DistQuasi2dHMat<Scalar>& B,
+                      DistQuasi2dHMat<Scalar>& C,
   int startLevel, int endLevel, 
   int startUpdate, int endUpdate, int update ) const
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatMainPostcomputeC");
 #endif
-    const DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    const DistQuasi2dHMat<Scalar>& A = *this;
     if( (!A._inTargetTeam && !A._inSourceTeam && !B._inSourceTeam) ||
         A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
     {
@@ -4569,7 +4500,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeC
             const DistLowRankGhost& DFGB = *B._block.data.DFG; 
             Dense<Scalar> dummy( 0, DFGB.rank );
             C._UMap.Set( key, new Dense<Scalar>(LocalHeight(), DFGB.rank ) );
-            hmat_tools::Scale( (Scalar)0, C._UMap.Get( key ) );
+            hmat_tools::Scale( Scalar(0), C._UMap.Get( key ) );
             A.MultiplyDensePostcompute
             ( C._mainContextMap.Get( key ), alpha, dummy, C._UMap.Get( key ) );
             C._mainContextMap.Get( key ).Clear();
@@ -4635,7 +4566,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeC
             if( C._inTargetTeam )
             {
                 C._UMap.Set( key, new Dense<Scalar>( C.Height(), SFB.rank ) );
-                hmat_tools::Scale( (Scalar)0, C._UMap.Get( key ) );
+                hmat_tools::Scale( Scalar(0), C._UMap.Get( key ) );
                 Dense<Scalar> dummy( 0, SFB.rank );
                 A.MultiplyDensePostcompute
                 ( C._mainContextMap.Get( key ), 
@@ -4653,7 +4584,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeC
             // We are the left process
             const SplitLowRankGhost& SFGB = *B._block.data.SFG;
             C._UMap.Set( key, new Dense<Scalar>( C.Height(), SFGB.rank ) );
-            hmat_tools::Scale( (Scalar)0, C._UMap.Get( key ) );
+            hmat_tools::Scale( Scalar(0), C._UMap.Get( key ) );
             Dense<Scalar> dummy( 0, SFGB.rank );
             A.MultiplyDensePostcompute
             ( C._mainContextMap.Get( key ), alpha, dummy, C._UMap.Get( key ) );
@@ -4664,7 +4595,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeC
         case LOW_RANK:
         {
             // We are the middle and right process
-            const LowRank<Scalar,Conjugated>& FB = *B._block.data.F;
+            const LowRank<Scalar>& FB = *B._block.data.F;
             C._VMap.Set( key, new Dense<Scalar>( C.Width(), FB.Rank() ) );
             hmat_tools::Copy( FB.V, C._VMap.Get( key ) );
             break;
@@ -4674,7 +4605,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeC
             // We are the left process
             const LowRankGhost& FGB = *B._block.data.FG;
             C._UMap.Set( key, new Dense<Scalar>( C.Height(), FGB.rank ) );
-            hmat_tools::Scale( (Scalar)0, C._UMap.Get( key ) );
+            hmat_tools::Scale( Scalar(0), C._UMap.Get( key ) );
             Dense<Scalar> dummy( 0, FGB.rank );
             A.MultiplyDensePostcompute
             ( C._mainContextMap.Get( key ), alpha, dummy, C._UMap.Get( key ) );
@@ -4707,7 +4638,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeC
             break;
         case LOW_RANK:
         {
-            const LowRank<Scalar,Conjugated>& FB = *B._block.data.F;
+            const LowRank<Scalar>& FB = *B._block.data.F;
             C._VMap.Set( key, new Dense<Scalar> );
             hmat_tools::Copy( FB.V, C._VMap.Get( key ) );
             break;
@@ -4767,12 +4698,8 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeC
 
             C._UMap.Set( key, new Dense<Scalar> );
             hmat_tools::Copy( DFA.ULocal, C._UMap.Get( key ) );
-            if( Conjugated )
-                B.AdjointMultiplyDensePostcompute
-                ( context, Conj(alpha), DFA.VLocal, C._VMap.Get( key ) );
-            else
-                B.TransposeMultiplyDensePostcompute
-                ( context, alpha, DFA.VLocal, C._VMap.Get( key ) );
+            B.TransposeMultiplyDensePostcompute
+            ( context, alpha, DFA.VLocal, C._VMap.Get( key ) );
             context.Clear();
             C._mainContextMap.Erase( key );
             break;
@@ -4798,12 +4725,12 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeC
                 ( 'N', 'N', A.LocalHeight(), DFB.rank, DFA.rank,
                   alpha,     DFA.ULocal.LockedBuffer(), DFA.ULocal.LDim(),
                              ZC.LockedBuffer(),         ZC.LDim(),
-                  (Scalar)0, UC.Buffer(),               UC.LDim() );
+                  Scalar(0), UC.Buffer(),               UC.LDim() );
                 ZC.Clear();
                 C._ZMap.Erase( key );
             }
             else
-                hmat_tools::Scale( (Scalar)0, UC );
+                hmat_tools::Scale( Scalar(0), UC );
             hmat_tools::Copy( DFB.VLocal, VC );
             break;
         }
@@ -4820,12 +4747,12 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeC
                 ( 'N', 'N', A.LocalHeight(), DFGB.rank, DFA.rank,
                   alpha,     DFA.ULocal.LockedBuffer(), DFA.ULocal.LDim(),
                              ZC.LockedBuffer(),         ZC.LDim(),
-                  (Scalar)0, UC.Buffer(),               UC.LDim() );
+                  Scalar(0), UC.Buffer(),               UC.LDim() );
                 ZC.Clear();
                 C._ZMap.Erase( key );
             }
             else
-                hmat_tools::Scale( (Scalar)0, UC );
+                hmat_tools::Scale( Scalar(0), UC );
             break;
         }
         default:
@@ -4853,13 +4780,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeC
             MultiplyDenseContext& context = C._mainContextMap.Get( key );
             Dense<Scalar> dummy( 0, DFGA.rank );
             C._VMap.Set( key, new Dense<Scalar>(C.LocalWidth(),DFGA.rank) );
-            hmat_tools::Scale( (Scalar)0, C._VMap.Get( key ) );
-            if( Conjugated )
-                B.AdjointMultiplyDensePostcompute
-                ( context, Conj(alpha), dummy, C._VMap.Get( key ) );
-            else
-                B.TransposeMultiplyDensePostcompute
-                ( context, alpha, dummy, C._VMap.Get( key ) );
+            hmat_tools::Scale( Scalar(0), C._VMap.Get( key ) );
+            B.TransposeMultiplyDensePostcompute
+            ( context, alpha, dummy, C._VMap.Get( key ) );
             context.Clear();
             C._mainContextMap.Erase( key );
             break;
@@ -4901,13 +4824,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeC
                 hmat_tools::Copy( SFA.D, C._UMap.Get( key ) );
                 Dense<Scalar> dummy( 0, SFA.rank );
                 C._VMap.Set( key, new Dense<Scalar>(C.LocalWidth(),SFA.rank) );
-                hmat_tools::Scale( (Scalar)0, C._VMap.Get( key ) );
-                if( Conjugated )
-                    B.AdjointMultiplyDensePostcompute
-                    ( context, Conj(alpha), dummy, C._VMap.Get( key ) );
-                else
-                    B.TransposeMultiplyDensePostcompute
-                    ( context, alpha, dummy, C._VMap.Get( key ) );
+                hmat_tools::Scale( Scalar(0), C._VMap.Get( key ) );
+                B.TransposeMultiplyDensePostcompute
+                ( context, alpha, dummy, C._VMap.Get( key ) );
                 context.Clear();
                 C._mainContextMap.Erase( key );
             }
@@ -4941,12 +4860,12 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeC
                     ( 'N', 'N', A.Height(), SFB.rank, SFA.rank,
                       alpha,     SFA.D.LockedBuffer(), SFA.D.LDim(),
                                  ZC.LockedBuffer(),    ZC.LDim(),
-                      (Scalar)0, UC.Buffer(),          UC.LDim() );
+                      Scalar(0), UC.Buffer(),          UC.LDim() );
                     ZC.Clear();
                     C._ZMap.Erase( key );
                 }
                 else
-                    hmat_tools::Scale( (Scalar)0, UC );
+                    hmat_tools::Scale( Scalar(0), UC );
 
                 C._VMap.Set( key, new Dense<Scalar> );
                 hmat_tools::Copy( SFB.D, C._VMap.Get( key ) );
@@ -4965,18 +4884,18 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeC
                 ( 'N', 'N', A.Height(), SFGB.rank, SFA.rank,
                   alpha,     SFA.D.LockedBuffer(), SFA.D.LDim(),
                              ZC.LockedBuffer(),    ZC.LDim(),
-                  (Scalar)0, UC.Buffer(),          UC.LDim() );
+                  Scalar(0), UC.Buffer(),          UC.LDim() );
                 ZC.Clear();
                 C._ZMap.Erase( key );
             }
             else
-                hmat_tools::Scale( (Scalar)0, UC );
+                hmat_tools::Scale( Scalar(0), UC );
             break;
         }
         case LOW_RANK:
         {
             // We must be the middle and right process
-            const LowRank<Scalar,Conjugated>& FB = *B._block.data.F;
+            const LowRank<Scalar>& FB = *B._block.data.F;
             C._VMap.Set( key, new Dense<Scalar> );
             hmat_tools::Copy( FB.V, C._VMap.Get( key ) );
             break;
@@ -4994,12 +4913,12 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeC
                 ( 'N', 'N', A.Height(), FGB.rank, SFA.rank,
                   alpha,     SFA.D.LockedBuffer(), SFA.D.LDim(),
                              ZC.LockedBuffer(),    ZC.LDim(),
-                  (Scalar)0, UC.Buffer(),          UC.LDim() );
+                  Scalar(0), UC.Buffer(),          UC.LDim() );
                 ZC.Clear();
                 C._ZMap.Erase( key );
             }
             else
-                hmat_tools::Scale( (Scalar)0, UC );
+                hmat_tools::Scale( Scalar(0), UC );
             break;
         }
         case SPLIT_DENSE:
@@ -5015,23 +4934,16 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeC
                 if( SFA.rank != 0 && B.Height() != 0 )
                 {
                     Dense<Scalar>& ZC = C._ZMap.Get( key );
-                    if( Conjugated )
-                        blas::Gemm
-                        ( 'C', 'N', C.Width(), SFA.rank, B.Height(),
-                          Conj(alpha), SDB.D.LockedBuffer(), SDB.D.LDim(),
-                                       ZC.LockedBuffer(),    ZC.LDim(),
-                          (Scalar)0,   VC.Buffer(),          VC.LDim() );
-                    else
-                        blas::Gemm
-                        ( 'T', 'N', C.Width(), SFA.rank, B.Height(),
-                          alpha,     SDB.D.LockedBuffer(), SDB.D.LDim(),
-                                     ZC.LockedBuffer(),    ZC.LDim(),
-                          (Scalar)0, VC.Buffer(),          VC.LDim() );
+                    blas::Gemm
+                    ( 'T', 'N', C.Width(), SFA.rank, B.Height(),
+                      alpha,     SDB.D.LockedBuffer(), SDB.D.LDim(),
+                                 ZC.LockedBuffer(),    ZC.LDim(),
+                      Scalar(0), VC.Buffer(),          VC.LDim() );
                     ZC.Clear();
                     C._ZMap.Erase( key );
                 }
                 else
-                    hmat_tools::Scale( (Scalar)0, VC );
+                    hmat_tools::Scale( Scalar(0), VC );
             }
             break;
         case SPLIT_DENSE_GHOST:
@@ -5073,13 +4985,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeC
             MultiplyDenseContext& context = C._mainContextMap.Get( key );
             Dense<Scalar> dummy( 0, SFGA.rank );
             C._VMap.Set( key, new Dense<Scalar>(C.LocalWidth(),SFGA.rank) );
-            hmat_tools::Scale( (Scalar)0, C._VMap.Get( key ) );
-            if( Conjugated )
-                B.AdjointMultiplyDensePostcompute
-                ( context, Conj(alpha), dummy, C._VMap.Get( key ) );
-            else
-                B.TransposeMultiplyDensePostcompute
-                ( context, alpha, dummy, C._VMap.Get( key ) );
+            hmat_tools::Scale( Scalar(0), C._VMap.Get( key ) );
+            B.TransposeMultiplyDensePostcompute
+            ( context, alpha, dummy, C._VMap.Get( key ) );
             context.Clear();
             C._mainContextMap.Erase( key );
             break;
@@ -5099,23 +5007,16 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeC
             if( SFGA.rank != 0 && B.Height() != 0 )
             {
                 Dense<Scalar>& ZC = C._ZMap.Get( key );
-                if( Conjugated )
-                    blas::Gemm
-                    ( 'C', 'N', C.Width(), SFGA.rank, B.Height(),
-                      Conj(alpha), SDB.D.LockedBuffer(), SDB.D.LDim(),
-                                   ZC.LockedBuffer(),    ZC.LDim(),
-                      (Scalar)0,   VC.Buffer(),          VC.LDim() );
-                else
-                    blas::Gemm
-                    ( 'T', 'N', C.Width(), SFGA.rank, B.Height(),
-                      alpha,     SDB.D.LockedBuffer(), SDB.D.LDim(),
-                                 ZC.LockedBuffer(),    ZC.LDim(),
-                      (Scalar)0, VC.Buffer(),          VC.LDim() );
+                blas::Gemm
+                ( 'T', 'N', C.Width(), SFGA.rank, B.Height(),
+                  alpha,     SDB.D.LockedBuffer(), SDB.D.LDim(),
+                             ZC.LockedBuffer(),    ZC.LDim(),
+                  Scalar(0), VC.Buffer(),          VC.LDim() );
                 ZC.Clear();
                 C._ZMap.Erase( key );
             }
             else
-                hmat_tools::Scale( (Scalar)0, VC );
+                hmat_tools::Scale( Scalar(0), VC );
             break;
         }
         default:
@@ -5135,7 +5036,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeC
     }
     case LOW_RANK:
     {
-        const LowRank<Scalar,Conjugated>& FA = *A._block.data.F;
+        const LowRank<Scalar>& FA = *A._block.data.F;
         switch( B._block.type )
         {
         case SPLIT_NODE:
@@ -5163,16 +5064,16 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeC
                 ( 'N', 'N', m, SFB.rank, k,
                   alpha,     FA.U.LockedBuffer(), FA.U.LDim(),
                              ZC.LockedBuffer(),   ZC.LDim(),
-                  (Scalar)0, UC.Buffer(),         UC.LDim() );
+                  Scalar(0), UC.Buffer(),         UC.LDim() );
             }
             else
-                hmat_tools::Scale( (Scalar)0, UC );
+                hmat_tools::Scale( Scalar(0), UC );
             break;
         }
         case LOW_RANK:
         {
             // We own all of A, B, and C
-            const LowRank<Scalar,Conjugated>& FB = *B._block.data.F;
+            const LowRank<Scalar>& FB = *B._block.data.F;
             const int m = A.Height();
             const int k = FA.Rank();
 
@@ -5187,10 +5088,10 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeC
                 ( 'N', 'N', m, FB.Rank(), k,
                   alpha,     FA.U.LockedBuffer(), FA.U.LDim(),
                              ZC.LockedBuffer(),   ZC.LDim(),
-                  (Scalar)0, UC.Buffer(),         UC.LDim() );
+                  Scalar(0), UC.Buffer(),         UC.LDim() );
             }
             else
-                hmat_tools::Scale( (Scalar)0, UC );
+                hmat_tools::Scale( Scalar(0), UC );
             hmat_tools::Copy( FB.V, VC );
             break;
         }
@@ -5234,13 +5135,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeC
             MultiplyDenseContext& context = C._mainContextMap.Get( key );
             Dense<Scalar> dummy( 0, FGA.rank );
             C._VMap.Set( key, new Dense<Scalar>(C.LocalWidth(),FGA.rank) );
-            hmat_tools::Scale( (Scalar)0, C._VMap.Get( key ) );
-            if( Conjugated )
-                B.AdjointMultiplyDensePostcompute
-                ( context, Conj(alpha), dummy, C._VMap.Get( key ) );
-            else
-                B.TransposeMultiplyDensePostcompute
-                ( context, alpha, dummy, C._VMap.Get( key ) );
+            hmat_tools::Scale( Scalar(0), C._VMap.Get( key ) );
+            B.TransposeMultiplyDensePostcompute
+            ( context, alpha, dummy, C._VMap.Get( key ) );
             context.Clear();
             C._mainContextMap.Erase( key );
             break;
@@ -5260,23 +5157,16 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeC
             if( FGA.rank != 0 && B.Height() != 0 )
             {
                 Dense<Scalar>& ZC = C._ZMap.Get( key );
-                if( Conjugated )
-                    blas::Gemm
-                    ( 'C', 'N', C.Width(), FGA.rank, B.Height(),
-                      Conj(alpha), SDB.D.LockedBuffer(), SDB.D.LDim(),
-                                   ZC.LockedBuffer(),    ZC.LDim(),
-                      (Scalar)0,   VC.Buffer(),          VC.LDim() );
-                else
-                    blas::Gemm
-                    ( 'T', 'N', C.Width(), FGA.rank, B.Height(),
-                      alpha,     SDB.D.LockedBuffer(), SDB.D.LDim(),
-                                 ZC.LockedBuffer(),    ZC.LDim(),
-                      (Scalar)0, VC.Buffer(),          VC.LDim() );
+                blas::Gemm
+                ( 'T', 'N', C.Width(), FGA.rank, B.Height(),
+                  alpha,     SDB.D.LockedBuffer(), SDB.D.LDim(),
+                             ZC.LockedBuffer(),    ZC.LDim(),
+                  Scalar(0), VC.Buffer(),          VC.LDim() );
                 ZC.Clear();
                 C._ZMap.Erase( key );
             }
             else
-                hmat_tools::Scale( (Scalar)0, VC );
+                hmat_tools::Scale( Scalar(0), VC );
             break;
         }
         default:
@@ -5332,7 +5222,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeC
         case LOW_RANK:
         {
             // We are the middle and right process
-            const LowRank<Scalar,Conjugated>& FB = *B._block.data.F;    
+            const LowRank<Scalar>& FB = *B._block.data.F;    
             C._VMap.Set( key, new Dense<Scalar> );
             hmat_tools::Copy( FB.V, C._VMap.Get( key ) );
             break;
@@ -5369,7 +5259,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeC
                             ( 'N', 'N', m, n, k,
                               alpha,     ZC.LockedBuffer(),    ZC.LDim(),
                                          SDB.D.LockedBuffer(), SDB.D.LDim(),
-                              (Scalar)1, C._D.Buffer(),        C._D.LDim() );
+                              Scalar(1), C._D.Buffer(),        C._D.LDim() );
                             ZC.Clear();
                             C._ZMap.Erase( key );
                         }
@@ -5384,12 +5274,12 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeC
                             ( 'N', 'N', m, n, k,
                               alpha,     ZC.LockedBuffer(),    ZC.LDim(),
                                          SDB.D.LockedBuffer(), SDB.D.LDim(),
-                              (Scalar)0, C._D.Buffer(),        C._D.LDim() );
+                              Scalar(0), C._D.Buffer(),        C._D.LDim() );
                             ZC.Clear();
                             C._ZMap.Erase( key );
                         }
                         else
-                            hmat_tools::Scale( (Scalar)0, C._D );
+                            hmat_tools::Scale( Scalar(0), C._D );
                         C._storedDenseUpdate = true;
                     }
                 }
@@ -5401,7 +5291,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeC
                     ( 'N', 'N', m, n, k,
                       alpha,     ZC.LockedBuffer(),    ZC.LDim(),
                                  SDB.D.LockedBuffer(), SDB.D.LDim(),
-                      (Scalar)1, D.Buffer(),           D.LDim() );
+                      Scalar(1), D.Buffer(),           D.LDim() );
                     ZC.Clear();
                     C._ZMap.Erase( key );
                 }
@@ -5460,7 +5350,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeC
                         ( 'N', 'N', m, n, k,
                           alpha,     ZC.LockedBuffer(),    ZC.LDim(),
                                      SDB.D.LockedBuffer(), SDB.D.LDim(),
-                          (Scalar)1, C._D.Buffer(),        C._D.LDim() );
+                          Scalar(1), C._D.Buffer(),        C._D.LDim() );
                         ZC.Clear();
                         C._ZMap.Erase( key );
                     }
@@ -5475,12 +5365,12 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeC
                         ( 'N', 'N', m, n, k,
                           alpha,     ZC.LockedBuffer(),    ZC.LDim(),
                                      SDB.D.LockedBuffer(), SDB.D.LDim(),
-                          (Scalar)0, C._D.Buffer(),        C._D.LDim() );
+                          Scalar(0), C._D.Buffer(),        C._D.LDim() );
                         ZC.Clear();
                         C._ZMap.Erase( key );
                     }
                     else
-                        hmat_tools::Scale( (Scalar)0, C._D );
+                        hmat_tools::Scale( Scalar(0), C._D );
                     C._storedDenseUpdate = true;
                 }
             }
@@ -5492,7 +5382,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeC
                 ( 'N', 'N', m, n, k,
                   alpha,     ZC.LockedBuffer(),    ZC.LDim(),
                              SDB.D.LockedBuffer(), SDB.D.LDim(),
-                  (Scalar)1, D.Buffer(),           D.LDim() );
+                  Scalar(1), D.Buffer(),           D.LDim() );
                 ZC.Clear();
                 C._ZMap.Erase( key );
             }
@@ -5544,7 +5434,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeC
                         ( 'N', 'N', m, n, k,
                           alpha,     ZC.LockedBuffer(),    ZC.LDim(),
                                      SDB.D.LockedBuffer(), SDB.D.LDim(),
-                          (Scalar)1, C._D.Buffer(),        C._D.LDim() );
+                          Scalar(1), C._D.Buffer(),        C._D.LDim() );
                         ZC.Clear();
                         C._ZMap.Erase( key );
                     }
@@ -5559,12 +5449,12 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeC
                         ( 'N', 'N', m, n, k,
                           alpha,     ZC.LockedBuffer(),    ZC.LDim(),
                                      SDB.D.LockedBuffer(), SDB.D.LDim(),
-                          (Scalar)0, C._D.Buffer(),        C._D.LDim() );
+                          Scalar(0), C._D.Buffer(),        C._D.LDim() );
                         ZC.Clear();
                         C._ZMap.Erase( key );
                     }
                     else
-                        hmat_tools::Scale( (Scalar)0, C._D );
+                        hmat_tools::Scale( Scalar(0), C._D );
                     C._storedDenseUpdate = true;
                 }
             }
@@ -5576,7 +5466,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeC
                 ( 'N', 'N', m, n, k,
                   alpha,     ZC.LockedBuffer(),    ZC.LDim(),
                              SDB.D.LockedBuffer(), SDB.D.LDim(),
-                  (Scalar)1, D.Buffer(),           D.LDim() );
+                  Scalar(1), D.Buffer(),           D.LDim() );
                 ZC.Clear();
                 C._ZMap.Erase( key );
             }
@@ -5605,15 +5495,15 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeC
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeCCleanup
+DistQuasi2dHMat<Scalar>::MultiplyHMatMainPostcomputeCCleanup
 ( int startLevel, int endLevel )
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatMainPostcomputeCCleanup");
 #endif
-    DistQuasi2dHMat<Scalar,Conjugated>& C = *this;
+    DistQuasi2dHMat<Scalar>& C = *this;
     C._mainContextMap.Clear();
     C._ZMap.Clear();
 
@@ -5644,3 +5534,4 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatMainPostcomputeCCleanup
 #endif
 }
 
+} // namespace dmhm

@@ -1,25 +1,14 @@
 /*
-   Distributed-Memory Hierarchical Matrices (DMHM): a prototype implementation
-   of distributed-memory H-matrix arithmetic. 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   The University of Texas at Austin, and Stanford University
 
-   Copyright (C) 2011 Jack Poulson, Lexing Ying, and
-   The University of Texas at Austin
-
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
+   under the GPLv3 License, which can be found in the LICENSE file in the root
+   directory, or at http://opensource.org/licenses/GPL-3.0
 */
-#ifndef DMHM_QUASI2D_HMAT_HPP
-#define DMHM_QUASI2D_HMAT_HPP 1
+#pragma once
+#ifndef DMHM_QUASI2DHMAT_HPP
+#define DMHM_QUASI2DHMAT_HPP 1
 
 #include "dmhm/building_blocks/abstract_hmat.hpp"
 #include "dmhm/hmat_tools.hpp"
@@ -27,130 +16,14 @@
 namespace dmhm {
 
 // Forward declare friend classes
-template<typename Scalar,bool Conjugated> class DistQuasi2dHMat;
+template<typename Scalar> class DistQuasi2dHMat;
 
-template<typename Scalar,bool Conjugated=true>
+template<typename Scalar>
 class Quasi2dHMat : public AbstractHMat<Scalar>
 {
-    friend class DistQuasi2dHMat<Scalar,Conjugated>;
-private:
-    /*
-     * Private static member functions
-     */
-    static void BuildMapOnQuadrant
-    ( int* map, int& index, int level, int numLevels,
-      int xSize, int ySize, int zSize, int thisXSize, int thisYSize );
-
-    /*
-     * Private data structures
-     */
-    struct Node
-    {
-        std::vector<Quasi2dHMat*> children;
-        int xSourceSizes[2];
-        int ySourceSizes[2];
-        int sourceSizes[4];
-        int xTargetSizes[2];
-        int yTargetSizes[2];
-        int targetSizes[4];
-        Node
-        ( int xSizeSource, int xSizeTarget,
-          int ySizeSource, int ySizeTarget,
-          int zSize );
-        ~Node();
-        Quasi2dHMat& Child( int i, int j );
-        const Quasi2dHMat& Child( int i, int j ) const;
-    };
-    Node* NewNode() const;
-
-    struct NodeSymmetric
-    {
-        std::vector<Quasi2dHMat*> children;
-        int xSizes[2];
-        int ySizes[2];
-        int sizes[4];
-        NodeSymmetric( int xSize, int ySize, int zSize );
-        ~NodeSymmetric();
-        Quasi2dHMat& Child( int i, int j );
-        const Quasi2dHMat& Child( int i, int j ) const;
-    };
-    NodeSymmetric* NewNodeSymmetric() const;
-
-    enum BlockType 
-    { 
-        NODE, 
-        NODE_SYMMETRIC, 
-        LOW_RANK, 
-        DENSE 
-    };
-
-    struct Block
-    {
-        BlockType type;
-        union Data
-        {
-            Node* N;
-            NodeSymmetric* NS;
-            LowRank<Scalar,Conjugated>* F;
-            Dense<Scalar>* D;
-            Data() { std::memset( this, 0, sizeof(Data) ); }
-        } data;
-        Block();
-        ~Block();
-        void Clear();
-    };
-
-    /*
-     * Private member data
-     */
-    int _numLevels;
-    int _maxRank;
-    int _sourceOffset, _targetOffset;
-    bool _symmetric;
-    bool _stronglyAdmissible;
-
-    int _xSizeSource, _xSizeTarget;
-    int _ySizeSource, _ySizeTarget;
-    int _zSize;
-    int _xSource, _xTarget;
-    int _ySource, _yTarget;
-    Block _block;
-
-    /*
-     * Private non-static member functions
-     */
-    void PackedSizeRecursion( std::size_t& packedSize ) const;
-    void PackRecursion( byte*& head ) const;
-
-    bool Admissible() const;
-    bool Admissible( int xSource, int xTarget, int ySource, int yTarget ) const;
-
-    void ImportLowRank
-    ( const LowRank<Scalar,Conjugated>& F );
-    
-    void UpdateWithLowRank
-    ( Scalar alpha,
-      const LowRank<Scalar,Conjugated>& F );
-
-    void ImportSparse
-    ( const Sparse<Scalar>& S, int iOffset=0, int jOffset=0 );
-
-    void UnpackRecursion( const byte*& head );
-
-   // y += alpha A x
-    void UpdateVectorWithNodeSymmetric
-    ( Scalar alpha, const Vector<Scalar>& x, Vector<Scalar>& y ) const;
-
-    // C += alpha A B
-    void UpdateWithNodeSymmetric
-    ( Scalar alpha, const Dense<Scalar>& B, Dense<Scalar>& C ) const;
-
-    void LatexWriteStructureRecursion
-    ( std::ofstream& file, int globalHeight ) const;
-
-    void MScriptWriteStructureRecursion( std::ofstream& file ) const;
-
 public:    
+    typedef BASE(Scalar) Real;
+    friend class DistQuasi2dHMat<Scalar>;
 
     /*
      * Public static member functions
@@ -177,7 +50,7 @@ public:
     ( int numLevels, int maxRank, bool symmetric, bool stronglyAdmissible,
       int xSize, int ySize, int zSize );
     Quasi2dHMat
-    ( const LowRank<Scalar,Conjugated>& F,
+    ( const LowRank<Scalar>& F,
       int numLevels, int maxRank, bool stronglyAdmissible,
       int xSize, int ySize, int zSize );
     Quasi2dHMat
@@ -195,7 +68,7 @@ public:
       int ySource, int yTarget,
       int sourceOffset, int targetOffset );
     Quasi2dHMat
-    ( const LowRank<Scalar,Conjugated>& F,
+    ( const LowRank<Scalar>& F,
       int numLevels, int maxRank, bool stronglyAdmissible,
       int xSizeSource, int xSizeTarget,
       int ySizeSource, int ySizeTarget,
@@ -346,19 +219,19 @@ public:
     //------------------------------------------------------------------------//
 
     // A := B
-    void CopyFrom( const Quasi2dHMat<Scalar,Conjugated>& B );
+    void CopyFrom( const Quasi2dHMat<Scalar>& B );
     
     // A := conj(A)
     void Conjugate();
 
     // A := conj(B)
-    void ConjugateFrom( const Quasi2dHMat<Scalar,Conjugated>& B );
+    void ConjugateFrom( const Quasi2dHMat<Scalar>& B );
 
     // A := B^T
-    void TransposeFrom( const Quasi2dHMat<Scalar,Conjugated>& B );
+    void TransposeFrom( const Quasi2dHMat<Scalar>& B );
 
     // A := B^H
-    void AdjointFrom( const Quasi2dHMat<Scalar,Conjugated>& B );
+    void AdjointFrom( const Quasi2dHMat<Scalar>& B );
 
     // A := alpha A
     void Scale( Scalar alpha );
@@ -370,17 +243,17 @@ public:
     void AddConstantToDiagonal( Scalar alpha );
 
     // A :~= alpha B + A
-    void UpdateWith( Scalar alpha, const Quasi2dHMat<Scalar,Conjugated>& B );
+    void UpdateWith( Scalar alpha, const Quasi2dHMat<Scalar>& B );
 
     // C :~= alpha A B
     void Multiply
-    ( Scalar alpha, const Quasi2dHMat<Scalar,Conjugated>& B, 
-                          Quasi2dHMat<Scalar,Conjugated>& C ) const;
+    ( Scalar alpha, const Quasi2dHMat<Scalar>& B, 
+                          Quasi2dHMat<Scalar>& C ) const;
 
     // C :~= alpha A B + beta C
     void Multiply
-    ( Scalar alpha, const Quasi2dHMat<Scalar,Conjugated>& B, 
-      Scalar beta,        Quasi2dHMat<Scalar,Conjugated>& C ) const;
+    ( Scalar alpha, const Quasi2dHMat<Scalar>& B, 
+      Scalar beta,        Quasi2dHMat<Scalar>& C ) const;
 
     // A :~= inv(A) using recursive Schur complements
     void DirectInvert();
@@ -395,79 +268,170 @@ public:
     // with probability at least 1-10^{-confidence}.
     //
     // The values for theta and confidence are currently hardcoded.
-    void SchulzInvert
-    ( int numIterations, 
-      typename RealBase<Scalar>::type theta=1.5, 
-      typename RealBase<Scalar>::type confidence=6 );
-};
+    void SchulzInvert( int numIterations, Real theta=1.5, Real confidence=6 );
 
-} // namespace dmhm
+private:
+    /*
+     * Private static member functions
+     */
+    static void BuildMapOnQuadrant
+    ( int* map, int& index, int level, int numLevels,
+      int xSize, int ySize, int zSize, int thisXSize, int thisYSize );
+
+    /*
+     * Private data structures
+     */
+    struct Node
+    {
+        std::vector<Quasi2dHMat*> children;
+        int xSourceSizes[2];
+        int ySourceSizes[2];
+        int sourceSizes[4];
+        int xTargetSizes[2];
+        int yTargetSizes[2];
+        int targetSizes[4];
+        Node
+        ( int xSizeSource, int xSizeTarget,
+          int ySizeSource, int ySizeTarget,
+          int zSize );
+        ~Node();
+        Quasi2dHMat& Child( int i, int j );
+        const Quasi2dHMat& Child( int i, int j ) const;
+    };
+    Node* NewNode() const;
+
+    struct NodeSymmetric
+    {
+        std::vector<Quasi2dHMat*> children;
+        int xSizes[2];
+        int ySizes[2];
+        int sizes[4];
+        NodeSymmetric( int xSize, int ySize, int zSize );
+        ~NodeSymmetric();
+        Quasi2dHMat& Child( int i, int j );
+        const Quasi2dHMat& Child( int i, int j ) const;
+    };
+    NodeSymmetric* NewNodeSymmetric() const;
+
+    enum BlockType 
+    { 
+        NODE, 
+        NODE_SYMMETRIC, 
+        LOW_RANK, 
+        DENSE 
+    };
+
+    struct Block
+    {
+        BlockType type;
+        union Data
+        {
+            Node* N;
+            NodeSymmetric* NS;
+            LowRank<Scalar>* F;
+            Dense<Scalar>* D;
+            Data() { std::memset( this, 0, sizeof(Data) ); }
+        } data;
+        Block();
+        ~Block();
+        void Clear();
+    };
+
+    /*
+     * Private member data
+     */
+    int _numLevels;
+    int _maxRank;
+    int _sourceOffset, _targetOffset;
+    bool _symmetric;
+    bool _stronglyAdmissible;
+
+    int _xSizeSource, _xSizeTarget;
+    int _ySizeSource, _ySizeTarget;
+    int _zSize;
+    int _xSource, _xTarget;
+    int _ySource, _yTarget;
+    Block _block;
+
+    /*
+     * Private non-static member functions
+     */
+    void PackedSizeRecursion( std::size_t& packedSize ) const;
+    void PackRecursion( byte*& head ) const;
+
+    bool Admissible() const;
+    bool Admissible( int xSource, int xTarget, int ySource, int yTarget ) const;
+
+    void ImportLowRank( const LowRank<Scalar>& F );
+    
+    void UpdateWithLowRank( Scalar alpha, const LowRank<Scalar>& F );
+
+    void ImportSparse
+    ( const Sparse<Scalar>& S, int iOffset=0, int jOffset=0 );
+
+    void UnpackRecursion( const byte*& head );
+
+   // y += alpha A x
+    void UpdateVectorWithNodeSymmetric
+    ( Scalar alpha, const Vector<Scalar>& x, Vector<Scalar>& y ) const;
+
+    // C += alpha A B
+    void UpdateWithNodeSymmetric
+    ( Scalar alpha, const Dense<Scalar>& B, Dense<Scalar>& C ) const;
+
+    void LatexWriteStructureRecursion
+    ( std::ofstream& file, int globalHeight ) const;
+
+    void MScriptWriteStructureRecursion( std::ofstream& file ) const;
+};
 
 //----------------------------------------------------------------------------//
 // Inlined implementations                                                    //
 //----------------------------------------------------------------------------//
 
-namespace dmhm {
-
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 inline int
-Quasi2dHMat<Scalar,Conjugated>::Height() const
-{
-    return _xSizeTarget*_ySizeTarget*_zSize;
-}
+Quasi2dHMat<Scalar>::Height() const
+{ return _xSizeTarget*_ySizeTarget*_zSize; }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 inline int
-Quasi2dHMat<Scalar,Conjugated>::Width() const
-{
-    return _xSizeSource*_ySizeSource*_zSize;
-}
+Quasi2dHMat<Scalar>::Width() const
+{ return _xSizeSource*_ySizeSource*_zSize; }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 inline int
-Quasi2dHMat<Scalar,Conjugated>::NumLevels() const
-{
-    return _numLevels;
-}
+Quasi2dHMat<Scalar>::NumLevels() const
+{ return _numLevels; }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 inline int
-Quasi2dHMat<Scalar,Conjugated>::MaxRank() const
-{
-    return _maxRank;
-}
+Quasi2dHMat<Scalar>::MaxRank() const
+{ return _maxRank; }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 inline int
-Quasi2dHMat<Scalar,Conjugated>::SourceOffset() const
-{
-    return _sourceOffset;
-}
+Quasi2dHMat<Scalar>::SourceOffset() const
+{ return _sourceOffset; }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 inline int
-Quasi2dHMat<Scalar,Conjugated>::TargetOffset() const
-{
-    return _targetOffset;
-}
+Quasi2dHMat<Scalar>::TargetOffset() const
+{ return _targetOffset; }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 inline bool
-Quasi2dHMat<Scalar,Conjugated>::Symmetric() const
-{
-    return _symmetric;
-}
+Quasi2dHMat<Scalar>::Symmetric() const
+{ return _symmetric; }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 inline bool
-Quasi2dHMat<Scalar,Conjugated>::StronglyAdmissible() const
-{
-    return _stronglyAdmissible;
-}
+Quasi2dHMat<Scalar>::StronglyAdmissible() const
+{ return _stronglyAdmissible; }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 inline
-Quasi2dHMat<Scalar,Conjugated>::Node::Node
+Quasi2dHMat<Scalar>::Node::Node
 ( int xSizeSource, int xSizeTarget,
   int ySizeSource, int ySizeTarget,
   int zSize )
@@ -494,18 +458,18 @@ Quasi2dHMat<Scalar,Conjugated>::Node::Node
     targetSizes[3] = xTargetSizes[1]*yTargetSizes[1]*zSize;
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 inline
-Quasi2dHMat<Scalar,Conjugated>::Node::~Node()
+Quasi2dHMat<Scalar>::Node::~Node()
 {
     for( unsigned i=0; i<children.size(); ++i )
         delete children[i];
     children.clear();
 }
 
-template<typename Scalar,bool Conjugated>
-inline Quasi2dHMat<Scalar,Conjugated>& 
-Quasi2dHMat<Scalar,Conjugated>::Node::Child( int i, int j )
+template<typename Scalar>
+inline Quasi2dHMat<Scalar>& 
+Quasi2dHMat<Scalar>::Node::Child( int i, int j )
 { 
 #ifndef RELEASE
     PushCallStack("Quasi2dHMat::Node::Child");
@@ -520,9 +484,9 @@ Quasi2dHMat<Scalar,Conjugated>::Node::Child( int i, int j )
     return *children[j+4*i]; 
 }
 
-template<typename Scalar,bool Conjugated>
-inline const Quasi2dHMat<Scalar,Conjugated>& 
-Quasi2dHMat<Scalar,Conjugated>::Node::Child( int i, int j ) const
+template<typename Scalar>
+inline const Quasi2dHMat<Scalar>& 
+Quasi2dHMat<Scalar>::Node::Child( int i, int j ) const
 { 
 #ifndef RELEASE
     PushCallStack("Quasi2dHMat::Node::Child");
@@ -537,18 +501,18 @@ Quasi2dHMat<Scalar,Conjugated>::Node::Child( int i, int j ) const
     return *children[j+4*i]; 
 }
 
-template<typename Scalar,bool Conjugated>
-inline typename Quasi2dHMat<Scalar,Conjugated>::Node*
-Quasi2dHMat<Scalar,Conjugated>::NewNode() const
+template<typename Scalar>
+inline typename Quasi2dHMat<Scalar>::Node*
+Quasi2dHMat<Scalar>::NewNode() const
 {
     return 
-        new typename Quasi2dHMat<Scalar,Conjugated>::Node
+        new typename Quasi2dHMat<Scalar>::Node
         ( _xSizeSource, _xSizeTarget, _ySizeSource, _ySizeTarget, _zSize );
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 inline
-Quasi2dHMat<Scalar,Conjugated>::NodeSymmetric::NodeSymmetric
+Quasi2dHMat<Scalar>::NodeSymmetric::NodeSymmetric
 ( int xSize, int ySize, int zSize )
 : children(10)
 {
@@ -563,18 +527,18 @@ Quasi2dHMat<Scalar,Conjugated>::NodeSymmetric::NodeSymmetric
     sizes[3] = xSizes[1]*ySizes[1]*zSize;
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 inline
-Quasi2dHMat<Scalar,Conjugated>::NodeSymmetric::~NodeSymmetric()
+Quasi2dHMat<Scalar>::NodeSymmetric::~NodeSymmetric()
 {
     for( unsigned i=0; i<children.size(); ++i )
         delete children[i];
     children.clear();
 }
 
-template<typename Scalar,bool Conjugated>
-inline Quasi2dHMat<Scalar,Conjugated>& 
-Quasi2dHMat<Scalar,Conjugated>::NodeSymmetric::Child( int i, int j )
+template<typename Scalar>
+inline Quasi2dHMat<Scalar>& 
+Quasi2dHMat<Scalar>::NodeSymmetric::Child( int i, int j )
 { 
 #ifndef RELEASE
     PushCallStack("Quasi2dHMat::NodeSymmetric::Child");
@@ -591,9 +555,9 @@ Quasi2dHMat<Scalar,Conjugated>::NodeSymmetric::Child( int i, int j )
     return *children[(i*(i+1))/2 + j]; 
 }
 
-template<typename Scalar,bool Conjugated>
-inline const Quasi2dHMat<Scalar,Conjugated>& 
-Quasi2dHMat<Scalar,Conjugated>::NodeSymmetric::Child( int i, int j ) const
+template<typename Scalar>
+inline const Quasi2dHMat<Scalar>& 
+Quasi2dHMat<Scalar>::NodeSymmetric::Child( int i, int j ) const
 {
 #ifndef RELEASE
     PushCallStack("Quasi2dHMat::NodeSymmetric::Child");
@@ -610,31 +574,29 @@ Quasi2dHMat<Scalar,Conjugated>::NodeSymmetric::Child( int i, int j ) const
     return *children[(i*(i+1))/2 + j];
 }
 
-template<typename Scalar,bool Conjugated>
-inline typename Quasi2dHMat<Scalar,Conjugated>::NodeSymmetric*
-Quasi2dHMat<Scalar,Conjugated>::NewNodeSymmetric() const
+template<typename Scalar>
+inline typename Quasi2dHMat<Scalar>::NodeSymmetric*
+Quasi2dHMat<Scalar>::NewNodeSymmetric() const
 {
     return 
-        new typename Quasi2dHMat<Scalar,Conjugated>::NodeSymmetric
+        new typename Quasi2dHMat<Scalar>::NodeSymmetric
         ( _xSizeSource, _ySizeSource, _zSize );
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 inline
-Quasi2dHMat<Scalar,Conjugated>::Block::Block()
+Quasi2dHMat<Scalar>::Block::Block()
 : type(NODE), data() 
 { }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 inline
-Quasi2dHMat<Scalar,Conjugated>::Block::~Block()
-{
-    Clear();
-}
+Quasi2dHMat<Scalar>::Block::~Block()
+{ Clear(); }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 inline void
-Quasi2dHMat<Scalar,Conjugated>::Block::Clear()
+Quasi2dHMat<Scalar>::Block::Clear()
 {
     switch( type )
     {
@@ -649,4 +611,4 @@ Quasi2dHMat<Scalar,Conjugated>::Block::Clear()
 
 } // namespace dmhm
 
-#endif // DMHM_QUASI2D_HMAT_HPP
+#endif // ifndef DMHM_QUASI2DHMAT_HPP

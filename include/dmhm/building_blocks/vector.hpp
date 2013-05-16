@@ -1,23 +1,12 @@
 /*
-   Distributed-Memory Hierarchical Matrices (DMHM): a prototype implementation
-   of distributed-memory H-matrix arithmetic. 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   The University of Texas at Austin, and Stanford University
 
-   Copyright (C) 2011 Jack Poulson, Lexing Ying, and
-   The University of Texas at Austin
-
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
+   under the GPLv3 License, which can be found in the LICENSE file in the root
+   directory, or at http://opensource.org/licenses/GPL-3.0
 */
+#pragma once
 #ifndef DMHM_VECTOR_HPP
 #define DMHM_VECTOR_HPP 1
 
@@ -66,64 +55,58 @@ public:
     void LockedView( const Vector<Scalar>& x, int i, int height );
 };
 
-} // namespace dmhm 
-
 //----------------------------------------------------------------------------//
 // Implementation begins here                                                 //
 //----------------------------------------------------------------------------//
 
 template<typename Scalar>
 inline
-dmhm::Vector<Scalar>::Vector()
+Vector<Scalar>::Vector()
 : _height(0), _viewing(false), _lockedView(false),
   _memory(), _buffer(0), _lockedBuffer(0)
 { }
 
 template<typename Scalar>
 inline
-dmhm::Vector<Scalar>::Vector( int height )
+Vector<Scalar>::Vector( int height )
 : _height(height), _viewing(false), _lockedView(false),
   _memory(height), _buffer(&_memory[0]), _lockedBuffer(0)
 { }
 
 template<typename Scalar>
 inline
-dmhm::Vector<Scalar>::Vector( int height, Scalar* buffer )
+Vector<Scalar>::Vector( int height, Scalar* buffer )
 : _height(height), _viewing(true), _lockedView(false),
   _memory(), _buffer(buffer), _lockedBuffer(0)
 { }
 
 template<typename Scalar>
 inline
-dmhm::Vector<Scalar>::Vector( int height, const Scalar* lockedBuffer )
+Vector<Scalar>::Vector( int height, const Scalar* lockedBuffer )
 : _height(height), _viewing(true), _lockedView(true),
   _memory(), _buffer(0), _lockedBuffer(lockedBuffer)
 { }
 
 template<typename Scalar>
 inline
-dmhm::Vector<Scalar>::Vector( const Vector<Scalar>& x )
+Vector<Scalar>::Vector( const Vector<Scalar>& x )
 : _height(x.Height()), _viewing(false), _lockedView(false),
   _memory(x.Height()), _buffer(&_memory[0]), _lockedBuffer(0)
-{
-    std::memcpy( _buffer, x.LockedBuffer(), x.Height()*sizeof(Scalar) );
-}
+{ std::memcpy( _buffer, x.LockedBuffer(), x.Height()*sizeof(Scalar) ); }
 
 template<typename Scalar>
 inline
-dmhm::Vector<Scalar>::~Vector()
+Vector<Scalar>::~Vector()
 { }
 
 template<typename Scalar>
 inline int
-dmhm::Vector<Scalar>::Height() const
-{ 
-    return _height;
-}
+Vector<Scalar>::Height() const
+{ return _height; }
 
 template<typename Scalar>
 inline void
-dmhm::Vector<Scalar>::Resize( int height )
+Vector<Scalar>::Resize( int height )
 {
 #ifndef RELEASE
     PushCallStack("Vector::Resize");
@@ -140,7 +123,7 @@ dmhm::Vector<Scalar>::Resize( int height )
 
 template<typename Scalar>
 inline void
-dmhm::Vector<Scalar>::Clear()
+Vector<Scalar>::Clear()
 {
 #ifndef RELEASE
     PushCallStack("Vector::Clear");
@@ -158,7 +141,7 @@ dmhm::Vector<Scalar>::Clear()
 
 template<typename Scalar>
 inline void
-dmhm::Vector<Scalar>::Set( int i, Scalar value )
+Vector<Scalar>::Set( int i, Scalar value )
 {
 #ifndef RELEASE
     PushCallStack("Vector::Set");
@@ -175,7 +158,7 @@ dmhm::Vector<Scalar>::Set( int i, Scalar value )
 
 template<typename Scalar>
 inline Scalar
-dmhm::Vector<Scalar>::Get( int i ) const
+Vector<Scalar>::Get( int i ) const
 {
 #ifndef RELEASE
     PushCallStack("Vector::Get");
@@ -193,7 +176,7 @@ dmhm::Vector<Scalar>::Get( int i ) const
 
 template<typename Scalar>
 inline void
-dmhm::Vector<Scalar>::Print( const std::string tag ) const
+Vector<Scalar>::Print( const std::string tag ) const
 {
 #ifndef RELEASE
     PushCallStack("Vector::Print");
@@ -217,7 +200,7 @@ dmhm::Vector<Scalar>::Print( const std::string tag ) const
 
 template<typename Scalar>
 inline Scalar*
-dmhm::Vector<Scalar>::Buffer( int i )
+Vector<Scalar>::Buffer( int i )
 {
 #ifndef RELEASE
     PushCallStack("Vector::Buffer");
@@ -234,7 +217,7 @@ dmhm::Vector<Scalar>::Buffer( int i )
 
 template<typename Scalar>
 inline const Scalar*
-dmhm::Vector<Scalar>::LockedBuffer( int i ) const
+Vector<Scalar>::LockedBuffer( int i ) const
 {
 #ifndef RELEASE
     PushCallStack("Vector::LockedBuffer");
@@ -252,7 +235,7 @@ dmhm::Vector<Scalar>::LockedBuffer( int i ) const
 
 template<typename Scalar>
 inline void
-dmhm::Vector<Scalar>::View( Vector<Scalar>& x )
+Vector<Scalar>::View( Vector<Scalar>& x )
 {
 #ifndef RELEASE
     PushCallStack("Vector::View");
@@ -268,7 +251,7 @@ dmhm::Vector<Scalar>::View( Vector<Scalar>& x )
 
 template<typename Scalar>
 inline void
-dmhm::Vector<Scalar>::View( Vector<Scalar>& x, int i, int height )
+Vector<Scalar>::View( Vector<Scalar>& x, int i, int height )
 {
 #ifndef RELEASE
     PushCallStack("Vector::View");
@@ -288,7 +271,7 @@ dmhm::Vector<Scalar>::View( Vector<Scalar>& x, int i, int height )
 
 template<typename Scalar>
 inline void
-dmhm::Vector<Scalar>::LockedView( const Vector<Scalar>& x )
+Vector<Scalar>::LockedView( const Vector<Scalar>& x )
 {
 #ifndef RELEASE
     PushCallStack("Vector::LockedView");
@@ -304,7 +287,7 @@ dmhm::Vector<Scalar>::LockedView( const Vector<Scalar>& x )
 
 template<typename Scalar>
 inline void
-dmhm::Vector<Scalar>::LockedView( const Vector<Scalar>& x, int i, int height )
+Vector<Scalar>::LockedView( const Vector<Scalar>& x, int i, int height )
 {
 #ifndef RELEASE
     PushCallStack("Vector::LockedView");
@@ -322,4 +305,6 @@ dmhm::Vector<Scalar>::LockedView( const Vector<Scalar>& x, int i, int height )
 #endif
 }
 
-#endif // DMHM_VECTOR_HPP
+} // namespace dmhm
+
+#endif // ifndef DMHM_VECTOR_HPP

@@ -1,34 +1,23 @@
 /*
-   Distributed-Memory Hierarchical Matrices (DMHM): a prototype implementation
-   of distributed-memory H-matrix arithmetic. 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   The University of Texas at Austin, and Stanford University
 
-   Copyright (C) 2011 Jack Poulson, Lexing Ying, and
-   The University of Texas at Austin
-
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
+   under the GPLv3 License, which can be found in the LICENSE file in the root
+   directory, or at http://opensource.org/licenses/GPL-3.0
 */
 #include "dmhm.hpp"
 
-template<typename Scalar,bool Conjugated>
+namespace dmhm {
+
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::CopyFrom
-( const DistQuasi2dHMat<Scalar,Conjugated>& B )
+DistQuasi2dHMat<Scalar>::CopyFrom( const DistQuasi2dHMat<Scalar>& B )
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::CopyFrom");
 #endif
-    DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    DistQuasi2dHMat<Scalar>& A = *this;
 
     A._numLevels = B._numLevels;
     A._maxRank = B._maxRank;
@@ -67,7 +56,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::CopyFrom
         Node& nodeA = *A._block.data.N;
         const Node& nodeB = *B._block.data.N;
         for( int j=0; j<16; ++j )
-            nodeA.children[j] = new DistQuasi2dHMat<Scalar,Conjugated>;
+            nodeA.children[j] = new DistQuasi2dHMat<Scalar>;
 
         for( int t=0; t<4; ++t )
             for( int s=0; s<4; ++s )
@@ -99,9 +88,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::CopyFrom
     }
     case LOW_RANK:
     {
-        A._block.data.F = new LowRank<Scalar,Conjugated>;
-        LowRank<Scalar,Conjugated>& FA = *A._block.data.F;
-        const LowRank<Scalar,Conjugated>& FB = *B._block.data.F;
+        A._block.data.F = new LowRank<Scalar>;
+        LowRank<Scalar>& FA = *A._block.data.F;
+        const LowRank<Scalar>& FB = *B._block.data.F;
 
         hmat_tools::Copy( FB, FA );
         break;
@@ -123,3 +112,4 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::CopyFrom
 #endif
 }
 
+} // namespace dmhm

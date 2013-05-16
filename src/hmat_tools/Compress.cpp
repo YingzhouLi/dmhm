@@ -1,29 +1,19 @@
 /*
-   Distributed-Memory Hierarchical Matrices (DMHM): a prototype implementation
-   of distributed-memory H-matrix arithmetic. 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   The University of Texas at Austin, and Stanford University
 
-   Copyright (C) 2011 Jack Poulson, Lexing Ying, and
-   The University of Texas at Austin
-
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
+   under the GPLv3 License, which can be found in the LICENSE file in the root
+   directory, or at http://opensource.org/licenses/GPL-3.0
 */
 #include "dmhm.hpp"
 
+namespace dmhm {
+namespace hmat_tools {
+
 // Compress a dense matrix into a low-rank matrix with specified rank
-template<typename Real,bool Conjugated>
-void dmhm::hmat_tools::Compress
-( int maxRank, Dense<Real>& D, LowRank<Real,Conjugated>& F )
+template<typename Real>
+void Compress( int maxRank, Dense<Real>& D, LowRank<Real>& F )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::Compress (Dense,LowRank)");
@@ -65,11 +55,11 @@ void dmhm::hmat_tools::Compress
 #endif
 }
 
-template<typename Real,bool Conjugated>
-void dmhm::hmat_tools::Compress
+template<typename Real>
+void Compress
 ( int maxRank, 
-  Dense< std::complex<Real> >& D, 
-  LowRank<std::complex<Real>,Conjugated>& F )
+  Dense<std::complex<Real> >& D, 
+  LowRank<std::complex<Real> >& F )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::Compress (Dense,LowRank)");
@@ -99,31 +89,15 @@ void dmhm::hmat_tools::Compress
     VH.Resize( r, n );
 
     F.V.Resize( n, r );
-    if( Conjugated )
+    // Put (Sigma V^H)^T = conj(V) Sigma into F.V
+    const int VHLDim = VH.LDim();
+    for( int j=0; j<r; ++j )
     {
-        // Put (Sigma V^H)^H = V Sigma into F.V
-        const int VHLDim = VH.LDim();
-        for( int j=0; j<r; ++j )
-        {
-            const Real sigma = s.Get(j);
-            Scalar* RESTRICT VCol = F.V.Buffer(0,j);
-            const Scalar* RESTRICT VHRow = VH.LockedBuffer(j,0);
-            for( int i=0; i<n; ++i )
-                VCol[i] = sigma*Conj(VHRow[i*VHLDim]);
-        }
-    }
-    else
-    {
-        // Put (Sigma V^H)^T = conj(V) Sigma into F.V
-        const int VHLDim = VH.LDim();
-        for( int j=0; j<r; ++j )
-        {
-            const Real sigma = s.Get(j);
-            Scalar* RESTRICT VCol = F.V.Buffer(0,j);
-            const Scalar* RESTRICT VHRow = VH.LockedBuffer(j,0);
-            for( int i=0; i<n; ++i )
-                VCol[i] = sigma*VHRow[i*VHLDim];
-        }
+        const Real sigma = s.Get(j);
+        Scalar* RESTRICT VCol = F.V.Buffer(0,j);
+        const Scalar* RESTRICT VHRow = VH.LockedBuffer(j,0);
+        for( int i=0; i<n; ++i )
+            VCol[i] = sigma*VHRow[i*VHLDim];
     }
 #ifndef RELEASE
     PopCallStack();
@@ -133,9 +107,8 @@ void dmhm::hmat_tools::Compress
 // A :~= A
 //
 // Approximate A with a given maximum rank.
-template<typename Real,bool Conjugated>
-void dmhm::hmat_tools::Compress
-( int maxRank, LowRank<Real,Conjugated>& A )
+template<typename Real>
+void Compress( int maxRank, LowRank<Real>& A )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::Compress (LowRank)");
@@ -271,11 +244,9 @@ void dmhm::hmat_tools::Compress
 
 // A :~= A
 //
-// Approximate A with a given maximum rank. This implementation handles both 
-// cases, A = U V^T (Conjugated=false), and A = U V^H (Conjugated=true)
-template<typename Real,bool Conjugated>
-void dmhm::hmat_tools::Compress
-( int maxRank, LowRank<std::complex<Real>,Conjugated>& A )
+// Approximate A with a given maximum rank. 
+template<typename Real>
+void Compress( int maxRank, LowRank<std::complex<Real> >& A )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::Compress (LowRank)");
@@ -339,7 +310,7 @@ void dmhm::hmat_tools::Compress
 
     // Update W := R1 R2^[T,H].
     // We are unfortunately performing 2x as many flops as required.
-    const char option = ( Conjugated ? 'C' : 'T' );
+    const char option = 'T';
     blas::Trmm
     ( 'R', 'U', option, 'N', r, r, 
       1, A.V.LockedBuffer(), A.V.LDim(), &buffer[0], r );
@@ -373,7 +344,7 @@ void dmhm::hmat_tools::Compress
     // Logically shrink A.U
     A.U.Resize( m, roundedRank );
     // Zero the shrunk buffer
-    Scale( (Scalar)0, A.U );
+    Scale( Scalar(0), A.U );
     // Copy the scaled U from the SVD of R1 R2^[T,H] into the top of the matrix
     for( int j=0; j<roundedRank; ++j )
     {
@@ -397,28 +368,14 @@ void dmhm::hmat_tools::Compress
     // Logically shrink A.V
     A.V.Resize( n, roundedRank );
     // Zero the shrunk buffer
-    Scale( (Scalar)0, A.V );
-    if( Conjugated )
+    Scale( Scalar(0), A.V );
+    // Copy conj(V)=(V^H)^T from the SVD of R1 R2^T into the top of A.V
+    for( int j=0; j<roundedRank; ++j )
     {
-        // Copy V=(V^H)^H from the SVD of R1 R2^H into the top of A.V
-        for( int j=0; j<roundedRank; ++j )
-        {
-            Scalar* RESTRICT VCol = A.V.Buffer(0,j);
-            const Scalar* RESTRICT VHRow = &buffer[blockSize+j];
-            for( int i=0; i<r; ++i )
-                VCol[i] = Conj( VHRow[i*r] );
-        }
-    }
-    else
-    {
-        // Copy conj(V)=(V^H)^T from the SVD of R1 R2^T into the top of A.V
-        for( int j=0; j<roundedRank; ++j )
-        {
-            Scalar* RESTRICT VColConj = A.V.Buffer(0,j);
-            const Scalar* RESTRICT VHRow = &buffer[blockSize+j];
-            for( int i=0; i<r; ++i )
-                VColConj[i] = VHRow[i*r];
-        }
+        Scalar* RESTRICT VColConj = A.V.Buffer(0,j);
+        const Scalar* RESTRICT VHRow = &buffer[blockSize+j];
+        for( int i=0; i<r; ++i )
+            VColConj[i] = VHRow[i*r];
     }
     // Hit the matrix from the left with Q2 from the QR decomp of the orig A.V
     lapack::ApplyQ
@@ -430,44 +387,21 @@ void dmhm::hmat_tools::Compress
 #endif
 }
 
-template void dmhm::hmat_tools::Compress
-( int maxRank, Dense<float>& D, LowRank<float,false>& F );
-template void dmhm::hmat_tools::Compress
-( int maxRank, Dense<float>& D, LowRank<float,true>& F );
-template void dmhm::hmat_tools::Compress
-( int maxRank, Dense<double>& D, LowRank<double,false>& F );
-template void dmhm::hmat_tools::Compress
-( int maxRank, Dense<double>& D, LowRank<double,true>& F );
-template void dmhm::hmat_tools::Compress
+template void Compress( int maxRank, Dense<float>& D, LowRank<float>& F );
+template void Compress( int maxRank, Dense<double>& D, LowRank<double>& F );
+template void Compress
 ( int maxRank, 
   Dense<std::complex<float> >& D, 
-  LowRank<std::complex<float>,false>& F );
-template void dmhm::hmat_tools::Compress
-( int maxRank, 
-  Dense<std::complex<float> >& D, 
-  LowRank<std::complex<float>,true>& F );
-template void dmhm::hmat_tools::Compress
+  LowRank<std::complex<float> >& F );
+template void Compress
 ( int maxRank, 
   Dense<std::complex<double> >& D, 
-  LowRank<std::complex<double>,false>& F );
-template void dmhm::hmat_tools::Compress
-( int maxRank, 
-  Dense<std::complex<double> >& D, 
-  LowRank<std::complex<double>,true>& F );
+  LowRank<std::complex<double> >& F );
 
-template void dmhm::hmat_tools::Compress
-( int maxRank, LowRank<float,false>& A );
-template void dmhm::hmat_tools::Compress
-( int maxRank, LowRank<float,true>& A );
-template void dmhm::hmat_tools::Compress
-( int maxRank, LowRank<double,false>& A );
-template void dmhm::hmat_tools::Compress
-( int maxRank, LowRank<double,true>& A );
-template void dmhm::hmat_tools::Compress
-( int maxRank, LowRank<std::complex<float>,false>& A );
-template void dmhm::hmat_tools::Compress
-( int maxRank, LowRank<std::complex<float>,true>& A );
-template void dmhm::hmat_tools::Compress
-( int maxRank, LowRank<std::complex<double>,false>& A );
-template void dmhm::hmat_tools::Compress
-( int maxRank, LowRank<std::complex<double>,true>& A );
+template void Compress( int maxRank, LowRank<float>& A );
+template void Compress( int maxRank, LowRank<double>& A );
+template void Compress( int maxRank, LowRank<std::complex<float> >& A );
+template void Compress( int maxRank, LowRank<std::complex<double> >& A );
+
+} // namespace hmat_tools
+} // namespace dhmhm

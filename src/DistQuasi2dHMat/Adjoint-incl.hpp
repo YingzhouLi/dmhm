@@ -1,28 +1,18 @@
 /*
-   Distributed-Memory Hierarchical Matrices (DMHM): a prototype implementation
-   of distributed-memory H-matrix arithmetic. 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   The University of Texas at Austin, and Stanford University
 
-   Copyright (C) 2011 Jack Poulson, Lexing Ying, and
-   The University of Texas at Austin
-
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
+   under the GPLv3 License, which can be found in the LICENSE file in the root
+   directory, or at http://opensource.org/licenses/GPL-3.0
 */
 #include "dmhm.hpp"
 
-template<typename Scalar,bool Conjugated>
+namespace dmhm {
+
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::Adjoint()
+DistQuasi2dHMat<Scalar>::Adjoint()
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::Adjoint");
@@ -34,10 +24,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::Adjoint()
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::AdjointFrom
-( const DistQuasi2dHMat<Scalar,Conjugated>& B )
+DistQuasi2dHMat<Scalar>::AdjointFrom( const DistQuasi2dHMat<Scalar>& B )
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::AdjointFrom");
@@ -49,15 +38,14 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::AdjointFrom
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::AdjointCopy
-( const DistQuasi2dHMat<Scalar,Conjugated>& B )
+DistQuasi2dHMat<Scalar>::AdjointCopy( const DistQuasi2dHMat<Scalar>& B )
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::AdjointCopy");
 #endif
-    DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    DistQuasi2dHMat<Scalar>& A = *this;
 
     A._numLevels = B._numLevels;
     A._maxRank = B._maxRank;
@@ -96,7 +84,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::AdjointCopy
         Node& nodeA = *A._block.data.N;
         const Node& nodeB = *B._block.data.N;
         for( int j=0; j<16; ++j )
-            nodeA.children[j] = new DistQuasi2dHMat<Scalar,Conjugated>;
+            nodeA.children[j] = new DistQuasi2dHMat<Scalar>;
 
         for( int t=0; t<4; ++t )
             for( int s=0; s<4; ++s )
@@ -110,20 +98,10 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::AdjointCopy
         const DistLowRank& DFB = *B._block.data.DF;
 
         DFA.rank = DFB.rank;
-        if( Conjugated )
-        {
-            if( B._inTargetTeam )
-                hmat_tools::Copy( DFB.ULocal, DFA.VLocal );
-            if( B._inSourceTeam )
-                hmat_tools::Copy( DFB.VLocal, DFA.ULocal );
-        }
-        else
-        {
-            if( B._inTargetTeam )
-                hmat_tools::Conjugate( DFB.ULocal, DFA.VLocal );
-            if( B._inSourceTeam )
-                hmat_tools::Conjugate( DFB.VLocal, DFA.ULocal );
-        }
+        if( B._inTargetTeam )
+            hmat_tools::Conjugate( DFB.ULocal, DFA.VLocal );
+        if( B._inSourceTeam )
+            hmat_tools::Conjugate( DFB.VLocal, DFA.ULocal );
         break;
     }
     case SPLIT_LOW_RANK:
@@ -133,15 +111,12 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::AdjointCopy
         const SplitLowRank& SFB = *B._block.data.SF;
 
         SFA.rank = SFB.rank;
-        if( Conjugated )
-            hmat_tools::Copy( SFB.D, SFA.D );
-        else
-            hmat_tools::Conjugate( SFB.D, SFA.D );
+        hmat_tools::Conjugate( SFB.D, SFA.D );
         break;
     }
     case LOW_RANK:
     {
-        A._block.data.F = new LowRank<Scalar,Conjugated>;
+        A._block.data.F = new LowRank<Scalar>;
         hmat_tools::Adjoint( *B._block.data.F, *A._block.data.F );
         break;
     }
@@ -163,10 +138,9 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::AdjointCopy
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::AdjointPassData
-( const DistQuasi2dHMat<Scalar,Conjugated>& B )
+DistQuasi2dHMat<Scalar>::AdjointPassData( const DistQuasi2dHMat<Scalar>& B )
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::AdjointPassData");
@@ -239,10 +213,10 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::AdjointPassData
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void 
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::AdjointPassDataCount
-( const DistQuasi2dHMat<Scalar,Conjugated>& B,
+DistQuasi2dHMat<Scalar>::AdjointPassDataCount
+( const DistQuasi2dHMat<Scalar>& B,
   std::map<int,int>& sendSizes, std::map<int,int>& recvSizes ) const
 {
 #ifndef RELEASE
@@ -255,7 +229,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::AdjointPassDataCount
 #endif
         return;
     }
-    const DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    const DistQuasi2dHMat<Scalar>& A = *this;
 
     switch( B._block.type )
     {
@@ -288,10 +262,10 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::AdjointPassDataCount
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void 
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::AdjointPassDataPack
-( const DistQuasi2dHMat<Scalar,Conjugated>& B,
+DistQuasi2dHMat<Scalar>::AdjointPassDataPack
+( const DistQuasi2dHMat<Scalar>& B,
   std::vector<Scalar>& buffer, std::map<int,int>& offsets ) const
 {
 #ifndef RELEASE
@@ -304,7 +278,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::AdjointPassDataPack
 #endif
         return;
     }
-    const DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    const DistQuasi2dHMat<Scalar>& A = *this;
 
     switch( B._block.type )
     {
@@ -341,10 +315,10 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::AdjointPassDataPack
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void 
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::AdjointPassDataUnpack
-( const DistQuasi2dHMat<Scalar,Conjugated>& B,
+DistQuasi2dHMat<Scalar>::AdjointPassDataUnpack
+( const DistQuasi2dHMat<Scalar>& B,
   const std::vector<Scalar>& buffer, std::map<int,int>& offsets )
 {
 #ifndef RELEASE
@@ -357,7 +331,7 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::AdjointPassDataUnpack
 #endif
         return;
     }
-    DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    DistQuasi2dHMat<Scalar>& A = *this;
 
     switch( B._block.type )
     {
@@ -400,3 +374,5 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::AdjointPassDataUnpack
     PopCallStack();
 #endif
 }
+
+} // namespace dmhm

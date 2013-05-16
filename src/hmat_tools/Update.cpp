@@ -1,28 +1,19 @@
 /*
-   Distributed-Memory Hierarchical Matrices (DMHM): a prototype implementation
-   of distributed-memory H-matrix arithmetic. 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   The University of Texas at Austin, and Stanford University
 
-   Copyright (C) 2011 Jack Poulson, Lexing Ying, and
-   The University of Texas at Austin
-
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
+   under the GPLv3 License, which can be found in the LICENSE file in the root
+   directory, or at http://opensource.org/licenses/GPL-3.0
 */
 #include "dmhm.hpp"
 
+namespace dmhm {
+namespace hmat_tools {
+
 // Dense B := alpha A + beta B
 template<typename Scalar>
-void dmhm::hmat_tools::Update
+void Update
 ( Scalar alpha, const Dense<Scalar>& A, 
   Scalar beta,        Dense<Scalar>& B )
 {
@@ -65,10 +56,10 @@ void dmhm::hmat_tools::Update
 }
 
 // Low-rank B := alpha A + beta B
-template<typename Scalar,bool Conjugated>
-void dmhm::hmat_tools::Update
-( Scalar alpha, const LowRank<Scalar,Conjugated>& A, 
-  Scalar beta,        LowRank<Scalar,Conjugated>& B )
+template<typename Scalar>
+void Update
+( Scalar alpha, const LowRank<Scalar>& A, 
+  Scalar beta,        LowRank<Scalar>& B )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::Update (F := F + F)");
@@ -104,9 +95,9 @@ void dmhm::hmat_tools::Update
 }
 
 // Dense updated with low-rank, B := alpha A + beta B
-template<typename Scalar,bool Conjugated>
-void dmhm::hmat_tools::Update
-( Scalar alpha, const LowRank<Scalar,Conjugated>& A, 
+template<typename Scalar>
+void Update
+( Scalar alpha, const LowRank<Scalar>& A, 
   Scalar beta,        Dense<Scalar>& B )
 {
 #ifndef RELEASE
@@ -116,7 +107,7 @@ void dmhm::hmat_tools::Update
     if( B.Symmetric() )
         throw std::logic_error("Unsafe update of symmetric dense matrix.");
 #endif
-    const char option = ( Conjugated ? 'C' : 'T' );
+    const char option = 'T';
     blas::Gemm
     ( 'N', option, A.Height(), A.Width(), A.Rank(), 
       alpha, A.U.LockedBuffer(), A.U.LDim(), A.V.LockedBuffer(), A.V.LDim(), 
@@ -127,84 +118,46 @@ void dmhm::hmat_tools::Update
 }
 
 // Dense update B := alpha A + beta B
-template void dmhm::hmat_tools::Update
+template void Update
 ( float alpha, const Dense<float>& A,
   float beta,        Dense<float>& B );
-template void dmhm::hmat_tools::Update
+template void Update
 ( double alpha, const Dense<double>& A,
   double beta,        Dense<double>& B );
-template void dmhm::hmat_tools::Update
+template void Update
 ( std::complex<float> alpha, const Dense<std::complex<float> >& A,
   std::complex<float> beta,        Dense<std::complex<float> >& B );
-template void dmhm::hmat_tools::Update
+template void Update
 ( std::complex<double> alpha, const Dense<std::complex<double> >& A,
   std::complex<double> beta,        Dense<std::complex<double> >& B );
 
 // Low-rank update B := alpha A + beta B
-template void dmhm::hmat_tools::Update
-( float alpha, const LowRank<float,false>& A,
-  float beta,        LowRank<float,false>& B );
-template void dmhm::hmat_tools::Update
-( float alpha, const LowRank<float,true>& A,
-  float beta,        LowRank<float,true>& B );
-template void dmhm::hmat_tools::Update
-( double alpha, const LowRank<double,false>& A,
-  double beta,        LowRank<double,false>& B );
-template void dmhm::hmat_tools::Update
-( double alpha, const LowRank<double,true>& A,
-  double beta,        LowRank<double,true>& B );
-template void dmhm::hmat_tools::Update
-( std::complex<float> alpha, 
-  const LowRank<std::complex<float>,false>& A,
-  std::complex<float> beta,
-        LowRank<std::complex<float>,false>& B );
-template void dmhm::hmat_tools::Update
-( std::complex<float> alpha, 
-  const LowRank<std::complex<float>,true>& A,
-  std::complex<float> beta,
-        LowRank<std::complex<float>,true>& B );
-template void dmhm::hmat_tools::Update
-( std::complex<double> alpha, 
-  const LowRank<std::complex<double>,false>& A,
-  std::complex<double> beta, 
-        LowRank<std::complex<double>,false>& B );
-template void dmhm::hmat_tools::Update
-( std::complex<double> alpha, 
-  const LowRank<std::complex<double>,true>& A,
-  std::complex<double> beta, 
-        LowRank<std::complex<double>,true>& B );
-
+template void Update
+( float alpha, const LowRank<float>& A,
+  float beta,        LowRank<float>& B );
+template void Update
+( double alpha, const LowRank<double>& A,
+  double beta,        LowRank<double>& B );
+template void Update
+( std::complex<float> alpha, const LowRank<std::complex<float> >& A,
+  std::complex<float> beta, LowRank<std::complex<float> >& B );
+template void Update
+( std::complex<double> alpha, const LowRank<std::complex<double> >& A,
+  std::complex<double> beta, LowRank<std::complex<double> >& B );
 
 // Dense updated with low-rank, B := alpha A + beta B
-template void dmhm::hmat_tools::Update
-( float alpha, const LowRank<float,false>& A,
+template void Update
+( float alpha, const LowRank<float>& A,
   float beta,        Dense<float>& B );
-template void dmhm::hmat_tools::Update
-( float alpha, const LowRank<float,true>& A,
-  float beta,        Dense<float>& B );
-template void dmhm::hmat_tools::Update
-( double alpha, const LowRank<double,false>& A,
+template void Update
+( double alpha, const LowRank<double>& A,
   double beta,        Dense<double>& B );
-template void dmhm::hmat_tools::Update
-( double alpha, const LowRank<double,true>& A,
-  double beta,        Dense<double>& B );
-template void dmhm::hmat_tools::Update
-( std::complex<float> alpha, 
-  const LowRank<std::complex<float>,false>& A,
-  std::complex<float> beta,
-        Dense<std::complex<float> >& B );
-template void dmhm::hmat_tools::Update
-( std::complex<float> alpha, 
-  const LowRank<std::complex<float>,true>& A,
-  std::complex<float> beta,
-        Dense<std::complex<float> >& B );
-template void dmhm::hmat_tools::Update
-( std::complex<double> alpha, 
-  const LowRank<std::complex<double>,false>& A,
-  std::complex<double> beta,
-        Dense<std::complex<double> >& B );
-template void dmhm::hmat_tools::Update
-( std::complex<double> alpha, 
-  const LowRank<std::complex<double>,true>& A,
-  std::complex<double> beta,
-        Dense<std::complex<double> >& B );
+template void Update
+( std::complex<float> alpha, const LowRank<std::complex<float> >& A,
+  std::complex<float> beta, Dense<std::complex<float> >& B );
+template void Update
+( std::complex<double> alpha, const LowRank<std::complex<double> >& A,
+  std::complex<double> beta, Dense<std::complex<double> >& B );
+
+} // namespace hmat_tools
+} // namespace dmhm

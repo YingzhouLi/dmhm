@@ -1,23 +1,12 @@
 /*
-   Distributed-Memory Hierarchical Matrices (DMHM): a prototype implementation
-   of distributed-memory H-matrix arithmetic. 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   The University of Texas at Austin, and Stanford University
 
-   Copyright (C) 2011 Jack Poulson, Lexing Ying, and
-   The University of Texas at Austin
-
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
+   under the GPLv3 License, which can be found in the LICENSE file in the root
+   directory, or at http://opensource.org/licenses/GPL-3.0
 */
+#pragma once
 #ifndef DMHM_LAPACK_HPP
 #define DMHM_LAPACK_HPP 1
 
@@ -417,24 +406,16 @@ inline double MachineSafeMin()
 //----------------------------------------------------------------------------//
 
 inline float SafeNorm( float alpha, float beta ) 
-{
-    return LAPACK(slapy2)( &alpha, &beta );
-}
+{ return LAPACK(slapy2)( &alpha, &beta ); }
 
 inline double SafeNorm( double alpha, double beta )
-{
-    return LAPACK(dlapy2)( &alpha, &beta );
-}
+{ return LAPACK(dlapy2)( &alpha, &beta ); }
 
 inline float SafeNorm( float alpha, float beta, float gamma )
-{
-    return LAPACK(slapy3)( &alpha, &beta, &gamma );
-}
+{ return LAPACK(slapy3)( &alpha, &beta, &gamma ); }
 
 inline double SafeNorm( double alpha, double beta, double gamma )
-{
-    return LAPACK(dlapy3)( &alpha, &beta, &gamma );
-}
+{ return LAPACK(dlapy3)( &alpha, &beta, &gamma ); }
 
 //----------------------------------------------------------------------------//
 // Unpivoted QR                                                               //
@@ -1430,8 +1411,7 @@ inline void AdjointPseudoInverse
 // LU Factorization                                                           //
 //----------------------------------------------------------------------------//
 
-inline void LU
-( int m, int n, float* A, int lda, int* ipiv )
+inline void LU( int m, int n, float* A, int lda, int* ipiv )
 {
 #ifndef RELEASE
     PushCallStack("lapack::LU");
@@ -1451,8 +1431,7 @@ inline void LU
 #endif
 }
 
-inline void LU
-( int m, int n, double* A, int lda, int* ipiv )
+inline void LU( int m, int n, double* A, int lda, int* ipiv )
 {
 #ifndef RELEASE
     PushCallStack("lapack::LU");
@@ -1472,8 +1451,7 @@ inline void LU
 #endif
 }
 
-inline void LU
-( int m, int n, std::complex<float>* A, int lda, int* ipiv )
+inline void LU( int m, int n, std::complex<float>* A, int lda, int* ipiv )
 {
 #ifndef RELEASE
     PushCallStack("lapack::LU");
@@ -1493,8 +1471,7 @@ inline void LU
 #endif
 }
 
-inline void LU
-( int m, int n, std::complex<double>* A, int lda, int* ipiv )
+inline void LU( int m, int n, std::complex<double>* A, int lda, int* ipiv )
 {
 #ifndef RELEASE
     PushCallStack("lapack::LU");
@@ -1525,8 +1502,7 @@ inline int InvertLUWorkSize( int n )
 }
 
 inline void InvertLU
-( int n, float* A, int lda, int* ipiv, 
-  float* work, int lwork )
+( int n, float* A, int lda, int* ipiv, float* work, int lwork )
 {
 #ifndef RELEASE
     PushCallStack("lapack::InvertLU");
@@ -1547,8 +1523,7 @@ inline void InvertLU
 }
 
 inline void InvertLU
-( int n, double* A, int lda, int* ipiv, 
-  double* work, int lwork )
+( int n, double* A, int lda, int* ipiv, double* work, int lwork )
 {
 #ifndef RELEASE
     PushCallStack("lapack::InvertLU");
@@ -1720,8 +1695,7 @@ inline int InvertLDLTWorkSize( int n )
 }
 
 inline void InvertLDLT
-( char uplo, int n, float* A, int lda, int* ipiv, 
-  float* work )
+( char uplo, int n, float* A, int lda, int* ipiv, float* work )
 {
 #ifndef RELEASE
     PushCallStack("lapack::InvertLDLT");
@@ -1742,8 +1716,7 @@ inline void InvertLDLT
 }
 
 inline void InvertLDLT
-( char uplo, int n, double* A, int lda, int* ipiv, 
-  double* work )
+( char uplo, int n, double* A, int lda, int* ipiv, double* work )
 {
 #ifndef RELEASE
     PushCallStack("lapack::InvertLDLT");
@@ -1806,7 +1779,6 @@ inline void InvertLDLT
     PopCallStack();
 #endif
 }
-
 
 //----------------------------------------------------------------------------//
 // EVD                                                                        //
@@ -1940,8 +1912,7 @@ inline void EVD
 #endif
 }
 
-
 } // namespace lapack
 } // namespace dmhm 
 
-#endif // DMHM_LAPACK_HPP
+#endif // ifndef DMHM_LAPACK_HPP

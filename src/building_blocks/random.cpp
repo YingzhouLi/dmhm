@@ -1,22 +1,10 @@
 /*
-   Distributed-Memory Hierarchical Matrices (DMHM): a prototype implementation
-   of distributed-memory H-matrix arithmetic. 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   The University of Texas at Austin, and Stanford University
 
-   Copyright (C) 2011 Jack Poulson, Lexing Ying, and
-   The University of Texas at Austin
-
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
+   under the GPLv3 License, which can be found in the LICENSE file in the root
+   directory, or at http://opensource.org/licenses/GPL-3.0
 */
 #include "dmhm.hpp"
 
@@ -38,8 +26,10 @@ dmhm::ExpandedUInt64 parallelMultValue=serialMultValue,
 
 } // anonymous namespace
 
+namespace dmhm {
+
 // x := x/2
-void dmhm::Halve( ExpandedUInt64& x )
+void Halve( ExpandedUInt64& x )
 {
     x[0] >>= 1;
     x[0] |= ((x[1]&0x1) << 16);
@@ -54,8 +44,7 @@ void dmhm::Halve( ExpandedUInt64& x )
 
 // Return x^n with O(log2(n)) work. This is the "Right-to-left binary method for
 // exponentiation" from Knuth's 'Seminumerical Algorithms' volume of TAOCP.
-dmhm::ExpandedUInt64 dmhm::IntegerPowerWith64BitMod
-( ExpandedUInt64 x, ExpandedUInt64 n )
+ExpandedUInt64 IntegerPowerWith64BitMod( ExpandedUInt64 x, ExpandedUInt64 n )
 {
     ExpandedUInt64 N=n, Z=x, Y={{1U,0U,0U,0U}};
     if( N[0]==0 && N[1]==0 && N[2]==0 && N[3]==0 )
@@ -75,12 +64,10 @@ dmhm::ExpandedUInt64 dmhm::IntegerPowerWith64BitMod
     return Y;
 }
 
-void dmhm::SeedSerialLcg( UInt64 seed )
-{
-    ::serialLcgValue = Expand( seed );
-}
+void SeedSerialLcg( UInt64 seed )
+{ ::serialLcgValue = Expand( seed ); }
 
-void dmhm::SeedParallelLcg( UInt32 rank, UInt32 commSize, UInt64 globalSeed )
+void SeedParallelLcg( UInt32 rank, UInt32 commSize, UInt64 globalSeed )
 {
     // Compute a^rank and a^commSize in O(log2(commSize)) work.
     const ExpandedUInt64 myMultValue = 
@@ -114,7 +101,7 @@ void dmhm::SeedParallelLcg( UInt32 rank, UInt32 commSize, UInt64 globalSeed )
 }
 
 // Return a uniform sample from [0,2^64)
-dmhm::UInt64 dmhm::SerialLcg()
+UInt64 SerialLcg()
 {
     UInt64 value = Deflate( ::serialLcgValue );
     ManualLcg( ::serialMultValue, ::serialAddValue, ::serialLcgValue );
@@ -122,10 +109,11 @@ dmhm::UInt64 dmhm::SerialLcg()
 }
 
 // Return a uniform sample from [0,2^64)
-dmhm::UInt64 dmhm::ParallelLcg()
+UInt64 ParallelLcg()
 {
     UInt64 value = Deflate( ::parallelLcgValue );
     ManualLcg( ::parallelMultValue, ::parallelAddValue, ::parallelLcgValue ); 
     return value;
 }
 
+} // namespace dmhm

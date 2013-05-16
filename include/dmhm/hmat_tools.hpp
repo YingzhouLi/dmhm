@@ -1,23 +1,12 @@
 /*
-   Distributed-Memory Hierarchical Matrices (DMHM): a prototype implementation
-   of distributed-memory H-matrix arithmetic. 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   The University of Texas at Austin, and Stanford University
 
-   Copyright (C) 2011 Jack Poulson, Lexing Ying, and
-   The University of Texas at Austin
-
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
+   under the GPLv3 License, which can be found in the LICENSE file in the root
+   directory, or at http://opensource.org/licenses/GPL-3.0
 */
+#pragma once
 #ifndef DMHM_HMAT_TOOLS_HPP
 #define DMHM_HMAT_TOOLS_HPP 1
 
@@ -56,18 +45,17 @@ namespace hmat_tools {
 /*
  *  Ensure that the low-rank matrix has a rank of at most 'maxRank'
  */
-template<typename Real,bool Conjugated>
+template<typename Real>
 void Compress
 ( int maxRank, 
-  Dense<Real>& D, LowRank<Real,Conjugated>& F );
-template<typename Real,bool Conjugated>
+  Dense<Real>& D, LowRank<Real>& F );
+template<typename Real>
 void Compress
-( int maxRank, 
-  Dense< std::complex<Real> >& D, LowRank<std::complex<Real>,Conjugated>& F );
-template<typename Real,bool Conjugated>
-void Compress( int maxRank, LowRank<Real,Conjugated>& F );
-template<typename Real,bool Conjugated>
-void Compress( int maxRank, LowRank<std::complex<Real>,Conjugated>& F );
+( int maxRank, Dense<std::complex<Real> >& D, LowRank<std::complex<Real> >& F );
+template<typename Real>
+void Compress( int maxRank, LowRank<Real>& F );
+template<typename Real>
+void Compress( int maxRank, LowRank<std::complex<Real> >& F );
 
 /*
  *  Convert a subset of a sparse matrix to dense/low-rank form
@@ -76,9 +64,9 @@ template<typename Scalar>
 void ConvertSubmatrix
 ( Dense<Scalar>& D, const Sparse<Scalar>& S,
   int iStart, int jStart, int height, int width );
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void ConvertSubmatrix
-( LowRank<Scalar,Conjugated>& F, const Sparse<Scalar>& S,
+( LowRank<Scalar>& F, const Sparse<Scalar>& S,
   int iStart, int jStart, int height, int width );
 
 /*
@@ -91,28 +79,28 @@ void Add
   Scalar beta,  const Dense<Scalar>& B,
                       Dense<Scalar>& C );
 // F := alpha F + beta F
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void Add
-( Scalar alpha, const LowRank<Scalar,Conjugated>& A,
-  Scalar beta,  const LowRank<Scalar,Conjugated>& B,
-                      LowRank<Scalar,Conjugated>& C );
+( Scalar alpha, const LowRank<Scalar>& A,
+  Scalar beta,  const LowRank<Scalar>& B,
+                      LowRank<Scalar>& C );
 // D := alpha F + beta D
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void Add
-( Scalar alpha, const LowRank<Scalar,Conjugated>& A,
+( Scalar alpha, const LowRank<Scalar>& A,
   Scalar beta,  const Dense<Scalar>& B,
                       Dense<Scalar>& C );
 // D := alpha D + beta F
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void Add
 ( Scalar alpha, const Dense<Scalar>& A,
-  Scalar beta,  const LowRank<Scalar,Conjugated>& B,
+  Scalar beta,  const LowRank<Scalar>& B,
                       Dense<Scalar>& C );
 // D := alpha F + beta F
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void Add
-( Scalar alpha, const LowRank<Scalar,Conjugated>& A,
-  Scalar beta,  const LowRank<Scalar,Conjugated>& B,
+( Scalar alpha, const LowRank<Scalar>& A,
+  Scalar beta,  const LowRank<Scalar>& B,
                       Dense<Scalar>& C );
 
 /*
@@ -124,51 +112,51 @@ void Update
 ( Scalar alpha, const Dense<Scalar>& A,
   Scalar beta,        Dense<Scalar>& B );
 // F := alpha F + beta F
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void Update
-( Scalar alpha, const LowRank<Scalar,Conjugated>& A,
-  Scalar beta,        LowRank<Scalar,Conjugated>& B );
+( Scalar alpha, const LowRank<Scalar>& A,
+  Scalar beta,        LowRank<Scalar>& B );
 // D := alpha F + beta D
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void Update
-( Scalar alpha, const LowRank<Scalar,Conjugated>& A,
+( Scalar alpha, const LowRank<Scalar>& A,
   Scalar beta,        Dense<Scalar>& B );
 
 /*
  *  Generalized add of two low-rank matrices, C := alpha A + beta B, 
  *  where C is then forced to be of rank at most 'maxRank'
  */
-template<typename Real,bool Conjugated>
+template<typename Real>
 void RoundedAdd
 ( int maxRank,
-  Real alpha, const LowRank<Real,Conjugated>& A,
-  Real beta,  const LowRank<Real,Conjugated>& B,
-                    LowRank<Real,Conjugated>& C );
-template<typename Real,bool Conjugated>
+  Real alpha, const LowRank<Real>& A,
+  Real beta,  const LowRank<Real>& B,
+                    LowRank<Real>& C );
+template<typename Real>
 void RoundedAdd
 ( int maxRank,
   std::complex<Real> alpha, 
-  const LowRank<std::complex<Real>,Conjugated>& A,
+  const LowRank<std::complex<Real> >& A,
   std::complex<Real> beta,  
-  const LowRank<std::complex<Real>,Conjugated>& B,
-        LowRank<std::complex<Real>,Conjugated>& C );
+  const LowRank<std::complex<Real> >& B,
+        LowRank<std::complex<Real> >& C );
 
 /*
  *  Generalized update of a low-rank matrix, B := alpha A + beta B, 
  *  where B is then forced to be of rank at most 'maxRank'
  */
-template<typename Real,bool Conjugated>
+template<typename Real>
 void RoundedUpdate
 ( int maxRank,
-  Real alpha, const LowRank<Real,Conjugated>& A,
-  Real beta,        LowRank<Real,Conjugated>& B );
-template<typename Real,bool Conjugated>
+  Real alpha, const LowRank<Real>& A,
+  Real beta,        LowRank<Real>& B );
+template<typename Real>
 void RoundedUpdate
 ( int maxRank,
   std::complex<Real> alpha, 
-  const LowRank<std::complex<Real>,Conjugated>& A,
+  const LowRank<std::complex<Real> >& A,
   std::complex<Real> beta, 
-        LowRank<std::complex<Real>,Conjugated>& B );
+        LowRank<std::complex<Real> >& B );
 
 /*
  *  Matrix Matrix multiply, C := alpha A B
@@ -192,104 +180,102 @@ void Multiply
                 const Dense<Scalar>& B,
   Scalar beta,        Dense<Scalar>& C );
 // D := alpha D F
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void Multiply
 ( Scalar alpha, const Dense<Scalar>& A, 
-                const LowRank<Scalar,Conjugated>& B,
+                const LowRank<Scalar>& B,
                       Dense<Scalar>& C );
 // D := alpha D F + beta D
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void Multiply
 ( Scalar alpha, const Dense<Scalar>& A, 
-                const LowRank<Scalar,Conjugated>& B,
+                const LowRank<Scalar>& B,
   Scalar beta,        Dense<Scalar>& C );
 // D := alpha F D
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void Multiply
-( Scalar alpha, const LowRank<Scalar,Conjugated>& A, 
+( Scalar alpha, const LowRank<Scalar>& A, 
                 const Dense<Scalar>& B,
                       Dense<Scalar>& C );
 // D := alpha F D + beta D
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void Multiply
-( Scalar alpha, const LowRank<Scalar,Conjugated>& A, 
+( Scalar alpha, const LowRank<Scalar>& A, 
                 const Dense<Scalar>& B,
   Scalar beta,        Dense<Scalar>& C );
 // D := alpha F F
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void Multiply
-( Scalar alpha, const LowRank<Scalar,Conjugated>& A,
-                const LowRank<Scalar,Conjugated>& B,
+( Scalar alpha, const LowRank<Scalar>& A,
+                const LowRank<Scalar>& B,
                       Dense<Scalar>& C );
 // D := alpha F F + beta D
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void Multiply
-( Scalar alpha, const LowRank<Scalar,Conjugated>& A,
-                const LowRank<Scalar,Conjugated>& B,
+( Scalar alpha, const LowRank<Scalar>& A,
+                const LowRank<Scalar>& B,
   Scalar beta,        Dense<Scalar>& C );
 // F := alpha F F
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void Multiply
-( Scalar alpha, const LowRank<Scalar,Conjugated>& A, 
-                const LowRank<Scalar,Conjugated>& B,
-                      LowRank<Scalar,Conjugated>& C );
+( Scalar alpha, const LowRank<Scalar>& A, 
+                const LowRank<Scalar>& B,
+                      LowRank<Scalar>& C );
 // F := alpha D F
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void Multiply
 ( Scalar alpha, const Dense<Scalar>& A, 
-                const LowRank<Scalar,Conjugated>& B,
-                      LowRank<Scalar,Conjugated>& C );
+                const LowRank<Scalar>& B,
+                      LowRank<Scalar>& C );
 // F := alpha F D
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void Multiply
-( Scalar alpha, const LowRank<Scalar,Conjugated>& A, 
+( Scalar alpha, const LowRank<Scalar>& A, 
                 const Dense<Scalar>& B,
-                      LowRank<Scalar,Conjugated>& C );
+                      LowRank<Scalar>& C );
 // F := alpha D D
-template<typename Real,bool Conjugated>
+template<typename Real>
 void Multiply
 ( int maxRank, Real alpha, 
   const Dense<Real>& A,
   const Dense<Real>& B,
-        LowRank<Real,Conjugated>& C );
+        LowRank<Real>& C );
 // F := alpha D D
-template<typename Real,bool Conjugated>
+template<typename Real>
 void Multiply
 ( int maxRank, std::complex<Real> alpha, 
   const Dense< std::complex<Real> >& A,
   const Dense< std::complex<Real> >& B,
-        LowRank<std::complex<Real>,Conjugated>& C );
+        LowRank<std::complex<Real> >& C );
 // F := alpha D D + beta F
-template<typename Real,bool Conjugated>
+template<typename Real>
 void Multiply
-( int maxRank, Real alpha, 
-  const Dense<Real>& A,
-  const Dense<Real>& B,
-  Real beta,
-        LowRank<Real,Conjugated>& C );
+( int maxRank, 
+  Real alpha, const Dense<Real>& A, const Dense<Real>& B,
+  Real beta, LowRank<Real>& C );
 // F := alpha D D + beta F
-template<typename Real,bool Conjugated>
+template<typename Real>
 void Multiply
 ( int maxRank, std::complex<Real> alpha, 
   const Dense< std::complex<Real> >& A,
   const Dense< std::complex<Real> >& B,
   std::complex<Real> beta,
-        LowRank<std::complex<Real>,Conjugated>& C );
+        LowRank<std::complex<Real> >& C );
 // F := alpha H H,
-template<typename Real,bool Conjugated>
+template<typename Real>
 void Multiply
 ( int sampleRank,
   Real alpha, 
   const AbstractHMat<Real>& A,
   const AbstractHMat<Real>& B,
-        LowRank<Real,Conjugated>& F );
-template<typename Real,bool Conjugated>
+        LowRank<Real>& F );
+template<typename Real>
 void Multiply
 ( int sampleRank,
   std::complex<Real> alpha, 
   const AbstractHMat< std::complex<Real> >& A,
   const AbstractHMat< std::complex<Real> >& B,
-        LowRank<std::complex<Real>,Conjugated>& F );
+        LowRank<std::complex<Real> >& F );
 
 /*
  *  Matrix Transpose Matrix Multiply, C := alpha A^T B
@@ -313,104 +299,104 @@ void TransposeMultiply
                 const Dense<Scalar>& B,
   Scalar beta,        Dense<Scalar>& C );
 // D := alpha D^T F
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void TransposeMultiply
 ( Scalar alpha, const Dense<Scalar>& A, 
-                const LowRank<Scalar,Conjugated>& B,
+                const LowRank<Scalar>& B,
                       Dense<Scalar>& C );
 // D := alpha D^T F + beta D
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void TransposeMultiply
 ( Scalar alpha, const Dense<Scalar>& A, 
-                const LowRank<Scalar,Conjugated>& B,
+                const LowRank<Scalar>& B,
   Scalar beta,        Dense<Scalar>& C );
 // D := alpha F^T D
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void TransposeMultiply
-( Scalar alpha, const LowRank<Scalar,Conjugated>& A, 
+( Scalar alpha, const LowRank<Scalar>& A, 
                 const Dense<Scalar>& B,
                       Dense<Scalar>& C );
 // D := alpha F^T D + beta D
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void TransposeMultiply
-( Scalar alpha, const LowRank<Scalar,Conjugated>& A, 
+( Scalar alpha, const LowRank<Scalar>& A, 
                 const Dense<Scalar>& B,
   Scalar beta,        Dense<Scalar>& C );
 // D := alpha F^T F
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void TransposeMultiply
-( Scalar alpha, const LowRank<Scalar,Conjugated>& A,
-                const LowRank<Scalar,Conjugated>& B,
+( Scalar alpha, const LowRank<Scalar>& A,
+                const LowRank<Scalar>& B,
                       Dense<Scalar>& C );
 // D := alpha F^T F + beta D
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void TransposeMultiply
-( Scalar alpha, const LowRank<Scalar,Conjugated>& A,
-                const LowRank<Scalar,Conjugated>& B,
+( Scalar alpha, const LowRank<Scalar>& A,
+                const LowRank<Scalar>& B,
   Scalar beta,        Dense<Scalar>& C );
 // F := alpha F^T F
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void TransposeMultiply
-( Scalar alpha, const LowRank<Scalar,Conjugated>& A, 
-                const LowRank<Scalar,Conjugated>& B,
-                      LowRank<Scalar,Conjugated>& C );
+( Scalar alpha, const LowRank<Scalar>& A, 
+                const LowRank<Scalar>& B,
+                      LowRank<Scalar>& C );
 // F := alpha D^T F
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void TransposeMultiply
 ( Scalar alpha, const Dense<Scalar>& A, 
-                const LowRank<Scalar,Conjugated>& B,
-                      LowRank<Scalar,Conjugated>& C );
+                const LowRank<Scalar>& B,
+                      LowRank<Scalar>& C );
 // F := alpha F^T D
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void TransposeMultiply
-( Scalar alpha, const LowRank<Scalar,Conjugated>& A, 
+( Scalar alpha, const LowRank<Scalar>& A, 
                 const Dense<Scalar>& B,
-                      LowRank<Scalar,Conjugated>& C );
+                      LowRank<Scalar>& C );
 // F := alpha D^T D
-template<typename Real,bool Conjugated>
+template<typename Real>
 void TransposeMultiply
 ( int maxRank, Real alpha, 
   const Dense<Real>& A,
   const Dense<Real>& B,
-        LowRank<Real,Conjugated>& C );
+        LowRank<Real>& C );
 // F := alpha D^T D
-template<typename Real,bool Conjugated>
+template<typename Real>
 void TransposeMultiply
 ( int maxRank, std::complex<Real> alpha, 
   const Dense< std::complex<Real> >& A,
   const Dense< std::complex<Real> >& B,
-        LowRank<std::complex<Real>,Conjugated>& C );
+        LowRank<std::complex<Real> >& C );
 // F := alpha D^T D + beta F
-template<typename Real,bool Conjugated>
+template<typename Real>
 void TransposeMultiply
 ( int maxRank, Real alpha, 
   const Dense<Real>& A,
   const Dense<Real>& B,
   Real beta,
-        LowRank<Real,Conjugated>& C );
+        LowRank<Real>& C );
 // F := alpha D^T D + beta F
-template<typename Real,bool Conjugated>
+template<typename Real>
 void TransposeMultiply
 ( int maxRank, std::complex<Real> alpha, 
   const Dense< std::complex<Real> >& A,
   const Dense< std::complex<Real> >& B,
   std::complex<Real> beta,
-        LowRank<std::complex<Real>,Conjugated>& C );
+        LowRank<std::complex<Real> >& C );
 // F := alpha H^T H
-template<typename Real,bool Conjugated>
+template<typename Real>
 void TransposeMultiply
 ( int sampleRank,
   Real alpha, 
   const AbstractHMat<Real>& A,
   const AbstractHMat<Real>& B,
-        LowRank<Real,Conjugated>& F );
-template<typename Real,bool Conjugated>
+        LowRank<Real>& F );
+template<typename Real>
 void TransposeMultiply
 ( int sampleRank,
   std::complex<Real> alpha, 
   const AbstractHMat< std::complex<Real> >& A,
   const AbstractHMat< std::complex<Real> >& B,
-        LowRank<std::complex<Real>,Conjugated>& F );
+        LowRank<std::complex<Real> >& F );
 
 /*
  *  Matrix-Adjoint Matrix Multiply, C := alpha A^H B
@@ -434,104 +420,104 @@ void AdjointMultiply
                 const Dense<Scalar>& B,
   Scalar beta,        Dense<Scalar>& C );
 // D := alpha D^H F
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void AdjointMultiply
 ( Scalar alpha, const Dense<Scalar>& A, 
-                const LowRank<Scalar,Conjugated>& B,
+                const LowRank<Scalar>& B,
                       Dense<Scalar>& C );
 // D := alpha D^H F + beta D
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void AdjointMultiply
 ( Scalar alpha, const Dense<Scalar>& A, 
-                const LowRank<Scalar,Conjugated>& B,
+                const LowRank<Scalar>& B,
   Scalar beta,        Dense<Scalar>& C );
 // D := alpha F^H D
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void AdjointMultiply
-( Scalar alpha, const LowRank<Scalar,Conjugated>& A, 
+( Scalar alpha, const LowRank<Scalar>& A, 
                 const Dense<Scalar>& B,
                       Dense<Scalar>& C );
 // D := alpha F^H D + beta D
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void AdjointMultiply
-( Scalar alpha, const LowRank<Scalar,Conjugated>& A, 
+( Scalar alpha, const LowRank<Scalar>& A, 
                 const Dense<Scalar>& B,
   Scalar beta,        Dense<Scalar>& C );
 // D := alpha F^H F
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void AdjointMultiply
-( Scalar alpha, const LowRank<Scalar,Conjugated>& A,
-                const LowRank<Scalar,Conjugated>& B,
+( Scalar alpha, const LowRank<Scalar>& A,
+                const LowRank<Scalar>& B,
                       Dense<Scalar>& C );
 // D := alpha F^H F + beta D
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void AdjointMultiply
-( Scalar alpha, const LowRank<Scalar,Conjugated>& A,
-                const LowRank<Scalar,Conjugated>& B,
+( Scalar alpha, const LowRank<Scalar>& A,
+                const LowRank<Scalar>& B,
   Scalar beta,        Dense<Scalar>& C );
 // F := alpha F^H F
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void AdjointMultiply
-( Scalar alpha, const LowRank<Scalar,Conjugated>& A, 
-                const LowRank<Scalar,Conjugated>& B,
-                      LowRank<Scalar,Conjugated>& C );
+( Scalar alpha, const LowRank<Scalar>& A, 
+                const LowRank<Scalar>& B,
+                      LowRank<Scalar>& C );
 // F := alpha D^H F
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void AdjointMultiply
 ( Scalar alpha, const Dense<Scalar>& A, 
-                const LowRank<Scalar,Conjugated>& B,
-                      LowRank<Scalar,Conjugated>& C );
+                const LowRank<Scalar>& B,
+                      LowRank<Scalar>& C );
 // F := alpha F^H D
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void AdjointMultiply
-( Scalar alpha, const LowRank<Scalar,Conjugated>& A, 
+( Scalar alpha, const LowRank<Scalar>& A, 
                 const Dense<Scalar>& B,
-                      LowRank<Scalar,Conjugated>& C );
+                      LowRank<Scalar>& C );
 // F := alpha D^H D
-template<typename Real,bool Conjugated>
+template<typename Real>
 void AdjointMultiply
 ( int maxRank, Real alpha, 
   const Dense<Real>& A,
   const Dense<Real>& B,
-        LowRank<Real,Conjugated>& C );
+        LowRank<Real>& C );
 // F := alpha D^H D
-template<typename Real,bool Conjugated>
+template<typename Real>
 void AdjointMultiply
 ( int maxRank, std::complex<Real> alpha, 
   const Dense< std::complex<Real> >& A,
   const Dense< std::complex<Real> >& B,
-        LowRank<std::complex<Real>,Conjugated>& C );
+        LowRank<std::complex<Real> >& C );
 // F := alpha D^H D + beta F
-template<typename Real,bool Conjugated>
+template<typename Real>
 void AdjointMultiply
 ( int maxRank, Real alpha, 
   const Dense<Real>& A,
   const Dense<Real>& B,
   Real beta,
-        LowRank<Real,Conjugated>& C );
+        LowRank<Real>& C );
 // F := alpha D^H D + beta F
-template<typename Real,bool Conjugated>
+template<typename Real>
 void AdjointMultiply
 ( int maxRank, std::complex<Real> alpha, 
   const Dense< std::complex<Real> >& A,
   const Dense< std::complex<Real> >& B,
   std::complex<Real> beta,
-        LowRank<std::complex<Real>,Conjugated>& C );
+        LowRank<std::complex<Real> >& C );
 // F := alpha H^H H
-template<typename Real,bool Conjugated>
+template<typename Real>
 void AdjointMultiply
 ( int sampleRank,
   Real alpha, 
   const AbstractHMat<Real>& A,
   const AbstractHMat<Real>& B,
-        LowRank<Real,Conjugated>& F );
-template<typename Real,bool Conjugated>
+        LowRank<Real>& F );
+template<typename Real>
 void AdjointMultiply
 ( int sampleRank,
   std::complex<Real> alpha, 
   const AbstractHMat< std::complex<Real> >& A,
   const AbstractHMat< std::complex<Real> >& B,
-        LowRank<std::complex<Real>,Conjugated>& F );
+        LowRank<std::complex<Real> >& F );
 
 /*
  *  Matrix-Vector multiply, y := alpha A x + beta y
@@ -543,9 +529,9 @@ void Multiply
                 const Vector<Scalar>& x,
   Scalar beta,        Vector<Scalar>& y );
 // y := alpha F x + beta y
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void Multiply
-( Scalar alpha, const LowRank<Scalar,Conjugated>& F, 
+( Scalar alpha, const LowRank<Scalar>& F, 
                 const Vector<Scalar>& x,
   Scalar beta,        Vector<Scalar>& y );
 
@@ -559,9 +545,9 @@ void Multiply
                 const Vector<Scalar>& x,
                       Vector<Scalar>& y );
 // y := alpha F x
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void Multiply
-( Scalar alpha, const LowRank<Scalar,Conjugated>& F, 
+( Scalar alpha, const LowRank<Scalar>& F, 
                 const Vector<Scalar>& x,
                       Vector<Scalar>& y );
 
@@ -575,9 +561,9 @@ void TransposeMultiply
                 const Vector<Scalar>& x,
   Scalar beta,        Vector<Scalar>& y );
 // y := alpha F^T x + beta y
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void TransposeMultiply
-( Scalar alpha, const LowRank<Scalar,Conjugated>& F, 
+( Scalar alpha, const LowRank<Scalar>& F, 
                 const Vector<Scalar>& x,
   Scalar beta,        Vector<Scalar>& y );
 
@@ -591,9 +577,9 @@ void TransposeMultiply
                 const Vector<Scalar>& x,
                       Vector<Scalar>& y );
 // y := alpha F^T x
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void TransposeMultiply
-( Scalar alpha, const LowRank<Scalar,Conjugated>& F, 
+( Scalar alpha, const LowRank<Scalar>& F, 
                 const Vector<Scalar>& x,
                       Vector<Scalar>& y );
 
@@ -607,9 +593,9 @@ void AdjointMultiply
                 const Vector<Scalar>& x,
   Scalar beta,        Vector<Scalar>& y );
 // y := alpha F^H x + beta y
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void AdjointMultiply
-( Scalar alpha, const LowRank<Scalar,Conjugated>& F, 
+( Scalar alpha, const LowRank<Scalar>& F, 
                 const Vector<Scalar>& x,
   Scalar beta,        Vector<Scalar>& y );
 
@@ -623,9 +609,9 @@ void AdjointMultiply
                 const Vector<Scalar>& x,
                       Vector<Scalar>& y );
 // y := alpha F^H x
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void AdjointMultiply
-( Scalar alpha, const LowRank<Scalar,Conjugated>& F, 
+( Scalar alpha, const LowRank<Scalar>& F, 
                 const Vector<Scalar>& x,
                       Vector<Scalar>& y );
 
@@ -658,12 +644,10 @@ Real EstimateTwoNorm
  */
 template<typename Scalar>
 void Scale( Scalar alpha, Vector<Scalar>& x );
-
 template<typename Scalar>
 void Scale( Scalar alpha, Dense<Scalar>& D );
-
-template<typename Scalar,bool Conjugated>
-void Scale( Scalar alpha, LowRank<Scalar,Conjugated>& F );
+template<typename Scalar>
+void Scale( Scalar alpha, LowRank<Scalar>& F );
 
 /*
  *  Copy a vector or matrix
@@ -678,8 +662,8 @@ template<typename Scalar>
 void Copy( const std::vector<Scalar>& x, Vector<Scalar>& y );
 template<typename Scalar>
 void Copy( const Dense<Scalar>& A, Dense<Scalar>& B );
-template<typename Scalar,bool Conjugated>
-void Copy( const LowRank<Scalar,Conjugated>& A, LowRank<Scalar,Conjugated>& B );
+template<typename Scalar>
+void Copy( const LowRank<Scalar>& A, LowRank<Scalar>& B );
 
 /*
  *  Conjugate a vector or matrix
@@ -741,41 +725,33 @@ template<typename Real>
 void Conjugate
 ( const Dense< std::complex<Real> >& D1, Dense< std::complex<Real> >& D2 );
 
-template<typename Real,bool Conjugated>
-void Conjugate( LowRank<Real,Conjugated>& F );
-template<typename Real,bool Conjugated>
-void Conjugate( LowRank<std::complex<Real>,Conjugated>& F );
+template<typename Real>
+void Conjugate( LowRank<Real>& F );
+template<typename Real>
+void Conjugate( LowRank<std::complex<Real> >& F );
 
-template<typename Real,bool Conjugated>
+template<typename Real>
+void Conjugate( const LowRank<Real>& F1, LowRank<Real>& F2 );
+template<typename Real>
 void Conjugate
-( const LowRank<Real,Conjugated>& F1,
-        LowRank<Real,Conjugated>& F2 );
-template<typename Real,bool Conjugated>
-void Conjugate
-( const LowRank<std::complex<Real>,Conjugated>& F1,
-        LowRank<std::complex<Real>,Conjugated>& F2 );
+( const LowRank<std::complex<Real> >& F1,
+        LowRank<std::complex<Real> >& F2 );
 
 /*
  *  Transpose a matrix: B := A^T
  */
 template<typename Scalar>
-void Transpose
-( const Dense<Scalar>& A, Dense<Scalar>& B );
-
-template<typename Scalar,bool Conjugated>
-void Transpose
-( const LowRank<Scalar,Conjugated>& A, LowRank<Scalar,Conjugated>& B );
+void Transpose( const Dense<Scalar>& A, Dense<Scalar>& B );
+template<typename Scalar>
+void Transpose( const LowRank<Scalar>& A, LowRank<Scalar>& B );
 
 /*
  *  Hermitian-transpose a matrix: B := A^H
  */
 template<typename Scalar>
-void Adjoint
-( const Dense<Scalar>& A, Dense<Scalar>& B );
-
-template<typename Scalar,bool Conjugated>
-void Adjoint
-( const LowRank<Scalar,Conjugated>& A, LowRank<Scalar,Conjugated>& B );
+void Adjoint( const Dense<Scalar>& A, Dense<Scalar>& B );
+template<typename Scalar>
+void Adjoint( const LowRank<Scalar>& A, LowRank<Scalar>& B );
 
 /*
  *  For computing the in-place QR decomposition of stacked s x r  and t x r 
@@ -829,9 +805,6 @@ void PrintPacked
 ( const std::string msg,
   const int r, const int s, const int t, const Scalar* packedA );
 
-} // namespace hmat_tools
-} // namespace dmhm
-
 //----------------------------------------------------------------------------//
 // Header implementations                                                     //
 //----------------------------------------------------------------------------//
@@ -840,8 +813,7 @@ void PrintPacked
  *  Copy a vector or matrix
  */
 template<typename Scalar>
-void dmhm::hmat_tools::Copy
-( const Vector<Scalar>& x, Vector<Scalar>& y )
+void Copy( const Vector<Scalar>& x, Vector<Scalar>& y )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::Copy (Vector,Vector)");
@@ -854,8 +826,7 @@ void dmhm::hmat_tools::Copy
 }
 
 template<typename Scalar>
-void dmhm::hmat_tools::Copy
-( const std::vector<Scalar>& x, std::vector<Scalar>& y )
+void Copy( const std::vector<Scalar>& x, std::vector<Scalar>& y )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::Copy (vector,vector)");
@@ -868,8 +839,7 @@ void dmhm::hmat_tools::Copy
 }
 
 template<typename Scalar>
-void dmhm::hmat_tools::Copy
-( const Vector<Scalar>& x, std::vector<Scalar>& y )
+void Copy( const Vector<Scalar>& x, std::vector<Scalar>& y )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::Copy (Vector,vector)");
@@ -882,8 +852,7 @@ void dmhm::hmat_tools::Copy
 }
 
 template<typename Scalar>
-void dmhm::hmat_tools::Copy
-( const std::vector<Scalar>& x, Vector<Scalar>& y )
+void Copy( const std::vector<Scalar>& x, Vector<Scalar>& y )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::Copy (vector,Vector)");
@@ -896,8 +865,7 @@ void dmhm::hmat_tools::Copy
 }
 
 template<typename Scalar>
-void dmhm::hmat_tools::Copy
-( const Dense<Scalar>& A, Dense<Scalar>& B )
+void Copy( const Dense<Scalar>& A, Dense<Scalar>& B )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::Copy (Dense,Dense)");
@@ -926,9 +894,8 @@ void dmhm::hmat_tools::Copy
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
-void dmhm::hmat_tools::Copy
-( const LowRank<Scalar,Conjugated>& A, LowRank<Scalar,Conjugated>& B )
+template<typename Scalar>
+void Copy( const LowRank<Scalar>& A, LowRank<Scalar>& B )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::Copy (LowRank,LowRank)");
@@ -945,13 +912,11 @@ void dmhm::hmat_tools::Copy
  */
 
 template<typename Real> 
-void dmhm::hmat_tools::Conjugate
-( Vector<Real>& x ) 
+void Conjugate( Vector<Real>& x ) 
 { }
 
 template<typename Real>
-void dmhm::hmat_tools::Conjugate
-( Vector< std::complex<Real> >& x )
+void Conjugate( Vector<std::complex<Real> >& x )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::Conjugate (Vector)");
@@ -966,8 +931,7 @@ void dmhm::hmat_tools::Conjugate
 }
 
 template<typename Real>
-void dmhm::hmat_tools::Conjugate
-( const Vector<Real>& x, Vector<Real>& y )
+void Conjugate( const Vector<Real>& x, Vector<Real>& y )
 { 
 #ifndef RELEASE
     PushCallStack("hmat_tools::Conjugate (Vector,Vector)");
@@ -980,8 +944,8 @@ void dmhm::hmat_tools::Conjugate
 }
 
 template<typename Real>
-void dmhm::hmat_tools::Conjugate
-( const Vector< std::complex<Real> >& x, Vector< std::complex<Real> >& y )
+void Conjugate
+( const Vector<std::complex<Real> >& x, Vector<std::complex<Real> >& y )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::Conjugate (Vector,Vector)");
@@ -998,13 +962,11 @@ void dmhm::hmat_tools::Conjugate
 }
 
 template<typename Real>
-void dmhm::hmat_tools::Conjugate
-( std::vector<Real>& x )
+void Conjugate( std::vector<Real>& x )
 { }
 
 template<typename Real>
-void dmhm::hmat_tools::Conjugate
-( std::vector< std::complex<Real> >& x )
+void Conjugate( std::vector<std::complex<Real> >& x )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::Conjugate (vector)");
@@ -1019,9 +981,7 @@ void dmhm::hmat_tools::Conjugate
 }
 
 template<typename Real>
-void dmhm::hmat_tools::Conjugate
-( const std::vector<Real>& x,
-        std::vector<Real>& y )
+void Conjugate( const std::vector<Real>& x, std::vector<Real>& y )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::Conjugate (vector,vector)");
@@ -1034,9 +994,9 @@ void dmhm::hmat_tools::Conjugate
 }
 
 template<typename Real>
-void dmhm::hmat_tools::Conjugate
-( const std::vector< std::complex<Real> >& x,
-        std::vector< std::complex<Real> >& y )
+void Conjugate
+( const std::vector<std::complex<Real> >& x,
+        std::vector<std::complex<Real> >& y )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::Conjugate (vector,vector)");
@@ -1053,8 +1013,7 @@ void dmhm::hmat_tools::Conjugate
 }
 
 template<typename Real>
-void dmhm::hmat_tools::Conjugate
-( const Vector<Real>& x, std::vector<Real>& y )
+void Conjugate( const Vector<Real>& x, std::vector<Real>& y )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::Conjugate (Vector,vector)");
@@ -1067,8 +1026,8 @@ void dmhm::hmat_tools::Conjugate
 }
 
 template<typename Real>
-void dmhm::hmat_tools::Conjugate
-( const Vector< std::complex<Real> >& x, std::vector< std::complex<Real> >& y )
+void Conjugate
+( const Vector<std::complex<Real> >& x, std::vector<std::complex<Real> >& y )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::Conjugate (Vector,vector)");
@@ -1085,8 +1044,7 @@ void dmhm::hmat_tools::Conjugate
 }
 
 template<typename Real>
-void dmhm::hmat_tools::Conjugate
-( const std::vector<Real>& x, Vector<Real>& y )
+void Conjugate( const std::vector<Real>& x, Vector<Real>& y )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::Conjugate (vector,Vector)");
@@ -1099,9 +1057,9 @@ void dmhm::hmat_tools::Conjugate
 }
 
 template<typename Real>
-void dmhm::hmat_tools::Conjugate
-( const std::vector< std::complex<Real> >& x,
-        Vector< std::complex<Real> >& y )
+void Conjugate
+( const std::vector<std::complex<Real> >& x,
+        Vector<std::complex<Real> >& y )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::Conjugate (vector,Vector)");
@@ -1118,13 +1076,11 @@ void dmhm::hmat_tools::Conjugate
 }
 
 template<typename Real>
-void dmhm::hmat_tools::Conjugate
-( Dense<Real>& D )
+void Conjugate( Dense<Real>& D )
 { }
 
 template<typename Real>
-void dmhm::hmat_tools::Conjugate
-( Dense< std::complex<Real> >& D )
+void Conjugate( Dense<std::complex<Real> >& D )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::Conjugate (Dense)");
@@ -1143,8 +1099,7 @@ void dmhm::hmat_tools::Conjugate
 }
 
 template<typename Real>
-void dmhm::hmat_tools::Conjugate
-( const Dense<Real>& D1, Dense<Real>& D2 )
+void Conjugate( const Dense<Real>& D1, Dense<Real>& D2 )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::Conjugate (Dense,Dense)");
@@ -1175,8 +1130,8 @@ void dmhm::hmat_tools::Conjugate
 }
 
 template<typename Real>
-void dmhm::hmat_tools::Conjugate
-( const Dense< std::complex<Real> >& D1, Dense< std::complex<Real> >& D2 )
+void Conjugate
+( const Dense<std::complex<Real> >& D1, Dense<std::complex<Real> >& D2 )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::Conjugate (Dense,Dense)");
@@ -1210,14 +1165,12 @@ void dmhm::hmat_tools::Conjugate
 #endif
 }
 
-template<typename Real,bool Conjugated>
-void dmhm::hmat_tools::Conjugate
-( LowRank<Real,Conjugated>& F )
+template<typename Real>
+void Conjugate( LowRank<Real>& F )
 { }
 
-template<typename Real,bool Conjugated>
-void dmhm::hmat_tools::Conjugate
-( LowRank<std::complex<Real>,Conjugated>& F )
+template<typename Real>
+void Conjugate( LowRank<std::complex<Real> >& F )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::Conjugate (LowRank)");
@@ -1229,9 +1182,8 @@ void dmhm::hmat_tools::Conjugate
 #endif
 }
 
-template<typename Real,bool Conjugated>
-void dmhm::hmat_tools::Conjugate
-( const LowRank<Real,Conjugated>& F1, LowRank<Real,Conjugated>& F2 )
+template<typename Real>
+void Conjugate( const LowRank<Real>& F1, LowRank<Real>& F2 )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::Conjugate (LowRank,LowRank)");
@@ -1248,10 +1200,10 @@ void dmhm::hmat_tools::Conjugate
 #endif
 }
 
-template<typename Real,bool Conjugated>
-void dmhm::hmat_tools::Conjugate
-( const LowRank<std::complex<Real>,Conjugated>& F1,
-        LowRank<std::complex<Real>,Conjugated>& F2 )
+template<typename Real>
+void Conjugate
+( const LowRank<std::complex<Real> >& F1,
+        LowRank<std::complex<Real> >& F2 )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::Conjugate (LowRank,LowRank)");
@@ -1273,14 +1225,13 @@ void dmhm::hmat_tools::Conjugate
  */
 
 template<typename Scalar>
-void dmhm::hmat_tools::Transpose
-( const Dense<Scalar>& A, Dense<Scalar>& B )
+void Transpose( const Dense<Scalar>& A, Dense<Scalar>& B )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::Transpose (Dense)");
 #endif
     if( B.Symmetric() )
-        hmat_tools::Copy( A, B );
+        Copy( A, B );
     else
     {
         B.Resize( A.Width(), A.Height() );
@@ -1299,23 +1250,14 @@ void dmhm::hmat_tools::Transpose
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
-void dmhm::hmat_tools::Transpose
-( const LowRank<Scalar,Conjugated>& A, LowRank<Scalar,Conjugated>& B )
+template<typename Scalar>
+void Transpose( const LowRank<Scalar>& A, LowRank<Scalar>& B )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::Transpose (LowRank)");
 #endif
-    if( Conjugated )
-    {
-        hmat_tools::Conjugate( A.V, B.U );
-        hmat_tools::Conjugate( A.U, B.V );
-    }
-    else
-    {
-        hmat_tools::Copy( A.V, B.U );
-        hmat_tools::Copy( A.U, B.V );
-    }
+    Copy( A.V, B.U );
+    Copy( A.U, B.V );
 #ifndef RELEASE
     PopCallStack();
 #endif
@@ -1326,14 +1268,13 @@ void dmhm::hmat_tools::Transpose
  */
 
 template<typename Scalar>
-void dmhm::hmat_tools::Adjoint
-( const Dense<Scalar>& A, Dense<Scalar>& B )
+void Adjoint( const Dense<Scalar>& A, Dense<Scalar>& B )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::Adjoint (Dense)");
 #endif
     if( B.Symmetric() )
-        hmat_tools::Conjugate( A, B );
+        Conjugate( A, B );
     else
     {
         B.Resize( A.Width(), A.Height() );
@@ -1352,23 +1293,14 @@ void dmhm::hmat_tools::Adjoint
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
-void dmhm::hmat_tools::Adjoint
-( const LowRank<Scalar,Conjugated>& A, LowRank<Scalar,Conjugated>& B )
+template<typename Scalar>
+void Adjoint( const LowRank<Scalar>& A, LowRank<Scalar>& B )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::Adjoint (LowRank)");
 #endif
-    if( Conjugated )
-    {
-        hmat_tools::Copy( A.V, B.U );
-        hmat_tools::Copy( A.U, B.V );
-    }
-    else
-    {
-        hmat_tools::Conjugate( A.V, B.U );
-        hmat_tools::Conjugate( A.U, B.V );
-    }
+    Conjugate( A.V, B.U );
+    Conjugate( A.U, B.V );
 #ifndef RELEASE
     PopCallStack();
 #endif
@@ -1378,8 +1310,7 @@ void dmhm::hmat_tools::Adjoint
  *  For compute vector two-norms
  */
 template<typename Real>
-Real dmhm::hmat_tools::TwoNorm
-( const Vector<Real>& x )
+Real TwoNorm( const Vector<Real>& x )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::TwoNorm");
@@ -1392,8 +1323,7 @@ Real dmhm::hmat_tools::TwoNorm
 }
 
 template<typename Real>
-Real dmhm::hmat_tools::TwoNorm
-( const Vector< std::complex<Real> >& x )
+Real TwoNorm( const Vector<std::complex<Real> >& x )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::TwoNorm");
@@ -1428,8 +1358,7 @@ Real dmhm::hmat_tools::TwoNorm
  *      k := ceil(log( 0.8 sqrt(n) 10^{confidence} ) / log( theta ))
  */
 template<typename Real>
-Real dmhm::hmat_tools::EstimateTwoNorm
-( const AbstractHMat<Real>& A, Real theta, Real confidence )
+Real EstimateTwoNorm( const AbstractHMat<Real>& A, Real theta, Real confidence )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::EstimateTwoNorm");
@@ -1449,8 +1378,8 @@ Real dmhm::hmat_tools::EstimateTwoNorm
     Vector<Real> x( n );
     {
         SerialGaussianRandomVector( x );
-        const Real twoNorm = hmat_tools::TwoNorm( x );
-        hmat_tools::Scale( ((Real)1)/twoNorm, x );
+        const Real twoNorm = TwoNorm( x );
+        Scale( ((Real)1)/twoNorm, x );
     }
 
     Real estimate = theta; 
@@ -1459,9 +1388,9 @@ Real dmhm::hmat_tools::EstimateTwoNorm
     for( int i=0; i<k; ++i )
     {
         A.Multiply( (Real)1, x, y );
-        hmat_tools::Copy( y, x );
-        const Real twoNorm = hmat_tools::TwoNorm( x );
-        hmat_tools::Scale( ((Real)1)/twoNorm, x );
+        Copy( y, x );
+        const Real twoNorm = TwoNorm( x );
+        Scale( ((Real)1)/twoNorm, x );
         estimate *= pow( twoNorm, root );
     }
 #ifndef RELEASE
@@ -1472,9 +1401,8 @@ Real dmhm::hmat_tools::EstimateTwoNorm
 }
 
 template<typename Real>
-Real dmhm::hmat_tools::EstimateTwoNorm
-( const dmhm::AbstractHMat< std::complex<Real> >& A, 
-  Real theta, Real confidence )
+Real EstimateTwoNorm
+( const AbstractHMat<std::complex<Real> >& A, Real theta, Real confidence )
 {
     typedef std::complex<Real> Scalar;
 #ifndef RELEASE
@@ -1495,8 +1423,8 @@ Real dmhm::hmat_tools::EstimateTwoNorm
     Vector<Scalar> x( n );
     {
         SerialGaussianRandomVector( x );
-        const Real twoNorm = hmat_tools::TwoNorm( x );
-        hmat_tools::Scale( ((Scalar)1)/twoNorm, x );
+        const Real twoNorm = TwoNorm( x );
+        Scale( Scalar(1)/twoNorm, x );
     }
 
     Real estimate = theta; 
@@ -1504,10 +1432,10 @@ Real dmhm::hmat_tools::EstimateTwoNorm
     Vector<Scalar> y;
     for( int i=0; i<k; ++i )
     {
-        A.Multiply( (Scalar)1, x, y );
-        hmat_tools::Copy( y, x );
-        const Real twoNorm = hmat_tools::TwoNorm( x );
-        hmat_tools::Scale( ((Scalar)1)/twoNorm, x );
+        A.Multiply( Scalar(1), x, y );
+        Copy( y, x );
+        const Real twoNorm = TwoNorm( x );
+        Scale( Scalar(1)/twoNorm, x );
         estimate *= pow( twoNorm, root );
     }
 #ifndef RELEASE
@@ -1522,13 +1450,12 @@ Real dmhm::hmat_tools::EstimateTwoNorm
  */
 
 template<typename Scalar>
-void dmhm::hmat_tools::Scale
-( Scalar alpha, Vector<Scalar>& x )
+void Scale( Scalar alpha, Vector<Scalar>& x )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::Scale (Vector)");
 #endif
-    if( alpha == (Scalar)0 )
+    if( alpha == Scalar(0) )
         std::memset( x.Buffer(), 0, x.Height()*sizeof(Scalar) );
     else
         blas::Scal( x.Height(), alpha, x.Buffer(), 1 );
@@ -1538,8 +1465,7 @@ void dmhm::hmat_tools::Scale
 }
 
 template<typename Scalar>
-void dmhm::hmat_tools::Scale
-( Scalar alpha, Dense<Scalar>& D )
+void Scale( Scalar alpha, Dense<Scalar>& D )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::Scale (Dense)");
@@ -1547,7 +1473,7 @@ void dmhm::hmat_tools::Scale
     const int m = D.Height();
     const int n = D.Width();
 
-    if( alpha == (Scalar)1 )
+    if( alpha == Scalar(1) )
     {
 #ifndef RELEASE
         PopCallStack();
@@ -1557,7 +1483,7 @@ void dmhm::hmat_tools::Scale
 
     if( D.Symmetric() )
     {
-        if( alpha == (Scalar)0 )
+        if( alpha == Scalar(0) )
             for( int j=0; j<n; ++j )
                 std::memset( D.Buffer(j,j), 0, (m-j)*sizeof(Scalar) );
         else
@@ -1566,7 +1492,7 @@ void dmhm::hmat_tools::Scale
     }
     else
     {
-        if( alpha == (Scalar)0 )
+        if( alpha == Scalar(0) )
             for( int j=0; j<n; ++j )
                 std::memset( D.Buffer(0,j), 0, m*sizeof(Scalar) );
         else
@@ -1578,14 +1504,13 @@ void dmhm::hmat_tools::Scale
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
-void dmhm::hmat_tools::Scale
-( Scalar alpha, LowRank<Scalar,Conjugated>& F )
+template<typename Scalar>
+void Scale( Scalar alpha, LowRank<Scalar>& F )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::Scale (LowRank)");
 #endif
-    if( alpha == (Scalar)0 )
+    if( alpha == Scalar(0) )
     {
         F.U.Resize( F.Height(), 0 );
         F.V.Resize( F.Width(),  0 );
@@ -1602,13 +1527,13 @@ void dmhm::hmat_tools::Scale
  */
 
 // F := alpha H H,
-template<typename Real,bool Conjugated>
-void dmhm::hmat_tools::Multiply
+template<typename Real>
+void Multiply
 ( int sampleRank, 
   Real alpha, 
-  const dmhm::AbstractHMat<Real>& A, 
-  const dmhm::AbstractHMat<Real>& B,
-        dmhm::LowRank<Real,Conjugated>& F )
+  const AbstractHMat<Real>& A, 
+  const AbstractHMat<Real>& B,
+        LowRank<Real>& F )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::Multiply (F := A A)");
@@ -1696,13 +1621,13 @@ void dmhm::hmat_tools::Multiply
 }
 
 // F := alpha H H,
-template<typename Real,bool Conjugated>
-void dmhm::hmat_tools::Multiply
+template<typename Real>
+void Multiply
 ( int sampleRank, 
   std::complex<Real> alpha, 
-  const dmhm::AbstractHMat< std::complex<Real> >& A, 
-  const dmhm::AbstractHMat< std::complex<Real> >& B,
-        dmhm::LowRank< std::complex<Real>,Conjugated>& F )
+  const AbstractHMat<std::complex<Real> >& A, 
+  const AbstractHMat<std::complex<Real> >& B,
+        LowRank<std::complex<Real> >& F )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::Multiply (F := A A)");
@@ -1752,20 +1677,11 @@ void dmhm::hmat_tools::Multiply
         Y.Resize( m, minDim );
     }
 
-    if( Conjugated )
-    {
-        // Compute (Q^H (alpha AB))^H = conj(alpha) B^H A^H Q into F.V
-        A.AdjointMultiply( Conj(alpha), Y, X );
-        B.AdjointMultiply( 1, X, F.V );
-    }
-    else
-    {
-        // Compute (Q^H (alpha AB))^T = alpha B^T A^T conj(Q)
-        Conjugate( Y );
-        A.TransposeMultiply( alpha, Y, X );
-        B.TransposeMultiply( 1, X, F.V );
-        Conjugate( Y );
-    }
+    // Compute (Q^H (alpha AB))^T = alpha B^T A^T conj(Q)
+    Conjugate( Y );
+    A.TransposeMultiply( alpha, Y, X );
+    B.TransposeMultiply( 1, X, F.V );
+    Conjugate( Y );
         
     // Compute the economic SVD of F.V, U Sigma V^H,
     // overwriting F.V with U, and X with V^H. Then truncate the SVD to rank 
@@ -1796,7 +1712,7 @@ void dmhm::hmat_tools::Multiply
     }
 
     // F.U := Q (V^H)^T/H 
-    const char option = ( Conjugated ? 'C' : 'T' );
+    const char option = 'T';
     F.U.Resize( Y.Height(), r );
     blas::Gemm
     ( 'N', option, Y.Height(), r, Y.Width(), 
@@ -1808,13 +1724,13 @@ void dmhm::hmat_tools::Multiply
 }
 
 // F := alpha H^T H,
-template<typename Real,bool Conjugated>
-void dmhm::hmat_tools::TransposeMultiply
+template<typename Real>
+void TransposeMultiply
 ( int sampleRank,
   Real alpha, 
-  const dmhm::AbstractHMat<Real>& A,
-  const dmhm::AbstractHMat<Real>& B,
-        dmhm::LowRank<Real,Conjugated>& F )
+  const AbstractHMat<Real>& A,
+  const AbstractHMat<Real>& B,
+        LowRank<Real>& F )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::TransposeMultiply (F := A^T A)");
@@ -1902,13 +1818,13 @@ void dmhm::hmat_tools::TransposeMultiply
 }
 
 // F := alpha H^T H,
-template<typename Real,bool Conjugated>
-void dmhm::hmat_tools::TransposeMultiply
+template<typename Real>
+void TransposeMultiply
 ( int sampleRank,
   std::complex<Real> alpha, 
-  const dmhm::AbstractHMat< std::complex<Real> >& A,
-  const dmhm::AbstractHMat< std::complex<Real> >& B,
-        dmhm::LowRank<std::complex<Real>,Conjugated>& F )
+  const AbstractHMat<std::complex<Real> >& A,
+  const AbstractHMat<std::complex<Real> >& B,
+        LowRank<std::complex<Real> >& F )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::TransposeMultiply (F := A^T A)");
@@ -1958,25 +1874,11 @@ void dmhm::hmat_tools::TransposeMultiply
         Y.Resize( m, minDim );
     }
 
-    if( Conjugated )
-    {
-        // Compute (Q^H (alpha A^T B))^H = conj(alpha) B^H conj(A) Q
-        //                               = conj(alpha B^T A conj(Q))
-        // into F.V.
-        Conjugate( Y );
-        A.Multiply( alpha, Y, X );
-        B.TransposeMultiply( 1, X, F.V );
-        Conjugate( F.V );
-        Conjugate( Y );
-    }
-    else
-    {
-        // Compute (Q^H (alpha A^T B))^T = alpha B^T A conj(Q)
-        Conjugate( Y );
-        A.Multiply( alpha, Y, X );
-        B.TransposeMultiply( 1, X, F.V );
-        Conjugate( Y );
-    }
+    // Compute (Q^H (alpha A^T B))^T = alpha B^T A conj(Q)
+    Conjugate( Y );
+    A.Multiply( alpha, Y, X );
+    B.TransposeMultiply( 1, X, F.V );
+    Conjugate( Y );
         
     // Compute the economic SVD of F.V, U Sigma V^H,
     // overwriting F.V with U, and X with V^H. Then truncate the SVD to rank 
@@ -2007,7 +1909,7 @@ void dmhm::hmat_tools::TransposeMultiply
     }
 
     // F.U := Q (VH)^[T/H] = Q V
-    const char option = ( Conjugated ? 'C' : 'T' );
+    const char option = 'T';
     F.U.Resize( Y.Height(), r );
     blas::Gemm
     ( 'N', option, Y.Height(), r, Y.Width(), 
@@ -2019,13 +1921,13 @@ void dmhm::hmat_tools::TransposeMultiply
 }
 
 // F := alpha H^H H,
-template<typename Real,bool Conjugated>
-void dmhm::hmat_tools::AdjointMultiply
+template<typename Real>
+void AdjointMultiply
 ( int sampleRank, 
   Real alpha, 
-  const dmhm::AbstractHMat<Real>& A,
-  const dmhm::AbstractHMat<Real>& B,
-        dmhm::LowRank<Real,Conjugated>& F )
+  const AbstractHMat<Real>& A,
+  const AbstractHMat<Real>& B,
+        LowRank<Real>& F )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::AdjointMultiply (F := A^H A)");
@@ -2037,13 +1939,13 @@ void dmhm::hmat_tools::AdjointMultiply
 }
 
 // F := alpha H^H H
-template<typename Real,bool Conjugated>
-void dmhm::hmat_tools::AdjointMultiply
+template<typename Real>
+void AdjointMultiply
 ( int sampleRank, 
   std::complex<Real> alpha, 
-  const dmhm::AbstractHMat< std::complex<Real> >& A,
-  const dmhm::AbstractHMat< std::complex<Real> >& B,
-        dmhm::LowRank<std::complex<Real>,Conjugated>& F )
+  const AbstractHMat<std::complex<Real> >& A,
+  const AbstractHMat<std::complex<Real> >& B,
+        LowRank<std::complex<Real> >& F )
 {
 #ifndef RELEASE
     PushCallStack("hmat_tools::AdjointMultiply (F := A^H A)");
@@ -2093,20 +1995,11 @@ void dmhm::hmat_tools::AdjointMultiply
         Y.Resize( m, minDim );
     }
 
-    if( Conjugated )
-    {
-        // Compute (Q^H (alpha A^H B))^H = conj(alpha) B^H A Q into F.V.
-        A.Multiply( Conj(alpha), Y, X );
-        B.AdjointMultiply( 1, X, F.V );
-    }
-    else
-    {
-        // Compute (Q^H (alpha A^H B))^T = alpha B^T conj(A) conj(Q)
-        //                               = conj(conj(alpha) B^H A Q)
-        A.Multiply( Conj(alpha), Y, X );
-        B.AdjointMultiply( 1, X, F.V );
-        Conjugate( F.V );
-    }
+    // Compute (Q^H (alpha A^H B))^T = alpha B^T conj(A) conj(Q)
+    //                               = conj(conj(alpha) B^H A Q)
+    A.Multiply( Conj(alpha), Y, X );
+    B.AdjointMultiply( 1, X, F.V );
+    Conjugate( F.V );
         
     // Compute the economic SVD of F.V, U Sigma V^H,
     // overwriting F.V with U, and X with V^H. Then truncate the SVD to rank 
@@ -2137,7 +2030,7 @@ void dmhm::hmat_tools::AdjointMultiply
     }
 
     // F.U := Q (VH)^[T/H] = Q V
-    const char option = ( Conjugated ? 'C' : 'T' );
+    const char option = 'T';
     F.U.Resize( Y.Height(), r );
     blas::Gemm
     ( 'N', option, Y.Height(), r, Y.Width(), 
@@ -2148,4 +2041,7 @@ void dmhm::hmat_tools::AdjointMultiply
 #endif
 }
 
-#endif // DMHM_HMAT_TOOLS_HPP
+} // namespace hmat_tools
+} // namespace dmhm
+
+#endif // ifndef DMHM_HMAT_TOOLS_HPP

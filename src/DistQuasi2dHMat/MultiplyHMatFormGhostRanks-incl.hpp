@@ -1,33 +1,23 @@
 /*
-   Distributed-Memory Hierarchical Matrices (DMHM): a prototype implementation
-   of distributed-memory H-matrix arithmetic. 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   The University of Texas at Austin, and Stanford University
 
-   Copyright (C) 2011 Jack Poulson, Lexing Ying, and
-   The University of Texas at Austin
-
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
+   under the GPLv3 License, which can be found in the LICENSE file in the root
+   directory, or at http://opensource.org/licenses/GPL-3.0
 */
 
-template<typename Scalar,bool Conjugated>
+namespace dmhm {
+
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFormGhostRanks
-( DistQuasi2dHMat<Scalar,Conjugated>& B ) 
+DistQuasi2dHMat<Scalar>::MultiplyHMatFormGhostRanks
+( DistQuasi2dHMat<Scalar>& B ) 
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatFormGhostRanks");
 #endif
-    DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    DistQuasi2dHMat<Scalar>& A = *this;
 
     // Count the send/recv sizes
     std::map<int,int> sendSizes, recvSizes;
@@ -104,16 +94,16 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFormGhostRanks
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFormGhostRanksCount
-( const DistQuasi2dHMat<Scalar,Conjugated>& B ,
+DistQuasi2dHMat<Scalar>::MultiplyHMatFormGhostRanksCount
+( const DistQuasi2dHMat<Scalar>& B,
   std::map<int,int>& sendSizes, std::map<int,int>& recvSizes ) const
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatFormGhostRanksCount");
 #endif
-    const DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    const DistQuasi2dHMat<Scalar>& A = *this;
     if( A._sourceRoot != B._targetRoot )
     {
         std::ostringstream s;
@@ -286,16 +276,16 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFormGhostRanksCount
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFormGhostRanksPack
-( const DistQuasi2dHMat<Scalar,Conjugated>& B ,
+DistQuasi2dHMat<Scalar>::MultiplyHMatFormGhostRanksPack
+( const DistQuasi2dHMat<Scalar>& B,
   std::vector<int>& sendBuffer, std::map<int,int>& offsets ) const
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatFormGhostRanksPack");
 #endif
-    const DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    const DistQuasi2dHMat<Scalar>& A = *this;
     if( !A._inTargetTeam && !A._inSourceTeam && !B._inSourceTeam )
     {
 #ifndef RELEASE
@@ -440,16 +430,16 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFormGhostRanksPack
 #endif
 }
 
-template<typename Scalar,bool Conjugated>
+template<typename Scalar>
 void
-dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFormGhostRanksUnpack
-( DistQuasi2dHMat<Scalar,Conjugated>& B ,
+DistQuasi2dHMat<Scalar>::MultiplyHMatFormGhostRanksUnpack
+( DistQuasi2dHMat<Scalar>& B,
   const std::vector<int>& recvBuffer, std::map<int,int>& offsets )
 {
 #ifndef RELEASE
     PushCallStack("DistQuasi2dHMat::MultiplyHMatFormGhostRanksUnpack");
 #endif
-    DistQuasi2dHMat<Scalar,Conjugated>& A = *this;
+    DistQuasi2dHMat<Scalar>& A = *this;
     if( !A._inTargetTeam && !A._inSourceTeam && !B._inSourceTeam )
     {
 #ifndef RELEASE
@@ -561,3 +551,4 @@ dmhm::DistQuasi2dHMat<Scalar,Conjugated>::MultiplyHMatFormGhostRanksUnpack
 #endif
 }
 
+} // namespace dmhm
