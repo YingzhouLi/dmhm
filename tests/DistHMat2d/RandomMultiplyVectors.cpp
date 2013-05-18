@@ -7,6 +7,7 @@
    directory, or at http://opensource.org/licenses/GPL-3.0
 */
 #include "dmhm.hpp"
+using namespace dmhm;
 
 void Usage()
 {
@@ -18,20 +19,16 @@ void Usage()
 int
 main( int argc, char* argv[] )
 {
-    MPI_Init( &argc, &argv );
-    const int commRank = dmhm::mpi::CommRank( MPI_COMM_WORLD );
-    const int commSize = dmhm::mpi::CommSize( MPI_COMM_WORLD );
+    Initialize( argc, argv );
+    const int commRank = mpi::CommRank( mpi::COMM_WORLD );
+    const int commSize = mpi::CommSize( mpi::COMM_WORLD );
 
-    dmhm::UInt64 seed;
-    seed.d[0] = 17U;
-    seed.d[1] = 21U;
-    dmhm::SeedParallelLcg( commRank, commSize, seed );
-
+    // TODO: Use Choice for better command-line argument processing
     if( argc < 8 )
     {
         if( commRank == 0 )
             Usage();
-        MPI_Finalize();
+        Finalize();
         return 0;
     }
     int arg=1;
@@ -54,7 +51,7 @@ main( int argc, char* argv[] )
     try
     {
         typedef std::complex<double> Scalar;
-        typedef dmhm::DistHMat2d<Scalar> DistHMat;
+        typedef DistHMat2d<Scalar> DistHMat;
 
         // Set up a random H-matrix
         if( commRank == 0 )
@@ -63,12 +60,12 @@ main( int argc, char* argv[] )
                       << "testing...";
             std::cout.flush();
         }
-        const double createStartTime = dmhm::mpi::WallTime();
-        DistHMat::Teams teams( MPI_COMM_WORLD );
+        const double createStartTime = mpi::Time();
+        DistHMat::Teams teams( mpi::COMM_WORLD );
         DistHMat A
         ( numLevels, maxRank, stronglyAdmissible, xSize, ySize, teams );
         A.SetToRandom();
-        const double createStopTime = dmhm::mpi::WallTime();
+        const double createStopTime = mpi::Time();
         if( commRank == 0 )
         {
             std::cout << "done: " << createStopTime-createStartTime
@@ -83,21 +80,21 @@ main( int argc, char* argv[] )
 
         // Generate random vectors
         const int localWidth = A.LocalWidth();
-        dmhm::Dense<Scalar> X( localWidth, numVectors );
-        dmhm::ParallelGaussianRandomVectors( X );
+        Dense<Scalar> X( localWidth, numVectors );
+        ParallelGaussianRandomVectors( X );
 
         // Multiply against random vectors
-        dmhm::Dense<Scalar> Y;
+        Dense<Scalar> Y;
         if( commRank == 0 )
         {
             std::cout << "Multiplying distributed H-matrix against vectors...";
             std::cout.flush();
         }
-        dmhm::mpi::Barrier( MPI_COMM_WORLD );
-        double multStartTime = dmhm::mpi::WallTime();
+        mpi::Barrier( mpi::COMM_WORLD );
+        double multStartTime = mpi::Time();
         A.Multiply( (Scalar)1, X, Y );
-        dmhm::mpi::Barrier( MPI_COMM_WORLD );
-        double multStopTime = dmhm::mpi::WallTime();
+        mpi::Barrier( mpi::COMM_WORLD );
+        double multStopTime = mpi::Time();
         if( commRank == 0 )
         {
             std::cout << "done: " << multStopTime-multStartTime
@@ -109,11 +106,11 @@ main( int argc, char* argv[] )
         std::cerr << "Process " << commRank << " caught message: " << e.what() 
                   << std::endl;
 #ifndef RELEASE
-        dmhm::DumpCallStack();
+        DumpCallStack();
 #endif
     }
     
-    MPI_Finalize();
+    Finalize();
     return 0;
 }
 

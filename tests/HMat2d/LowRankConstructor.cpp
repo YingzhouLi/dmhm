@@ -7,6 +7,7 @@
    directory, or at http://opensource.org/licenses/GPL-3.0
 */
 #include "dmhm.hpp"
+using namespace dmhm;
 
 int
 main( int argc, char* argv[] )
@@ -23,7 +24,7 @@ main( int argc, char* argv[] )
               << std::endl;
     try
     {
-        dmhm::LowRank<double> F;
+        LowRank<double> F;
         F.U.Resize( m, r );
         F.V.Resize( n, r );
         for( int j=0; j<r; ++j )
@@ -34,15 +35,15 @@ main( int argc, char* argv[] )
                 F.V.Set( i, j, (double)i-j );
         F.Print( "F" );
 
-        dmhm::HMat2d<double> H( F, 2, r, false, xSize, ySize );
+        HMat2d<double> H( F, 2, r, false, xSize, ySize );
 
-        dmhm::Vector<double> x( n );
+        Vector<double> x( n );
         double* xBuffer = x.Buffer();
         for( int i=0; i<n; ++i )
             xBuffer[i] = 1.0;
         x.Print( "x" );
 
-        dmhm::Vector<double> y;
+        Vector<double> y;
         H.Multiply( 2.0, x, y );
         y.Print( "y := 2 H x ~= 2 F x" );
         H.TransposeMultiply( 2.0, x, y );
@@ -54,7 +55,7 @@ main( int argc, char* argv[] )
     {
         std::cerr << "Caught message: " << e.what() << std::endl;
 #ifndef RELEASE
-        dmhm::DumpCallStack();
+        DumpCallStack();
 #endif
     }
     
@@ -64,7 +65,7 @@ main( int argc, char* argv[] )
               << std::endl;
     try
     {
-        dmhm::LowRank<std::complex<double> > F;
+        LowRank<std::complex<double> > F;
         F.U.Resize( m, r );
         F.V.Resize( n, r );
         for( int j=0; j<r; ++j )
@@ -75,15 +76,15 @@ main( int argc, char* argv[] )
                 F.V.Set( i, j, std::complex<double>(i+j,i-j) );
         F.Print( "F" );
 
-        dmhm::HMat2d<std::complex<double> > H( F, 2, r, false, xSize, ySize );
+        HMat2d<std::complex<double> > H( F, 2, r, false, xSize, ySize );
 
-        dmhm::Vector< std::complex<double> > x( n );
+        Vector< std::complex<double> > x( n );
         std::complex<double>* xBuffer = x.Buffer();
         for( int i=0; i<n; ++i )
             xBuffer[i] = std::complex<double>(1.0,3.0);
         x.Print( "x" );
 
-        dmhm::Vector< std::complex<double> > y;
+        Vector< std::complex<double> > y;
         H.Multiply( std::complex<double>(4.0,5.0), x, y );
         y.Print( "y := (4+5i)H x ~= (4+5i)F x" );
         H.TransposeMultiply( std::complex<double>(4.0,5.0), x, y );
@@ -95,7 +96,7 @@ main( int argc, char* argv[] )
     {
         std::cerr << "Caught message: " << e.what() << std::endl;
 #ifndef RELEASE
-        dmhm::DumpCallStack();
+        DumpCallStack();
 #endif
     }
 

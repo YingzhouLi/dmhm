@@ -10,8 +10,8 @@
 #ifndef DMHM_DISTHMAT2D_HPP
 #define DMHM_DISTHMAT2D_HPP 1
 
-#include "dmhm/building_blocks/mpi.hpp"
-#include "dmhm/building_blocks/memory_map.hpp"
+#include "dmhm/core/mpi.hpp"
+#include "dmhm/core/memory_map.hpp"
 #include "dmhm/hmat2d.hpp"
 
 namespace dmhm {
@@ -31,15 +31,15 @@ public:
     class Teams
     {
     private:
-        std::vector<MPI_Comm> teams_, crossTeams_;
+        std::vector<mpi::Comm> teams_, crossTeams_;
     public:
-        Teams( MPI_Comm comm );
+        Teams( mpi::Comm comm );
         ~Teams();
 
         unsigned NumLevels() const;
         unsigned TeamLevel( unsigned level ) const;
-        MPI_Comm Team( unsigned level ) const;
-        MPI_Comm CrossTeam( unsigned inverseLevel ) const;
+        mpi::Comm Team( unsigned level ) const;
+        mpi::Comm CrossTeam( unsigned inverseLevel ) const;
 
         void TreeSums
         ( std::vector<Scalar>& buffer, const std::vector<int>& sizes ) const;
@@ -1665,7 +1665,7 @@ DistHMat2d<Scalar>::NumLevels() const
 
 template<typename Scalar>
 inline
-DistHMat2d<Scalar>::Teams::Teams( MPI_Comm comm )
+DistHMat2d<Scalar>::Teams::Teams( mpi::Comm comm )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::Teams::Teams");
@@ -1750,13 +1750,13 @@ DistHMat2d<Scalar>::Teams::TeamLevel( unsigned level ) const
 { return std::min(level,(unsigned)teams_.size()-1); }
 
 template<typename Scalar>
-inline MPI_Comm
+inline mpi::Comm
 DistHMat2d<Scalar>::Teams::Team
 ( unsigned level ) const
 { return teams_[TeamLevel(level)]; }
 
 template<typename Scalar>
-inline MPI_Comm
+inline mpi::Comm
 DistHMat2d<Scalar>::Teams::CrossTeam
 ( unsigned inverseLevel ) const
 {
@@ -1793,9 +1793,9 @@ DistHMat2d<Scalar>::Teams::TreeSums
     {
         if( partialSize == 0 )
             break;
-        MPI_Comm crossTeam = CrossTeam( i+1 );
+        mpi::Comm crossTeam = CrossTeam( i+1 );
         mpi::AllReduce
-        ( (const Scalar*)MPI_IN_PLACE, &buffer[0], partialSize, MPI_SUM,
+        ( (const Scalar*)MPI_IN_PLACE, &buffer[0], partialSize, mpi::SUM,
           crossTeam );
         partialSize -= sizes[numAllReduces-1-i];
     }
@@ -1826,14 +1826,15 @@ DistHMat2d<Scalar>::Teams::TreeSumToRoots
     {
         if( partialSize == 0 )
             break;
-        MPI_Comm crossTeam = CrossTeam( i+1 );
+        mpi::Comm crossTeam = CrossTeam( i+1 );
         const int crossTeamRank = mpi::CommRank( crossTeam );
         if( crossTeamRank == 0 )
             mpi::Reduce
             ( (const Scalar*)MPI_IN_PLACE, &buffer[0], 
-              partialSize, 0, MPI_SUM, crossTeam );
+              partialSize, mpi::SUM, 0, crossTeam );
         else
-            mpi::Reduce( &buffer[0], 0, partialSize, 0, MPI_SUM, crossTeam );
+            mpi::Reduce
+            ( &buffer[0], (Scalar*)0, partialSize, mpi::SUM, 0, crossTeam );
         partialSize -= sizes[numReduces-1-i];
     }
 }
@@ -1863,7 +1864,7 @@ DistHMat2d<Scalar>::Teams::TreeBroadcasts
     {
         if( partialSize == 0 )
             break;
-        MPI_Comm crossTeam = CrossTeam( i+1 );
+        mpi::Comm crossTeam = CrossTeam( i+1 );
         mpi::Broadcast( &buffer[0], partialSize, 0, crossTeam );
         partialSize -= sizes[numBroadcasts-1-i];
     }
@@ -1894,7 +1895,7 @@ DistHMat2d<Scalar>::Teams::TreeBroadcasts
     {
         if( partialSize == 0 )
             break;
-        MPI_Comm crossTeam = CrossTeam( i+1 );
+        mpi::Comm crossTeam = CrossTeam( i+1 );
         mpi::Broadcast( &buffer[0], partialSize, 0, crossTeam );
         partialSize -= sizes[numBroadcasts-1-i];
     }

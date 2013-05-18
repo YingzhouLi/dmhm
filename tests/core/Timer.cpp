@@ -8,13 +8,14 @@
 */
 #include "dmhm.hpp"
 #include <unistd.h>
+using namespace dmhm;
 
 int
 main( int argc, char* argv[] )
 {
-    MPI_Init( &argc, &argv );
-    const int commSize = dmhm::mpi::CommSize( MPI_COMM_WORLD );
-    const int commRank = dmhm::mpi::CommRank( MPI_COMM_WORLD );
+    Initialize( argc, argv ); 
+    const int commSize = mpi::CommSize( mpi::COMM_WORLD );
+    const int commRank = mpi::CommRank( mpi::COMM_WORLD );
     if( commSize != 1 )
     {
         if( commRank == 0 )
@@ -28,7 +29,7 @@ main( int argc, char* argv[] )
     {
         std::cout << "Running timing experiment, please wait a few seconds..."
                   << std::endl;
-        dmhm::Timer timer;
+        Timer timer;
         timer.Start( 0 );
         sleep( 1 );
         timer.Start( 1 );
@@ -119,10 +120,10 @@ main( int argc, char* argv[] )
     {
         std::cerr << "Caught message: " << e.what() << std::endl;
 #ifndef RELEASE
-        dmhm::DumpCallStack();
+        DumpCallStack();
 #endif
     }
 
-    MPI_Finalize();
+    Finalize();
     return 0;
 }

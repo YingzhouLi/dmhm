@@ -24,7 +24,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompress
     Real error = lapack::MachineEpsilon<Real>();
     
     // RYAN: Again...please properly format and don't check in debug code
-MPI_Comm team = teams_->Team( level_ );
+mpi::Comm team = teams_->Team( level_ );
 const int teamRank = mpi::CommRank( team );
 int print;
 if(teamRank==0)
@@ -142,7 +142,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressSum
         break;
     }
 /*//Print
-MPI_Comm teamp = teams_->Team( 0 );
+mpi::Comm teamp = teams_->Team( 0 );
 const int teamRankp = mpi::CommRank( teamp );
 if( level_ == 3 && teamRankp == 0 && block_.type == LOW_RANK)
 {
@@ -452,7 +452,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressReducesUnpack
     {
         if( level_ < startLevel )
             break;
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamRank = mpi::CommRank( team );
         if( teamRank ==0 )
         {
@@ -533,7 +533,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressMidcompute
     {
         if( level_ < startLevel )
             break;
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamRank = mpi::CommRank( team );
         if( teamRank == 0 )
         {
@@ -549,7 +549,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressMidcompute
             std::vector<Real> evdRealWork(lrwork);
             std::vector<int> evdIntWork(liwork);
 /*//Print
-MPI_Comm teamp = teams_->Team( 0 );
+mpi::Comm teamp = teams_->Team( 0 );
 const int teamRankp = mpi::CommRank( teamp );
 if( level_ == 3 && teamRankp == 0 && block_.type == LOW_RANK)
 _VSqr.Print("_VSqr Before svd");*/
@@ -789,7 +789,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressBroadcastsPack
     {
         if( level_ < startLevel )
             break;
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamRank = mpi::CommRank( team );
         if( teamRank == 0 )
         {

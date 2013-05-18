@@ -10,7 +10,7 @@
 #ifndef DMHM_HMAT2D_HPP
 #define DMHM_HMAT2D_HPP 1
 
-#include "dmhm/building_blocks/abstract_hmat.hpp"
+#include "dmhm/core/abstract_hmat.hpp"
 #include "dmhm/hmat_tools.hpp"
 
 namespace dmhm {
@@ -130,6 +130,10 @@ public:
     void LatexWriteStructure( const std::string filebase ) const;
     // This can be visualized with util/PlotHStructure.m and Octave/Matlab
     void MScriptWriteStructure( const std::string filebase ) const;
+    // Display structure with Qt
+#ifdef HAVE_QT5
+    void Display( std::string title="" ) const;
+#endif
 
     //------------------------------------------------------------------------//
     // Fulfillments of AbstractHMat interface                                 //

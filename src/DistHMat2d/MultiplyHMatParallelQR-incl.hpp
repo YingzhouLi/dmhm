@@ -33,7 +33,7 @@ DistHMat2d<Scalar>::MultiplyHMatParallelQR
     int passes = 0;
     for( int step=0; step<numSteps; ++step )
     {
-        MPI_Comm team = teams_->Team( (numSteps-1)-step );
+        mpi::Comm team = teams_->Team( (numSteps-1)-step );
         const int teamSize = mpi::CommSize( team );
         const int teamRank = mpi::CommRank( team );
 
@@ -60,7 +60,7 @@ DistHMat2d<Scalar>::MultiplyHMatParallelQR
         byte* sendHead = &sendBuffer[0];
         for( int l=0; l<numSteps-step; ++l )
         {
-            MPI_Comm parentTeam = teams_->Team(l);
+            mpi::Comm parentTeam = teams_->Team(l);
             const int log2ParentTeamSize = Log2(mpi::CommSize(parentTeam));
             const Dense<Scalar>* const* XLevel = &Xs[XOffsets[l]];
             const Scalar* qrLevel = &qrBuffer[qrOffsets[l]];
@@ -136,7 +136,7 @@ DistHMat2d<Scalar>::MultiplyHMatParallelQR
             const byte* recvHead = &recvBuffer[0];
             for( int l=0; l<numSteps-step; ++l )
             {
-                MPI_Comm parentTeam = teams_->Team(l);
+                mpi::Comm parentTeam = teams_->Team(l);
                 const int log2ParentTeamSize = Log2(mpi::CommSize(parentTeam));
 
                 bool rootOfNextStep = false;
@@ -295,7 +295,7 @@ DistHMat2d<Scalar>::MultiplyHMatParallelQR
             const byte* recvHead = &recvBuffer[0];
             for( int l=0; l<numSteps-step; ++l )
             {
-                MPI_Comm parentTeam = teams_->Team(l);
+                mpi::Comm parentTeam = teams_->Team(l);
                 const int log2ParentTeamSize = Log2(mpi::CommSize(parentTeam));
 
                 const Dense<Scalar>* const* XLevel = &Xs[XOffsets[l]];
@@ -458,7 +458,7 @@ DistHMat2d<Scalar>::MultiplyHMatParallelQR
             recvHead = &recvBuffer[0];
             for( int l=0; l<numSteps-step; ++l )
             {
-                MPI_Comm parentTeam = teams_->Team(l);
+                mpi::Comm parentTeam = teams_->Team(l);
                 const int log2ParentTeamSize = Log2(mpi::CommSize(parentTeam));
                 
                 bool rootOfNextStep = false;

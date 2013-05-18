@@ -22,7 +22,7 @@ DistHMat2d<Scalar>::PackedSizes
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::PackedSizes");
 #endif
-    MPI_Comm comm = teams.Team(0);
+    mpi::Comm comm = teams.Team(0);
     const unsigned p = mpi::CommSize( comm );
     if( !(p && !(p & (p-1))) )
         throw std::logic_error("Must use a power of two number of processes");
@@ -57,7 +57,7 @@ DistHMat2d<Scalar>::Pack
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::Pack");
 #endif
-    MPI_Comm comm = teams.Team(0);
+    mpi::Comm comm = teams.Team(0);
     const int p = mpi::CommSize( comm );
     std::vector<byte*> heads = packedSubs;
     std::vector<byte**> headPointers(p); 
@@ -824,7 +824,7 @@ template<typename Scalar>
 void
 DistHMat2d<Scalar>::UnpackRecursion( const byte*& head )
 {
-    MPI_Comm team = teams_->Team( level_ );
+    mpi::Comm team = teams_->Team( level_ );
     if( !inSourceTeam_ && !inTargetTeam_ )
     {
         block_.type = EMPTY;

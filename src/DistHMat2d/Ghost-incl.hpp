@@ -95,7 +95,7 @@ DistHMat2d<Scalar>::FillTargetStructureRecursion
     {
         targetStructure[level_].insert( targetOffset_ );
 
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamSize = mpi::CommSize( team );
         const int teamRank = mpi::CommRank( team );
         const Node& node = *block_.data.N;
@@ -180,7 +180,7 @@ DistHMat2d<Scalar>::FillSourceStructureRecursion
     {
         sourceStructure[level_].insert( sourceOffset_ );
 
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamSize = mpi::CommSize( team );
         const int teamRank = mpi::CommRank( team );
         const Node& node = *block_.data.N;
@@ -266,7 +266,7 @@ DistHMat2d<Scalar>::FindTargetGhostNodesRecursion
     case DIST_NODE_GHOST:
     {
         Node& node = *block_.data.N;
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamSize = mpi::CommSize( team );
         if( teamSize >= 4 )
         {
@@ -307,7 +307,7 @@ DistHMat2d<Scalar>::FindTargetGhostNodesRecursion
               targetStructure[level_].end(), targetOffset_ ) )
             break;
                                
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamSize = mpi::CommSize( team );
 
         if( Admissible() )
@@ -409,7 +409,7 @@ DistHMat2d<Scalar>::FindSourceGhostNodesRecursion
     case DIST_NODE_GHOST:
     {
         Node& node = *block_.data.N;
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamSize = mpi::CommSize( team );
         if( teamSize >= 4 )
         {
@@ -450,7 +450,7 @@ DistHMat2d<Scalar>::FindSourceGhostNodesRecursion
               sourceStructure[level_].end(), sourceOffset_ ) )
             break;
                                
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamSize = mpi::CommSize( team );
 
         if( Admissible() )

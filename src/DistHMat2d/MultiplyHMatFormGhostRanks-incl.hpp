@@ -44,9 +44,9 @@ DistHMat2d<Scalar>::MultiplyHMatFormGhostRanks
     A.MultiplyHMatFormGhostRanksPack( B, sendBuffer, offsets );
 
     // Start the non-blocking recvs
-    MPI_Comm comm = A.teams_->Team( 0 );
+    mpi::Comm comm = A.teams_->Team( 0 );
     const int numRecvs = recvSizes.size();
-    std::vector<MPI_Request> recvRequests( numRecvs );
+    std::vector<mpi::Request> recvRequests( numRecvs );
     std::vector<int> recvBuffer( totalRecvSize );
     int offset = 0;
     for( it=recvSizes.begin(); it!=recvSizes.end(); ++it )
@@ -71,7 +71,7 @@ DistHMat2d<Scalar>::MultiplyHMatFormGhostRanks
     }
 #endif
     const int numSends = sendSizes.size();
-    std::vector<MPI_Request> sendRequests( numSends );
+    std::vector<mpi::Request> sendRequests( numSends );
     offset = 0;
     for( it=sendSizes.begin(); it!=sendSizes.end(); ++it )
     {
@@ -82,13 +82,11 @@ DistHMat2d<Scalar>::MultiplyHMatFormGhostRanks
     }
 
     // Unpack as soon as we have received our data
-    for( int i=0; i<numRecvs; ++i )
-        mpi::Wait( recvRequests[i] );
+    mpi::WaitAll( numRecvs, &recvRequests[0] );
     A.MultiplyHMatFormGhostRanksUnpack( B, recvBuffer, recvOffsets );
 
     // Don't exit until we know that the data was sent
-    for( int i=0; i<numSends; ++i )
-        mpi::Wait( sendRequests[i] );
+    mpi::WaitAll( numSends, &sendRequests[0] );
 }
 
 template<typename Scalar>
@@ -111,7 +109,7 @@ DistHMat2d<Scalar>::MultiplyHMatFormGhostRanksCount
     if( !A.inTargetTeam_ && !A.inSourceTeam_ && !B.inSourceTeam_ )
         return;
 
-    MPI_Comm team = A.teams_->Team( A.level_ );
+    mpi::Comm team = A.teams_->Team( A.level_ );
     const int teamRank = mpi::CommRank( team );
     std::pair<int,int> AOffsets( A.targetOffset_, A.sourceOffset_ ),
                        BOffsets( B.targetOffset_, B.sourceOffset_ );
@@ -278,7 +276,7 @@ DistHMat2d<Scalar>::MultiplyHMatFormGhostRanksPack
     if( !A.inTargetTeam_ && !A.inSourceTeam_ && !B.inSourceTeam_ )
         return;
 
-    MPI_Comm team = A.teams_->Team( A.level_ );
+    mpi::Comm team = A.teams_->Team( A.level_ );
     const int teamRank = mpi::CommRank( team );
     std::pair<int,int> AOffsets( A.targetOffset_, A.sourceOffset_ ),
                        BOffsets( B.targetOffset_, B.sourceOffset_ );
@@ -424,7 +422,7 @@ DistHMat2d<Scalar>::MultiplyHMatFormGhostRanksUnpack
     if( !A.inTargetTeam_ && !A.inSourceTeam_ && !B.inSourceTeam_ )
         return;
 
-    MPI_Comm team = A.teams_->Team( A.level_ );
+    mpi::Comm team = A.teams_->Team( A.level_ );
     const int teamRank = mpi::CommRank( team );
     std::pair<int,int> AOffsets( A.targetOffset_, A.sourceOffset_ ),
                        BOffsets( B.targetOffset_, B.sourceOffset_ );

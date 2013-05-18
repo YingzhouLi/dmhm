@@ -370,9 +370,9 @@ DistHMat2d<Scalar>::MultiplyHMatFHHPassData
       startLevel, endLevel, startUpdate, endUpdate, 0 );
 
     // Start the non-blocking recvs
-    MPI_Comm comm = teams_->Team( 0 );
+    mpi::Comm comm = teams_->Team( 0 );
     const int numRecvs = recvSizes.size();
-    std::vector<MPI_Request> recvRequests( numRecvs );
+    std::vector<mpi::Request> recvRequests( numRecvs );
     std::vector<Scalar> recvBuffer( totalRecvSize );
     int offset = 0;
     for( it=recvSizes.begin(); it!=recvSizes.end(); ++it )
@@ -387,7 +387,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHPassData
 
     // Start the non-blocking sends
     const int numSends = sendSizes.size();
-    std::vector<MPI_Request> sendRequests( numSends );
+    std::vector<mpi::Request> sendRequests( numSends );
     offset = 0;
     for( it=sendSizes.begin(); it!=sendSizes.end(); ++it )
     {
@@ -398,15 +398,13 @@ DistHMat2d<Scalar>::MultiplyHMatFHHPassData
     }
 
     // Unpack as soon as we have received our data
-    for( int i=0; i<numRecvs; ++i )
-        mpi::Wait( recvRequests[i] );
+    mpi::WaitAll( numRecvs, &recvRequests[0] );
     A.MultiplyHMatFHHPassDataUnpack
     ( B, C, recvBuffer, recvOffsets, 
       startLevel, endLevel, startUpdate, endUpdate, 0 );
 
     // Don't exit until we know that the data was sent
-    for( int i=0; i<numSends; ++i )
-        mpi::Wait( sendRequests[i] );
+    mpi::WaitAll( numSends, &sendRequests[0] );
 }
 
 template<typename Scalar>
@@ -1012,7 +1010,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHFinalize
                      qrOffsets(numTeamLevels), tauOffsets(numTeamLevels);
     for( unsigned teamLevel=0; teamLevel<numTeamLevels; ++teamLevel )
     {
-        MPI_Comm team = C.teams_->Team( teamLevel );
+        mpi::Comm team = C.teams_->Team( teamLevel );
         const unsigned teamSize = mpi::CommSize( team );
         const unsigned log2TeamSize = Log2( teamSize );
 
@@ -1081,7 +1079,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHFinalize
     Dense<Scalar> Z( 2*r, r );
     for( unsigned teamLevel=0; teamLevel<numTeamLevels; ++teamLevel )
     {
-        MPI_Comm team = C.teams_->Team( teamLevel );
+        mpi::Comm team = C.teams_->Team( teamLevel );
         const unsigned teamSize = mpi::CommSize( team );
         const unsigned log2TeamSize = Log2( teamSize );
         const unsigned teamRank = mpi::CommRank( team );
@@ -1423,7 +1421,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHFinalizeLocalQR
     {
         if( level_ >= startLevel && level_ < endLevel )
         {
-            MPI_Comm team = teams_->Team( level_ );
+            mpi::Comm team = teams_->Team( level_ );
             const unsigned teamLevel = teams_->TeamLevel(level_);
             const int log2TeamSize = Log2( mpi::CommSize( team ) );
             const int r = SampleRank( MaxRank() );

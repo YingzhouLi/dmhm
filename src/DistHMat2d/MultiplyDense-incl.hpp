@@ -228,7 +228,7 @@ DistHMat2d<Scalar>::MultiplyDensePrecompute
             *context.block.data.DN;
         const Node& node = *block_.data.N;
 
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamSize = mpi::CommSize( team );
         if( teamSize > 2 )
         {
@@ -449,7 +449,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePrecompute
             *context.block.data.DN;
         const Node& node = *block_.data.N;
 
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamSize = mpi::CommSize( team );
         if( teamSize > 2 )
         {
@@ -666,7 +666,7 @@ DistHMat2d<Scalar>::AdjointMultiplyDensePrecompute
             *context.block.data.DN;
         const Node& node = *block_.data.N;
 
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamSize = mpi::CommSize( team );
         if( teamSize > 2 )
         {
@@ -1124,7 +1124,7 @@ DistHMat2d<Scalar>::MultiplyDenseSumsUnpack
     {
         const DistLowRank& DF = *block_.data.DF;
         Dense<Scalar>& Z = *context.block.data.Z;
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamRank = mpi::CommRank( team );
         if( teamRank == 0 )
         {
@@ -1176,7 +1176,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDenseSumsUnpack
     {
         const DistLowRank& DF = *block_.data.DF;
         Dense<Scalar>& Z = *context.block.data.Z;
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamRank = mpi::CommRank( team );
         if( teamRank == 0 )
         {
@@ -1233,9 +1233,9 @@ DistHMat2d<Scalar>::MultiplyDensePassData
     MultiplyDensePassDataPack( context, sendBuffer, offsets );
 
     // Start the non-blocking recvs
-    MPI_Comm comm = teams_->Team( 0 );
+    mpi::Comm comm = teams_->Team( 0 );
     const int numRecvs = recvSizes.size();
-    std::vector<MPI_Request> recvRequests( numRecvs );
+    std::vector<mpi::Request> recvRequests( numRecvs );
     std::vector<Scalar> recvBuffer( totalRecvSize );
     int offset = 0;
     for( it=recvSizes.begin(); it!=recvSizes.end(); ++it )
@@ -1248,7 +1248,7 @@ DistHMat2d<Scalar>::MultiplyDensePassData
 
     // Start the non-blocking sends
     const int numSends = sendSizes.size();
-    std::vector<MPI_Request> sendRequests( numSends );
+    std::vector<mpi::Request> sendRequests( numSends );
     offset = 0;
     for( it=sendSizes.begin(); it!=sendSizes.end(); ++it )
     {
@@ -1259,13 +1259,11 @@ DistHMat2d<Scalar>::MultiplyDensePassData
     }
 
     // Unpack as soon as we have received our data
-    for( int i=0; i<numRecvs; ++i )
-        mpi::Wait( recvRequests[i] );
+    mpi::WaitAll( numRecvs, &recvRequests[0] );
     MultiplyDensePassDataUnpack( context, recvBuffer, recvOffsets );
     
     // Don't exit until we know that the data was sent
-    for( int i=0; i<numSends; ++i )
-        mpi::Wait( sendRequests[i] );
+    mpi::WaitAll( numSends, &sendRequests[0] );
 }
 
 template<typename Scalar>
@@ -1296,7 +1294,7 @@ DistHMat2d<Scalar>::MultiplyDensePassDataCount
         if( inSourceTeam_ && inTargetTeam_ )
             break;
         const DistLowRank& DF = *block_.data.DF;
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamRank = mpi::CommRank( team );
         if( teamRank == 0 )
         {
@@ -1373,7 +1371,7 @@ DistHMat2d<Scalar>::MultiplyDensePassDataPack
         const DistLowRank& DF = *block_.data.DF;
         if( DF.rank != 0 )
         {
-            MPI_Comm team = teams_->Team( level_ );
+            mpi::Comm team = teams_->Team( level_ );
             const int teamRank = mpi::CommRank( team );
             if( teamRank == 0 )
             {
@@ -1478,7 +1476,7 @@ DistHMat2d<Scalar>::MultiplyDensePassDataUnpack
         const DistLowRank& DF = *block_.data.DF;
         if( DF.rank != 0 )
         {
-            MPI_Comm team = teams_->Team( level_ );
+            mpi::Comm team = teams_->Team( level_ );
             const int teamRank = mpi::CommRank( team );
             if( teamRank == 0 )
             {
@@ -1557,9 +1555,9 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePassData
     TransposeMultiplyDensePassDataPack( context, XLocal, sendBuffer, offsets );
 
     // Start the non-blocking sends
-    MPI_Comm comm = teams_->Team( 0 );
+    mpi::Comm comm = teams_->Team( 0 );
     const int numSends = sendSizes.size();
-    std::vector<MPI_Request> sendRequests( numSends );
+    std::vector<mpi::Request> sendRequests( numSends );
     int offset = 0;
     for( it=sendSizes.begin(); it!=sendSizes.end(); ++it )
     {
@@ -1571,7 +1569,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePassData
 
     // Start the non-blocking recvs
     const int numRecvs = recvSizes.size();
-    std::vector<MPI_Request> recvRequests( numRecvs );
+    std::vector<mpi::Request> recvRequests( numRecvs );
     std::vector<Scalar> recvBuffer( totalRecvSize );
     offset = 0;
     for( it=recvSizes.begin(); it!=recvSizes.end(); ++it )
@@ -1583,13 +1581,11 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePassData
     }
 
     // Unpack as soon as we have received our data
-    for( int i=0; i<numRecvs; ++i )
-        mpi::Wait( recvRequests[i] );
+    mpi::WaitAll( numRecvs, &recvRequests[0] );
     TransposeMultiplyDensePassDataUnpack( context, recvBuffer, recvOffsets );
     
     // Don't exit until we know that the data was sent
-    for( int i=0; i<numSends; ++i )
-        mpi::Wait( sendRequests[i] );
+    mpi::WaitAll( numSends, &sendRequests[0] );
 }
 
 template<typename Scalar>
@@ -1620,7 +1616,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePassDataCount
         if( inSourceTeam_ && inTargetTeam_ )
             break;
         const DistLowRank& DF = *block_.data.DF;
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamRank = mpi::CommRank( team );
         if( teamRank == 0 )
         {
@@ -1674,7 +1670,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePassDataPack
         typename MultiplyDenseContext::DistNode& nodeContext = 
             *context.block.data.DN;
 
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamSize = mpi::CommSize( team );
         if( teamSize > 2 )
         {
@@ -1739,7 +1735,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePassDataPack
         const DistLowRank& DF = *block_.data.DF;
         if( DF.rank != 0 )
         {
-            MPI_Comm team = teams_->Team( level_ );
+            mpi::Comm team = teams_->Team( level_ );
             const int teamRank = mpi::CommRank( team );
             if( teamRank == 0 )
             {
@@ -1841,7 +1837,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePassDataUnpack
         const DistLowRank& DF = *block_.data.DF;
         if( DF.rank != 0 )
         {
-            MPI_Comm team = teams_->Team( level_ );
+            mpi::Comm team = teams_->Team( level_ );
             const int teamRank = mpi::CommRank( team );
             if( teamRank == 0 )
             {
@@ -2067,7 +2063,7 @@ DistHMat2d<Scalar>::MultiplyDenseBroadcastsPack
     }
     case DIST_LOW_RANK:
     {
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamRank = mpi::CommRank( team );
         if( teamRank == 0 )
         {
@@ -2117,7 +2113,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDenseBroadcastsPack
     }
     case DIST_LOW_RANK:
     {
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamRank = mpi::CommRank( team );
         if( teamRank == 0 )
         {
@@ -2247,7 +2243,7 @@ DistHMat2d<Scalar>::MultiplyDensePostcompute
         typename MultiplyDenseContext::DistNode& nodeContext = 
             *context.block.data.DN;
 
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamSize = mpi::CommSize( team );
         if( teamSize > 2 )
         {
@@ -2445,7 +2441,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePostcompute
         const Node& node = *block_.data.N;
         typename MultiplyDenseContext::DistNode& nodeContext = 
             *context.block.data.DN;
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamSize = mpi::CommSize( team );
         if( teamSize > 2 )
         {
@@ -2639,7 +2635,7 @@ DistHMat2d<Scalar>::AdjointMultiplyDensePostcompute
         typename MultiplyDenseContext::DistNode& nodeContext = 
             *context.block.data.DN;
 
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamSize = mpi::CommSize( team );
         if( teamSize > 2 )
         {

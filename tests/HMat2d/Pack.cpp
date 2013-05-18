@@ -7,6 +7,7 @@
    directory, or at http://opensource.org/licenses/GPL-3.0
 */
 #include "dmhm.hpp"
+using namespace dmhm;
 
 void Usage()
 {
@@ -62,14 +63,15 @@ FormRow
 int
 main( int argc, char* argv[] )
 {
-    MPI_Init( &argc, &argv );
-    const int rank = dmhm::mpi::CommRank( MPI_COMM_WORLD );
+    Initialize( argc, argv );
+    const int rank = mpi::CommRank( mpi::COMM_WORLD );
 
+    // TODO: Use Choice for better command-line argument processing
     if( argc < 7 )
     {
         if( rank == 0 )
             Usage();
-        MPI_Finalize();
+        Finalize();
         return 0;
     }
     int arg=1;
@@ -93,9 +95,9 @@ main( int argc, char* argv[] )
     try
     {
         typedef std::complex<double> Scalar;
-        typedef dmhm::HMat2d<Scalar> HMat;
+        typedef HMat2d<Scalar> HMat;
 
-        dmhm::Sparse<Scalar> S;
+        Sparse<Scalar> S;
         S.height = m;
         S.width = n;
         S.symmetric = false;
@@ -112,7 +114,7 @@ main( int argc, char* argv[] )
             std::cout << "Filling sparse matrix...";
             std::cout.flush();
         }
-        double fillStartTime = dmhm::mpi::WallTime();
+        double fillStartTime = mpi::Time();
         std::vector<Scalar> row;
         std::vector<int> colIndices;
         for( int i=0; i<m; ++i )
@@ -132,7 +134,7 @@ main( int argc, char* argv[] )
             }
         }
         S.rowOffsets.push_back( S.nonzeros.size() );
-        double fillStopTime = dmhm::mpi::WallTime();
+        double fillStopTime = mpi::Time();
         if( rank == 0 )
         {
             std::cout << "done: " << fillStopTime-fillStartTime << " seconds." 
@@ -147,9 +149,9 @@ main( int argc, char* argv[] )
             std::cout << "Constructing H-matrix...";
             std::cout.flush();
         }
-        double constructStartTime = dmhm::mpi::WallTime();
+        double constructStartTime = mpi::Time();
         HMat H( S, numLevels, r, stronglyAdmissible, xSize, ySize );
-        double constructStopTime = dmhm::mpi::WallTime();
+        double constructStopTime = mpi::Time();
         if( rank == 0 )
         {
             std::cout << "done: " << constructStopTime-constructStartTime 
@@ -159,7 +161,7 @@ main( int argc, char* argv[] )
         }
 
         // Test against a vector of all 1's
-        dmhm::Vector<Scalar> x;
+        Vector<Scalar> x;
         x.Resize( m );
         Scalar* xBuffer = x.Buffer();
         for( int i=0; i<m; ++i )
@@ -169,10 +171,10 @@ main( int argc, char* argv[] )
             std::cout << "Multiplying H-matrix by a vector of all ones...";
             std::cout.flush();
         }
-        dmhm::Vector<Scalar> y;
-        double matVecStartTime = dmhm::mpi::WallTime();
+        Vector<Scalar> y;
+        double matVecStartTime = mpi::Time();
         H.Multiply( 1.0, x, y );
-        double matVecStopTime = dmhm::mpi::WallTime();
+        double matVecStopTime = mpi::Time();
         if( rank == 0 )
         {
             std::cout << "done: " << matVecStopTime-matVecStartTime 
@@ -182,15 +184,15 @@ main( int argc, char* argv[] )
         }
 
         // Pack the H-matrix
-        std::vector<dmhm::byte> packedHMat;
+        std::vector<byte> packedHMat;
         if( rank == 0 )
         {
             std::cout << "Packing H-matrix...";
             std::cout.flush();
         }
-        double packStartTime = dmhm::mpi::WallTime();
+        double packStartTime = mpi::Time();
         H.Pack( packedHMat );
-        double packStopTime = dmhm::mpi::WallTime();
+        double packStopTime = mpi::Time();
         double sizeInMB = ((double)packedHMat.size())/(1024.*1024.);
         if( rank == 0 )
         {
@@ -204,9 +206,9 @@ main( int argc, char* argv[] )
             std::cout << "Unpacking H-matrix...";
             std::cout.flush();
         }
-        double unpackStartTime = dmhm::mpi::WallTime();
+        double unpackStartTime = mpi::Time();
         HMat HCopy( packedHMat );
-        double unpackStopTime = dmhm::mpi::WallTime();
+        double unpackStopTime = mpi::Time();
         if( rank == 0 )
         {
             std::cout << "done: " << unpackStopTime-unpackStartTime 
@@ -217,15 +219,15 @@ main( int argc, char* argv[] )
 
         // Check that the copied H-matrix has the same action on our vector of 
         // all 1's
-        dmhm::Vector<Scalar> z;
+        Vector<Scalar> z;
         if( rank == 0 )
         {
             std::cout << "Multiplying H-matrix by a vector...";
             std::cout.flush();
         }
-        matVecStartTime = dmhm::mpi::WallTime();
+        matVecStartTime = mpi::Time();
         HCopy.Multiply( 1.0, x, z );
-        matVecStopTime = dmhm::mpi::WallTime();
+        matVecStopTime = mpi::Time();
         if( rank == 0 )
         {
             std::cout << "done: " << matVecStopTime-matVecStartTime 
@@ -248,10 +250,10 @@ main( int argc, char* argv[] )
         std::cerr << "Process " << rank << " caught message: " << e.what() 
                   << std::endl;
 #ifndef RELEASE
-        dmhm::DumpCallStack();
+        DumpCallStack();
 #endif
     }
     
-    MPI_Finalize();
+    Finalize();
     return 0;
 }

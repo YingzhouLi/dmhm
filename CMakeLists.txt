@@ -19,6 +19,9 @@ option(BUILD_TESTS "Build the test drivers" ON)
 option(AVOID_COMPLEX_MPI "Avoid complex MPI routines for robustness" ON)
 mark_as_advanced(AVOID_COMPLEX_MPI)
 
+# Whether or not to use Qt5 for visualization if it is found (experimental)
+option(USE_QT5 "Attempt to use Qt5?" ON)
+
 if(RELEASE)
     set(CXX_FLAGS "-O3" CACHE STRING "CXX flags")
 elseif(RELEASE)
@@ -30,7 +33,28 @@ if(NOT MPI_CXX_FOUND)
   message(FATAL_ERROR "MPI C++ compiler was not found and is required")
 endif()
 include_directories(${MPI_CXX_INCLUDE_PATH})
-set(CMAKE_CXX_FLAGS "${CXX_FLAGS} ${MPI_CXX_COMPILE_FLAGS}")
+set(EXTRA_FLAGS "${MPI_CXX_COMPILE_FLAGS}")
+
+set(HAVE_QT5 FALSE)
+if(USE_QT5)
+  # Search for Qt5
+  find_package(Qt5Widgets)
+  if(Qt5Widgets_FOUND)
+    #set(DMHM_HEADERS_PREMOC 
+    #    "include/dmhm/graphics/display_window.hpp;include/dmhm/graphics/complex_display_window.hpp")
+    #qt_wrap_cpp(dmhm DMHM_MOC_SRC ${DMHM_HEADERS_PREMOC})
+    include_directories(${Qt5Widgets_INCLUDE_DIRS})
+    add_definitions(${Qt5Widgets_DEFINITIONS})
+    set(EXTRA_FLAGS "${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS} ${EXTRA_FLAGS}")
+    set(HAVE_QT5 TRUE)
+    message(STATUS "Found Qt5")
+  else()
+    message(STATUS "Did NOT find Qt5")
+  endif()
+endif()
+
+# Now append the extra flags
+set(CMAKE_CXX_FLAGS "${CXX_FLAGS} ${EXTRA_FLAGS}")
 
 if(NOT MATH_LIBS)
   set(MATH_DESC "BLAS/LAPACK link flags")
@@ -94,6 +118,32 @@ else()
   message(FATAL_ERROR "Could not determine LAPACK format.")
 endif()
 
+# Look for MPI_Reduce_scatter_block (and MPI_Reduce_scatter as sanity check)
+set(CMAKE_REQUIRED_FLAGS "${MPI_C_COMPILE_FLAGS} ${MPI_C_LINK_FLAGS}")
+set(CMAKE_REQUIRED_INCLUDES ${MPI_C_INCLUDE_PATH})
+set(CMAKE_REQUIRED_LIBRARIES ${MPI_C_LIBRARIES})
+check_function_exists(MPI_Reduce_scatter       HAVE_MPI_REDUCE_SCATTER)
+if(NOT HAVE_MPI_REDUCE_SCATTER)
+  message(FATAL_ERROR "Could not find MPI_Reduce_scatter")
+endif()
+# Check for MPI_IN_PLACE (essentially MPI2 support)
+include(CheckCSourceCompiles)
+set(MPI_IN_PLACE_CODE
+    "#include \"mpi.h\"
+     int main( int argc, char* argv[] ) 
+     {
+         MPI_Init( &argc, &argv );
+         float a;
+         MPI_Allreduce
+         ( MPI_IN_PLACE, &a, 1, MPI_FLOAT, MPI_SUM, MPI_COMM_WORLD );
+         MPI_Finalize(); 
+         return 0; 
+     }")
+check_c_source_compiles("${MPI_IN_PLACE_CODE}" HAVE_MPI_IN_PLACE)
+if(NOT HAVE_MPI_IN_PLACE)
+  message(FATAL_ERROR "Could not find MPI_IN_PLACE")
+endif()
+
 # Look for restrict support
 include(CheckCXXSourceCompiles)
 set(RESTRICT_CODE "int main(void) { int* RESTRICT a; return 0; }")
@@ -118,9 +168,9 @@ else()
 endif()
 
 # Store all of our system-specific definitions
-configure_file(${CMAKE_SOURCE_DIR}/include/dmhm/config.h.cmake
-               ${CMAKE_BINARY_DIR}/include/dmhm/config.h)
-install(FILES ${CMAKE_BINARY_DIR}/include/dmhm/config.h
+configure_file(${PROJECT_SOURCE_DIR}/cmake/config.h.cmake
+               ${PROJECT_BINARY_DIR}/include/dmhm/config.h)
+install(FILES ${PROJECT_BINARY_DIR}/include/dmhm/config.h
         DESTINATION include/dmhm)
 
 # Grab all of the .c, .cpp, .h, and .hpp DMHM files
@@ -151,14 +201,17 @@ install(TARGETS dmhm DESTINATION lib)
 # to be linked last
 add_library(cmake-dummy-lib STATIC cmake/CMakeDummyFunction.cpp)
 list(APPEND EXTERNAL_LIBS "${MATH_LIBS} ${MPI_CXX_LIBRARIES}")
+if(HAVE_QT5)
+  list(APPEND EXTERNAL_LIBS "${Qt5Widgets_LIBRARIES}")
+endif()
 target_link_libraries(cmake-dummy-lib ${EXTERNAL_LIBS})
 
 # Build the test drivers if necessary
 set(MPI_LINK_FLAGS "${MPI_CXX_LINK_FLAGS}")
 if(BUILD_TESTS)
   set(TEST_DIR ${PROJECT_SOURCE_DIR}/tests)
-  set(TEST_TYPES building_blocks hmat_tools HMat2d DistHMat2d)
-  set(building_blocks_TESTS MemoryMap ParallelLcg Timer)
+  set(TEST_TYPES core hmat_tools HMat2d DistHMat2d)
+  set(core_TESTS MemoryMap ParallelLcg Timer)
   set(hmat_tools_TESTS MatrixAdd Compress ConvertSubmatrix PackedQR)
   set(HMat2d_TESTS Invert LowRankConstructor MultiplyHMat Pack)
   set(DistHMat2d_TESTS Ghost ImportSparse MultiplyHMat Pack 

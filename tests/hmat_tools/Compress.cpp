@@ -7,6 +7,7 @@
    directory, or at http://opensource.org/licenses/GPL-3.0
 */
 #include "dmhm.hpp"
+using namespace dmhm;
 
 int
 main( int argc, char* argv[] )
@@ -21,15 +22,15 @@ main( int argc, char* argv[] )
               << std::endl;
     try
     {
-        dmhm::Dense<double> D( m, n );
+        Dense<double> D( m, n );
 
         for( int j=0; j<r; ++j )
             for( int i=0; i<m; ++i )
                 D.Set( i, j, (double)i+j );
         D.Print( "D" );
 
-        dmhm::LowRank<double> F;
-        dmhm::hmat_tools::Compress( r, D, F );
+        LowRank<double> F;
+        hmat_tools::Compress( r, D, F );
 
         F.Print( "F.U F.V^T ~= D" );
     }
@@ -37,7 +38,7 @@ main( int argc, char* argv[] )
     {
         std::cerr << "Caught message: " << e.what() << std::endl;
 #ifndef RELEASE
-        dmhm::DumpCallStack();
+        DumpCallStack();
 #endif
     }
 
@@ -47,7 +48,7 @@ main( int argc, char* argv[] )
               << std::endl;
     try
     {
-        dmhm::Dense< std::complex<double> > D( m, n );
+        Dense< std::complex<double> > D( m, n );
 
         for( int j=0; j<r; ++j )
             for( int i=0; i<m; ++i )
@@ -55,17 +56,17 @@ main( int argc, char* argv[] )
         D.Print( "D" );
 
         // F = F.U F.V^T
-        dmhm::LowRank<std::complex<double> > FFalse;
-        dmhm::Dense< std::complex<double> > DCopy;
-        dmhm::hmat_tools::Copy( D, DCopy );
-        dmhm::hmat_tools::Compress( r, DCopy, FFalse );
+        LowRank<std::complex<double> > FFalse;
+        Dense< std::complex<double> > DCopy;
+        hmat_tools::Copy( D, DCopy );
+        hmat_tools::Compress( r, DCopy, FFalse );
         FFalse.Print( "F.U F.V^T ~= D" );
     }
     catch( std::exception& e )
     {
         std::cerr << "Caught message: " << e.what() << std::endl;
 #ifndef RELEASE
-        dmhm::DumpCallStack();
+        DumpCallStack();
 #endif
     }
 

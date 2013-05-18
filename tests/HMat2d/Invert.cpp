@@ -7,6 +7,7 @@
    directory, or at http://opensource.org/licenses/GPL-3.0
 */
 #include "dmhm.hpp"
+using namespace dmhm;
 
 void Usage()
 {
@@ -119,7 +120,7 @@ FormRow
 
 template<typename Real>
 void 
-CheckDistanceFromOnes( const dmhm::Vector<std::complex<Real> >& z )
+CheckDistanceFromOnes( const Vector<std::complex<Real> >& z )
 {
     typedef std::complex<Real> Scalar;
 
@@ -157,14 +158,15 @@ CheckDistanceFromOnes( const dmhm::Vector<std::complex<Real> >& z )
 int
 main( int argc, char* argv[] )
 {
-    MPI_Init( &argc, &argv );
-    const int rank = dmhm::mpi::CommRank( MPI_COMM_WORLD );
+    Initialize( argc, argv );
+    const int rank = mpi::CommRank( mpi::COMM_WORLD );
 
+    // TODO: Use Choice for better command-line argument processing
     if( argc < 8 )
     {
         if( rank == 0 )
             Usage();
-        MPI_Finalize();
+        Finalize();
         return 0;
     }
     int arg=1;
@@ -189,9 +191,9 @@ main( int argc, char* argv[] )
     try
     {
         typedef std::complex<double> Scalar;
-        typedef dmhm::HMat2d<Scalar> HMat;
+        typedef HMat2d<Scalar> HMat;
 
-        dmhm::Sparse<Scalar> S;
+        Sparse<Scalar> S;
         S.height = m;
         S.width = n;
         S.symmetric = false;
@@ -210,7 +212,7 @@ main( int argc, char* argv[] )
             std::cout << "Filling sparse matrix...";
             std::cout.flush();
         }
-        double fillStartTime = dmhm::mpi::WallTime();
+        double fillStartTime = mpi::Time();
         std::vector<Scalar> row;
         std::vector<int> colIndices;
         for( int i=0; i<m; ++i )
@@ -230,7 +232,7 @@ main( int argc, char* argv[] )
             }
         }
         S.rowOffsets.push_back( S.nonzeros.size() );
-        double fillStopTime = dmhm::mpi::WallTime();
+        double fillStopTime = mpi::Time();
         if( rank == 0 )
         {
             std::cout << "done: " << fillStopTime-fillStartTime << " seconds." 
@@ -245,9 +247,9 @@ main( int argc, char* argv[] )
             std::cout << "Constructing H-matrix...";
             std::cout.flush();
         }
-        double constructStartTime = dmhm::mpi::WallTime();
+        double constructStartTime = mpi::Time();
         HMat H( S, numLevels, r, stronglyAdmissible, xSize, ySize );
-        double constructStopTime = dmhm::mpi::WallTime();
+        double constructStopTime = mpi::Time();
         if( rank == 0 )
         {
             std::cout << "done: " << constructStopTime-constructStartTime 
@@ -262,7 +264,7 @@ main( int argc, char* argv[] )
         }
 
         // Test against a vector of all 1's
-        dmhm::Vector<Scalar> x;
+        Vector<Scalar> x;
         x.Resize( m );
         Scalar* xBuffer = x.Buffer();
         for( int i=0; i<m; ++i )
@@ -272,10 +274,10 @@ main( int argc, char* argv[] )
             std::cout << "Multiplying H-matrix by a vector of all ones...";
             std::cout.flush();
         }
-        dmhm::Vector<Scalar> y;
-        double matVecStartTime = dmhm::mpi::WallTime();
+        Vector<Scalar> y;
+        double matVecStartTime = mpi::Time();
         H.Multiply( 1.0, x, y );
-        double matVecStopTime = dmhm::mpi::WallTime();
+        double matVecStopTime = mpi::Time();
         if( rank == 0 )
         {
             std::cout << "done: " << matVecStopTime-matVecStartTime 
@@ -292,10 +294,10 @@ main( int argc, char* argv[] )
                 std::cout << "Making a copy of the H-matrix for inversion...";
                 std::cout.flush();
             }
-            double copyStartTime = dmhm::mpi::WallTime();
+            double copyStartTime = mpi::Time();
             HMat invH;
             invH.CopyFrom( H );
-            double copyStopTime = dmhm::mpi::WallTime();
+            double copyStopTime = mpi::Time();
             if( rank == 0 )
             {
                 std::cout << "done: " << copyStopTime-copyStartTime 
@@ -308,9 +310,9 @@ main( int argc, char* argv[] )
                 std::cout << "Directly inverting the H-matrix...";
                 std::cout.flush();
             }
-            double invertStartTime = dmhm::mpi::WallTime();
+            double invertStartTime = mpi::Time();
             invH.DirectInvert();
-            double invertStopTime = dmhm::mpi::WallTime();
+            double invertStopTime = mpi::Time();
             if( rank == 0 )
             {
                 std::cout << "done: " << invertStopTime-invertStartTime 
@@ -325,10 +327,10 @@ main( int argc, char* argv[] )
                 std::cout << "Multiplying the direct inverse by a vector...";
                 std::cout.flush();
             }
-            matVecStartTime = dmhm::mpi::WallTime();
-            dmhm::Vector<Scalar> z;
+            matVecStartTime = mpi::Time();
+            Vector<Scalar> z;
             invH.Multiply( 1.0, y, z );
-            matVecStopTime = dmhm::mpi::WallTime();
+            matVecStopTime = mpi::Time();
             if( rank == 0 )
             {
                 std::cout << "done: " << matVecStopTime-matVecStartTime 
@@ -351,10 +353,10 @@ main( int argc, char* argv[] )
                 std::cout << "Making a copy for Schulz inversion...";
                 std::cout.flush();
             }
-            double copyStartTime = dmhm::mpi::WallTime();
+            double copyStartTime = mpi::Time();
             HMat invH;
             invH.CopyFrom( H );
-            double copyStopTime = dmhm::mpi::WallTime();
+            double copyStopTime = mpi::Time();
             if( rank == 0 )
             {
                 std::cout << "done: " << copyStopTime-copyStartTime 
@@ -368,9 +370,9 @@ main( int argc, char* argv[] )
                           << " Schulz iterations...";
                 std::cout.flush();
             }
-            double invertStartTime = dmhm::mpi::WallTime();
+            double invertStartTime = mpi::Time();
             invH.SchulzInvert( numIterations );
-            double invertStopTime = dmhm::mpi::WallTime();
+            double invertStopTime = mpi::Time();
             if( rank == 0 )
             {
                 std::cout << "done: " << invertStopTime-invertStartTime 
@@ -385,10 +387,10 @@ main( int argc, char* argv[] )
                 std::cout << "Multiplying the Schulz inverse by a vector...";
                 std::cout.flush();
             }
-            matVecStartTime = dmhm::mpi::WallTime();
-            dmhm::Vector<Scalar> z;
+            matVecStartTime = mpi::Time();
+            Vector<Scalar> z;
             invH.Multiply( 1.0, y, z );
-            matVecStopTime = dmhm::mpi::WallTime();
+            matVecStopTime = mpi::Time();
             if( rank == 0 )
             {
                 std::cout << "done: " << matVecStopTime-matVecStartTime 
@@ -407,10 +409,10 @@ main( int argc, char* argv[] )
         std::cerr << "Process " << rank << " caught message: " << e.what() 
                   << std::endl;
 #ifndef RELEASE
-        dmhm::DumpCallStack();
+        DumpCallStack();
 #endif
     }
     
-    MPI_Finalize();
+    Finalize();
     return 0;
 }

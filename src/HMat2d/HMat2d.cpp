@@ -287,6 +287,18 @@ HMat2d<Scalar>::MScriptWriteStructure( const std::string filebase ) const
     MScriptWriteStructureRecursion( file );
 }
 
+#ifdef HAVE_QT5
+template<typename Scalar>
+void
+HMat2d<Scalar>::Display( std::string title ) const
+{
+#ifndef RELEASE
+    CallStackEntry entry("HMat2d::Display");
+#endif
+    // TODO
+}
+#endif // ifdef HAVE_QT5
+
 /*\
 |*| Computational routines specific to HMat2d
 \*/

@@ -7,6 +7,7 @@
    directory, or at http://opensource.org/licenses/GPL-3.0
 */
 #include "dmhm.hpp"
+using namespace dmhm;
 
 void Usage()
 {
@@ -63,14 +64,15 @@ FormCol
 int
 main( int argc, char* argv[] )
 {
-    MPI_Init( &argc, &argv );
-    const int rank = dmhm::mpi::CommRank( MPI_COMM_WORLD );
+    Initialize( argc, argv );
+    const int rank = mpi::CommRank( mpi::COMM_WORLD );
 
+    // TODO: Use Choice for better command-line argument processing
     if( argc < 8 )
     {
         if( rank == 0 )
             Usage();
-        MPI_Finalize();
+        Finalize();
         return 0;
     }
     int arg=1;
@@ -92,10 +94,10 @@ main( int argc, char* argv[] )
     try
     {
         typedef std::complex<double> Scalar;
-        typedef dmhm::DistHMat2d<Scalar> DistHMat;
+        typedef DistHMat2d<Scalar> DistHMat;
 
         // Build a non-initialized H-matrix tree
-        DistHMat::Teams teams( MPI_COMM_WORLD );
+        DistHMat::Teams teams( mpi::COMM_WORLD );
         DistHMat H
         ( numLevels, maxRank, stronglyAdmissible, xSize, ySize, teams );
 
@@ -120,11 +122,11 @@ main( int argc, char* argv[] )
         std::cerr << "Process " << rank << " caught message: " << e.what() 
                   << std::endl;
 #ifndef RELEASE
-        dmhm::DumpCallStack();
+        DumpCallStack();
 #endif
     }
     
-    MPI_Finalize();
+    Finalize();
     return 0;
 }
 

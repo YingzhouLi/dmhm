@@ -30,7 +30,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompress( int startLevel, int endLevel )
     // Everything about V are same in VSqr_ and VSqrEig_.
     
 //    MultiplyHMatCompressFCompressless( startLevel, endLevel );
-    MPI_Comm team = teams_->Team( level_ );
+    mpi::Comm team = teams_->Team( level_ );
     const int teamRank = mpi::CommRank( team );
     MultiplyHMatCompressLowRankCountAndResize(0);
     MultiplyHMatCompressLowRankImport(0);
@@ -446,7 +446,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankImport( int rank )
     case DIST_NODE:
     {
         Node& node = *block_.data.N;
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamSize = mpi::CommSize( team );
         const int teamRank = mpi::CommRank( team );
 
@@ -725,7 +725,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressImportU
     case DIST_NODE:
     {
         Node& node = *block_.data.N;
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamSize = mpi::CommSize( team );
         const int teamRank = mpi::CommRank( team );
 
@@ -831,7 +831,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressImportV
     case DIST_NODE:
     {
         Node& node = *block_.data.N;
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamSize = mpi::CommSize( team );
         const int teamRank = mpi::CommRank( team );
 
@@ -1194,7 +1194,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
         break;
     }
 /*//Print
-MPI_Comm teamp = teams_->Team( 0 );
+mpi::Comm teamp = teams_->Team( 0 );
 const int teamRankp = mpi::CommRank( teamp );
 if( level_ == 3 && teamRankp == 0 && block_.type == LOW_RANK)
 {
@@ -1369,7 +1369,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFReducesUnpack
     {
         if( level_ < startLevel )
             break;
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamRank = mpi::CommRank( team );
         if( teamRank ==0 )
         {
@@ -1433,7 +1433,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFEigenDecomp
             break;
         if( haveDenseUpdate_ )
             break;
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamRank = mpi::CommRank( team );
         if( teamRank == 0 )
         {
@@ -1449,7 +1449,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFEigenDecomp
             std::vector<Real> evdRealWork(lrwork);
             std::vector<int> evdIntWork(liwork);
 /*//Print
-MPI_Comm teamp = teams_->Team( 0 );
+mpi::Comm teamp = teams_->Team( 0 );
 const int teamRankp = mpi::CommRank( teamp );
 if( level_ == 3 && teamRankp == 0 && block_.type == LOW_RANK)
 _VSqr.Print("_VSqr Before svd");*/
@@ -1530,9 +1530,9 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrix
     ( sendBuffer, offsets, startLevel, endLevel );
 
     // Start the non-blocking recvs
-    MPI_Comm comm = teams_->Team( 0 );
+    mpi::Comm comm = teams_->Team( 0 );
     const int numRecvs = recvSizes.size();
-    std::vector<MPI_Request> recvRequests( numRecvs );
+    std::vector<mpi::Request> recvRequests( numRecvs );
     std::vector<Scalar> recvBuffer( totalRecvSize );
     int offset = 0;
     for( it=recvSizes.begin(); it!=recvSizes.end(); ++it )
@@ -1547,7 +1547,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrix
 
     // Start the non-blocking sends
     const int numSends = sendSizes.size();
-    std::vector<MPI_Request> sendRequests( numSends );
+    std::vector<mpi::Request> sendRequests( numSends );
     offset = 0;
     for( it=sendSizes.begin(); it!=sendSizes.end(); ++it )
     {
@@ -1558,14 +1558,12 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrix
     }
 
     // Unpack as soon as we have received our data
-    for( int i=0; i<numRecvs; ++i )
-        mpi::Wait( recvRequests[i] );
+    mpi::WaitAll( numRecvs, &recvRequests[0] );
     MultiplyHMatCompressFPassMatrixUnpack
     ( recvBuffer, recvOffsets, startLevel, endLevel );
 
     // Don't exit until we know that the data was sent
-    for( int i=0; i<numSends; ++i )
-        mpi::Wait( sendRequests[i] );
+    mpi::WaitAll( numSends, &sendRequests[0] );
 }
 
 template<typename Scalar>
@@ -1604,7 +1602,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrixCount
             break;
         if( haveDenseUpdate_ )
             break;
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamRank = mpi::CommRank( team );
         if( teamRank ==0 )
         {
@@ -1656,7 +1654,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrixPack
             break;
         if( inTargetTeam_ )
             break;
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamRank = mpi::CommRank( team );
         if( teamRank ==0 && VSqr_.Height() > 0 )
         {
@@ -1708,7 +1706,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrixUnpack
             break;
         if( inSourceTeam_ )
             break;
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamRank = mpi::CommRank( team );
         if( teamRank ==0 && USqr_.Height() > 0 )
         {
@@ -1761,9 +1759,9 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassVector
     ( sendBuffer, offsets, startLevel, endLevel );
 
     // Start the non-blocking recvs
-    MPI_Comm comm = teams_->Team( 0 );
+    mpi::Comm comm = teams_->Team( 0 );
     const int numRecvs = recvSizes.size();
-    std::vector<MPI_Request> recvRequests( numRecvs );
+    std::vector<mpi::Request> recvRequests( numRecvs );
     std::vector<Real> recvBuffer( totalRecvSize );
     int offset = 0;
     for( it=recvSizes.begin(); it!=recvSizes.end(); ++it )
@@ -1778,7 +1776,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassVector
 
     // Start the non-blocking sends
     const int numSends = sendSizes.size();
-    std::vector<MPI_Request> sendRequests( numSends );
+    std::vector<mpi::Request> sendRequests( numSends );
     offset = 0;
     for( it=sendSizes.begin(); it!=sendSizes.end(); ++it )
     {
@@ -1789,14 +1787,12 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassVector
     }
 
     // Unpack as soon as we have received our data
-    for( int i=0; i<numRecvs; ++i )
-        mpi::Wait( recvRequests[i] );
+    mpi::WaitAll( numRecvs, &recvRequests[0] );
     MultiplyHMatCompressFPassVectorUnpack
     ( recvBuffer, recvOffsets, startLevel, endLevel );
 
     // Don't exit until we know that the data was sent
-    for( int i=0; i<numSends; ++i )
-        mpi::Wait( sendRequests[i] );
+    mpi::WaitAll( numSends, &sendRequests[0] );
 }
 
 template<typename Scalar>
@@ -1835,7 +1831,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassVectorCount
             break;
         if( haveDenseUpdate_ )
             break;
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamRank = mpi::CommRank( team );
         if( teamRank ==0 )
         {
@@ -1887,7 +1883,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassVectorPack
             break;
         if( haveDenseUpdate_ )
             break;
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamRank = mpi::CommRank( team );
         if( teamRank ==0 && VSqrEig_.size() > 0 )
         {
@@ -1939,7 +1935,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassVectorUnpack
             break;
         if( haveDenseUpdate_ )
             break;
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamRank = mpi::CommRank( team );
         if( teamRank ==0 && USqrEig_.size() > 0 )
         {
@@ -1992,7 +1988,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
             break;
         if( haveDenseUpdate_ )
             break;
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamRank = mpi::CommRank( team );
 //Print
 //std::cout << USqr_.Height() << " " << USqr_.Width() << " " << USqr_.IsEmpty() << std::endl;
@@ -2027,7 +2023,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
 //Print
 //_BSqr.Print("BSqr");
 /*//Print
-MPI_Comm teamp = teams_->Team( 0 );
+mpi::Comm teamp = teams_->Team( 0 );
 const int teamRankp = mpi::CommRank( teamp );
 if( level_ == 3 && teamRankp == 0 && block_.type == LOW_RANK)
 _VSqr.Print("_VSqr Before svd");*/
@@ -2070,7 +2066,7 @@ _VSqr.Print("_VSqr Before svd");*/
             std::vector<Scalar> work(lwork);
             std::vector<Real> rwork(lrwork);
 /*//Print
-MPI_Comm teamp = teams_->Team( 0 );
+mpi::Comm teamp = teams_->Team( 0 );
 const int teamRankp = mpi::CommRank( teamp );
 if( level_ == 3 && teamRankp == 0 && block_.type == LOW_RANK)
 _BSqr.Print("_BSqr Before svd");*/
@@ -2081,7 +2077,7 @@ _BSqr.Print("_BSqr Before svd");*/
              BSqrVH_.Buffer(), BSqrVH_.LDim(),
              &work[0], lwork, &rwork[0] );
 /*//Print
-MPI_Comm teamp = teams_->Team( 0 );
+mpi::Comm teamp = teams_->Team( 0 );
 const int teamRankp = mpi::CommRank( teamp );
 if( level_ == 3 && teamRankp == 0 && block_.type == LOW_RANK)
 _BSqrVH.Print("_BSqrVH After svd");*/
@@ -2092,7 +2088,7 @@ _BSqrVH.Print("_BSqrVH After svd");*/
 //Print
 //_BSqrVH.Print("BSqrVH");
 //Print
-//MPI_Comm teamp = teams_->Team( 0 );
+//mpi::Comm teamp = teams_->Team( 0 );
 //const int teamRankp = mpi::CommRank( teamp );
 //if( level_ == 3 && teamRankp == 0 && block_.type==LOW_RANK && Vtmp_.Height() == 2 && Utmp_.Height() == 2)
 //std::cout << "Height: " << Utmp_.Height() << " Width: " << Vtmp_.Height() << " B(1,1): " << WrapScalar(BSqrVH_.Get(10,10)) << std::endl;
@@ -2142,9 +2138,9 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackNum
     ( sendBuffer, offsets, startLevel, endLevel );
 
     // Start the non-blocking recvs
-    MPI_Comm comm = teams_->Team( 0 );
+    mpi::Comm comm = teams_->Team( 0 );
     const int numRecvs = recvSizes.size();
-    std::vector<MPI_Request> recvRequests( numRecvs );
+    std::vector<mpi::Request> recvRequests( numRecvs );
     std::vector<int> recvBuffer( totalRecvSize );
     int offset = 0;
     for( it=recvSizes.begin(); it!=recvSizes.end(); ++it )
@@ -2159,7 +2155,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackNum
 
     // Start the non-blocking sends
     const int numSends = sendSizes.size();
-    std::vector<MPI_Request> sendRequests( numSends );
+    std::vector<mpi::Request> sendRequests( numSends );
     offset = 0;
     for( it=sendSizes.begin(); it!=sendSizes.end(); ++it )
     {
@@ -2170,14 +2166,12 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackNum
     }
 
     // Unpack as soon as we have received our data
-    for( int i=0; i<numRecvs; ++i )
-        mpi::Wait( recvRequests[i] );
+    mpi::WaitAll( numRecvs, &recvRequests[0] );
     MultiplyHMatCompressFPassbackNumUnpack
     ( recvBuffer, recvOffsets, startLevel, endLevel );
 
     // Don't exit until we know that the data was sent
-    for( int i=0; i<numSends; ++i )
-        mpi::Wait( sendRequests[i] );
+    mpi::WaitAll( numSends, &sendRequests[0] );
 }
 
 template<typename Scalar>
@@ -2216,7 +2210,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackNumCount
             break;
         if( haveDenseUpdate_ )
             break;
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamRank = mpi::CommRank( team );
         if( teamRank ==0 )
         {
@@ -2268,7 +2262,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackNumPack
             break;
         if( haveDenseUpdate_ )
             break;
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamRank = mpi::CommRank( team );
         if( teamRank ==0 )
         {
@@ -2318,7 +2312,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackNumUnpack
             break;
         if( haveDenseUpdate_ )
             break;
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamRank = mpi::CommRank( team );
         if( teamRank ==0 )
         {
@@ -2370,9 +2364,9 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackData
     ( sendBuffer, offsets, startLevel, endLevel );
 
     // Start the non-blocking recvs
-    MPI_Comm comm = teams_->Team( 0 );
+    mpi::Comm comm = teams_->Team( 0 );
     const int numRecvs = recvSizes.size();
-    std::vector<MPI_Request> recvRequests( numRecvs );
+    std::vector<mpi::Request> recvRequests( numRecvs );
     std::vector<Scalar> recvBuffer( totalRecvSize );
     int offset = 0;
     for( it=recvSizes.begin(); it!=recvSizes.end(); ++it )
@@ -2387,7 +2381,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackData
 
     // Start the non-blocking sends
     const int numSends = sendSizes.size();
-    std::vector<MPI_Request> sendRequests( numSends );
+    std::vector<mpi::Request> sendRequests( numSends );
     offset = 0;
     for( it=sendSizes.begin(); it!=sendSizes.end(); ++it )
     {
@@ -2398,14 +2392,12 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackData
     }
 
     // Unpack as soon as we have received our data
-    for( int i=0; i<numRecvs; ++i )
-        mpi::Wait( recvRequests[i] );
+    mpi::WaitAll( numRecvs, &recvRequests[0] );
     MultiplyHMatCompressFPassbackDataUnpack
     ( recvBuffer, recvOffsets, startLevel, endLevel );
 
     // Don't exit until we know that the data was sent
-    for( int i=0; i<numSends; ++i )
-        mpi::Wait( sendRequests[i] );
+    mpi::WaitAll( numSends, &sendRequests[0] );
 }
 
 template<typename Scalar>
@@ -2444,7 +2436,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackDataCount
         {
             if( inSourceTeam_ && inTargetTeam_ )
                 break; 
-            MPI_Comm team = teams_->Team( level_ );
+            mpi::Comm team = teams_->Team( level_ );
             const int teamRank = mpi::CommRank( team );                                   
             if( teamRank ==0 )
             {
@@ -2530,7 +2522,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackDataPack
         {
             if( inSourceTeam_ || !inTargetTeam_ )
                 break;
-            MPI_Comm team = teams_->Team( level_ );                      
+            mpi::Comm team = teams_->Team( level_ );                      
             const int teamRank = mpi::CommRank( team );
             if( teamRank ==0 )
             {
@@ -2632,7 +2624,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackDataUnpack
         {
             if( inTargetTeam_ || !inSourceTeam_ )
                 break;
-            MPI_Comm team = teams_->Team( level_ );                
+            mpi::Comm team = teams_->Team( level_ );                
             const int teamRank = mpi::CommRank( team );
             if( teamRank ==0 )
             {
@@ -2736,10 +2728,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPostcompute
             break;
         if( haveDenseUpdate_ )
             break;
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamRank = mpi::CommRank( team );
 // RYAN: Please do not check in code like this...
-MPI_Comm teamp = teams_->Team( 0 );
+mpi::Comm teamp = teams_->Team( 0 );
 const int teamRankp = mpi::CommRank( teamp );
 int print;
 if(teamRankp==1)
@@ -2815,7 +2807,7 @@ std::cout << "Run until here 2, " << BSqrVH_.LDim() << " " << BSqrVH_.Height() <
             if(inSourceTeam_ && VSqrEig_.size() > 0)
             {
 /*//Print
-MPI_Comm teamp = teams_->Team( 0 );
+mpi::Comm teamp = teams_->Team( 0 );
 const int teamRankp = mpi::CommRank( teamp );
 if( level_ == 3 && teamRankp == 0 && block_.type == LOW_RANK)
 _BSqrVH.Print("_BSqrVH_Post");*/
@@ -2837,7 +2829,7 @@ _BSqrVH.Print("_BSqrVH_Post");*/
                             VSqr_.Set(i,j, Scalar(0));
                     }
 
-/*MPI_Comm teamp = teams_->Team( 0 );
+/*mpi::Comm teamp = teams_->Team( 0 );
 const int teamRankp = mpi::CommRank( teamp );
 if( level_ == 3 && teamRankp == 0 && block_.type==LOW_RANK && Vtmp_.Height() == 2 && Utmp_.Height() == 2)
 {
@@ -2870,7 +2862,7 @@ if( level_ == 3 && teamRankp == 0 && block_.type==LOW_RANK && Vtmp_.Height() == 
                   Scalar(0), BR_.Buffer(), BR_.LDim() );
 //                BR_.Print("_BR");*/
 //Print
-MPI_Comm teamp = teams_->Team( 0 );
+mpi::Comm teamp = teams_->Team( 0 );
 const int teamRankp = mpi::CommRank( teamp );
 if( level_ == 3 && teamRankp == 0 && block_.type==LOW_RANK )
 {
@@ -3003,7 +2995,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcastsNumPack
     {
         if( level_ < startLevel )
             break;
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamRank = mpi::CommRank( team );
         if( teamRank == 0 )
         {
@@ -3066,7 +3058,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcastsNumUnpack
     {
         if( level_ < startLevel )
             break;
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamRank = mpi::CommRank( team );
         if( teamRank != 0 )
         {
@@ -3195,7 +3187,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcastsPack
     {
         if( level_ < startLevel )
             break;
-        MPI_Comm team = teams_->Team( level_ );
+        mpi::Comm team = teams_->Team( level_ );
         const int teamRank = mpi::CommRank( team );
         if( teamRank == 0 )
         {
@@ -3486,7 +3478,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
         if( level_ < startLevel )
             break;
 //Print
-//MPI_Comm teamp = teams_->Team( 0 );
+//mpi::Comm teamp = teams_->Team( 0 );
 //const int teamRankp = mpi::CommRank( teamp );
 //if( level_ == 3 && teamRankp == 0 && block_.type==LOW_RANK && Vtmp_.Height() == 2 && Utmp_.Height() == 2)
 //{

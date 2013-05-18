@@ -7,6 +7,7 @@
    directory, or at http://opensource.org/licenses/GPL-3.0
 */
 #include "dmhm.hpp"
+using namespace dmhm;
 
 void Usage()
 {
@@ -18,15 +19,16 @@ void Usage()
 int
 main( int argc, char* argv[] )
 {
-    MPI_Init( &argc, &argv );
-    const int rank = dmhm::mpi::CommRank( MPI_COMM_WORLD );
-    const int p = dmhm::mpi::CommSize( MPI_COMM_WORLD );
+    Initialize( argc, argv );
+    const int rank = mpi::CommRank( mpi::COMM_WORLD );
+    const int p = mpi::CommSize( mpi::COMM_WORLD );
 
+    // TODO: Use Choice for better command-line argument processing
     if( argc < 8 )
     {
         if( rank == 0 )
             Usage();
-        MPI_Finalize();
+        Finalize();
         return 0;
     }
     int arg=1;
@@ -52,8 +54,8 @@ main( int argc, char* argv[] )
     try
     {
         typedef std::complex<double> Scalar;
-        typedef dmhm::HMat2d<Scalar> HMat;
-        typedef dmhm::DistHMat2d<Scalar> DistHMat;
+        typedef HMat2d<Scalar> HMat;
+        typedef DistHMat2d<Scalar> DistHMat;
 
         // Build a random H-matrix
         if( rank == 0 )
@@ -61,14 +63,14 @@ main( int argc, char* argv[] )
             std::cout << "Constructing H-matrices...";
             std::cout.flush();
         }
-        dmhm::mpi::Barrier( MPI_COMM_WORLD );
-        double constructStartTime = dmhm::mpi::WallTime();
+        mpi::Barrier( mpi::COMM_WORLD );
+        double constructStartTime = mpi::Time();
         HMat H
         ( numLevels, maxRank, symmetric, stronglyAdmissible, xSize, ySize );
         throw std::logic_error("Constructor needs to be fixed...");
         H.SetToRandom();
-        dmhm::mpi::Barrier( MPI_COMM_WORLD );
-        double constructStopTime = dmhm::mpi::WallTime();
+        mpi::Barrier( mpi::COMM_WORLD );
+        double constructStopTime = mpi::Time();
         if( rank == 0 )
         {
             std::cout << "done: " << constructStopTime-constructStartTime 
@@ -88,16 +90,16 @@ main( int argc, char* argv[] )
             std::cout << "Y := H X...";
             std::cout.flush();
         }
-        dmhm::mpi::Barrier( MPI_COMM_WORLD );
-        double hmatMatStartTime = dmhm::mpi::WallTime();
-        dmhm::Dense<Scalar> X( n, 30 );
+        mpi::Barrier( mpi::COMM_WORLD );
+        double hmatMatStartTime = mpi::Time();
+        Dense<Scalar> X( n, 30 );
         for( int j=0; j<X.Width(); ++j )
             for( int i=0; i<n; ++i )
                 X.Set( i, j, i+j );
-        dmhm::Dense<Scalar> Y;
+        Dense<Scalar> Y;
         H.Multiply( (Scalar)1, X, Y );
-        dmhm::mpi::Barrier( MPI_COMM_WORLD );
-        double hmatMatStopTime = dmhm::mpi::WallTime();
+        mpi::Barrier( mpi::COMM_WORLD );
+        double hmatMatStopTime = mpi::Time();
         if( rank == 0 )
         {
             std::cout << "done: " << hmatMatStopTime-hmatMatStartTime 
@@ -110,12 +112,12 @@ main( int argc, char* argv[] )
             std::cout << "Z := H' X...";
             std::cout.flush();
         }
-        dmhm::mpi::Barrier( MPI_COMM_WORLD );
-        double hmatAdjointMatStartTime = dmhm::mpi::WallTime();
-        dmhm::Dense<Scalar> Z;
+        mpi::Barrier( mpi::COMM_WORLD );
+        double hmatAdjointMatStartTime = mpi::Time();
+        Dense<Scalar> Z;
         H.AdjointMultiply( (Scalar)1, X, Z );
-        dmhm::mpi::Barrier( MPI_COMM_WORLD );
-        double hmatAdjointMatStopTime = dmhm::mpi::WallTime();
+        mpi::Barrier( mpi::COMM_WORLD );
+        double hmatAdjointMatStopTime = mpi::Time();
         if( rank == 0 )
         {
             std::cout << "done: " 
@@ -124,7 +126,7 @@ main( int argc, char* argv[] )
         }
 
         // Set up our subcommunicators and compute the packed sizes
-        DistHMat::Teams teams( MPI_COMM_WORLD );
+        DistHMat::Teams teams( mpi::COMM_WORLD );
         std::vector<std::size_t> packedSizes;
         DistHMat::PackedSizes( packedSizes, H, teams ); 
         const std::size_t myMaxSize = 
@@ -136,15 +138,15 @@ main( int argc, char* argv[] )
             std::cout << "Packing H-matrix for distribution...";
             std::cout.flush();
         }
-        dmhm::mpi::Barrier( MPI_COMM_WORLD );
-        double packStartTime = dmhm::mpi::WallTime();
-        std::vector<dmhm::byte> sendBuffer( p*myMaxSize );
-        std::vector<dmhm::byte*> packedPieces( p );
+        mpi::Barrier( mpi::COMM_WORLD );
+        double packStartTime = mpi::Time();
+        std::vector<byte> sendBuffer( p*myMaxSize );
+        std::vector<byte*> packedPieces( p );
         for( int i=0; i<p; ++i )
             packedPieces[i] = &sendBuffer[i*myMaxSize];
         DistHMat::Pack( packedPieces, H, teams );
-        dmhm::mpi::Barrier( MPI_COMM_WORLD );
-        double packStopTime = dmhm::mpi::WallTime();
+        mpi::Barrier( mpi::COMM_WORLD );
+        double packStopTime = mpi::Time();
         if( rank == 0 )
         {
             std::cout << "done: " << packStopTime-packStartTime << " seconds."
@@ -155,8 +157,8 @@ main( int argc, char* argv[] )
         int myIntMaxSize, intMaxSize;
         {
             myIntMaxSize = myMaxSize;
-            dmhm::mpi::AllReduce
-            ( &myIntMaxSize, &intMaxSize, 1, MPI_MAX, MPI_COMM_WORLD );
+            mpi::AllReduce
+            ( &myIntMaxSize, &intMaxSize, 1, mpi::MAX, mpi::COMM_WORLD );
         }
         if( rank == 0 )
         {
@@ -171,14 +173,14 @@ main( int argc, char* argv[] )
             std::cout << "AllToAll redistribution...";
             std::cout.flush();
         }
-        dmhm::mpi::Barrier( MPI_COMM_WORLD );
-        double allToAllStartTime = dmhm::mpi::WallTime();
-        std::vector<dmhm::byte> recvBuffer( p*intMaxSize );
-        dmhm::mpi::AllToAll
+        mpi::Barrier( mpi::COMM_WORLD );
+        double allToAllStartTime = mpi::Time();
+        std::vector<byte> recvBuffer( p*intMaxSize );
+        mpi::AllToAll
         ( &sendBuffer[0], myIntMaxSize, &recvBuffer[0], intMaxSize,
-          MPI_COMM_WORLD );
-        dmhm::mpi::Barrier( MPI_COMM_WORLD );
-        double allToAllStopTime = dmhm::mpi::WallTime();
+          mpi::COMM_WORLD );
+        mpi::Barrier( mpi::COMM_WORLD );
+        double allToAllStopTime = mpi::Time();
         if( rank == 0 )
         {
             std::cout << "done: " << allToAllStopTime-allToAllStartTime
@@ -191,11 +193,11 @@ main( int argc, char* argv[] )
             std::cout << "Unpacking...";
             std::cout.flush();
         }
-        dmhm::mpi::Barrier( MPI_COMM_WORLD );
-        double unpackStartTime = dmhm::mpi::WallTime();
+        mpi::Barrier( mpi::COMM_WORLD );
+        double unpackStartTime = mpi::Time();
         DistHMat distH( &recvBuffer[0], teams );
-        dmhm::mpi::Barrier( MPI_COMM_WORLD );
-        double unpackStopTime = dmhm::mpi::WallTime();
+        mpi::Barrier( mpi::COMM_WORLD );
+        double unpackStopTime = mpi::Time();
         if( rank == 0 )
         {
             std::cout << "done: " << unpackStopTime-unpackStartTime
@@ -213,15 +215,15 @@ main( int argc, char* argv[] )
             std::cout << "Distributed Y := H X...";
             std::cout.flush();
         }
-        dmhm::Dense<Scalar> XLocal;
+        Dense<Scalar> XLocal;
         XLocal.LockedView
         ( X, distH.FirstLocalCol(), 0, distH.LocalWidth(), X.Width() );
-        dmhm::mpi::Barrier( MPI_COMM_WORLD );
-        double distHmatMatStartTime = dmhm::mpi::WallTime();
-        dmhm::Dense<Scalar> YLocal;
+        mpi::Barrier( mpi::COMM_WORLD );
+        double distHmatMatStartTime = mpi::Time();
+        Dense<Scalar> YLocal;
         distH.Multiply( (Scalar)1, XLocal, YLocal );
-        dmhm::mpi::Barrier( MPI_COMM_WORLD );
-        double distHmatMatStopTime = dmhm::mpi::WallTime();
+        mpi::Barrier( mpi::COMM_WORLD );
+        double distHmatMatStopTime = mpi::Time();
         if( rank == 0 )
         {
             std::cout << "done: " << distHmatMatStopTime-distHmatMatStartTime
@@ -234,7 +236,7 @@ main( int argc, char* argv[] )
             std::cout << "Comparing serial and distributed results...";
             std::cout.flush();
         }
-        dmhm::Dense<Scalar> YLocalTruth;
+        Dense<Scalar> YLocalTruth;
         YLocalTruth.View
         ( Y, distH.FirstLocalRow(), 0, distH.LocalHeight(), X.Width() );
         for( int j=0; j<YLocal.Width(); ++j )
@@ -254,7 +256,7 @@ main( int argc, char* argv[] )
                 YLocal.Set(i,j,error);
             }
         }
-        dmhm::mpi::Barrier( MPI_COMM_WORLD );
+        mpi::Barrier( mpi::COMM_WORLD );
         if( rank == 0 )
             std::cout << "done" << std::endl;
  
@@ -266,12 +268,12 @@ main( int argc, char* argv[] )
         }
         XLocal.LockedView
         ( X, distH.FirstLocalRow(), 0, distH.LocalHeight(), X.Width() );
-        dmhm::mpi::Barrier( MPI_COMM_WORLD );
-        double distHmatAdjointMatStartTime = dmhm::mpi::WallTime();
-        dmhm::Dense<Scalar> ZLocal;
+        mpi::Barrier( mpi::COMM_WORLD );
+        double distHmatAdjointMatStartTime = mpi::Time();
+        Dense<Scalar> ZLocal;
         distH.AdjointMultiply( (Scalar)1, XLocal, ZLocal );
-        dmhm::mpi::Barrier( MPI_COMM_WORLD );
-        double distHmatAdjointMatStopTime = dmhm::mpi::WallTime();
+        mpi::Barrier( mpi::COMM_WORLD );
+        double distHmatAdjointMatStopTime = mpi::Time();
         if( rank == 0 )
         {
             std::cout << "done: " 
@@ -286,7 +288,7 @@ main( int argc, char* argv[] )
             std::cout << "Comparing serial and distributed results...";
             std::cout.flush();
         }
-        dmhm::Dense<Scalar> ZLocalTruth;
+        Dense<Scalar> ZLocalTruth;
         ZLocalTruth.View
         ( Z, distH.FirstLocalCol(), 0, distH.LocalWidth(), X.Width() );
         for( int j=0; j<ZLocal.Width(); ++j )
@@ -306,7 +308,7 @@ main( int argc, char* argv[] )
                 ZLocal.Set(i,j,error);
             }
         }
-        dmhm::mpi::Barrier( MPI_COMM_WORLD );
+        mpi::Barrier( mpi::COMM_WORLD );
         if( rank == 0 )
             std::cout << "done" << std::endl;
     }
@@ -315,11 +317,11 @@ main( int argc, char* argv[] )
         std::cerr << "Process " << rank << " caught message: " << e.what() 
                   << std::endl;
 #ifndef RELEASE
-        dmhm::DumpCallStack();
+        DumpCallStack();
 #endif
     }
     
-    MPI_Finalize();
+    Finalize();
     return 0;
 }
 

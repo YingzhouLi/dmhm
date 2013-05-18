@@ -43,7 +43,7 @@ DistHMat2d<Scalar>::MultiplyHMatMainSetUp
     C.targetRoot_ = A.targetRoot_;
     C.sourceRoot_ = B.sourceRoot_;
     
-    MPI_Comm team = teams_->Team( A.level_ );
+    mpi::Comm team = teams_->Team( A.level_ );
     const int teamSize = mpi::CommSize( team );
     if( C.Admissible() ) // C is low-rank
     {
@@ -1635,7 +1635,7 @@ DistHMat2d<Scalar>::MultiplyHMatMainPassData
       startLevel, endLevel, startUpdate, endUpdate, 0 );
 
 #ifdef TIME_MULTIPLY
-    mpi::Barrier( MPI_COMM_WORLD );
+    mpi::Barrier( mpi::COMM_WORLD );
     timer.Stop( 0 );
     timer.Start( 1 );
 #endif
@@ -1667,15 +1667,15 @@ DistHMat2d<Scalar>::MultiplyHMatMainPassData
       startLevel, endLevel, startUpdate, endUpdate, 0 );
 
 #ifdef TIME_MULTIPLY
-    mpi::Barrier( MPI_COMM_WORLD );
+    mpi::Barrier( mpi::COMM_WORLD );
     timer.Stop( 1 );
     timer.Start( 2 );
 #endif
 
     // Start the non-blocking recvs
-    MPI_Comm comm = teams_->Team( 0 );
+    mpi::Comm comm = teams_->Team( 0 );
     const int numRecvs = recvSizes.size();
-    std::vector<MPI_Request> recvRequests( numRecvs );
+    std::vector<mpi::Request> recvRequests( numRecvs );
     std::vector<Scalar> recvBuffer( totalRecvSize );
     int offset = 0;
     for( it=recvSizes.begin(); it!=recvSizes.end(); ++it )
@@ -1687,7 +1687,7 @@ DistHMat2d<Scalar>::MultiplyHMatMainPassData
     }
 
 #ifdef TIME_MULTIPLY
-    mpi::Barrier( MPI_COMM_WORLD );
+    mpi::Barrier( mpi::COMM_WORLD );
     timer.Stop( 2 );
 #endif
 
@@ -1699,7 +1699,7 @@ DistHMat2d<Scalar>::MultiplyHMatMainPassData
 
     // Start the non-blocking sends
     const int numSends = sendSizes.size();
-    std::vector<MPI_Request> sendRequests( numSends );
+    std::vector<mpi::Request> sendRequests( numSends );
     offset = 0;
     for( it=sendSizes.begin(); it!=sendSizes.end(); ++it )
     {
@@ -1710,16 +1710,15 @@ DistHMat2d<Scalar>::MultiplyHMatMainPassData
     }
 
 #ifdef TIME_MULTIPLY
-    mpi::Barrier( MPI_COMM_WORLD );
+    mpi::Barrier( mpi::COMM_WORLD );
     timer.Stop( 3 );
     timer.Start( 4 );
 #endif
 
     // Unpack as soon as we have received our data
-    for( int i=0; i<numRecvs; ++i )
-        mpi::Wait( recvRequests[i] );
+    mpi::WaitAll( numRecvs, &recvRequests[0] );
 #ifdef TIME_MULTIPLY
-    mpi::Barrier( MPI_COMM_WORLD );
+    mpi::Barrier( mpi::COMM_WORLD );
     timer.Stop( 4 );
     timer.Start( 5 );
 #endif
@@ -1732,20 +1731,19 @@ DistHMat2d<Scalar>::MultiplyHMatMainPassData
       startLevel, endLevel, startUpdate, endUpdate, 0 );
 
 #ifdef TIME_MULTIPLY
-    mpi::Barrier( MPI_COMM_WORLD );
+    mpi::Barrier( mpi::COMM_WORLD );
     timer.Stop( 5 );
     timer.Start( 6 );
 #endif
 
     // Don't exit until we know that the data was sent
-    for( int i=0; i<numSends; ++i )
-        mpi::Wait( sendRequests[i] );
+    mpi::WaitAll( numSends, &sendRequests[0] );
 
 #ifdef TIME_MULTIPLY
-    mpi::Barrier( MPI_COMM_WORLD );
+    mpi::Barrier( mpi::COMM_WORLD );
     timer.Stop( 6 );
 
-    const int commRank = mpi::CommRank( MPI_COMM_WORLD );
+    const int commRank = mpi::CommRank( mpi::COMM_WORLD );
     std::ostringstream os;
     os << "Multiply-PassData-" << commRank << ".log";
     std::ofstream file( os.str().c_str(), std::ios::app | std::ios::out );
@@ -2031,7 +2029,7 @@ DistHMat2d<Scalar>::MultiplyHMatMainPassDataCountC
         update < startUpdate  || update >= endUpdate )
         return;
 
-    MPI_Comm team = teams_->Team( level_ );
+    mpi::Comm team = teams_->Team( level_ );
     const int teamRank = mpi::CommRank( team );
     switch( A.block_.type )
     {
@@ -2603,7 +2601,7 @@ DistHMat2d<Scalar>::MultiplyHMatMainPassDataPackC
         update < startUpdate  || update >= endUpdate )
         return;
 
-    MPI_Comm team = teams_->Team( level_ );
+    mpi::Comm team = teams_->Team( level_ );
     const int teamRank = mpi::CommRank( team );
     switch( A.block_.type )
     {
@@ -3058,7 +3056,7 @@ DistHMat2d<Scalar>::MultiplyHMatMainPassDataUnpackC
         update < startUpdate  || update >= endUpdate )
         return;
 
-    MPI_Comm team = teams_->Team( level_ );
+    mpi::Comm team = teams_->Team( level_ );
     const int teamRank = mpi::CommRank( team );
     switch( A.block_.type )
     {
@@ -3968,7 +3966,7 @@ DistHMat2d<Scalar>::MultiplyHMatMainBroadcastsPackC
             {
                 const DistLowRank& DFA = *A.block_.data.DF;
                 const DistLowRank& DFB = *B.block_.data.DF;
-                MPI_Comm team = teams_->Team( level_ );
+                mpi::Comm team = teams_->Team( level_ );
                 const int teamRank = mpi::CommRank( team );
                 if( teamRank == 0 && DFA.rank != 0 && DFB.rank != 0 )
                 {
@@ -3989,7 +3987,7 @@ DistHMat2d<Scalar>::MultiplyHMatMainBroadcastsPackC
             {
                 const DistLowRank& DFA = *A.block_.data.DF;
                 const DistLowRankGhost& DFGB = *B.block_.data.DFG;
-                MPI_Comm team = teams_->Team( level_ );
+                mpi::Comm team = teams_->Team( level_ );
                 const int teamRank = mpi::CommRank( team );
                 if( teamRank == 0 && DFA.rank != 0 && DFGB.rank != 0 )
                 {

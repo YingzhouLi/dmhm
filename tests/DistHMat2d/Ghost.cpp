@@ -7,6 +7,7 @@
    directory, or at http://opensource.org/licenses/GPL-3.0
 */
 #include "dmhm.hpp"
+using namespace dmhm;
 
 void Usage()
 {
@@ -18,14 +19,15 @@ void Usage()
 int
 main( int argc, char* argv[] )
 {
-    MPI_Init( &argc, &argv );
-    const int rank = dmhm::mpi::CommRank( MPI_COMM_WORLD );
+    Initialize( argc, argv );
+    const int rank = mpi::CommRank( mpi::COMM_WORLD );
 
+    // TODO: Use Choice for command-line argument processing
     if( argc < 8 )
     {
         if( rank == 0 )
             Usage();
-        MPI_Finalize();
+        Finalize();
         return 0;
     }
     int arg=1;
@@ -46,10 +48,10 @@ main( int argc, char* argv[] )
     try
     {
         typedef std::complex<double> Scalar;
-        typedef dmhm::DistHMat2d<Scalar> DistHMat;
+        typedef DistHMat2d<Scalar> DistHMat;
 
         // Create a random distributed H-matrix
-        DistHMat::Teams teams( MPI_COMM_WORLD );
+        DistHMat::Teams teams( mpi::COMM_WORLD );
         DistHMat H
         ( numLevels, maxRank, stronglyAdmissible, xSize, ySize, teams );
         H.SetToRandom();
@@ -60,12 +62,12 @@ main( int argc, char* argv[] )
             std::cout << "Forming ghost nodes...";
             std::cout.flush();
         }
-        dmhm::mpi::Barrier( MPI_COMM_WORLD );
-        double ghostStartTime = dmhm::mpi::WallTime();
+        mpi::Barrier( mpi::COMM_WORLD );
+        double ghostStartTime = mpi::Time();
         H.FormTargetGhostNodes();
         H.FormSourceGhostNodes();
-        dmhm::mpi::Barrier( MPI_COMM_WORLD );
-        double ghostStopTime = dmhm::mpi::WallTime();
+        mpi::Barrier( mpi::COMM_WORLD );
+        double ghostStopTime = mpi::Time();
         if( rank == 0 )
         {
             std::cout << "done: " << ghostStopTime-ghostStartTime
@@ -83,12 +85,12 @@ main( int argc, char* argv[] )
             std::cout << "Forming ghost nodes a second time...";
             std::cout.flush();
         }
-        dmhm::mpi::Barrier( MPI_COMM_WORLD );
-        double ghostStartTime2 = dmhm::mpi::WallTime();
+        mpi::Barrier( mpi::COMM_WORLD );
+        double ghostStartTime2 = mpi::Time();
         H.FormTargetGhostNodes();
         H.FormSourceGhostNodes();
-        dmhm::mpi::Barrier( MPI_COMM_WORLD );
-        double ghostStopTime2 = dmhm::mpi::WallTime();
+        mpi::Barrier( mpi::COMM_WORLD );
+        double ghostStopTime2 = mpi::Time();
         if( rank == 0 )
         {
             std::cout << "done: " << ghostStopTime2-ghostStartTime2
@@ -100,11 +102,11 @@ main( int argc, char* argv[] )
         std::cerr << "Process " << rank << " caught message: " << e.what() 
                   << std::endl;
 #ifndef RELEASE
-        dmhm::DumpCallStack();
+        DumpCallStack();
 #endif
     }
     
-    MPI_Finalize();
+    Finalize();
     return 0;
 }
 

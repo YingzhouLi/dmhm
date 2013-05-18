@@ -7,6 +7,7 @@
    directory, or at http://opensource.org/licenses/GPL-3.0
 */
 #include "dmhm.hpp"
+using namespace dmhm;
 
 int
 main( int argc, char* argv[] )
@@ -21,9 +22,9 @@ main( int argc, char* argv[] )
               << std::endl;
     try
     {
-        dmhm::Dense<double> A( m, n );
-        dmhm::Dense<double> B( m, n );
-        dmhm::Dense<double> C;
+        Dense<double> A( m, n );
+        Dense<double> B( m, n );
+        Dense<double> C;
 
         // Set A to all 1's
         for( int j=0; j<n; ++j )
@@ -38,14 +39,14 @@ main( int argc, char* argv[] )
         B.Print( "B" );
 
         // C := 3 A + 5 B
-        dmhm::hmat_tools::Add( 3.0, A, 5.0, B, C );
+        hmat_tools::Add( 3.0, A, 5.0, B, C );
         C.Print( "C := 3A + 5B" );
     }
     catch( std::exception& e )
     {
         std::cerr << "Caught message: " << e.what() << std::endl;
 #ifndef RELEASE
-        dmhm::DumpCallStack();
+        DumpCallStack();
 #endif
     }
 
@@ -55,9 +56,9 @@ main( int argc, char* argv[] )
               << std::endl;
     try
     {
-        dmhm::Dense< std::complex<float> > A( m, n );
-        dmhm::Dense< std::complex<float> > B( m, n );
-        dmhm::Dense< std::complex<float> > C;
+        Dense< std::complex<float> > A( m, n );
+        Dense< std::complex<float> > B( m, n );
+        Dense< std::complex<float> > C;
 
         // Set each entry of A to (1 + 2i)
         for( int j=0; j<n; ++j )
@@ -72,7 +73,7 @@ main( int argc, char* argv[] )
         B.Print( "B" );
 
         // C := (5 + 6i)A + (7 + 8i)B
-        dmhm::hmat_tools::Add
+        hmat_tools::Add
         ( std::complex<float>(5,6), A, std::complex<float>(7,8), B, C );
         C.Print( "C := (5+6i)A + (7+8i)B" );
     }
@@ -80,7 +81,7 @@ main( int argc, char* argv[] )
     {
         std::cerr << "Caught message: " << e.what() << std::endl;
 #ifndef RELEASE
-        dmhm::DumpCallStack();
+        DumpCallStack();
 #endif
     }
 
@@ -90,7 +91,7 @@ main( int argc, char* argv[] )
               << std::endl;
     try
     {
-        dmhm::LowRank<double> A, B, C; 
+        LowRank<double> A, B, C; 
 
         A.U.Resize( m, r );
         A.V.Resize( n, r );
@@ -114,14 +115,14 @@ main( int argc, char* argv[] )
         B.Print( "B" );
 
         // C := 3A + 5B
-        dmhm::hmat_tools::Add( 3.0, A, 5.0, B, C );
+        hmat_tools::Add( 3.0, A, 5.0, B, C );
         C.Print( "C := 3A + 5B" );
     }
     catch( std::exception& e )
     {
         std::cerr << "Caught message: " << e.what() << std::endl;
 #ifndef RELEASE
-        dmhm::DumpCallStack();
+        DumpCallStack();
 #endif
     }
 

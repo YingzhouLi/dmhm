@@ -160,9 +160,9 @@ DistHMat2d<Scalar>::AdjointPassData( const DistHMat2d<Scalar>& B )
     ( B, sendBuffer, offsets );
 
     // Start the non-blocking recvs
-    MPI_Comm comm = teams_->Team( 0 );
+    mpi::Comm comm = teams_->Team( 0 );
     const int numRecvs = recvSizes.size();
-    std::vector<MPI_Request> recvRequests( numRecvs );
+    std::vector<mpi::Request> recvRequests( numRecvs );
     std::vector<Scalar> recvBuffer( totalRecvSize );
     int offset = 0;
     for( it=recvSizes.begin(); it!=recvSizes.end(); ++it )
@@ -177,7 +177,7 @@ DistHMat2d<Scalar>::AdjointPassData( const DistHMat2d<Scalar>& B )
 
     // Start the non-blocking sends
     const int numSends = sendSizes.size();
-    std::vector<MPI_Request> sendRequests( numSends );
+    std::vector<mpi::Request> sendRequests( numSends );
     offset = 0;
     for( it=sendSizes.begin(); it!=sendSizes.end(); ++it )
     {
@@ -188,14 +188,11 @@ DistHMat2d<Scalar>::AdjointPassData( const DistHMat2d<Scalar>& B )
     }
 
     // Unpack as soon as we have received our data
-    for( int i=0; i<numRecvs; ++i )
-        mpi::Wait( recvRequests[i] );
-    AdjointPassDataUnpack
-    ( B, recvBuffer, recvOffsets );
+    mpi::WaitAll( numRecvs, &recvRequests[0] );
+    AdjointPassDataUnpack( B, recvBuffer, recvOffsets );
 
     // Don't exit until we know that the data was sent
-    for( int i=0; i<numSends; ++i )
-        mpi::Wait( sendRequests[i] );
+    mpi::WaitAll( numSends, &sendRequests[0] );
 }
 
 template<typename Scalar>

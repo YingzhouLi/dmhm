@@ -16,20 +16,20 @@
 #include <cstring> // for std::memset and std::memcpy
 #include <vector> 
 
-#include "dmhm/building_blocks/timer.hpp"
+#include "dmhm/core/timer.hpp"
 
-#include "dmhm/building_blocks/blas.hpp"
-#include "dmhm/building_blocks/lapack.hpp"
+#include "dmhm/core/blas.hpp"
+#include "dmhm/core/lapack.hpp"
 
-#include "dmhm/building_blocks/dense.hpp"
-#include "dmhm/building_blocks/vector.hpp"
+#include "dmhm/core/dense.hpp"
+#include "dmhm/core/vector.hpp"
 
-#include "dmhm/building_blocks/low_rank.hpp"
-#include "dmhm/building_blocks/sparse.hpp"
+#include "dmhm/core/low_rank.hpp"
+#include "dmhm/core/sparse.hpp"
 
-#include "dmhm/building_blocks/random.hpp"
+#include "dmhm/core/random.hpp"
 
-#include "dmhm/building_blocks/abstract_hmat.hpp"
+#include "dmhm/core/abstract_hmat.hpp"
 
 namespace dmhm {
 namespace hmat_tools {

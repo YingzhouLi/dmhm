@@ -12,6 +12,8 @@
 
 namespace dmhm {
 
+// TODO: Switch to more reliable std::chrono-based C++11 implementation
+
 class Timer
 {
 public:
@@ -41,7 +43,7 @@ Timer::Start( int key )
     if( it == running_.end() )
     {
         running_[key] = true;
-        startTimes_[key] = mpi::WallTime();
+        startTimes_[key] = mpi::Time();
     }
     else
     {
@@ -49,7 +51,7 @@ Timer::Start( int key )
             throw std::logic_error
             ("Restarted timer with same key without stopping");
         running_[key] = true;
-        startTimes_[key] = mpi::WallTime();
+        startTimes_[key] = mpi::Time();
     }
 }
 
@@ -67,7 +69,7 @@ Timer::Stop( int key )
         throw std::logic_error("Stopped a timer that was not running");
     else
     {
-        pairTime = mpi::WallTime() - startTimes_[key];
+        pairTime = mpi::Time() - startTimes_[key];
 
         std::map<int,double>::iterator timeIt;
         timeIt = times_.find( key );

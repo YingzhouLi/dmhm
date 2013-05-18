@@ -7,10 +7,12 @@
    directory, or at http://opensource.org/licenses/GPL-3.0
 */
 #pragma once
-#ifndef DMHM_HPP
-#define DMHM_HPP 1
+#ifndef DMHM_GRAPHICS_HPP
+#define DMHM_GRAPHICS_HPP 1
 
-#include "dmhm/core/environment.hpp"
-#include "dmhm/dist_hmat2d.hpp"
+#include "dmhm/graphics/ColorMap.hpp"
+#include "dmhm/graphics/display_widget.hpp"
+#include "dmhm/graphics/display_window.hpp"
+#include "dmhm/graphics/complex_display_window.hpp"
 
-#endif // ifndef DMHM_HPP
+#endif // ifndef DMHM_GRAPHICS_HPP

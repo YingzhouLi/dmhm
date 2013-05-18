@@ -448,7 +448,7 @@ DistHMat2d<Scalar>::LatexWriteLocalStructure
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::LatexWriteLocalStructure");
 #endif
-    MPI_Comm comm = teams_->Team( 0 );
+    mpi::Comm comm = teams_->Team( 0 );
     const int commRank = mpi::CommRank( comm );
 
     std::ostringstream os;
@@ -475,7 +475,7 @@ DistHMat2d<Scalar>::MScriptWriteLocalStructure
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MScriptWriteLocalStructure");
 #endif
-    MPI_Comm comm = teams_->Team( 0 );
+    mpi::Comm comm = teams_->Team( 0 );
     const int commRank = mpi::CommRank( comm );
 
     std::ostringstream os;
@@ -571,7 +571,7 @@ DistHMat2d<Scalar>::BuildTree()
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::BuildTree");
 #endif
-    MPI_Comm team = teams_->Team(level_);
+    mpi::Comm team = teams_->Team(level_);
     const int teamSize = mpi::CommSize( team );
     const int teamRank = mpi::CommRank( team );
     if( !inSourceTeam_ && !inTargetTeam_ )

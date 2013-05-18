@@ -7,6 +7,7 @@
    directory, or at http://opensource.org/licenses/GPL-3.0
 */
 #include "dmhm.hpp"
+using namespace dmhm;
 
 int
 main( int argc, char* argv[] )
@@ -24,7 +25,7 @@ main( int argc, char* argv[] )
               << std::endl;
     try
     {
-        dmhm::Sparse<double> S;
+        Sparse<double> S;
         S.height = m;
         S.width = n;
         S.symmetric = false;
@@ -63,15 +64,15 @@ main( int argc, char* argv[] )
         S.rowOffsets.push_back( S.nonzeros.size() );
         S.Print( "S" );
 
-        dmhm::Dense<double> D;
-        dmhm::hmat_tools::ConvertSubmatrix( D, S, 0, m, 0, n );
+        Dense<double> D;
+        hmat_tools::ConvertSubmatrix( D, S, 0, m, 0, n );
         D.Print( "D" );
     }
     catch( std::exception& e )
     {
         std::cerr << "Caught message: " << e.what() << std::endl;
 #ifndef RELEASE
-        dmhm::DumpCallStack();
+        DumpCallStack();
 #endif
     }
     
@@ -81,7 +82,7 @@ main( int argc, char* argv[] )
               << std::endl;
     try
     {
-        dmhm::Sparse<double> S;
+        Sparse<double> S;
         S.height = m;
         S.width = n;
         S.symmetric = false;
@@ -103,15 +104,15 @@ main( int argc, char* argv[] )
         S.rowOffsets.push_back( S.nonzeros.size() );
         S.Print( "S" );
 
-        dmhm::LowRank<double> F;
-        dmhm::hmat_tools::ConvertSubmatrix( F, S, 0, m, 0, n );
+        LowRank<double> F;
+        hmat_tools::ConvertSubmatrix( F, S, 0, m, 0, n );
         F.Print( "F" );
     }
     catch( std::exception& e )
     {
         std::cerr << "Caught message: " << e.what() << std::endl;
 #ifndef RELEASE
-        dmhm::DumpCallStack();
+        DumpCallStack();
 #endif
     }
 

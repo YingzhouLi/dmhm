@@ -10,14 +10,15 @@
 #ifndef DMHM_CONFIG_H
 #define DMHM_CONFIG_H 1
 
-/* Basic variables */
 #define DMHM_VERSION_MAJOR @DMHM_VERSION_MAJOR@
 #define DMHM_VERSION_MINOR @DMHM_VERSION_MINOR@
 #cmakedefine RELEASE
 #cmakedefine TIME_MULTIPLY
 #cmakedefine BLAS_POST
 #cmakedefine LAPACK_POST
-#cmakedefine BUILT_PETSC_WITH_X11
+#cmakedefine HAVE_QT5
+#cmakedefine AVOID_COMPLEX_MPI
+#cmakedefine HAVE_MPI_IN_PLACE
 
 #define RESTRICT @RESTRICT@
 

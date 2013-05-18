@@ -22,7 +22,7 @@ DistHMat2d<Scalar>::ParallelEstimateTwoNorm( Real theta, Real confidence )
 #endif
     const int n = LocalHeight();
     const int k = ceil(log(0.8*sqrt(n)*pow(10,confidence))/log(theta));
-    MPI_Comm team = teams_->Team( 0 );
+    mpi::Comm team = teams_->Team( 0 );
 #ifndef RELEASE
     std::cerr << "Going to use A^" << k  << " in order to estimate "
               << "||A||_2 within " << (theta-1.0)*100 << "% with probability "
@@ -34,7 +34,7 @@ DistHMat2d<Scalar>::ParallelEstimateTwoNorm( Real theta, Real confidence )
         ParallelGaussianRandomVector( x );
         const Real LocaltwoNormSqr = pow( hmat_tools::TwoNorm( x ), 2 );
         Real twoNorm;
-        mpi::AllReduce(&LocaltwoNormSqr, &twoNorm, 1, MPI_SUM, team);
+        mpi::AllReduce(&LocaltwoNormSqr, &twoNorm, 1, mpi::SUM, team);
         twoNorm = sqrt(twoNorm);
         hmat_tools::Scale( ((Scalar)1)/twoNorm, x );
     }
@@ -48,7 +48,7 @@ DistHMat2d<Scalar>::ParallelEstimateTwoNorm( Real theta, Real confidence )
         hmat_tools::Copy( y, x );
         const Real LocaltwoNormSqr = pow( hmat_tools::TwoNorm( x ), 2 );
         Real twoNorm;
-        mpi::AllReduce(&LocaltwoNormSqr, &twoNorm, 1, MPI_SUM, team);
+        mpi::AllReduce(&LocaltwoNormSqr, &twoNorm, 1, mpi::SUM, team);
         twoNorm = sqrt(twoNorm);
         hmat_tools::Scale( ((Scalar)1)/twoNorm, x );
         estimate *= pow( twoNorm, root );

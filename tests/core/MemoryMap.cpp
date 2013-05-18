@@ -7,16 +7,17 @@
    directory, or at http://opensource.org/licenses/GPL-3.0
 */
 #include "dmhm.hpp"
+using namespace dmhm;
 
 int
 main( int argc, char* argv[] )
 {
     try
     {
-        dmhm::MemoryMap<int,dmhm::Dense<double> > memoryMap;
+        MemoryMap<int,Dense<double> > memoryMap;
 
         for( int i=0; i<10000; ++i )
-            memoryMap.Set(400 - 3*i,new dmhm::Dense<double>(i%4,i%4));
+            memoryMap.Set(400 - 3*i,new Dense<double>(i%4,i%4));
 
         int numEntries = memoryMap.Size();
         std::cout << "size of memory map: " << numEntries << std::endl;
@@ -24,7 +25,7 @@ main( int argc, char* argv[] )
         for( int entry=0; entry<numEntries; ++entry,memoryMap.Increment() )
         {
             const int currentIndex = memoryMap.CurrentIndex();
-            const dmhm::Dense<double>& D = *memoryMap.CurrentEntry(); 
+            const Dense<double>& D = *memoryMap.CurrentEntry(); 
             std::cout << "Index " << currentIndex << ": " 
                       << D.Height() << " x " << D.Width() << "\n"; 
         }
@@ -36,7 +37,7 @@ main( int argc, char* argv[] )
         for( int entry=0; entry<numEntries; ++entry )
         {
             const int currentIndex = memoryMap.CurrentIndex();
-            const dmhm::Dense<double>& D = *memoryMap.CurrentEntry();
+            const Dense<double>& D = *memoryMap.CurrentEntry();
             std::cout << "Index " << currentIndex << ": "
                       << D.Height() << " x " << D.Width() << "\n";
             if( entry%3 == 2 )
@@ -54,7 +55,7 @@ main( int argc, char* argv[] )
     {
         std::cerr << "Caught message: " << e.what() << std::endl;
 #ifndef RELEASE
-        dmhm::DumpCallStack();
+        DumpCallStack();
 #endif
     }
 

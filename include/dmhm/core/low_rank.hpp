@@ -10,7 +10,7 @@
 #ifndef DMHM_LOW_RANK_HPP
 #define DMHM_LOW_RANK_HPP 1
 
-#include "dmhm/building_blocks/dense.hpp"
+#include "dmhm/core/dense.hpp"
 
 namespace dmhm {
 

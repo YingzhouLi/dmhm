@@ -7,6 +7,7 @@
    directory, or at http://opensource.org/licenses/GPL-3.0
 */
 #include "dmhm.hpp"
+using namespace dmhm;
 
 void Usage()
 {
@@ -64,20 +65,16 @@ FormRow
 int
 main( int argc, char* argv[] )
 {
-    MPI_Init( &argc, &argv );
-    const int commRank = dmhm::mpi::CommRank( MPI_COMM_WORLD );
-    const int commSize = dmhm::mpi::CommSize( MPI_COMM_WORLD );
+    Initialize( argc, argv );
+    const int commRank = mpi::CommRank( mpi::COMM_WORLD );
+    const int commSize = mpi::CommSize( mpi::COMM_WORLD );
 
-    dmhm::UInt64 seed;
-    seed.d[0] = 17U;
-    seed.d[1] = 21U;
-    dmhm::SeedParallelLcg( commRank, commSize, seed );
-
+    // TODO: Use Choice for better command-line argument processing
     if( argc < 10 )
     {
         if( commRank == 0 )
             Usage();
-        MPI_Finalize();
+        Finalize();
         return 0;
     }
     int arg=1;
@@ -104,10 +101,10 @@ main( int argc, char* argv[] )
     try
     {
         typedef std::complex<double> Scalar;
-        typedef dmhm::HMat2d<Scalar> HMat;
-        typedef dmhm::DistHMat2d<Scalar> DistHMat;
+        typedef HMat2d<Scalar> HMat;
+        typedef DistHMat2d<Scalar> DistHMat;
 
-        dmhm::Sparse<Scalar> S;
+        Sparse<Scalar> S;
         S.height = m;
         S.width = n;
         S.symmetric = false;
@@ -124,8 +121,8 @@ main( int argc, char* argv[] )
             std::cout << "Filling sparse matrices...";
             std::cout.flush();
         }
-        dmhm::mpi::Barrier( MPI_COMM_WORLD );
-        double fillStartTime = dmhm::mpi::WallTime();
+        mpi::Barrier( mpi::COMM_WORLD );
+        double fillStartTime = mpi::Time();
         std::vector<Scalar> row;
         std::vector<int> colIndices;
         for( int i=0; i<m; ++i )
@@ -145,8 +142,8 @@ main( int argc, char* argv[] )
             }
         }
         S.rowOffsets.push_back( S.nonzeros.size() );
-        dmhm::mpi::Barrier( MPI_COMM_WORLD );
-        double fillStopTime = dmhm::mpi::WallTime();
+        mpi::Barrier( mpi::COMM_WORLD );
+        double fillStopTime = mpi::Time();
         if( commRank == 0 )
         {
             std::cout << "done: " << fillStopTime-fillStartTime << " seconds." 
@@ -159,12 +156,12 @@ main( int argc, char* argv[] )
             std::cout << "Constructing H-matrices in serial...";
             std::cout.flush();
         }
-        dmhm::mpi::Barrier( MPI_COMM_WORLD );
-        double constructStartTime = dmhm::mpi::WallTime();
+        mpi::Barrier( mpi::COMM_WORLD );
+        double constructStartTime = mpi::Time();
         HMat ASerial
         ( S, numLevels, maxRank, stronglyAdmissible, xSize, ySize );
-        dmhm::mpi::Barrier( MPI_COMM_WORLD );
-        double constructStopTime = dmhm::mpi::WallTime();
+        mpi::Barrier( mpi::COMM_WORLD );
+        double constructStopTime = mpi::Time();
         if( commRank == 0 )
             std::cout << "done: " << constructStopTime-constructStartTime 
                       << " seconds." << std::endl;
@@ -175,11 +172,11 @@ main( int argc, char* argv[] )
             std::cout << "Inverting H-matrices in serial...";
             std::cout.flush();
         }
-        dmhm::mpi::Barrier( MPI_COMM_WORLD );
-        double invertStartTime = dmhm::mpi::WallTime();
+        mpi::Barrier( mpi::COMM_WORLD );
+        double invertStartTime = mpi::Time();
         ASerial.DirectInvert();
-        dmhm::mpi::Barrier( MPI_COMM_WORLD );
-        double invertStopTime = dmhm::mpi::WallTime();
+        mpi::Barrier( mpi::COMM_WORLD );
+        double invertStopTime = mpi::Time();
         if( commRank == 0 )
         {
             std::cout << "done: " << invertStopTime-invertStartTime 
@@ -194,7 +191,7 @@ main( int argc, char* argv[] )
         }
 
         // Set up our subcommunicators and compute the packed sizes
-        DistHMat::Teams teams( MPI_COMM_WORLD );
+        DistHMat::Teams teams( mpi::COMM_WORLD );
         std::vector<std::size_t> packedSizes;
         DistHMat::PackedSizes( packedSizes, ASerial, teams ); 
         const std::size_t myMaxSize = 
@@ -206,15 +203,15 @@ main( int argc, char* argv[] )
             std::cout << "Packing H-matrix for distribution...";
             std::cout.flush();
         }
-        dmhm::mpi::Barrier( MPI_COMM_WORLD );
-        double packStartTime = dmhm::mpi::WallTime();
-        std::vector<dmhm::byte> sendBuffer( commSize*myMaxSize );
-        std::vector<dmhm::byte*> packedPieces( commSize );
+        mpi::Barrier( mpi::COMM_WORLD );
+        double packStartTime = mpi::Time();
+        std::vector<byte> sendBuffer( commSize*myMaxSize );
+        std::vector<byte*> packedPieces( commSize );
         for( int i=0; i<commSize; ++i )
             packedPieces[i] = &sendBuffer[i*myMaxSize];
         DistHMat::Pack( packedPieces, ASerial, teams );
-        dmhm::mpi::Barrier( MPI_COMM_WORLD );
-        double packStopTime = dmhm::mpi::WallTime();
+        mpi::Barrier( mpi::COMM_WORLD );
+        double packStopTime = mpi::Time();
         if( commRank == 0 )
             std::cout << "done: " << packStopTime-packStartTime << " seconds."
                       << std::endl;
@@ -223,8 +220,8 @@ main( int argc, char* argv[] )
         int myIntMaxSize, intMaxSize;
         {
             myIntMaxSize = myMaxSize;
-            dmhm::mpi::AllReduce
-            ( &myIntMaxSize, &intMaxSize, 1, MPI_MAX, MPI_COMM_WORLD );
+            mpi::AllReduce
+            ( &myIntMaxSize, &intMaxSize, 1, mpi::MAX, mpi::COMM_WORLD );
         }
         if( commRank == 0 )
         {
@@ -239,14 +236,14 @@ main( int argc, char* argv[] )
             std::cout << "AllToAll redistribution...";
             std::cout.flush();
         }
-        dmhm::mpi::Barrier( MPI_COMM_WORLD );
-        double allToAllStartTime = dmhm::mpi::WallTime();
-        std::vector<dmhm::byte> recvBuffer( commSize*intMaxSize );
-        dmhm::mpi::AllToAll
+        mpi::Barrier( mpi::COMM_WORLD );
+        double allToAllStartTime = mpi::Time();
+        std::vector<byte> recvBuffer( commSize*intMaxSize );
+        mpi::AllToAll
         ( &sendBuffer[0], myIntMaxSize, &recvBuffer[0], intMaxSize,
-          MPI_COMM_WORLD );
-        dmhm::mpi::Barrier( MPI_COMM_WORLD );
-        double allToAllStopTime = dmhm::mpi::WallTime();
+          mpi::COMM_WORLD );
+        mpi::Barrier( mpi::COMM_WORLD );
+        double allToAllStopTime = mpi::Time();
         if( commRank == 0 )
         {
             std::cout << "done: " << allToAllStopTime-allToAllStartTime
@@ -259,12 +256,12 @@ main( int argc, char* argv[] )
             std::cout << "Unpacking...";
             std::cout.flush();
         }
-        dmhm::mpi::Barrier( MPI_COMM_WORLD );
-        double unpackStartTime = dmhm::mpi::WallTime();
+        mpi::Barrier( mpi::COMM_WORLD );
+        double unpackStartTime = mpi::Time();
         DistHMat A( &recvBuffer[0], teams );
         DistHMat B( &recvBuffer[0], teams );
-        dmhm::mpi::Barrier( MPI_COMM_WORLD );
-        double unpackStopTime = dmhm::mpi::WallTime();
+        mpi::Barrier( mpi::COMM_WORLD );
+        double unpackStopTime = mpi::Time();
         if( commRank == 0 )
         {
             std::cout << "done: " << unpackStopTime-unpackStartTime
@@ -280,12 +277,12 @@ main( int argc, char* argv[] )
         const int localWidth = A.LocalWidth();
         if( localHeight != localWidth )
             throw std::logic_error("A was not locally square");
-        dmhm::Dense<Scalar> XLocal;
+        Dense<Scalar> XLocal;
         if( multiplyIdentity )
         {
             const int firstLocalRow = A.FirstLocalRow();
             XLocal.Resize( localHeight, n );
-            dmhm::hmat_tools::Scale( (Scalar)0, XLocal );
+            hmat_tools::Scale( (Scalar)0, XLocal );
             for( int j=firstLocalRow; j<firstLocalRow+localHeight; ++j )
                 XLocal.Set( j-firstLocalRow, j, (Scalar)1 );
         }
@@ -293,10 +290,10 @@ main( int argc, char* argv[] )
         {
             const int numRhs = 30;
             XLocal.Resize( localHeight, numRhs );
-            dmhm::ParallelGaussianRandomVectors( XLocal );
+            ParallelGaussianRandomVectors( XLocal );
         }
         
-        dmhm::Dense<Scalar> YLocal, ZLocal;
+        Dense<Scalar> YLocal, ZLocal;
         // Y := AZ := ABX
         B.Multiply( (Scalar)1, XLocal, ZLocal );
         if( print )
@@ -326,12 +323,12 @@ main( int argc, char* argv[] )
             std::cout << "Multiplying distributed H-matrices...";
             std::cout.flush();
         }
-        dmhm::mpi::Barrier( MPI_COMM_WORLD );
-        double multStartTime = dmhm::mpi::WallTime();
+        mpi::Barrier( mpi::COMM_WORLD );
+        double multStartTime = mpi::Time();
         DistHMat C( teams );
         A.Multiply( (Scalar)1, B, C, multType );
-        dmhm::mpi::Barrier( MPI_COMM_WORLD );
-        double multStopTime = dmhm::mpi::WallTime();
+        mpi::Barrier( mpi::COMM_WORLD );
+        double multStopTime = mpi::Time();
         if( commRank == 0 )
         {
             std::cout << "done: " << multStopTime-multStartTime
@@ -346,17 +343,17 @@ main( int argc, char* argv[] )
         // Check that CX = ABX for an arbitrary X
         if( commRank == 0 )
             std::cout << "Checking consistency: " << std::endl;
-        dmhm::mpi::Barrier( MPI_COMM_WORLD );
+        mpi::Barrier( mpi::COMM_WORLD );
 /*        const int localHeight = A.LocalHeight();
         const int localWidth = A.LocalWidth();
         if( localHeight != localWidth )
             throw std::logic_error("A was not locally square");
-        dmhm::Dense<Scalar> XLocal;
+        Dense<Scalar> XLocal;
         if( multiplyIdentity )
         {
             const int firstLocalRow = A.FirstLocalRow();
             XLocal.Resize( localHeight, n );
-            dmhm::hmat_tools::Scale( (Scalar)0, XLocal );
+            hmat_tools::Scale( (Scalar)0, XLocal );
             for( int j=firstLocalRow; j<firstLocalRow+localHeight; ++j )
                 XLocal.Set( j-firstLocalRow, j, (Scalar)1 );
         }
@@ -364,10 +361,10 @@ main( int argc, char* argv[] )
         {
             const int numRhs = 30;
             XLocal.Resize( localHeight, numRhs );
-            dmhm::ParallelGaussianRandomVectors( XLocal );
+            ParallelGaussianRandomVectors( XLocal );
         }
         
-        dmhm::Dense<Scalar> YLocal, ZLocal;
+        Dense<Scalar> YLocal, ZLocal;
         // Y := AZ := ABX
         B.Multiply( (Scalar)1, XLocal, ZLocal );
         if( print )
@@ -424,8 +421,8 @@ main( int argc, char* argv[] )
             {
                 const std::complex<double> truth = YLocal.Get(i,j);
                 const std::complex<double> error = truth - ZLocal.Get(i,j);
-                const double truthMag = dmhm::Abs( truth );
-                const double errorMag = dmhm::Abs( error );
+                const double truthMag = Abs( truth );
+                const double errorMag = Abs( error );
                 ZLocal.Set( i, j, error );
 
                 // RHS norms
@@ -441,18 +438,18 @@ main( int argc, char* argv[] )
         double infTruth, infError, 
                L1Truth, L1Error, 
                L2SquaredTruth, L2SquaredError;
-        dmhm::mpi::Reduce
-        ( &myInfTruth, &infTruth, 1, 0, MPI_MAX, MPI_COMM_WORLD );
-        dmhm::mpi::Reduce
-        ( &myInfError, &infError, 1, 0, MPI_MAX, MPI_COMM_WORLD );
-        dmhm::mpi::Reduce
-        ( &myL1Truth, &L1Truth, 1, 0, MPI_SUM, MPI_COMM_WORLD );
-        dmhm::mpi::Reduce
-        ( &myL1Error, &L1Error, 1, 0, MPI_SUM, MPI_COMM_WORLD );
-        dmhm::mpi::Reduce
-        ( &myL2SquaredTruth, &L2SquaredTruth, 1, 0, MPI_SUM, MPI_COMM_WORLD );
-        dmhm::mpi::Reduce
-        ( &myL2SquaredError, &L2SquaredError, 1, 0, MPI_SUM, MPI_COMM_WORLD );
+        mpi::Reduce
+        ( &myInfTruth, &infTruth, 1, mpi::MAX, 0, mpi::COMM_WORLD );
+        mpi::Reduce
+        ( &myInfError, &infError, 1, mpi::MAX, 0, mpi::COMM_WORLD );
+        mpi::Reduce
+        ( &myL1Truth, &L1Truth, 1, mpi::SUM, 0, mpi::COMM_WORLD );
+        mpi::Reduce
+        ( &myL1Error, &L1Error, 1, mpi::SUM, 0, mpi::COMM_WORLD );
+        mpi::Reduce
+        ( &myL2SquaredTruth, &L2SquaredTruth, 1, mpi::SUM, 0, mpi::COMM_WORLD );
+        mpi::Reduce
+        ( &myL2SquaredError, &L2SquaredError, 1, mpi::SUM, 0, mpi::COMM_WORLD );
         if( commRank == 0 )
         {
             std::cout << "||ABX||_oo    = " << infTruth << "\n"
@@ -480,11 +477,11 @@ main( int argc, char* argv[] )
         std::cerr << "Process " << commRank << " caught message: " << e.what() 
                   << std::endl;
 #ifndef RELEASE
-        dmhm::DumpCallStack();
+        DumpCallStack();
 #endif
     }
     
-    MPI_Finalize();
+    Finalize();
     return 0;
 }
 

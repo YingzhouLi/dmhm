@@ -10,10 +10,10 @@
 #ifndef DMHM_ABSTRACT_HMAT_HPP
 #define DMHM_ABSTRACT_HMAT_HPP 1
 
-#include "dmhm/building_blocks/dense.hpp"
-#include "dmhm/building_blocks/vector.hpp"
+#include "dmhm/core/dense.hpp"
+#include "dmhm/core/vector.hpp"
 
-#include "dmhm/building_blocks/low_rank.hpp"
+#include "dmhm/core/low_rank.hpp"
 
 namespace dmhm {
 

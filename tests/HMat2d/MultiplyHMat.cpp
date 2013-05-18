@@ -7,6 +7,7 @@
    directory, or at http://opensource.org/licenses/GPL-3.0
 */
 #include "dmhm.hpp"
+using namespace dmhm;
 
 void Usage()
 {
@@ -64,27 +65,24 @@ FormRow
 int
 main( int argc, char* argv[] )
 {
-    MPI_Init( &argc, &argv );
-    dmhm::UInt64 seed;
-    seed.d[0] = 17U;
-    seed.d[1] = 21U;
-    dmhm::SeedSerialLcg( seed );
+    Initialize( argc, argv );
 
-    const int commSize = dmhm::mpi::CommSize( MPI_COMM_WORLD );
-    const int commRank = dmhm::mpi::CommRank( MPI_COMM_WORLD );
+    const int commSize = mpi::CommSize( mpi::COMM_WORLD );
+    const int commRank = mpi::CommRank( mpi::COMM_WORLD );
     if( commSize != 1 )
     {
         if( commRank == 0 )
             std::cerr << "This test must be run with a single MPI process" 
                       << std::endl;
-        MPI_Finalize();
+        Finalize();
         return 0;
     }
 
+    // TODO: Use Choice for better command-line argument processing
     if( argc < 9 )
     {
         Usage();
-        MPI_Finalize();
+        Finalize();
         return 0;
     }
     int arg=1;
@@ -107,9 +105,9 @@ main( int argc, char* argv[] )
     try
     {
         typedef std::complex<double> Scalar;
-        typedef dmhm::HMat2d<Scalar> HMat;
+        typedef HMat2d<Scalar> HMat;
 
-        dmhm::Sparse<Scalar> S;
+        Sparse<Scalar> S;
         S.height = m;
         S.width = n;
         S.symmetric = false;
@@ -123,7 +121,7 @@ main( int argc, char* argv[] )
 
         std::cout << "Filling sparse matrices...";
         std::cout.flush();
-        double fillStartTime = dmhm::mpi::WallTime();
+        double fillStartTime = mpi::Time();
         std::vector<Scalar> row;
         std::vector<int> colIndices;
         for( int i=0; i<m; ++i )
@@ -142,27 +140,27 @@ main( int argc, char* argv[] )
             }
         }
         S.rowOffsets.push_back( S.nonzeros.size() );
-        double fillStopTime = dmhm::mpi::WallTime();
+        double fillStopTime = mpi::Time();
         std::cout << "done: " << fillStopTime-fillStartTime << " seconds." 
                   << std::endl;
 
         // Convert to H-matrix form
         std::cout << "Constructing H-matrix...";
         std::cout.flush();
-        double constructStartTime = dmhm::mpi::WallTime();
+        double constructStartTime = mpi::Time();
         HMat A( S, numLevels, maxRank, stronglyAdmissible, xSize, ySize );
-        double constructStopTime = dmhm::mpi::WallTime();
+        double constructStopTime = mpi::Time();
         std::cout << "done: " << constructStopTime-constructStartTime 
                   << " seconds." << std::endl;
 
         // Invert H-matrix and make a copy
         std::cout << "Inverting H-matrix and making copy...";
         std::cout.flush();
-        double invertStartTime = dmhm::mpi::WallTime();
+        double invertStartTime = mpi::Time();
         A.DirectInvert();
         HMat B;
         B.CopyFrom( A );
-        double invertStopTime = dmhm::mpi::WallTime();
+        double invertStopTime = mpi::Time();
         std::cout << "done: " << invertStopTime-invertStartTime 
                   << " seconds." << std::endl;
         if( print )
@@ -179,10 +177,10 @@ main( int argc, char* argv[] )
         // Attempt to multiply the two matrices
         std::cout << "Multiplying H-matrices...";
         std::cout.flush();
-        double multStartTime = dmhm::mpi::WallTime();
+        double multStartTime = mpi::Time();
         HMat C;
         A.Multiply( (Scalar)1, B, C );
-        double multStopTime = dmhm::mpi::WallTime();
+        double multStopTime = mpi::Time();
         std::cout << "done: " << multStopTime-multStartTime
                   << " seconds." << std::endl;
         if( print )
@@ -195,11 +193,11 @@ main( int argc, char* argv[] )
 
         // Check that CX = ABX for an arbitrary X
         std::cout << "Checking consistency: " << std::endl;
-        dmhm::Dense<Scalar> X;
+        Dense<Scalar> X;
         if( multiplyIdentity )
         {
             X.Resize( m, n );
-            dmhm::hmat_tools::Scale( (Scalar)0, X );
+            hmat_tools::Scale( (Scalar)0, X );
             for( int j=0; j<n; ++j )
                 X.Set( j, j, (Scalar)1 );
         }
@@ -207,12 +205,12 @@ main( int argc, char* argv[] )
         {
             const int numRhs = 30;
             X.Resize( m, numRhs );
-            dmhm::SerialGaussianRandomVectors( X );
+            SerialGaussianRandomVectors( X );
         }
         if( print )
             X.Print("X");
         
-        dmhm::Dense<Scalar> Y, Z;
+        Dense<Scalar> Y, Z;
         // Y := AZ := ABX
         B.Multiply( (Scalar)1, X, Z );
         A.Multiply( (Scalar)1, Z, Y );
@@ -250,8 +248,8 @@ main( int argc, char* argv[] )
             {
                 const std::complex<double> truth = Y.Get(i,j);
                 const std::complex<double> error = truth - Z.Get(i,j);
-                const double truthMag = dmhm::Abs( truth );
-                const double errorMag = dmhm::Abs( error );
+                const double truthMag = Abs( truth );
+                const double errorMag = Abs( error );
                 Z.Set( i, j, error );
 
                 // RHS norms
@@ -284,11 +282,11 @@ main( int argc, char* argv[] )
     {
         std::cerr << "Caught message: " << e.what() << std::endl;
 #ifndef RELEASE
-        dmhm::DumpCallStack();
+        DumpCallStack();
 #endif
     }
     
-    MPI_Finalize();
+    Finalize();
     return 0;
 }
 

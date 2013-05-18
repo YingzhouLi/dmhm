@@ -27,7 +27,30 @@
 
 #include "dmhm/config.h"
 
+#include "dmhm/core/mpi.hpp"
+#include "dmhm/core/choice.hpp"
+#include "dmhm/core/mpi_choice.hpp"
+
 namespace dmhm {
+
+bool Initialized();
+void Initialize( int& argc, char**& argv );
+void Finalize();
+MpiArgs& GetArgs();
+
+// These should typically only be used when not in RELEASE mode
+#ifndef RELEASE
+void PushCallStack( const std::string s );
+void PopCallStack();
+void DumpCallStack();
+
+class CallStackEntry
+{
+public:
+    CallStackEntry( std::string s ) { PushCallStack(s); }
+    ~CallStackEntry() { PopCallStack(); }
+};
+#endif
 
 typedef unsigned char byte;
 
@@ -168,18 +191,6 @@ template<typename Real>
 inline const ScalarWrapper<std::complex<Real> >
 WrapScalar( const std::complex<Real> alpha )
 { return ScalarWrapper<std::complex<Real> >( alpha ); }
-
-// These should typically only be used when not in RELEASE mode
-void PushCallStack( const std::string s );
-void PopCallStack();
-void DumpCallStack();
-
-class CallStackEntry
-{
-public:
-    CallStackEntry( std::string s ) { PushCallStack(s); }
-    ~CallStackEntry() { PopCallStack(); }
-};
 
 inline unsigned Log2( unsigned N )
 {

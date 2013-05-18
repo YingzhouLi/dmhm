@@ -7,6 +7,7 @@
    directory, or at http://opensource.org/licenses/GPL-3.0
 */
 #include "dmhm.hpp"
+using namespace dmhm;
 
 void Usage()
 {
@@ -53,11 +54,11 @@ main( int argc, char* argv[] )
         // Form the random packed A
         std::vector<std::complex<double> > packedA( packedSize );
         for( int k=0; k<packedSize; ++k )
-            dmhm::SerialGaussianRandomVariable( packedA[k] );
+            SerialGaussianRandomVariable( packedA[k] );
 
         // Expand the packed A
-        dmhm::Dense<std::complex<double> > A( s+t, r );
-        dmhm::hmat_tools::Scale( std::complex<double>(0), A );
+        Dense<std::complex<double> > A( s+t, r );
+        hmat_tools::Scale( std::complex<double>(0), A );
         {
             int k=0;
             for( int j=0; j<r; ++j )
@@ -70,26 +71,26 @@ main( int argc, char* argv[] )
         }
         if( print )
         {
-            dmhm::hmat_tools::PrintPacked( "packedA:", r, s, t, &packedA[0] );
+            hmat_tools::PrintPacked( "packedA:", r, s, t, &packedA[0] );
             std::cout << std::endl;
         }
 
         // Allocate a workspace and perform the packed QR
         std::vector<std::complex<double> > 
             tau( std::min(s+t,r) ), work(std::max(s+t,r));
-        dmhm::hmat_tools::PackedQR( r, s, t, &packedA[0], &tau[0], &work[0] );
+        hmat_tools::PackedQR( r, s, t, &packedA[0], &tau[0], &work[0] );
         if( print )
         {
-            dmhm::hmat_tools::PrintPacked( "packedQR:", r, s, t, &packedA[0] );
+            hmat_tools::PrintPacked( "packedQR:", r, s, t, &packedA[0] );
             std::cout << "\ntau:\n";
             for( unsigned j=0; j<tau.size(); ++j )
-                std::cout << dmhm::WrapScalar(tau[j]) << "\n";
+                std::cout << WrapScalar(tau[j]) << "\n";
             std::cout << std::endl;
         }
 
         // Copy the R into a zeroed (s+t) x r matrix
-        dmhm::Dense<std::complex<double> > B( s+t, r );
-        dmhm::hmat_tools::Scale( std::complex<double>(0), B );
+        Dense<std::complex<double> > B( s+t, r );
+        hmat_tools::Scale( std::complex<double>(0), B );
         int k=0;
         for( int j=0; j<r; ++j )
         {
@@ -108,14 +109,14 @@ main( int argc, char* argv[] )
             std::cout << std::endl;
         }
 
-        dmhm::hmat_tools::ApplyPackedQFromLeft
+        hmat_tools::ApplyPackedQFromLeft
         ( r, s, t, &packedA[0], &tau[0], B, &work[0] );
         {
             double maxError = 0;
             for( int j=0; j<r; ++j )
                 for( int i=0; i<s+t; ++i )
                     maxError = 
-                        std::max(maxError,dmhm::Abs(B.Get(i,j)-A.Get(i,j)));
+                        std::max(maxError,Abs(B.Get(i,j)-A.Get(i,j)));
             std::cout << "||QR-A||_oo = " << maxError << std::endl;
         }
         if( print )
@@ -128,12 +129,12 @@ main( int argc, char* argv[] )
         // the left
         B.Resize( s+t, s+t );
         work.resize( s+t );
-        dmhm::hmat_tools::Scale( std::complex<double>(0), B );
+        hmat_tools::Scale( std::complex<double>(0), B );
         for( int j=0; j<s+t; ++j )
             B.Set( j, j, 1.0 );
-        dmhm::hmat_tools::ApplyPackedQFromLeft
+        hmat_tools::ApplyPackedQFromLeft
         ( r, s, t, &packedA[0], &tau[0], B, &work[0] );
-        dmhm::hmat_tools::ApplyPackedQAdjointFromLeft
+        hmat_tools::ApplyPackedQAdjointFromLeft
         ( r, s, t, &packedA[0], &tau[0], B, &work[0] );
         {
             double maxError = 0;
@@ -143,9 +144,9 @@ main( int argc, char* argv[] )
                 {
                     const std::complex<double> computed = B.Get(i,j);
                     if( i == j )
-                        maxError = std::max(maxError,dmhm::Abs(computed-1.0));
+                        maxError = std::max(maxError,Abs(computed-1.0));
                     else
-                        maxError = std::max(maxError,dmhm::Abs(computed));
+                        maxError = std::max(maxError,Abs(computed));
                 }
             }
             std::cout << "||I - Q'QI||_oo = " << maxError << std::endl;
@@ -158,12 +159,12 @@ main( int argc, char* argv[] )
 
         // Create an (s+t) x (s+t) identity matrix and then apply Q' Q from 
         // the right
-        dmhm::hmat_tools::Scale( std::complex<double>(0), B );
+        hmat_tools::Scale( std::complex<double>(0), B );
         for( int j=0; j<s+t; ++j )
             B.Set( j, j, 1.0 );
-        dmhm::hmat_tools::ApplyPackedQAdjointFromRight
+        hmat_tools::ApplyPackedQAdjointFromRight
         ( r, s, t, &packedA[0], &tau[0], B, &work[0] );
-        dmhm::hmat_tools::ApplyPackedQFromRight
+        hmat_tools::ApplyPackedQFromRight
         ( r, s, t, &packedA[0], &tau[0], B, &work[0] );
         {
             double maxError = 0;
@@ -173,9 +174,9 @@ main( int argc, char* argv[] )
                 {
                     const std::complex<double> computed = B.Get(i,j);
                     if( i == j )
-                        maxError = std::max(maxError,dmhm::Abs(computed-1.0));
+                        maxError = std::max(maxError,Abs(computed-1.0));
                     else
-                        maxError = std::max(maxError,dmhm::Abs(computed));
+                        maxError = std::max(maxError,Abs(computed));
                 }
             }
             std::cout << "||I - IQ'Q||_oo = " << maxError << std::endl;
@@ -190,7 +191,7 @@ main( int argc, char* argv[] )
     {
         std::cerr << "Caught message: " << e.what() << std::endl;
 #ifndef RELEASE
-        dmhm::DumpCallStack();
+        DumpCallStack();
 #endif
     }
 

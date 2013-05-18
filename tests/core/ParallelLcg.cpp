@@ -7,41 +7,42 @@
    directory, or at http://opensource.org/licenses/GPL-3.0
 */
 #include "dmhm.hpp"
+using namespace dmhm;
 
 int
 main( int argc, char* argv[] )
 {
-    MPI_Init( &argc, &argv );
-    int rank = dmhm::mpi::CommRank( MPI_COMM_WORLD );
-    int commSize = dmhm::mpi::CommSize( MPI_COMM_WORLD );
+    Initialize( argc, argv );
+    int rank = mpi::CommRank( mpi::COMM_WORLD );
+    int commSize = mpi::CommSize( mpi::COMM_WORLD );
 
     // Print the first 3*commSize entries of the serial RNG and the first 
     // 3 entries from each process from the parallel RNG.
     try
     {
-        dmhm::UInt64 seed = {{ 17U, 0U }};
         if( rank == 0 )
         {
-            dmhm::SeedSerialLcg( seed );
             std::cout << "Serial values:" << std::endl;
             for( int i=0; i<3*commSize; ++i )
             {
-                dmhm::UInt64 state = dmhm::SerialLcg();
+                UInt64 state = SerialLcg();
                 std::cout << state[0] << " " << state[1] << "\n";
             }
             std::cout << std::endl;
         }
 
-        std::vector<dmhm::UInt32> myValues( 6 );
-        std::vector<dmhm::UInt32> values( 6*commSize );
-        dmhm::SeedParallelLcg( rank, commSize, seed );
+        std::vector<UInt32> myValues( 6 );
+        std::vector<UInt32> values( 6*commSize );
         for( int i=0; i<3; ++i )
         {
-            dmhm::UInt64 state = dmhm::ParallelLcg();
+            UInt64 state = ParallelLcg();
             myValues[2*i] = state[0];
             myValues[2*i+1] = state[1];
         }
-        dmhm::mpi::AllGather( &myValues[0], 6, &values[0], 6, MPI_COMM_WORLD );
+        // We're treating the unsigned data as signed, but since we are only 
+        // gathering the bits, it doesn't matter
+        mpi::AllGather
+        ( (int*)&myValues[0], 6, (int*)&values[0], 6, mpi::COMM_WORLD );
         if( rank == 0 )
         {
             std::cout << "Parallel values:" << std::endl;
@@ -55,15 +56,15 @@ main( int argc, char* argv[] )
             }
             std::cout << std::endl;
         }
-    }
+    } // TODO: Command-line argument processing
     catch( std::exception& e )
     {
         std::cerr << "Caught message: " << e.what() << std::endl;
 #ifndef RELEASE
-        dmhm::DumpCallStack();
+        DumpCallStack();
 #endif
     }
 
-    MPI_Finalize();
+    Finalize();
     return 0;
 }

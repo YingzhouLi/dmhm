@@ -10,7 +10,7 @@
 #ifndef DMHM_RANDOM_HPP
 #define DMHM_RANDOM_HPP 1
 
-#include "dmhm/building_blocks/environment.hpp"
+#include "dmhm/core/environment.hpp"
 
 namespace dmhm {
 
