@@ -210,13 +210,14 @@ target_link_libraries(cmake-dummy-lib ${EXTERNAL_LIBS})
 set(MPI_LINK_FLAGS "${MPI_CXX_LINK_FLAGS}")
 if(BUILD_TESTS)
   set(TEST_DIR ${PROJECT_SOURCE_DIR}/tests)
-  set(TEST_TYPES core hmat_tools HMat2d DistHMat2d)
+  set(TEST_TYPES core hmat_tools HMat2d DistHMat2d HMat3d)
   set(core_TESTS MemoryMap ParallelLcg Timer)
   set(hmat_tools_TESTS MatrixAdd Compress ConvertSubmatrix PackedQR)
   set(HMat2d_TESTS Invert LowRankConstructor MultiplyHMat Pack)
   set(DistHMat2d_TESTS Ghost ImportSparse MultiplyHMat Pack 
                             RandomMultiplyHMat RandomMultiplyVectors
                             InvertHMat)
+  set(HMat3d_TESTS Invert LowRankConstructor MultiplyHMat Pack)
   
   foreach(TYPE ${TEST_TYPES})
     set(OUTPUT_DIR "${PROJECT_BINARY_DIR}/bin/${TYPE}")

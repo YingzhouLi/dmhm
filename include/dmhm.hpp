@@ -12,5 +12,6 @@
 
 #include "dmhm/core/environment.hpp"
 #include "dmhm/dist_hmat2d.hpp"
+#include "dmhm/hmat3d.hpp"
 
 #endif // ifndef DMHM_HPP
