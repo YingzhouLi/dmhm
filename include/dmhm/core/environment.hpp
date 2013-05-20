@@ -38,6 +38,24 @@ void Initialize( int& argc, char**& argv );
 void Finalize();
 MpiArgs& GetArgs();
 
+template<typename T>
+inline T
+Input( std::string name, std::string desc )
+{ return GetArgs().Input<T>( name, desc ); }
+
+template<typename T>
+inline T
+Input( std::string name, std::string desc, T defaultVal )
+{ return GetArgs().Input( name, desc, defaultVal ); }
+
+inline void
+ProcessInput()
+{ GetArgs().Process(); }
+
+inline void
+PrintInputReport()
+{ GetArgs().PrintReport(); }
+
 // These should typically only be used when not in RELEASE mode
 #ifndef RELEASE
 void PushCallStack( const std::string s );

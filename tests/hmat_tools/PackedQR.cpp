@@ -9,40 +9,22 @@
 #include "dmhm.hpp"
 using namespace dmhm;
 
-void Usage()
-{
-    std::cout << "PackedQR <r> <s> <t> <print?>\n"
-              << "r: width of triangular matrices\n"
-              << "s: height of top matrix    (s <= r)\n"
-              << "t: height of bottom matrix (t <= r)\n"
-              << "print?: print out matrices?" << std::endl;
-}
-
 int
 main( int argc, char* argv[] )
 {
-    if( argc < 5 )
-    {
-        Usage();
-        return 0;
-    }
-    const int r = atoi( argv[1] );
-    const int s = atoi( argv[2] );
-    const int t = atoi( argv[3] );
-    const bool print = atoi( argv[4] );
-
-    if( s > r || t > r )
-    {
-        std::cout << "s and t cannot be greater than r" << std::endl;
-        return 0;
-    }
-
-    std::cout << "----------------------------------------------------\n"
-              << "Testing complex double-precision PackedQR           \n"
-              << "----------------------------------------------------" 
-              << std::endl;
+    Initialize( argc, argv );
     try
     {
+        const int r = Input("--r","width of stacked matrices",10);
+        const int s = Input("--s","height of top matrix",100);
+        const int t = Input("--t","height of bottom matrix",100);
+        const bool print = Input("--print","print matrices?",false);
+        ProcessInput();
+        PrintInputReport();
+
+        if( s > r || t > r )
+            throw std::logic_error("s and t cannot be greater than r");
+
         // Fill a packed version of two concatenated upper triangular s x r
         // and t x r matrices with Gaussian random variables.
         const int minDimT = std::min(s,r);
@@ -187,6 +169,7 @@ main( int argc, char* argv[] )
             std::cout << std::endl;
         }
     }
+    catch( ArgException& e ) { }
     catch( std::exception& e )
     {
         std::cerr << "Caught message: " << e.what() << std::endl;
@@ -195,5 +178,6 @@ main( int argc, char* argv[] )
 #endif
     }
 
+    Finalize();
     return 0;
 }

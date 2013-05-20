@@ -9,53 +9,30 @@
 #include "dmhm.hpp"
 using namespace dmhm;
 
-void Usage()
-{
-    std::cout << "Pack <xSize> <ySize> <numLevels> "
-                 "<strongly admissible?> <maxRank> <print?> <print structure?>" 
-              << std::endl;
-}
-
 int
 main( int argc, char* argv[] )
 {
     Initialize( argc, argv );
     const int rank = mpi::CommRank( mpi::COMM_WORLD );
     const int p = mpi::CommSize( mpi::COMM_WORLD );
+    typedef std::complex<double> Scalar;
+    typedef HMat2d<Scalar> HMat;
+    typedef DistHMat2d<Scalar> DistHMat;
 
-    // TODO: Use Choice for better command-line argument processing
-    if( argc < 8 )
-    {
-        if( rank == 0 )
-            Usage();
-        Finalize();
-        return 0;
-    }
-    int arg=1;
-    const int xSize = atoi( argv[arg++] );
-    const int ySize = atoi( argv[arg++] );
-    const int numLevels = atoi( argv[arg++] );
-    const bool stronglyAdmissible = atoi( argv[arg++] );
-    const int maxRank = atoi( argv[arg++] );
-    const bool print = atoi( argv[arg++] );
-    const bool printStructure = atoi( argv[arg++] );
-
-    const int n = xSize*ySize;
-    const bool symmetric = false;
-
-    if( rank == 0 )
-    {
-        std::cout << "-------------------------------------------------\n"
-                  << "Testing complex double HMatHMat packing/unpacking\n"
-                  << "into DistHMat2d                                  \n"
-                  << "-------------------------------------------------" 
-                  << std::endl;
-    }
     try
     {
-        typedef std::complex<double> Scalar;
-        typedef HMat2d<Scalar> HMat;
-        typedef DistHMat2d<Scalar> DistHMat;
+        const int xSize = Input("--xSize","size of x dimension",20);
+        const int ySize = Input("--ySize","size of y dimension",20);
+        const int numLevels = Input("--numLevels","depth of H-matrix",4);
+        const bool strong = Input("--strong","strongly admissible?",false);
+        const int maxRank = Input("--maxRank","maximum rank of block",5);
+        const bool print = Input("--print","print matrices?",false);
+        const bool structure = Input("--structure","print structure?",true);
+        ProcessInput();
+        PrintInputReport();
+
+        const int n = xSize*ySize;
+        const bool symmetric = false;
 
         // Build a random H-matrix
         if( rank == 0 )
@@ -65,8 +42,7 @@ main( int argc, char* argv[] )
         }
         mpi::Barrier( mpi::COMM_WORLD );
         double constructStartTime = mpi::Time();
-        HMat H
-        ( numLevels, maxRank, symmetric, stronglyAdmissible, xSize, ySize );
+        HMat H( numLevels, maxRank, symmetric, strong, xSize, ySize );
         throw std::logic_error("Constructor needs to be fixed...");
         H.SetToRandom();
         mpi::Barrier( mpi::COMM_WORLD );
@@ -77,7 +53,7 @@ main( int argc, char* argv[] )
                       << " seconds." << std::endl;
             if( print )
                 H.Print("H");
-            if( printStructure )
+            if( structure )
             {
                 H.LatexWriteStructure("H_serial_structure");
                 H.MScriptWriteStructure("H_serial_structure");
@@ -203,7 +179,7 @@ main( int argc, char* argv[] )
             std::cout << "done: " << unpackStopTime-unpackStartTime
                       << " seconds." << std::endl;
         }
-        if( printStructure )
+        if( structure )
         {
             distH.LatexWriteLocalStructure("distH_structure");
             distH.MScriptWriteLocalStructure("distH_structure");
@@ -312,6 +288,7 @@ main( int argc, char* argv[] )
         if( rank == 0 )
             std::cout << "done" << std::endl;
     }
+    catch( ArgException& e ) { }
     catch( std::exception& e )
     {
         std::cerr << "Process " << rank << " caught message: " << e.what() 

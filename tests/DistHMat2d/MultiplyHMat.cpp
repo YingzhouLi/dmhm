@@ -9,14 +9,6 @@
 #include "dmhm.hpp"
 using namespace dmhm;
 
-void Usage()
-{
-    std::cout << "MultiplyHMat <xSize> <ySize> <numLevels> "
-                 "<strongly admissible?> <maxRank> <multType> "
-                 "<print?> <print structure?> <multiply identity?>" 
-              << std::endl;
-}
-
 template<typename Real>
 void
 FormRow
@@ -68,41 +60,26 @@ main( int argc, char* argv[] )
     Initialize( argc, argv );
     const int commRank = mpi::CommRank( mpi::COMM_WORLD );
     const int commSize = mpi::CommSize( mpi::COMM_WORLD );
+    typedef std::complex<double> Scalar;
+    typedef HMat2d<Scalar> HMat;
+    typedef DistHMat2d<Scalar> DistHMat;
 
-    // TODO: Use Choice for better command-line argument processing
-    if( argc < 10 )
-    {
-        if( commRank == 0 )
-            Usage();
-        Finalize();
-        return 0;
-    }
-    int arg=1;
-    const int xSize = atoi( argv[arg++] );
-    const int ySize = atoi( argv[arg++] );
-    const int numLevels = atoi( argv[arg++] );
-    const bool stronglyAdmissible = atoi( argv[arg++] );
-    const int maxRank = atoi( argv[arg++] );
-    const int multType = atoi( argv[arg++] );
-    const bool print = atoi( argv[arg++] );
-    const bool printStructure = atoi( argv[arg++] );
-    const bool multiplyIdentity = atoi( argv[arg++] );
-
-    const int m = xSize*ySize;
-    const int n = xSize*ySize;
-
-    if( commRank == 0 )
-    {
-        std::cout << "----------------------------------------------------\n"
-                  << "Testing H-matrix mult using generated matrices      \n"
-                  << "----------------------------------------------------" 
-                  << std::endl;
-    }
     try
     {
-        typedef std::complex<double> Scalar;
-        typedef HMat2d<Scalar> HMat;
-        typedef DistHMat2d<Scalar> DistHMat;
+        const int xSize = Input("--xSize","size of x dimension",20);
+        const int ySize = Input("--ySize","size of y dimension",20);
+        const int numLevels = Input("--numLevels","depth of H-matrix tree",4);
+        const bool strong = Input("--strong","strongly admissible?",false);
+        const int maxRank = Input("--maxRank","maximum rank of block",5);
+        const int multType = Input("--multType","multiply type",2);
+        const bool print = Input("--print","print matrices?",false);
+        const bool structure = Input("--structure","print structure?",true);
+        const bool multI = Input("--multI","multiply by identity?",false);
+        ProcessInput();
+        PrintInputReport();
+
+        const int m = xSize*ySize;
+        const int n = xSize*ySize;
 
         Sparse<Scalar> S;
         S.height = m;
@@ -158,8 +135,7 @@ main( int argc, char* argv[] )
         }
         mpi::Barrier( mpi::COMM_WORLD );
         double constructStartTime = mpi::Time();
-        HMat ASerial
-        ( S, numLevels, maxRank, stronglyAdmissible, xSize, ySize );
+        HMat ASerial( S, numLevels, maxRank, strong, xSize, ySize );
         mpi::Barrier( mpi::COMM_WORLD );
         double constructStopTime = mpi::Time();
         if( commRank == 0 )
@@ -181,9 +157,9 @@ main( int argc, char* argv[] )
         {
             std::cout << "done: " << invertStopTime-invertStartTime 
                       << " seconds." << std::endl;
-//            if( print )
-//                ASerial.Print("ASerial");
-            if( printStructure )
+            if( print )
+                ASerial.Print("ASerial");
+            if( structure )
             {
                 ASerial.LatexWriteStructure("ASerial_structure");
                 ASerial.MScriptWriteStructure("ASerial_structure");
@@ -267,7 +243,7 @@ main( int argc, char* argv[] )
             std::cout << "done: " << unpackStopTime-unpackStartTime
                       << " seconds." << std::endl;
         }
-        if( printStructure )
+        if( structure )
         {
             A.LatexWriteLocalStructure("A_structure");
             A.MScriptWriteLocalStructure("A_structure");
@@ -278,7 +254,7 @@ main( int argc, char* argv[] )
         if( localHeight != localWidth )
             throw std::logic_error("A was not locally square");
         Dense<Scalar> XLocal;
-        if( multiplyIdentity )
+        if( multI )
         {
             const int firstLocalRow = A.FirstLocalRow();
             XLocal.Resize( localHeight, n );
@@ -334,7 +310,7 @@ main( int argc, char* argv[] )
             std::cout << "done: " << multStopTime-multStartTime
                       << " seconds." << std::endl;
         }
-        if( printStructure )
+        if( structure )
         {
             C.LatexWriteLocalStructure("C_ghosted_structure");
             C.MScriptWriteLocalStructure("C_ghosted_structure");
@@ -349,7 +325,7 @@ main( int argc, char* argv[] )
         if( localHeight != localWidth )
             throw std::logic_error("A was not locally square");
         Dense<Scalar> XLocal;
-        if( multiplyIdentity )
+        if( multI )
         {
             const int firstLocalRow = A.FirstLocalRow();
             XLocal.Resize( localHeight, n );
@@ -472,6 +448,7 @@ main( int argc, char* argv[] )
             EFile << "];\n";
         }
     }
+    catch( ArgException& e ) { }
     catch( std::exception& e )
     {
         std::cerr << "Process " << commRank << " caught message: " << e.what() 
@@ -484,4 +461,3 @@ main( int argc, char* argv[] )
     Finalize();
     return 0;
 }
-

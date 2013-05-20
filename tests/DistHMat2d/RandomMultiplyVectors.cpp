@@ -9,49 +9,26 @@
 #include "dmhm.hpp"
 using namespace dmhm;
 
-void Usage()
-{
-    std::cout << "RandomMultiplyVector <xSize> <ySize> <numLevels> "
-                 "<strongly admissible?> <maxRank> <numVectors> "
-                 "<print structure?>" << std::endl;
-}
-
 int
 main( int argc, char* argv[] )
 {
     Initialize( argc, argv );
     const int commRank = mpi::CommRank( mpi::COMM_WORLD );
     const int commSize = mpi::CommSize( mpi::COMM_WORLD );
+    typedef std::complex<double> Scalar;
+    typedef DistHMat2d<Scalar> DistHMat;
 
-    // TODO: Use Choice for better command-line argument processing
-    if( argc < 8 )
-    {
-        if( commRank == 0 )
-            Usage();
-        Finalize();
-        return 0;
-    }
-    int arg=1;
-    const int xSize = atoi( argv[arg++] );
-    const int ySize = atoi( argv[arg++] );
-    const int numLevels = atoi( argv[arg++] );
-    const bool stronglyAdmissible = atoi( argv[arg++] );
-    const int maxRank = atoi( argv[arg++] );
-    const int numVectors = atoi( argv[arg++] );
-    const bool printStructure = atoi( argv[arg++] );
-
-    if( commRank == 0 )
-    {
-        std::cout << "----------------------------------------------------\n"
-                  << "Testing performance of H-matrix/vector mult with    \n"
-                  << "random matrix\n"
-                  << "----------------------------------------------------" 
-                  << std::endl;
-    }
     try
     {
-        typedef std::complex<double> Scalar;
-        typedef DistHMat2d<Scalar> DistHMat;
+        const int xSize = Input("--xSize","size of x dimension",20);
+        const int ySize = Input("--ySize","size of y dimension",20);
+        const int numLevels = Input("--numLevels","depth of H-matrix tree",4);
+        const bool strong = Input("--strong","strongly admissible?",false);
+        const int maxRank = Input("--maxRank","maximum rank of block",5);
+        const int numVectors = Input("--numVectors","num vectors to mult",20);
+        const bool structure = Input("--structure","print structure?",true);
+        ProcessInput();
+        PrintInputReport();
 
         // Set up a random H-matrix
         if( commRank == 0 )
@@ -62,8 +39,7 @@ main( int argc, char* argv[] )
         }
         const double createStartTime = mpi::Time();
         DistHMat::Teams teams( mpi::COMM_WORLD );
-        DistHMat A
-        ( numLevels, maxRank, stronglyAdmissible, xSize, ySize, teams );
+        DistHMat A( numLevels, maxRank, strong, xSize, ySize, teams );
         A.SetToRandom();
         const double createStopTime = mpi::Time();
         if( commRank == 0 )
@@ -72,7 +48,7 @@ main( int argc, char* argv[] )
                       << " seconds." << std::endl;
         }
 
-        if( printStructure )
+        if( structure )
         {
             A.LatexWriteLocalStructure("A_structure");
             A.MScriptWriteLocalStructure("A_structure");
@@ -101,6 +77,7 @@ main( int argc, char* argv[] )
                       << " seconds." << std::endl;
         }
     }
+    catch( ArgException& e ) { }
     catch( std::exception& e )
     {
         std::cerr << "Process " << commRank << " caught message: " << e.what() 

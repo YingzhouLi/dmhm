@@ -9,51 +9,28 @@
 #include "dmhm.hpp"
 using namespace dmhm;
 
-void Usage()
-{
-    std::cout << "Ghost <xSize> <ySize> <numLevels> "
-                 "<strongly admissible?> <maxRank> <print structure?>" 
-              << std::endl;
-}
-
 int
 main( int argc, char* argv[] )
 {
     Initialize( argc, argv );
     const int rank = mpi::CommRank( mpi::COMM_WORLD );
+    typedef std::complex<double> Scalar;
+    typedef DistHMat2d<Scalar> DistHMat;
 
-    // TODO: Use Choice for command-line argument processing
-    if( argc < 8 )
-    {
-        if( rank == 0 )
-            Usage();
-        Finalize();
-        return 0;
-    }
-    int arg=1;
-    const int xSize = atoi( argv[arg++] );
-    const int ySize = atoi( argv[arg++] );
-    const int numLevels = atoi( argv[arg++] );
-    const bool stronglyAdmissible = atoi( argv[arg++] );
-    const int maxRank = atoi( argv[arg++] );
-    const bool printStructure = atoi( argv[arg++] );
-
-    if( rank == 0 )
-    {
-        std::cout << "----------------------------------------------------\n"
-                  << "Testing formation of ghost nodes\n"
-                  << "----------------------------------------------------" 
-                  << std::endl;
-    }
     try
     {
-        typedef std::complex<double> Scalar;
-        typedef DistHMat2d<Scalar> DistHMat;
+        const int xSize = Input("--xSize","x dimension size",20);
+        const int ySize = Input("--ySize","y dimension size",20);
+        const int numLevels = Input("--numLevels","depth of H-matrix tree",4);
+        const bool strong = Input("--strong","strongly admissible?",false);
+        const int maxRank = Input("--maxRank","maximum rank of blocks",5);
+        const bool structure = Input("--structure","print structure?",false);
+        ProcessInput();
+        PrintInputReport();
 
         // Create a random distributed H-matrix
         DistHMat::Teams teams( mpi::COMM_WORLD );
-        DistHMat H
-        ( numLevels, maxRank, stronglyAdmissible, xSize, ySize, teams );
+        DistHMat H( numLevels, maxRank, strong, xSize, ySize, teams );
         H.SetToRandom();
 
         // Form the ghost nodes
@@ -73,7 +50,7 @@ main( int argc, char* argv[] )
             std::cout << "done: " << ghostStopTime-ghostStartTime
                       << " seconds." << std::endl;
         }
-        if( printStructure )
+        if( structure )
         {
             H.LatexWriteLocalStructure("H_ghosted_structure");
             H.MScriptWriteLocalStructure("H_ghosted_structure");
@@ -97,6 +74,7 @@ main( int argc, char* argv[] )
                       << " seconds." << std::endl;
         }
     }
+    catch( ArgException& e ) { }
     catch( std::exception& e )
     {
         std::cerr << "Process " << rank << " caught message: " << e.what() 
@@ -109,4 +87,3 @@ main( int argc, char* argv[] )
     Finalize();
     return 0;
 }
-

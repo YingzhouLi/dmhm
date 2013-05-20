@@ -9,13 +9,6 @@
 #include "dmhm.hpp"
 using namespace dmhm;
 
-void Usage()
-{
-    std::cout << "ImportSparse <xSize> <ySize> <numLevels> "
-              << "<strongly admissible?> <r> <print?> <print structure?>"
-              << std::endl;
-}
-
 template<typename Real>
 void
 FormCol
@@ -66,40 +59,22 @@ main( int argc, char* argv[] )
 {
     Initialize( argc, argv );
     const int rank = mpi::CommRank( mpi::COMM_WORLD );
+    typedef std::complex<double> Scalar;
+    typedef DistHMat2d<Scalar> DistHMat;
 
-    // TODO: Use Choice for better command-line argument processing
-    if( argc < 8 )
-    {
-        if( rank == 0 )
-            Usage();
-        Finalize();
-        return 0;
-    }
-    int arg=1;
-    const int xSize = atoi( argv[arg++] );
-    const int ySize = atoi( argv[arg++] );
-    const int numLevels = atoi( argv[arg++] );
-    const bool stronglyAdmissible = atoi( argv[arg++] );
-    const int maxRank = atoi( argv[arg++] );
-    //const bool print = atoi( argv[arg++] );
-    //const bool printStructure = atoi( argv[arg++] );
-
-    if( rank == 0 )
-    {
-        std::cout << "----------------------------------------------------\n"
-                  << "Testing import of distributed sparse matrix         \n"
-                  << "----------------------------------------------------" 
-                  << std::endl;
-    }
     try
     {
-        typedef std::complex<double> Scalar;
-        typedef DistHMat2d<Scalar> DistHMat;
+        const int xSize = Input("--xSize","size of x dimension",20);
+        const int ySize = Input("--ySize","size of y dimension",20);
+        const int numLevels = Input("--numLevels","depth of H-matrix tree",4);
+        const bool strong = Input("--strong","strongly admissible?",false);
+        const int maxRank = Input("--maxRank","maximum rank of block",5);
+        ProcessInput();
+        PrintInputReport();
 
         // Build a non-initialized H-matrix tree
         DistHMat::Teams teams( mpi::COMM_WORLD );
-        DistHMat H
-        ( numLevels, maxRank, stronglyAdmissible, xSize, ySize, teams );
+        DistHMat H( numLevels, maxRank, strong, xSize, ySize, teams );
 
         // Grab out our local geometric target info
         const int firstLocalX = H.FirstLocalXTarget();
@@ -117,6 +92,7 @@ main( int argc, char* argv[] )
             std::cout << "This routine is not yet finished." << std::endl;
         }
     }
+    catch( ArgException& e ) { }
     catch( std::exception& e )
     {
         std::cerr << "Process " << rank << " caught message: " << e.what() 
@@ -129,4 +105,3 @@ main( int argc, char* argv[] )
     Finalize();
     return 0;
 }
-

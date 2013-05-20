@@ -9,13 +9,7 @@
 #include "dmhm.hpp"
 using namespace dmhm;
 
-void Usage()
-{
-    std::cout << "Invert <xSize> <ySize> <numLevels> "
-                 "<strongly admissible?> <r> <print?> <print structure?>" 
-              << std::endl;
-}
-
+// TODO: Make these input parameters
 const double omega = 10.0;
 const double C = 1.5*(2*M_PI);
 
@@ -160,38 +154,23 @@ main( int argc, char* argv[] )
 {
     Initialize( argc, argv );
     const int rank = mpi::CommRank( mpi::COMM_WORLD );
+    typedef std::complex<double> Scalar;
+    typedef HMat2d<Scalar> HMat;
 
-    // TODO: Use Choice for better command-line argument processing
-    if( argc < 8 )
-    {
-        if( rank == 0 )
-            Usage();
-        Finalize();
-        return 0;
-    }
-    int arg=1;
-    const int xSize = atoi( argv[arg++] );
-    const int ySize = atoi( argv[arg++] );
-    const int numLevels = atoi( argv[arg++] );
-    const bool stronglyAdmissible = atoi( argv[arg++] );
-    const int r = atoi( argv[arg++] );
-    const bool print = atoi( argv[arg++] );
-    const bool printStructure = atoi( argv[arg++] );
-
-    const int m = xSize*ySize;
-    const int n = xSize*ySize;
-
-    if( rank == 0 )
-    {
-        std::cout << "------------------------------------------\n"
-                  << "Testing complex double HMat2d inversion   \n"
-                  << "--------------------------------------------" 
-                  << std::endl;
-    }
     try
     {
-        typedef std::complex<double> Scalar;
-        typedef HMat2d<Scalar> HMat;
+        const int xSize = Input("--xSize","size of x dimension",20);
+        const int ySize = Input("--ySize","size of y dimension",20);
+        const int numLevels = Input("--numLevels","depth of H-matrix tree",4);
+        const bool strong = Input("--strong","strongly admissible?",false);
+        const int maxRank = Input("--maxRank","maximum rank of block",5);
+        const bool print = Input("--print","print matrices?",false);
+        const bool structure = Input("--structure","print structure?",true);
+        ProcessInput();
+        PrintInputReport();
+
+        const int m = xSize*ySize;
+        const int n = xSize*ySize;
 
         Sparse<Scalar> S;
         S.height = m;
@@ -248,7 +227,7 @@ main( int argc, char* argv[] )
             std::cout.flush();
         }
         double constructStartTime = mpi::Time();
-        HMat H( S, numLevels, r, stronglyAdmissible, xSize, ySize );
+        HMat H( S, numLevels, maxRank, strong, xSize, ySize );
         double constructStopTime = mpi::Time();
         if( rank == 0 )
         {
@@ -256,7 +235,7 @@ main( int argc, char* argv[] )
                       << " seconds." << std::endl;
             if( print )
                 H.Print( "H" );
-            if( printStructure )
+            if( structure )
             {
                 H.LatexWriteStructure("structure");
                 H.MScriptWriteStructure("structure");
@@ -404,6 +383,7 @@ main( int argc, char* argv[] )
             }
         }
     }
+    catch( ArgException& e ) { }
     catch( std::exception& e )
     {
         std::cerr << "Process " << rank << " caught message: " << e.what() 
