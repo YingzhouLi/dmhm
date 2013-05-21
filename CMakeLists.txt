@@ -12,7 +12,7 @@ project(DMHM)
 set(DMHM_VERSION_MAJOR 0)
 set(DMHM_VERSION_MINOR 2)
 
-option(RELEASE "Avoid unnecessary assertions." OFF)
+option(RELEASE "Avoid unnecessary assertions." ON)
 option(TIME_MULTIPLY "Instrument H-matrix multiply with timers." OFF)
 
 option(BUILD_TESTS "Build the test drivers" ON)
@@ -180,22 +180,28 @@ file(GLOB_RECURSE DMHM_HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
      "include/*.h" "include/*.hpp")
 set(DMHM_SRC "${DMHM_CPP};${DMHM_HEADERS}")
 
+# Build the DMHM source
+add_library(dmhm STATIC ${DMHM_SRC})
+install(TARGETS dmhm DESTINATION lib)
+
 # Copy the headers into the build directory
+set(PREPARED_HEADERS)
 foreach(HEADER ${DMHM_HEADERS})
   add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${HEADER}
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/${HEADER}
-            ${CMAKE_CURRENT_BINARY_DIR}/${HEADER})
+            ${CMAKE_CURRENT_BINARY_DIR}/${HEADER}
+    DEPENDS "${PROJECT_SOURCE_DIR}/${HEADER}")
+  list(APPEND PREPARED_HEADERS ${PROJECT_BINARY_DIR}/${HEADER})
+
   get_filename_component(HEADER_PATH ${HEADER} PATH)
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${HEADER} DESTINATION ${HEADER_PATH})
 endforeach()
+add_custom_target(prepare_dmhm_headers DEPENDS ${PREPARED_HEADERS})
+add_dependencies(dmhm prepare_dmhm_headers)
 
 # Make sure the DMHM headers can be found
 include_directories("${PROJECT_BINARY_DIR}/include")
-
-# Build the DMHM source
-add_library(dmhm STATIC ${DMHM_SRC})
-install(TARGETS dmhm DESTINATION lib)
 
 # Create a dummy library in order to be able to force the math libraries
 # to be linked last

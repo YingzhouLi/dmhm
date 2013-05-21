@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Yingzhou Li, Lexing Ying, 
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -20,6 +20,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompress( int startLevel, int endLevel )
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MultiplyHMatCompress");
 #endif
+    throw std::logic_error("Testing...");
     Real error = lapack::MachineEpsilon<Real>();
     //Written By Ryan Li
     // Compress low-rank F matrix into much lower form.

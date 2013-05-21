@@ -128,6 +128,8 @@ void PopCallStack()
 
 void DumpCallStack() 
 {
+    std::cout << "Dumping call stack of size " << ::callStack.size() 
+              << std::endl;
     std::ostringstream msg;
     while( ! ::callStack.empty() )
     {
