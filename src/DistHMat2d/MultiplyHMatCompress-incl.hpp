@@ -20,7 +20,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompress( int startLevel, int endLevel )
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MultiplyHMatCompress");
 #endif
-    throw std::logic_error("Testing...");
     Real error = lapack::MachineEpsilon<Real>();
     //Written By Ryan Li
     // Compress low-rank F matrix into much lower form.
