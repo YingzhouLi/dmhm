@@ -161,8 +161,11 @@ main( int argc, char* argv[] )
                 ASerial.Print("ASerial");
             if( structure )
             {
-                ASerial.LatexWriteStructure("ASerial_structure");
-                ASerial.MScriptWriteStructure("ASerial_structure");
+#ifdef HAVE_QT5
+                ASerial.Display("ASerial");
+#endif
+                ASerial.LatexStructure("ASerial_structure");
+                ASerial.MScriptStructure("ASerial_structure");
             }
         }
 
@@ -245,8 +248,13 @@ main( int argc, char* argv[] )
         }
         if( structure )
         {
-            A.LatexWriteLocalStructure("A_structure");
-            A.MScriptWriteLocalStructure("A_structure");
+#ifdef HAVE_QT5
+            std::ostringstream os;
+            os << "A on " << commRank;
+            A.DisplayLocal( os.str() );
+#endif
+            A.LatexLocalStructure("A_structure");
+            A.MScriptLocalStructure("A_structure");
         }
 
         const int localHeight = A.LocalHeight();
@@ -312,8 +320,13 @@ main( int argc, char* argv[] )
         }
         if( structure )
         {
-            C.LatexWriteLocalStructure("C_ghosted_structure");
-            C.MScriptWriteLocalStructure("C_ghosted_structure");
+#ifdef HAVE_QT5
+            std::ostringstream os;
+            os << "C on " << commRank;
+            C.DisplayLocal( os.str() );
+#endif
+            C.LatexLocalStructure("C_ghosted_structure");
+            C.MScriptLocalStructure("C_ghosted_structure");
         }
 
         // Check that CX = ABX for an arbitrary X

@@ -266,8 +266,11 @@ main( int argc, char* argv[] )
                 H.Print( "H" );
             if( structure )
             {
-                H.LatexWriteStructure("structure");
-                H.MScriptWriteStructure("structure");
+#ifdef HAVE_QT5
+                H.Display("structure");
+#endif
+                H.LatexStructure("structure");
+                H.MScriptStructure("structure");
             }
         }
 

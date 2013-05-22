@@ -12,6 +12,7 @@
 
 #include "dmhm/core/abstract_hmat.hpp"
 #include "dmhm/hmat_tools.hpp"
+#include "dmhm/graphics.hpp"
 
 namespace dmhm {
 
@@ -124,16 +125,16 @@ public:
     bool IsLowRank() const { return block_.type == LOW_RANK; }
 
     /* 
-     * Write a representation of the H-matrix structure to file. 
+     * Visualize the H-matrix structure
      */
-    // Compile this output with pdflatex+TikZ
-    void LatexWriteStructure( const std::string filebase ) const;
-    // This can be visualized with util/PlotHStructure.m and Octave/Matlab
-    void MScriptWriteStructure( const std::string filebase ) const;
-    // Display structure with Qt
 #ifdef HAVE_QT5
+    // Display structure with Qt
     void Display( std::string title="" ) const;
 #endif
+    // Compile this output with pdflatex+TikZ
+    void LatexStructure( const std::string filebase ) const;
+    // This can be visualized with util/PlotHStructure.m and Octave/Matlab
+    void MScriptStructure( const std::string filebase ) const;
 
     //------------------------------------------------------------------------//
     // Fulfillments of AbstractHMat interface                                 //
@@ -377,10 +378,15 @@ private:
     void UpdateWithNodeSymmetric
     ( Scalar alpha, const Dense<Scalar>& B, Dense<Scalar>& C ) const;
 
-    void LatexWriteStructureRecursion
+#ifdef HAVE_QT5
+    void DisplayRecursion
+    ( Dense<double>* matrix, int mRatio, int nRatio ) const;
+#endif
+
+    void LatexStructureRecursion
     ( std::ofstream& file, int globalHeight ) const;
 
-    void MScriptWriteStructureRecursion( std::ofstream& file ) const;
+    void MScriptStructureRecursion( std::ofstream& file ) const;
 };
 
 //----------------------------------------------------------------------------//

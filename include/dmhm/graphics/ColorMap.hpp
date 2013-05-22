@@ -12,6 +12,8 @@
 
 #ifdef HAVE_QT5
 
+#include <QWidget>
+
 namespace dmhm {
 
 inline QRgb

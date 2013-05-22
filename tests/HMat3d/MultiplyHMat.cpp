@@ -168,8 +168,11 @@ main( int argc, char* argv[] )
         }
         if( structure )
         {
-            A.LatexWriteStructure("A_structure");
-            A.MScriptWriteStructure("A_structure");
+#ifdef HAVE_QT5
+            A.Display("A");
+#endif
+            A.LatexStructure("A_structure");
+            A.MScriptStructure("A_structure");
         }
 
         // Attempt to multiply the two matrices
@@ -185,8 +188,11 @@ main( int argc, char* argv[] )
             C.Print("C");
         if( structure )
         {
-            C.LatexWriteStructure("C_structure");
-            C.MScriptWriteStructure("C_structure");
+#ifdef HAVE_QT5
+            C.Display("C");
+#endif
+            C.LatexStructure("C_structure");
+            C.MScriptStructure("C_structure");
         }
 
         // Check that CX = ABX for an arbitrary X

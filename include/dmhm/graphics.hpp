@@ -8,11 +8,15 @@
 */
 #pragma once
 #ifndef DMHM_GRAPHICS_HPP
-#define DMHM_GRAPHICS_HPP 1
+#define DMHM_GRAPHICS_HPP
 
 #include "dmhm/graphics/ColorMap.hpp"
 #include "dmhm/graphics/display_widget.hpp"
 #include "dmhm/graphics/display_window.hpp"
 #include "dmhm/graphics/complex_display_window.hpp"
+
+namespace dmhm {
+void OpenedWindow();
+}
 
 #endif // ifndef DMHM_GRAPHICS_HPP

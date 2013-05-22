@@ -8,8 +8,9 @@
 */
 #pragma once
 #ifndef DMHM_GRAPHICS_DISPLAYWINDOW_HPP
-#define DMHM_GRAPHICS_DISPLAYWINDOW_HPP 1
+#define DMHM_GRAPHICS_DISPLAYWINDOW_HPP
 
+#include <QBoxLayout>
 #include <QScrollArea>
 #include <QWidget>
 
@@ -32,7 +33,7 @@ public:
 private:
     QScrollArea *scroll_;
     DisplayWidget<double> *display_;
-    const Matrix<double> *matrix_;
+    const Dense<double> *matrix_;
 };
 
 } // namespace dmhm

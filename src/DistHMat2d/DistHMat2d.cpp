@@ -22,6 +22,9 @@
 #include "./Scale-incl.hpp"
 #include "./SetToRandom-incl.hpp"
 #include "./Transpose-incl.hpp"
+#ifdef HAVE_QT5
+ #include <QApplication>
+#endif
 
 namespace dmhm {
 
@@ -440,13 +443,46 @@ DistHMat2d<Scalar>::Admissible
         return xSource != xTarget || ySource != yTarget;
 }
 
+#ifdef HAVE_QT5
 template<typename Scalar>
 void
-DistHMat2d<Scalar>::LatexWriteLocalStructure
-( const std::string basename ) const
+DistHMat2d<Scalar>::DisplayLocal( std::string title ) const
 {
 #ifndef RELEASE
-    CallStackEntry entry("DistHMat2d::LatexWriteLocalStructure");
+    CallStackEntry entry("DistHMat2d::DisplayLocal");
+#endif
+    const int m = Height();
+    const int n = Width();
+    const int mRatio = 2;
+    const int nRatio = 2;
+    const int mPix = m*mRatio;
+    const int nPix = n*nRatio;
+    Dense<double>* A = new Dense<double>( mPix, nPix );
+
+    // Initialize the matrix to all zeros
+    for( int j=0; j<n; ++j )
+        for( int i=0; i<m; ++i )
+            A->Set( i, j, 0 );
+
+    // Now fill in the H-matrix blocks recursively
+    DisplayLocalRecursion( A, mRatio, nRatio );
+
+    QString qTitle = QString::fromStdString( title );
+    DisplayWindow* displayWindow = new DisplayWindow;
+    displayWindow->Display( A, qTitle );
+    displayWindow->show();
+
+    // Spend at most 200 milliseconds rendering
+    QCoreApplication::instance()->processEvents( QEventLoop::AllEvents, 200 );
+}
+#endif // ifdef HAVE_QT5
+
+template<typename Scalar>
+void
+DistHMat2d<Scalar>::LatexLocalStructure( const std::string basename ) const
+{
+#ifndef RELEASE
+    CallStackEntry entry("DistHMat2d::LatexLocalStructure");
 #endif
     mpi::Comm comm = teams_->Team( 0 );
     const int commRank = mpi::CommRank( comm );
@@ -461,7 +497,7 @@ DistHMat2d<Scalar>::LatexWriteLocalStructure
          << "\\begin{document}\n"
          << "\\begin{center}\n"
          << "\\begin{tikzpicture}[scale=" << scale << "]\n";
-    LatexWriteLocalStructureRecursion( file, Height() );
+    LatexLocalStructureRecursion( file, Height() );
     file << "\\end{tikzpicture}\n"
          << "\\end{center}\n"
          << "\\end{document}" << std::endl;
@@ -469,11 +505,10 @@ DistHMat2d<Scalar>::LatexWriteLocalStructure
 
 template<typename Scalar>
 void
-DistHMat2d<Scalar>::MScriptWriteLocalStructure
-( const std::string basename ) const
+DistHMat2d<Scalar>::MScriptLocalStructure( const std::string basename ) const
 {
 #ifndef RELEASE
-    CallStackEntry entry("DistHMat2d::MScriptWriteLocalStructure");
+    CallStackEntry entry("DistHMat2d::MScriptLocalStructure");
 #endif
     mpi::Comm comm = teams_->Team( 0 );
     const int commRank = mpi::CommRank( comm );
@@ -481,7 +516,7 @@ DistHMat2d<Scalar>::MScriptWriteLocalStructure
     std::ostringstream os;
     os << basename << "-" << commRank << ".dat";
     std::ofstream file( os.str().c_str() );
-    MScriptWriteLocalStructureRecursion( file );
+    MScriptLocalStructureRecursion( file );
 }
 //----------------------------------------------------------------------------//
 // Private static routines                                                    //
@@ -846,12 +881,41 @@ DistHMat2d<Scalar>::BuildTree()
 namespace {
 
 void FillBox
+( Dense<double>* matrix,
+  int mStart, int nStart, int mStop, int nStop,
+  double fillValue )
+{
+    for( int j=nStart; j<nStop; ++j )
+        for( int i=mStart; i<mStop; ++i )
+            matrix->Set( i, j, fillValue );
+}
+
+void FillBox
 ( std::ofstream& file, 
   double hStart, double vStart, double hStop, double vStop,
   const std::string& fillColor )
 {
     file << "\\fill[" << fillColor << "] (" << hStart << "," << vStart
          << ") rectangle (" << hStop << "," << vStop << ");\n";
+}
+
+void DrawBox
+( Dense<double>* matrix,
+  int mStart, int nStart, int mStop, int nStop,
+  double borderValue )
+{
+    // Draw the horizontal border
+    for( int j=nStart; j<nStop; ++j )
+    {
+        matrix->Set( mStart,  j, borderValue );
+        matrix->Set( mStop-1, j, borderValue );
+    }
+    // Draw the vertical border
+    for( int i=mStart; i<mStop; ++i )
+    {
+        matrix->Set( i, nStart,  borderValue );
+        matrix->Set( i, nStop-1, borderValue );
+    }
 }
 
 void DrawBox
@@ -865,9 +929,87 @@ void DrawBox
 
 } // anonymous namespace
 
+#ifdef HAVE_QT5
 template<typename Scalar>
 void
-DistHMat2d<Scalar>::LatexWriteLocalStructureRecursion
+DistHMat2d<Scalar>::DisplayLocalRecursion
+( Dense<double>* matrix, int mRatio, int nRatio ) const
+{
+    const int m = matrix->Height();
+    const int n = matrix->Width();
+    const int mBlock = Height();
+    const int nBlock = Width();
+
+    const int mStart = targetOffset_*mRatio;
+    const int nStart = sourceOffset_*nRatio;
+    const int mStop = (targetOffset_+mBlock)*mRatio;
+    const int nStop = (sourceOffset_+nBlock)*nRatio;
+
+    const double lowRankVal = 1;
+    const double lowRankEmptyVal = 0.5;
+    const double lowRankGhostVal = 0.25;
+    const double denseVal = -1;
+    const double denseGhostVal = -0.5;
+    const double borderVal = 0;
+
+    switch( block_.type )
+    {
+    case DIST_NODE:
+    case SPLIT_NODE:
+    case NODE:
+    case DIST_NODE_GHOST:
+    case SPLIT_NODE_GHOST:
+    case NODE_GHOST:
+    {
+        const Node& node = *block_.data.N;
+        for( int t=0; t<4; ++t )
+            for( int s=0; s<4; ++s )
+                node.Child(t,s).DisplayLocalRecursion( matrix, mRatio, nRatio );
+        break;
+    }
+
+    case DIST_LOW_RANK:
+    case SPLIT_LOW_RANK:
+    case LOW_RANK:
+    {
+        const int rank = Rank();
+        if( rank == 0 )
+            FillBox( matrix, mStart, nStart, mStop, nStop, lowRankEmptyVal );
+        else
+            FillBox( matrix, mStart, nStart, mStop, nStop, lowRankVal );
+        DrawBox( matrix, mStart, nStart, mStop, nStop, borderVal );
+        break;
+    }
+
+    case DIST_LOW_RANK_GHOST:
+    case SPLIT_LOW_RANK_GHOST:
+    case LOW_RANK_GHOST:
+        FillBox( matrix, mStart, nStart, mStop, nStop, lowRankGhostVal );
+        DrawBox( matrix, mStart, nStart, mStop, nStop, borderVal );
+        break;
+
+    case SPLIT_DENSE:
+    case DENSE:
+        FillBox( matrix, mStart, nStart, mStop, nStop, denseVal );
+        DrawBox( matrix, mStart, nStart, mStop, nStop, borderVal );
+        break;
+    
+    case SPLIT_DENSE_GHOST:
+    case DENSE_GHOST:
+        FillBox( matrix, mStart, nStart, mStop, nStop, denseGhostVal );
+        DrawBox( matrix, mStart, nStart, mStop, nStop, borderVal );
+        break;
+
+    case EMPTY:
+        DrawBox( matrix, mStart, nStart, mStop, nStop, borderVal );
+        break;
+    }
+}
+#endif // ifdef HAVE_QT5
+
+template<typename Scalar>
+void
+DistHMat2d<Scalar>::LatexLocalStructureRecursion
 ( std::ofstream& file, int globalHeight ) const
 {
     const double invScale = globalHeight;
@@ -895,7 +1037,7 @@ DistHMat2d<Scalar>::LatexWriteLocalStructureRecursion
         const Node& node = *block_.data.N;
         for( int t=0; t<4; ++t )
             for( int s=0; s<4; ++s )
-                node.Child(t,s).LatexWriteLocalStructureRecursion
+                node.Child(t,s).LatexLocalStructureRecursion
                 ( file, globalHeight );
         break;
     }
@@ -940,8 +1082,7 @@ DistHMat2d<Scalar>::LatexWriteLocalStructureRecursion
 
 template<typename Scalar>
 void
-DistHMat2d<Scalar>::MScriptWriteLocalStructureRecursion
-( std::ofstream& file ) const
+DistHMat2d<Scalar>::MScriptLocalStructureRecursion( std::ofstream& file ) const
 {
     switch( block_.type )
     {
@@ -958,7 +1099,7 @@ DistHMat2d<Scalar>::MScriptWriteLocalStructureRecursion
         const Node& node = *block_.data.N;
         for( int t=0; t<4; ++t )
             for( int s=0; s<4; ++s )
-                node.Child(t,s).MScriptWriteLocalStructureRecursion( file );
+                node.Child(t,s).MScriptLocalStructureRecursion( file );
         break;
     }
 

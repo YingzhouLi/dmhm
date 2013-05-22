@@ -10,6 +10,7 @@
 #ifndef DMHM_GRAPHICS_COMPLEXDISPLAYWINDOW_HPP
 #define DMHM_GRAPHICS_COMPLEXDISPLAYWINDOW_HPP 1
 
+#include <QBoxLayout>
 #include <QScrollArea>
 #include <QWidget>
 
@@ -23,17 +24,17 @@ class ComplexDisplayWindow : public QWidget
     // This isn't needed until we add slots
     // Q_OBJECT
 public:
-    ComplexDisplayWidget( QWidget* parent=0 );
-    ~ComplexDisplayWidget();
+    ComplexDisplayWindow( QWidget* parent=0 );
+    ~ComplexDisplayWindow();
 
     void Display
-    ( const Dense<Complex<double> >* A, 
+    ( const Dense<std::complex<double> >* A, 
       QString title=QString("Default title") );
 
 private:
     QScrollArea *realScroll_, *imagScroll_;
-    DisplayWidget<Complex<double> > *realDisplay_, *imagDisplay_;
-    const Dense<Complex<double> > *matrix_;
+    DisplayWidget<std::complex<double> > *realDisplay_, *imagDisplay_;
+    const Dense<std::complex<double> > *matrix_;
 };
 
 } // namespace dmhm

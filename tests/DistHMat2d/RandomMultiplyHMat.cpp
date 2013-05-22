@@ -52,8 +52,13 @@ main( int argc, char* argv[] )
 
         if( structure )
         {
-            A.LatexWriteLocalStructure("A_structure");
-            A.MScriptWriteLocalStructure("A_structure");
+#ifdef HAVE_QT5
+            std::ostringstream os;
+            os << "A on " << commRank;
+            A.DisplayLocal( os.str() );
+#endif
+            A.LatexLocalStructure("A_structure");
+            A.MScriptLocalStructure("A_structure");
         }
 
         // Attempt to multiply the two matrices
@@ -75,8 +80,13 @@ main( int argc, char* argv[] )
         }
         if( structure )
         {
-            C.LatexWriteLocalStructure("C_ghosted_structure");
-            C.MScriptWriteLocalStructure("C_ghosted_structure");
+#ifdef HAVE_QT5
+            std::ostringstream os;
+            os << "C on " << commRank;
+            C.DisplayLocal( os.str() );
+#endif
+            C.LatexLocalStructure("C_ghosted_structure");
+            C.MScriptLocalStructure("C_ghosted_structure");
         }
     }
     catch( ArgException& e ) { }

@@ -14,6 +14,9 @@
 #include "./MultiplyVector-incl.hpp"
 #include "./Pack-incl.hpp"
 #include "./SetToRandom-incl.hpp"
+#ifdef HAVE_QT5
+ #include <QApplication>
+#endif
 
 namespace dmhm {
 
@@ -299,12 +302,46 @@ HMat3d<Scalar>::Print( const std::string tag ) const
     HFull.Print( tag );
 }
 
+#ifdef HAVE_QT5
 template<typename Scalar>
 void
-HMat3d<Scalar>::LatexWriteStructure( const std::string filebase ) const
+HMat3d<Scalar>::Display( std::string title ) const
 {
 #ifndef RELEASE
-    CallStackEntry entry("HMat3d::LatexWriteStructure");
+    CallStackEntry entry("HMat3d::Display");
+#endif
+    const int m = Height();
+    const int n = Width();
+    const int mRatio = 2;
+    const int nRatio = 2;
+    const int mPix = m*mRatio;
+    const int nPix = n*nRatio;
+    Dense<double>* A = new Dense<double>( mPix, nPix );
+
+    // Initialize the matrix to all zeros
+    for( int j=0; j<n; ++j )
+        for( int i=0; i<m; ++i )
+            A->Set( i, j, 0 );
+
+    // Now fill in the H-matrix blocks recursively
+    DisplayRecursion( A, mRatio, nRatio );
+
+    QString qTitle = QString::fromStdString( title );
+    DisplayWindow* displayWindow = new DisplayWindow;
+    displayWindow->Display( A, qTitle );
+    displayWindow->show();
+
+    // Spend at most 200 milliseconds rendering
+    QCoreApplication::instance()->processEvents( QEventLoop::AllEvents, 200 );
+}
+#endif // ifdef HAVE_QT5
+
+template<typename Scalar>
+void
+HMat3d<Scalar>::LatexStructure( const std::string filebase ) const
+{
+#ifndef RELEASE
+    CallStackEntry entry("HMat3d::LatexStructure");
 #endif
 
     std::ofstream file( (filebase+".tex").c_str() );
@@ -314,7 +351,7 @@ HMat3d<Scalar>::LatexWriteStructure( const std::string filebase ) const
          << "\\begin{document}\n"
          << "\\begin{center}\n"
          << "\\begin{tikzpicture}[scale=" << scale << "]\n";
-    LatexWriteStructureRecursion( file, Height() );
+    LatexStructureRecursion( file, Height() );
     file << "\\end{tikzpicture}\n"
          << "\\end{center}\n"
          << "\\end{document}" << std::endl;
@@ -322,26 +359,14 @@ HMat3d<Scalar>::LatexWriteStructure( const std::string filebase ) const
 
 template<typename Scalar>
 void
-HMat3d<Scalar>::MScriptWriteStructure( const std::string filebase ) const
+HMat3d<Scalar>::MScriptStructure( const std::string filebase ) const
 {
 #ifndef RELEASE
-    CallStackEntry entry("HMat3d::MScriptWriteStructure");
+    CallStackEntry entry("HMat3d::MScriptStructure");
 #endif
     std::ofstream file( (filebase+".dat").c_str() );
-    MScriptWriteStructureRecursion( file );
+    MScriptStructureRecursion( file );
 }
-
-#ifdef HAVE_QT5
-template<typename Scalar>
-void
-HMat2d<Scalar>::Display( std::string title ) const
-{
-#ifndef RELEASE
-    CallStackEntry entry("HMat2d::Display");
-#endif
-    // TODO
-}
-#endif // ifdef HAVE_QT5
 
 /*\
 |*| Computational routines specific to HMat3d
@@ -1168,12 +1193,41 @@ HMat3d<Scalar>::UpdateWithNodeSymmetric
 namespace {
 
 void FillBox
+( Dense<double>* matrix,
+  int mStart, int nStart, int mStop, int nStop,
+  double fillValue )
+{
+    for( int j=nStart; j<nStop; ++j )
+        for( int i=mStart; i<mStop; ++i )
+            matrix->Set( i, j, fillValue );
+}
+
+void FillBox
 ( std::ofstream& file,
   double hStart, double vStart, double hStop, double vStop,
   const std::string& fillColor )
 {
     file << "\\fill[" << fillColor << "] (" << hStart << "," << vStart
          << ") rectangle (" << hStop << "," << vStop << ");\n";
+}
+
+void DrawBox
+( Dense<double>* matrix,
+  int mStart, int nStart, int mStop, int nStop,
+  double borderValue )
+{
+    // Draw the horizontal border
+    for( int j=nStart; j<nStop; ++j )
+    {
+        matrix->Set( mStart,  j, borderValue );
+        matrix->Set( mStop-1, j, borderValue );
+    }
+    // Draw the vertical border
+    for( int i=mStart; i<mStop; ++i )
+    {
+        matrix->Set( i, nStart,  borderValue );
+        matrix->Set( i, nStop-1, borderValue );
+    }
 }
 
 void DrawBox
@@ -1187,9 +1241,65 @@ void DrawBox
 
 } // anonymous namespace
 
+#ifdef HAVE_QT5
 template<typename Scalar>
 void
-HMat3d<Scalar>::LatexWriteStructureRecursion
+HMat3d<Scalar>::DisplayRecursion
+( Dense<double>* matrix, int mRatio, int nRatio ) const
+{
+    const int m = matrix->Height();
+    const int n = matrix->Width();
+    const int mBlock = Height();
+    const int nBlock = Width();
+
+    const int mStart = targetOffset_*mRatio;
+    const int nStart = sourceOffset_*nRatio;
+    const int mStop = (targetOffset_+mBlock)*mRatio;
+    const int nStop = (sourceOffset_+nBlock)*nRatio;
+
+    const double lowRankVal = 1;
+    const double lowRankEmptyVal = 0.25;
+    const double denseVal = -1;
+    const double borderVal = 0;
+
+    switch( block_.type )
+    {
+    case NODE:
+    {
+        const Node& node = *block_.data.N;
+        for( int t=0; t<8; ++t )
+            for( int s=0; s<8; ++s )
+                node.Child(t,s).DisplayRecursion( matrix, mRatio, nRatio );
+        break;
+    }
+    case NODE_SYMMETRIC:
+    {
+        const NodeSymmetric& node = *block_.data.NS;
+        for( unsigned child=0; child<node.children.size(); ++child )
+            node.children[child]->DisplayRecursion( matrix, mRatio, nRatio );
+        break;
+    }
+    case LOW_RANK:
+    {
+        const int rank = block_.data.F->Rank();
+        if( rank == 0 )
+            FillBox( matrix, mStart, nStart, mStop, nStop, lowRankEmptyVal );
+        else
+            FillBox( matrix, mStart, nStart, mStop, nStop, lowRankVal );
+        DrawBox( matrix, mStart, nStart, mStop, nStop, borderVal );
+        break;
+    }
+    case DENSE:
+        FillBox( matrix, mStart, nStart, mStop, nStop, denseVal );
+        DrawBox( matrix, mStart, nStart, mStop, nStop, borderVal );
+        break;
+    }
+}
+#endif // ifdef HAVE_QT5
+
+template<typename Scalar>
+void
+HMat3d<Scalar>::LatexStructureRecursion
 ( std::ofstream& file, int globalHeight ) const
 {
     const double invScale = globalHeight; 
@@ -1210,16 +1320,14 @@ HMat3d<Scalar>::LatexWriteStructureRecursion
         const Node& node = *block_.data.N;
         for( int t=0; t<8; ++t )
             for( int s=0; s<8; ++s )
-                node.Child(t,s).LatexWriteStructureRecursion
-                ( file, globalHeight );
+                node.Child(t,s).LatexStructureRecursion( file, globalHeight );
         break;
     }
     case NODE_SYMMETRIC:
     {
         const NodeSymmetric& node = *block_.data.NS;
         for( unsigned child=0; child<node.children.size(); ++child )
-            node.children[child]->LatexWriteStructureRecursion
-            ( file, globalHeight );
+            node.children[child]->LatexStructureRecursion( file, globalHeight );
         break;
     }
     case LOW_RANK:
@@ -1241,7 +1349,7 @@ HMat3d<Scalar>::LatexWriteStructureRecursion
 
 template<typename Scalar>
 void
-HMat3d<Scalar>::MScriptWriteStructureRecursion( std::ofstream& file ) const
+HMat3d<Scalar>::MScriptStructureRecursion( std::ofstream& file ) const
 {
     switch( block_.type )
     {
@@ -1253,7 +1361,7 @@ HMat3d<Scalar>::MScriptWriteStructureRecursion( std::ofstream& file ) const
         const Node& node = *block_.data.N;
         for( int t=0; t<8; ++t )
             for( int s=0; s<8; ++s )
-                node.Child(t,s).MScriptWriteStructureRecursion( file );
+                node.Child(t,s).MScriptStructureRecursion( file );
         break;
     }
     case NODE_SYMMETRIC:
@@ -1263,7 +1371,7 @@ HMat3d<Scalar>::MScriptWriteStructureRecursion( std::ofstream& file ) const
              << Height() << " " << Width() << "\n";
         const NodeSymmetric& node = *block_.data.NS;
         for( unsigned child=0; child<node.children.size(); ++child )
-            node.children[child]->MScriptWriteStructureRecursion( file );
+            node.children[child]->MScriptStructureRecursion( file );
         break;
     }
     case LOW_RANK:

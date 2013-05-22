@@ -55,8 +55,11 @@ main( int argc, char* argv[] )
                 H.Print("H");
             if( structure )
             {
-                H.LatexWriteStructure("H_serial_structure");
-                H.MScriptWriteStructure("H_serial_structure");
+#ifdef HAVE_QT5
+                H.Display("H");
+#endif
+                H.LatexStructure("H_serial_structure");
+                H.MScriptStructure("H_serial_structure");
             }
         }
 
@@ -181,8 +184,13 @@ main( int argc, char* argv[] )
         }
         if( structure )
         {
-            distH.LatexWriteLocalStructure("distH_structure");
-            distH.MScriptWriteLocalStructure("distH_structure");
+#ifdef HAVE_QT5
+            std::ostringstream os;
+            os << "distH on " << rank;
+            distH.DisplayLocal( os.str() );
+#endif
+            distH.LatexLocalStructure("distH_structure");
+            distH.MScriptLocalStructure("distH_structure");
         }
 
         // Apply the distributed H-matrix

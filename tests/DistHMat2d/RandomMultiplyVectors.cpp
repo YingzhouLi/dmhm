@@ -50,8 +50,13 @@ main( int argc, char* argv[] )
 
         if( structure )
         {
-            A.LatexWriteLocalStructure("A_structure");
-            A.MScriptWriteLocalStructure("A_structure");
+#ifdef HAVE_QT5
+            std::ostringstream os;
+            os << "A on " << commRank;
+            A.DisplayLocal( os.str() );
+#endif
+            A.LatexLocalStructure("A_structure");
+            A.MScriptLocalStructure("A_structure");
         }
 
         // Generate random vectors

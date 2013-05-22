@@ -52,8 +52,13 @@ main( int argc, char* argv[] )
         }
         if( structure )
         {
-            H.LatexWriteLocalStructure("H_ghosted_structure");
-            H.MScriptWriteLocalStructure("H_ghosted_structure");
+#ifdef HAVE_QT5
+            std::ostringstream os;
+            os << "Ghosted H on " << rank;
+            H.DisplayLocal( os.str() );
+#endif
+            H.LatexLocalStructure("H_ghosted_structure");
+            H.MScriptLocalStructure("H_ghosted_structure");
         }
 
         // Form the ghost nodes again

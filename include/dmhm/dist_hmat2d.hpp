@@ -146,10 +146,13 @@ public:
     /*
      * Routines for visualizing the locally known H-matrix structure
      */
+#ifdef HAVE_QT5
+    void DisplayLocal( const std::string title="" ) const;
+#endif
     // Compile this output with pdflatex+TikZ
-    void LatexWriteLocalStructure( const std::string basename ) const;
+    void LatexLocalStructure( const std::string basename ) const;
     // This can be visualized with util/PlotHStructure.m and Octave/Matlab
-    void MScriptWriteLocalStructure( const std::string basename ) const;
+    void MScriptLocalStructure( const std::string basename ) const;
 
     // Unpack this process's portion of the DistHMat2d
     std::size_t Unpack
@@ -531,9 +534,13 @@ private:
     bool Admissible() const;
     bool Admissible( int xSource, int xTarget, int ySource, int yTarget ) const;
 
-    void LatexWriteLocalStructureRecursion
+#ifdef HAVE_QT5
+    void DisplayLocalRecursion
+    ( Dense<double>* matrix, int mRatio, int nRatio ) const;
+#endif
+    void LatexLocalStructureRecursion
     ( std::ofstream& file, int globalheight ) const;
-    void MScriptWriteLocalStructureRecursion( std::ofstream& file ) const;
+    void MScriptLocalStructureRecursion( std::ofstream& file ) const;
     
     void UnpackRecursion( const byte*& head );
 
