@@ -116,8 +116,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHSums
     // Compute the message sizes for each reduce
     const unsigned numTeamLevels = teams_->NumLevels();
     const unsigned numReduces = numTeamLevels-1;
-    std::vector<int> sizes( numReduces );
-    std::memset( &sizes[0], 0, numReduces*sizeof(int) );
+    std::vector<int> sizes( numReduces, 0 );
     A.MultiplyHMatFHHSumsCount
     ( B, C, sizes, startLevel, endLevel, startUpdate, endUpdate, 0 );
 
@@ -639,8 +638,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHBroadcasts
     // Compute the message sizes for each broadcast
     const unsigned numTeamLevels = teams_->NumLevels();
     const unsigned numBroadcasts = numTeamLevels-1;
-    std::vector<int> sizes( numBroadcasts );
-    std::memset( &sizes[0], 0, numBroadcasts*sizeof(int) );
+    std::vector<int> sizes( numBroadcasts, 0 );
     A.MultiplyHMatFHHBroadcastsCount
     ( B, C, sizes, startLevel, endLevel, startUpdate, endUpdate, 0 );
 
@@ -1134,8 +1132,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHFinalize
                     {
                         // Zero the bottom half of Z
                         for( int j=0; j<r; ++j )
-                            std::memset
-                            ( Z.Buffer(sCurr,j), 0, tCurr*sizeof(Scalar) );
+                            MemZero( Z.Buffer(sCurr,j), tCurr );
                     }
                     else
                     {
@@ -1143,11 +1140,9 @@ DistHMat2d<Scalar>::MultiplyHMatFHHFinalize
                         // bottom 
                         for( int j=0; j<r; ++j )
                         {
-                            std::memcpy
-                            ( Z.Buffer(0,j), Z.LockedBuffer(sCurr,j), 
-                              tCurr*sizeof(Scalar) );
-                            std::memset
-                            ( Z.Buffer(sCurr,j), 0, tCurr*sizeof(Scalar) );
+                            MemCopy
+                            ( Z.Buffer(0,j), Z.LockedBuffer(sCurr,j), tCurr );
+                            MemZero( Z.Buffer(sCurr,j), tCurr );
                         }
                     }
                     hmat_tools::ApplyPackedQFromLeft
@@ -1170,18 +1165,15 @@ DistHMat2d<Scalar>::MultiplyHMatFHHFinalize
                     // Copy the first sPrev rows of the top half of Z into
                     // the top of X
                     for( int j=0; j<r; ++j )
-                        std::memcpy
-                        ( X.Buffer(0,j), Z.LockedBuffer(0,j), 
-                          sPrev*sizeof(Scalar) );
+                        MemCopy( X.Buffer(0,j), Z.LockedBuffer(0,j), sPrev );
                 }
                 else
                 {
                     // Copy the first tPrev rows of the bottom part of Z into 
                     // the top of X
                     for( int j=0; j<r; ++j )
-                        std::memcpy
-                        ( X.Buffer(0,j), Z.LockedBuffer(sPrev,j), 
-                          tPrev*sizeof(Scalar) );
+                        MemCopy
+                        ( X.Buffer(0,j), Z.LockedBuffer(sPrev,j), tPrev );
                 }
                 qrWork.resize( lapack::ApplyQWorkSize('L',m,r) );
                 lapack::ApplyQ

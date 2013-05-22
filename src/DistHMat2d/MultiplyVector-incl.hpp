@@ -839,8 +839,7 @@ DistHMat2d<Scalar>::MultiplyVectorSums
     // Compute the message sizes for each reduce 
     const int numLevels = teams_->NumLevels();
     const int numReduces = numLevels-1;
-    std::vector<int> sizes( numReduces );
-    std::memset( &sizes[0], 0, numReduces*sizeof(int) );
+    std::vector<int> sizes( numReduces, 0 );
     MultiplyVectorSumsCount( sizes );
 
     // Pack all of the data to be reduced into a single buffer
@@ -872,8 +871,7 @@ DistHMat2d<Scalar>::TransposeMultiplyVectorSums
     // Compute the message sizes for each reduce 
     const int numLevels = teams_->NumLevels();
     const int numReduces = numLevels-1;
-    std::vector<int> sizes( numReduces );
-    std::memset( &sizes[0], 0, numReduces*sizeof(int) );
+    std::vector<int> sizes( numReduces, 0 );
     TransposeMultiplyVectorSumsCount( sizes );
 
     // Pack all of the data to be reduced into a single buffer
@@ -993,9 +991,7 @@ DistHMat2d<Scalar>::MultiplyVectorSumsPack
     {
         const DistLowRank& DF = *block_.data.DF;
         const Vector<Scalar>& z = *context.block.data.z;
-        std::memcpy
-        ( &buffer[offsets[level_]], z.LockedBuffer(), 
-          DF.rank*sizeof(Scalar) );
+        MemCopy( &buffer[offsets[level_]], z.LockedBuffer(), DF.rank );
         offsets[level_] += DF.rank;
         break;
     }
@@ -1033,9 +1029,7 @@ DistHMat2d<Scalar>::TransposeMultiplyVectorSumsPack
     {
         const DistLowRank& DF = *block_.data.DF;
         const Vector<Scalar>& z = *context.block.data.z;
-        std::memcpy
-        ( &buffer[offsets[level_]], z.LockedBuffer(), 
-          DF.rank*sizeof(Scalar) );
+        MemCopy( &buffer[offsets[level_]], z.LockedBuffer(), DF.rank );
         offsets[level_] += DF.rank;
         break;
     }
@@ -1077,9 +1071,7 @@ DistHMat2d<Scalar>::MultiplyVectorSumsUnpack
         const int teamRank = mpi::CommRank( team );
         if( teamRank == 0 )
         {
-            std::memcpy
-            ( z.Buffer(), &buffer[offsets[level_]], 
-              DF.rank*sizeof(Scalar) );
+            MemCopy( z.Buffer(), &buffer[offsets[level_]], DF.rank );
             offsets[level_] += DF.rank;
         }
         break;
@@ -1122,9 +1114,7 @@ DistHMat2d<Scalar>::TransposeMultiplyVectorSumsUnpack
         const int teamRank = mpi::CommRank( team );
         if( teamRank == 0 )
         {
-            std::memcpy
-            ( z.Buffer(), &buffer[offsets[level_]], 
-              DF.rank*sizeof(Scalar) );
+            MemCopy( z.Buffer(), &buffer[offsets[level_]], DF.rank );
             offsets[level_] += DF.rank;
         }
         break;
@@ -1308,9 +1298,8 @@ DistHMat2d<Scalar>::MultiplyVectorPassDataPack
             if( teamRank == 0 )
             {
                 Vector<Scalar>& z = *context.block.data.z;
-                std::memcpy
-                ( &buffer[offsets[targetRoot_]], z.LockedBuffer(),
-                  DF.rank*sizeof(Scalar) );
+                MemCopy
+                ( &buffer[offsets[targetRoot_]], z.LockedBuffer(), DF.rank );
                 offsets[targetRoot_] += DF.rank;
                 z.Clear();
             }
@@ -1323,9 +1312,7 @@ DistHMat2d<Scalar>::MultiplyVectorPassDataPack
         if( SF.rank != 0 )
         {
             Vector<Scalar>& z = *context.block.data.z;
-            std::memcpy
-            ( &buffer[offsets[targetRoot_]], z.LockedBuffer(),
-              SF.rank*sizeof(Scalar) );
+            MemCopy( &buffer[offsets[targetRoot_]], z.LockedBuffer(), SF.rank );
             offsets[targetRoot_] += SF.rank;
             z.Clear();
         }
@@ -1337,9 +1324,7 @@ DistHMat2d<Scalar>::MultiplyVectorPassDataPack
         if( height != 0 )
         {
             Vector<Scalar>& z = *context.block.data.z;
-            std::memcpy
-            ( &buffer[offsets[targetRoot_]], z.LockedBuffer(),
-              height*sizeof(Scalar) );
+            MemCopy( &buffer[offsets[targetRoot_]], z.LockedBuffer(), height );
             offsets[targetRoot_] += height;
             z.Clear();
         }
@@ -1399,9 +1384,7 @@ DistHMat2d<Scalar>::MultiplyVectorPassDataUnpack
             {
                 Vector<Scalar>& z = *context.block.data.z;
                 z.Resize( DF.rank );
-                std::memcpy
-                ( z.Buffer(), &buffer[offsets[sourceRoot_]],
-                  DF.rank*sizeof(Scalar) );
+                MemCopy( z.Buffer(), &buffer[offsets[sourceRoot_]], DF.rank );
                 offsets[sourceRoot_] += DF.rank;
             }
         }
@@ -1414,9 +1397,7 @@ DistHMat2d<Scalar>::MultiplyVectorPassDataUnpack
         {
             Vector<Scalar>& z = *context.block.data.z;
             z.Resize( SF.rank );
-            std::memcpy
-            ( z.Buffer(), &buffer[offsets[sourceRoot_]],
-              SF.rank*sizeof(Scalar) );
+            MemCopy( z.Buffer(), &buffer[offsets[sourceRoot_]], SF.rank );
             offsets[sourceRoot_] += SF.rank;
         }
         break;
@@ -1428,9 +1409,7 @@ DistHMat2d<Scalar>::MultiplyVectorPassDataUnpack
         {
             Vector<Scalar>& z = *context.block.data.z;
             z.Resize( height );
-            std::memcpy
-            ( z.Buffer(), &buffer[offsets[sourceRoot_]],
-              height*sizeof(Scalar) );
+            MemCopy( z.Buffer(), &buffer[offsets[sourceRoot_]], height );
             offsets[sourceRoot_] += height;
         }
         break;
@@ -1657,9 +1636,8 @@ DistHMat2d<Scalar>::TransposeMultiplyVectorPassDataPack
             if( teamRank == 0 )
             {
                 Vector<Scalar>& z = *context.block.data.z;
-                std::memcpy
-                ( &buffer[offsets[sourceRoot_]], z.LockedBuffer(),
-                  DF.rank*sizeof(Scalar) );
+                MemCopy
+                ( &buffer[offsets[sourceRoot_]], z.LockedBuffer(), DF.rank );
                 offsets[sourceRoot_] += DF.rank;
                 z.Clear();
             }
@@ -1672,9 +1650,8 @@ DistHMat2d<Scalar>::TransposeMultiplyVectorPassDataPack
         if( SF.rank != 0 )
         {
             Vector<Scalar>& z = *context.block.data.z;
-            std::memcpy
-            ( &buffer[offsets[sourceRoot_]], z.LockedBuffer(),
-              SF.rank*sizeof(Scalar) );
+            MemCopy
+            ( &buffer[offsets[sourceRoot_]], z.LockedBuffer(), SF.rank );
             offsets[sourceRoot_] += SF.rank;
             z.Clear();
         }
@@ -1685,9 +1662,8 @@ DistHMat2d<Scalar>::TransposeMultiplyVectorPassDataPack
         const int height = Height();
         if( height != 0 )
         {
-            std::memcpy
-            ( &buffer[offsets[sourceRoot_]], xLocal.LockedBuffer(),
-              height*sizeof(Scalar) );
+            MemCopy
+            ( &buffer[offsets[sourceRoot_]], xLocal.LockedBuffer(), height );
             offsets[sourceRoot_] += height;
         }
         break;
@@ -1746,9 +1722,7 @@ DistHMat2d<Scalar>::TransposeMultiplyVectorPassDataUnpack
             {
                 Vector<Scalar>& z = *context.block.data.z;
                 z.Resize( DF.rank );
-                std::memcpy
-                ( z.Buffer(), &buffer[offsets[targetRoot_]],
-                  DF.rank*sizeof(Scalar) );
+                MemCopy( z.Buffer(), &buffer[offsets[targetRoot_]], DF.rank );
                 offsets[targetRoot_] += DF.rank;
             }
         }
@@ -1761,9 +1735,7 @@ DistHMat2d<Scalar>::TransposeMultiplyVectorPassDataUnpack
         {
             Vector<Scalar>& z = *context.block.data.z;
             z.Resize( SF.rank );
-            std::memcpy
-            ( z.Buffer(), &buffer[offsets[targetRoot_]],
-              SF.rank*sizeof(Scalar) );
+            MemCopy( z.Buffer(), &buffer[offsets[targetRoot_]], SF.rank );
             offsets[targetRoot_] += SF.rank;
         }
         break;
@@ -1775,9 +1747,7 @@ DistHMat2d<Scalar>::TransposeMultiplyVectorPassDataUnpack
         {
             Vector<Scalar>& z = *context.block.data.z;
             z.Resize( height );
-            std::memcpy
-            ( z.Buffer(), &buffer[offsets[targetRoot_]],
-              height*sizeof(Scalar) );
+            MemCopy( z.Buffer(), &buffer[offsets[targetRoot_]], height );
             offsets[targetRoot_] += height;
         }
         break;
@@ -1810,8 +1780,7 @@ DistHMat2d<Scalar>::MultiplyVectorBroadcasts
     // Compute the message sizes for each broadcast
     const int numLevels = teams_->NumLevels();
     const int numBroadcasts = numLevels-1;
-    std::vector<int> sizes( numBroadcasts );
-    std::memset( &sizes[0], 0, numBroadcasts*sizeof(int) );
+    std::vector<int> sizes( numBroadcasts, 0 );
     MultiplyVectorBroadcastsCount( sizes );
 
     // Pack all of the data to be broadcasted into a single buffer
@@ -1844,8 +1813,7 @@ DistHMat2d<Scalar>::TransposeMultiplyVectorBroadcasts
     // Compute the message sizes for each broadcast
     const int numLevels = teams_->NumLevels();
     const int numBroadcasts = numLevels-1;
-    std::vector<int> sizes( numBroadcasts );
-    std::memset( &sizes[0], 0, numBroadcasts*sizeof(int) );
+    std::vector<int> sizes( numBroadcasts, 0 );
     TransposeMultiplyVectorBroadcastsCount( sizes );
 
     // Pack all of the data to be broadcasted into a single buffer
@@ -1971,9 +1939,7 @@ DistHMat2d<Scalar>::MultiplyVectorBroadcastsPack
         const int teamRank = mpi::CommRank( team );
         if( teamRank == 0 )
         {
-            std::memcpy
-            ( &buffer[offsets[level_]], z.LockedBuffer(), 
-              DF.rank*sizeof(Scalar) );
+            MemCopy( &buffer[offsets[level_]], z.LockedBuffer(), DF.rank );
             offsets[level_] += DF.rank;
         }
         break;
@@ -2016,9 +1982,7 @@ DistHMat2d<Scalar>::TransposeMultiplyVectorBroadcastsPack
         const int teamRank = mpi::CommRank( team );
         if( teamRank == 0 )
         {
-            std::memcpy
-            ( &buffer[offsets[level_]], z.LockedBuffer(), 
-              DF.rank*sizeof(Scalar) );
+            MemCopy( &buffer[offsets[level_]], z.LockedBuffer(), DF.rank );
             offsets[level_] += DF.rank;
         }
         break;
@@ -2058,8 +2022,7 @@ DistHMat2d<Scalar>::MultiplyVectorBroadcastsUnpack
         const DistLowRank& DF = *block_.data.DF;
         Vector<Scalar>& z = *context.block.data.z;
         z.Resize( DF.rank );
-        std::memcpy
-        ( z.Buffer(), &buffer[offsets[level_]], DF.rank*sizeof(Scalar) );
+        MemCopy( z.Buffer(), &buffer[offsets[level_]], DF.rank );
         offsets[level_] += DF.rank;
         break;
     }
@@ -2098,8 +2061,7 @@ DistHMat2d<Scalar>::TransposeMultiplyVectorBroadcastsUnpack
         const DistLowRank& DF = *block_.data.DF;
         Vector<Scalar>& z = *context.block.data.z;
         z.Resize( DF.rank );
-        std::memcpy
-        ( z.Buffer(), &buffer[offsets[level_]], DF.rank*sizeof(Scalar) );
+        MemCopy( z.Buffer(), &buffer[offsets[level_]], DF.rank );
         offsets[level_] += DF.rank;
         break;
     }

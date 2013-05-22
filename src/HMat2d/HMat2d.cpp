@@ -249,7 +249,7 @@ HMat2d<Scalar>::Print( const std::string tag ) const
 #endif
     const int n = Width();
     Dense<Scalar> I( n, n );
-    std::memset( I.Buffer(), 0, I.LDim()*n );
+    MemZero( I.Buffer(), I.LDim()*n );
     for( int j=0; j<n; ++j )
         I.Set(j,j,Scalar(1));
 

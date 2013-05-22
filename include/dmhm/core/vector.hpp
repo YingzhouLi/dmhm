@@ -92,7 +92,7 @@ inline
 Vector<Scalar>::Vector( const Vector<Scalar>& x )
 : height_(x.Height()), viewing_(false), lockedView_(false),
   memory_(x.Height()), buffer_(&memory_[0]), lockedBuffer_(0)
-{ std::memcpy( buffer_, x.LockedBuffer(), x.Height()*sizeof(Scalar) ); }
+{ MemCopy( buffer_, x.LockedBuffer(), x.Height() ); }
 
 template<typename Scalar>
 inline

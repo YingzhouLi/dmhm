@@ -13,7 +13,6 @@
 #include <complex>
 #include <cmath>
 #include <cstdlib> // for integer abs
-#include <cstring> // for std::memset and std::memcpy
 #include <vector> 
 
 #include "dmhm/core/timer.hpp"
@@ -819,7 +818,7 @@ void Copy( const Vector<Scalar>& x, Vector<Scalar>& y )
     CallStackEntry entry("hmat_tools::Copy (Vector,Vector)");
 #endif
     y.Resize( x.Height() );
-    std::memcpy( y.Buffer(), x.LockedBuffer(), x.Height()*sizeof(Scalar) );
+    MemCopy( y.Buffer(), x.LockedBuffer(), x.Height() );
 }
 
 template<typename Scalar>
@@ -829,7 +828,7 @@ void Copy( const std::vector<Scalar>& x, std::vector<Scalar>& y )
     CallStackEntry entry("hmat_tools::Copy (vector,vector)");
 #endif
     y.resize( x.size() );
-    std::memcpy( &y[0], &x[0], x.size()*sizeof(Scalar) );
+    MemCopy( &y[0], &x[0], x.size() );
 }
 
 template<typename Scalar>
@@ -839,7 +838,7 @@ void Copy( const Vector<Scalar>& x, std::vector<Scalar>& y )
     CallStackEntry entry("hmat_tools::Copy (Vector,vector)");
 #endif
     y.resize( x.Height() );
-    std::memcpy( &y[0], x.LockedBuffer(), x.Height()*sizeof(Scalar) );
+    MemCopy( &y[0], x.LockedBuffer(), x.Height() );
 }
 
 template<typename Scalar>
@@ -849,7 +848,7 @@ void Copy( const std::vector<Scalar>& x, Vector<Scalar>& y )
     CallStackEntry entry("hmat_tools::Copy (vector,Vector)");
 #endif
     y.Resize( x.size() );
-    std::memcpy( y.Buffer(), &x[0], x.size()*sizeof(Scalar) );
+    MemCopy( y.Buffer(), &x[0], x.size() );
 }
 
 template<typename Scalar>
@@ -864,18 +863,12 @@ void Copy( const Dense<Scalar>& A, Dense<Scalar>& B )
     if( A.Symmetric() )
     {
         for( int j=0; j<n; ++j )
-        {
-            std::memcpy
-            ( B.Buffer(j,j), A.LockedBuffer(j,j), (m-j)*sizeof(Scalar) );
-        }
+            MemCopy( B.Buffer(j,j), A.LockedBuffer(j,j), m-j );
     }
     else
     {
         for( int j=0; j<n; ++j )
-        {
-            std::memcpy
-            ( B.Buffer(0,j), A.LockedBuffer(0,j), m*sizeof(Scalar) );
-        }
+            MemCopy( B.Buffer(0,j), A.LockedBuffer(0,j), m );
     }
 }
 
@@ -916,7 +909,7 @@ void Conjugate( const Vector<Real>& x, Vector<Real>& y )
     CallStackEntry entry("hmat_tools::Conjugate (Vector,Vector)");
 #endif
     y.Resize( x.Height() );
-    std::memcpy( y.Buffer(), x.LockedBuffer(), x.Height()*sizeof(Real) );
+    MemCopy( y.Buffer(), x.LockedBuffer(), x.Height() );
 }
 
 template<typename Real>
@@ -957,7 +950,7 @@ void Conjugate( const std::vector<Real>& x, std::vector<Real>& y )
     CallStackEntry entry("hmat_tools::Conjugate (vector,vector)");
 #endif
     y.resize( x.size() );
-    std::memcpy( &y[0], &x[0], x.size()*sizeof(Real) );
+    MemCopy( &y[0], &x[0], x.size() );
 }
 
 template<typename Real>
@@ -983,7 +976,7 @@ void Conjugate( const Vector<Real>& x, std::vector<Real>& y )
     CallStackEntry entry("hmat_tools::Conjugate (Vector,vector)");
 #endif
     y.resize( x.Height() );
-    std::memcpy( &y[0], x.Buffer(), x.Height()*sizeof(Real) );
+    MemCopy( &y[0], x.Buffer(), x.Height() );
 }
 
 template<typename Real>
@@ -1008,7 +1001,7 @@ void Conjugate( const std::vector<Real>& x, Vector<Real>& y )
     CallStackEntry entry("hmat_tools::Conjugate (vector,Vector)");
 #endif
     y.Resize( x.size() );
-    std::memcpy( y.Buffer(), &x[0], x.size()*sizeof(Real) );
+    MemCopy( y.Buffer(), &x[0], x.size() );
 }
 
 template<typename Real>
@@ -1060,18 +1053,12 @@ void Conjugate( const Dense<Real>& D1, Dense<Real>& D2 )
     if( D1.Symmetric() )
     {
         for( int j=0; j<n; ++j )
-        {
-            std::memcpy
-            ( D2.Buffer(j,j), D1.LockedBuffer(j,j), (m-j)*sizeof(Real) );
-        }
+            MemCopy( D2.Buffer(j,j), D1.LockedBuffer(j,j), m-j );
     }
     else
     {
         for( int j=0; j<n; ++j )
-        {
-            std::memcpy
-            ( D2.Buffer(0,j), D1.LockedBuffer(0,j), m*sizeof(Real) );
-        }
+            MemCopy( D2.Buffer(0,j), D1.LockedBuffer(0,j), m );
     }
 }
 
@@ -1368,7 +1355,7 @@ void Scale( Scalar alpha, Vector<Scalar>& x )
     CallStackEntry entry("hmat_tools::Scale (Vector)");
 #endif
     if( alpha == Scalar(0) )
-        std::memset( x.Buffer(), 0, x.Height()*sizeof(Scalar) );
+        MemZero( x.Buffer(), x.Height() );
     else
         blas::Scal( x.Height(), alpha, x.Buffer(), 1 );
 }
@@ -1389,7 +1376,7 @@ void Scale( Scalar alpha, Dense<Scalar>& D )
     {
         if( alpha == Scalar(0) )
             for( int j=0; j<n; ++j )
-                std::memset( D.Buffer(j,j), 0, (m-j)*sizeof(Scalar) );
+                MemZero( D.Buffer(j,j), m-j );
         else
             for( int j=0; j<n; ++j )
                 blas::Scal( m-j, alpha, D.Buffer(j,j), 1 );
@@ -1398,7 +1385,7 @@ void Scale( Scalar alpha, Dense<Scalar>& D )
     {
         if( alpha == Scalar(0) )
             for( int j=0; j<n; ++j )
-                std::memset( D.Buffer(0,j), 0, m*sizeof(Scalar) );
+                MemZero( D.Buffer(0,j), m );
         else
             for( int j=0; j<n; ++j )
                 blas::Scal( m, alpha, D.Buffer(0,j), 1 );

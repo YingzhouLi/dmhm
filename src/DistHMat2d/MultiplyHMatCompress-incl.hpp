@@ -9,7 +9,7 @@
 
 #include "./Truncation-incl.hpp"
 
-int EVD_Count;
+int evdCount;
 
 namespace dmhm {
 
@@ -37,7 +37,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompress( int startLevel, int endLevel )
     MultiplyHMatCompressFPrecompute( startLevel, endLevel);
     MultiplyHMatCompressFReduces( startLevel, endLevel );
 
-    EVD_Count=0;
+    ::evdCount=0;
     MultiplyHMatCompressFEigenDecomp( startLevel, endLevel );
     MultiplyHMatCompressFPassMatrix( startLevel, endLevel );
     MultiplyHMatCompressFPassVector( startLevel, endLevel );
@@ -159,10 +159,9 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
             Dense<Scalar> ULocalCopy;
             hmat_tools::Copy( DF.ULocal, ULocalCopy );
             DF.ULocal.Resize( localHeight, rank, localHeight );
-            std::memcpy
+            MemCopy
             ( DF.ULocal.Buffer(0,rank-oldRank), ULocalCopy.LockedBuffer(), 
-              localHeight*oldRank*sizeof(Scalar) );
-
+              localHeight*oldRank );
         }
         if( inSourceTeam_ )
         {
@@ -172,10 +171,9 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
             Dense<Scalar> VLocalCopy;
             hmat_tools::Copy( DF.VLocal, VLocalCopy );
             DF.VLocal.Resize( localWidth, rank, localWidth );
-            std::memcpy
+            MemCopy
             ( DF.VLocal.Buffer(0,rank-oldRank), VLocalCopy.LockedBuffer(),
-              localWidth*oldRank*sizeof(Scalar) );
-
+              localWidth*oldRank );
         }
         DF.rank = rank;
         break;
@@ -231,10 +229,9 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
             hmat_tools::Copy( SF.D, UCopy );
             SF.D.Resize( height, rank, height );
             SF.rank = rank;
-            std::memcpy
+            MemCopy
             ( SF.D.Buffer(0,rank-oldRank), UCopy.LockedBuffer(), 
-              height*oldRank*sizeof(Scalar) );
-
+              height*oldRank );
         }
         else
         {
@@ -245,10 +242,9 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
             hmat_tools::Copy( SF.D, VCopy );
             SF.D.Resize( width, rank, width );
             SF.rank = rank;
-            std::memcpy
+            MemCopy
             ( SF.D.Buffer(0,rank-oldRank), VCopy.LockedBuffer(),
-              width*oldRank*sizeof(Scalar) );
-
+              width*oldRank );
         }
         break;
     }
@@ -285,17 +281,15 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
             Dense<Scalar> UCopy;
             hmat_tools::Copy( F.U, UCopy );
             F.U.Resize( height, rank, height );
-            std::memcpy
+            MemCopy
             ( F.U.Buffer(0,rank-oldRank), UCopy.LockedBuffer(), 
-              height*oldRank*sizeof(Scalar) );
+              height*oldRank );
 
             Dense<Scalar> VCopy;
             hmat_tools::Copy( F.V, VCopy );
             F.V.Resize( width, rank, width );
-            std::memcpy
-            ( F.V.Buffer(0,rank-oldRank), VCopy.LockedBuffer(),
-              width*oldRank*sizeof(Scalar) );
-
+            MemCopy
+            ( F.V.Buffer(0,rank-oldRank), VCopy.LockedBuffer(), width*oldRank );
         }
         break;
     }
@@ -329,9 +323,9 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
                     const int r = firstUCopy.Width();
                     rOffset -= r;
                     for( int j=0; j<r; ++j )
-                        std::memcpy
+                        MemCopy
                         ( firstU.Buffer(0,rOffset+j), 
-                          firstUCopy.LockedBuffer(0,j), m*sizeof(Scalar) );
+                          firstUCopy.LockedBuffer(0,j), m );
                 }
                 // Push the rest of the updates in and then erase them
                 for( int update=1; update<numLowRankUpdates; ++update )
@@ -340,9 +334,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
                     const int r = U.Width();
                     rOffset -= r;
                     for( int j=0; j<r; ++j )
-                        std::memcpy
-                        ( firstU.Buffer(0,rOffset+j), U.LockedBuffer(0,j),
-                          m*sizeof(Scalar) );
+                        MemCopy
+                        ( firstU.Buffer(0,rOffset+j), U.LockedBuffer(0,j), m );
                     UMap_.EraseCurrentEntry();
                 }
             }
@@ -375,9 +368,9 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
                     const int r = firstVCopy.Width();
                     rOffset -= r;
                     for( int j=0; j<r; ++j )
-                        std::memcpy
+                        MemCopy
                         ( firstV.Buffer(0,rOffset+j), 
-                          firstVCopy.LockedBuffer(0,j), n*sizeof(Scalar) );
+                          firstVCopy.LockedBuffer(0,j), n );
                 }
                 // Push the rest of the updates in and erase them
                 for( int update=1; update<numLowRankUpdates; ++update )
@@ -386,9 +379,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
                     const int r = V.Width();
                     rOffset -= r;
                     for( int j=0; j<r; ++j )
-                        std::memcpy
-                        ( firstV.Buffer(0,rOffset+j), V.LockedBuffer(0,j),
-                          n*sizeof(Scalar) );
+                        MemCopy
+                        ( firstV.Buffer(0,rOffset+j), V.LockedBuffer(0,j), n );
                     VMap_.EraseCurrentEntry();
                 }
             }
@@ -429,7 +421,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
         break;
     }
 }
-
 
 template<typename Scalar>
 void
@@ -628,9 +619,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankImport( int rank )
                 const int m = X.Height();
                 const int r = X.Width();
                 for( int j=0; j<r; ++j )
-                    std::memcpy
-                    ( mainU->Buffer(0,newRank+j), X.LockedBuffer(0,j),
-                      m*sizeof(Scalar) );
+                    MemCopy
+                    ( mainU->Buffer(0,newRank+j), X.LockedBuffer(0,j), m );
                 colXMap_.EraseCurrentEntry();
                 newRank += r;
             }
@@ -643,9 +633,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankImport( int rank )
                 const int m = U.Height();
                 const int r = U.Width();
                 for( int j=0; j<r; ++j )
-                    std::memcpy
-                    ( mainU->Buffer(0,newRank+j), U.LockedBuffer(0,j),
-                      m*sizeof(Scalar) );
+                    MemCopy
+                    ( mainU->Buffer(0,newRank+j), U.LockedBuffer(0,j), m );
                 UMap_.EraseCurrentEntry();
                 newRank += r;
             }
@@ -673,9 +662,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankImport( int rank )
                 const int n = X.Height();
                 const int r = X.Width();
                 for( int j=0; j<r; ++j )
-                    std::memcpy
-                    ( mainV->Buffer(0,newRank+j), X.LockedBuffer(0,j),
-                      n*sizeof(Scalar) );
+                    MemCopy
+                    ( mainV->Buffer(0,newRank+j), X.LockedBuffer(0,j), n );
                 rowXMap_.EraseCurrentEntry();
                 newRank += r;
             }
@@ -688,9 +676,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankImport( int rank )
                 const int n = V.Height();
                 const int r = V.Width();
                 for( int j=0; j<r; ++j )
-                    std::memcpy
-                    ( mainV->Buffer(0,newRank+j), V.LockedBuffer(0,j),
-                      n*sizeof(Scalar) );
+                    MemCopy
+                    ( mainV->Buffer(0,newRank+j), V.LockedBuffer(0,j), n );
                 VMap_.EraseCurrentEntry();
                 newRank += r;
             }
@@ -770,9 +757,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressImportU
         const int m = U.Height();
         const int r = U.Width();
         for( int j=0; j<r; ++j )
-            std::memcpy
-            ( DF.ULocal.Buffer(0,rank+j), U.LockedBuffer(0,j),
-              m*sizeof(Scalar) );
+            MemCopy( DF.ULocal.Buffer(0,rank+j), U.LockedBuffer(0,j), m );
         break;
     }
     case SPLIT_LOW_RANK:
@@ -781,9 +766,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressImportU
         const int m = U.Height();
         const int r = U.Width();
         for( int j=0; j<r; ++j )
-            std::memcpy
-            ( SF.D.Buffer(0,rank+j), U.LockedBuffer(0,j),
-              m*sizeof(Scalar) );
+            MemCopy( SF.D.Buffer(0,rank+j), U.LockedBuffer(0,j), m );
         break;
     }
     case LOW_RANK:
@@ -792,9 +775,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressImportU
         const int m = U.Height();
         const int r = U.Width();
         for( int j=0; j<r; ++j )
-            std::memcpy
-            ( F.U.Buffer(0,rank+j), U.LockedBuffer(0,j),
-              m*sizeof(Scalar) );
+            MemCopy( F.U.Buffer(0,rank+j), U.LockedBuffer(0,j), m );
         break;
     }
     case SPLIT_DENSE:
@@ -805,9 +786,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressImportU
         const int m = U.Height();
         const int r = U.Width();
         for( int j=0; j<r; ++j )
-            std::memcpy
-            ( mainU.Buffer(0,rank+j), U.LockedBuffer(0,j),
-              m*sizeof(Scalar) );
+            MemCopy( mainU.Buffer(0,rank+j), U.LockedBuffer(0,j), m );
         break;
     }
     default:
@@ -876,9 +855,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressImportV
         const int n = V.Height();
         const int r = V.Width();
         for( int j=0; j<r; ++j )
-            std::memcpy
-            ( DF.VLocal.Buffer(0,rank+j), V.LockedBuffer(0,j),
-              n*sizeof(Scalar) );
+            MemCopy( DF.VLocal.Buffer(0,rank+j), V.LockedBuffer(0,j), n );
         break;
     }
     case SPLIT_LOW_RANK:
@@ -887,9 +864,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressImportV
         const int n = V.Height();
         const int r = V.Width();
         for( int j=0; j<r; ++j )
-            std::memcpy
-            ( SF.D.Buffer(0,rank+j), V.LockedBuffer(0,j),
-              n*sizeof(Scalar) );
+            MemCopy( SF.D.Buffer(0,rank+j), V.LockedBuffer(0,j), n );
         break;
     }
     case LOW_RANK:
@@ -898,9 +873,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressImportV
         const int n = V.Height();
         const int r = V.Width();
         for( int j=0; j<r; ++j )
-            std::memcpy
-            ( F.V.Buffer(0,rank+j), V.LockedBuffer(0,j),
-              n*sizeof(Scalar) );
+            MemCopy( F.V.Buffer(0,rank+j), V.LockedBuffer(0,j), n );
         break;
     }
     case SPLIT_DENSE:
@@ -911,9 +884,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressImportV
         const int n = V.Height();
         const int r = V.Width();
         for( int j=0; j<r; ++j )
-            std::memcpy
-            ( mainV.Buffer(0,rank+j), V.LockedBuffer(0,j),
-              n*sizeof(Scalar) );
+            MemCopy( mainV.Buffer(0,rank+j), V.LockedBuffer(0,j), n );
         break;
     }
     default:
@@ -965,9 +936,9 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
             USqrEig_.resize( totalrank );
             Utmp_.Resize( LH, totalrank, LH );
             
-            std::memcpy
+            MemCopy
             ( Utmp_.Buffer(0,offset), DF.ULocal.LockedBuffer(),
-              LH*DF.ULocal.Width()*sizeof(Scalar) );
+              LH*DF.ULocal.Width() );
             offset += DF.ULocal.Width();
 
             int numEntries = UMap_.Size();
@@ -975,9 +946,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
             for( int i=0; i<numEntries; ++i,UMap_.Increment() )
             {
                 Dense<Scalar>& U = *UMap_.CurrentEntry();
-                std::memcpy
-                ( Utmp_.Buffer(0,offset), U.LockedBuffer(),
-                  LH*U.Width()*sizeof(Scalar) );
+                MemCopy
+                ( Utmp_.Buffer(0,offset), U.LockedBuffer(), LH*U.Width() );
                 offset += U.Width();
             }
             numEntries = colXMap_.Size();
@@ -985,9 +955,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
             for( int i=0; i<numEntries; ++i,colXMap_.Increment() )
             {
                 Dense<Scalar>& U = *colXMap_.CurrentEntry();
-                std::memcpy
-                ( Utmp_.Buffer(0,offset), U.LockedBuffer(),
-                  LH*U.Width()*sizeof(Scalar) );
+                MemCopy
+                ( Utmp_.Buffer(0,offset), U.LockedBuffer(), LH*U.Width() );
                 offset += U.Width();
             }
 
@@ -1006,9 +975,9 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
             VSqrEig_.resize( totalrank );
             Vtmp_.Resize( LW, totalrank, LW );
             
-            std::memcpy
+            MemCopy
             ( Vtmp_.Buffer(0,offset), DF.VLocal.LockedBuffer(),
-              LW*DF.VLocal.Width()*sizeof(Scalar) );
+              LW*DF.VLocal.Width() );
             offset += DF.VLocal.Width();
 
             int numEntries = VMap_.Size();
@@ -1016,9 +985,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
             for( int i=0; i<numEntries; ++i,VMap_.Increment() )
             {
                 Dense<Scalar>& V = *VMap_.CurrentEntry();
-                std::memcpy
-                ( Vtmp_.Buffer(0,offset), V.LockedBuffer(),
-                  LW*V.Width()*sizeof(Scalar) );
+                MemCopy
+                ( Vtmp_.Buffer(0,offset), V.LockedBuffer(), LW*V.Width() );
                 offset += V.Width();
             }
             numEntries = rowXMap_.Size();
@@ -1026,9 +994,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
             for( int i=0; i<numEntries; ++i,rowXMap_.Increment() )
             {
                 Dense<Scalar>& V = *rowXMap_.CurrentEntry();
-                std::memcpy
-                ( Vtmp_.Buffer(0,offset), V.LockedBuffer(),
-                  LW*V.Width()*sizeof(Scalar) );
+                MemCopy
+                ( Vtmp_.Buffer(0,offset), V.LockedBuffer(), LW*V.Width() );
                 offset += V.Width();
             }
 
@@ -1060,9 +1027,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
             USqrEig_.resize( totalrank );
             Utmp_.Resize( LH, totalrank, LH );
             
-            std::memcpy
-            ( Utmp_.Buffer(0,offset), SF.D.LockedBuffer(),
-              LH*SF.D.Width()*sizeof(Scalar) );
+            MemCopy
+            ( Utmp_.Buffer(0,offset), SF.D.LockedBuffer(), LH*SF.D.Width() );
             offset += SF.D.Width();
 
             int numEntries = UMap_.Size();
@@ -1070,9 +1036,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
             for( int i=0; i<numEntries; ++i,UMap_.Increment() )
             {
                 Dense<Scalar>& U = *UMap_.CurrentEntry();
-                std::memcpy
-                ( Utmp_.Buffer(0,offset), U.LockedBuffer(),
-                  LH*U.Width()*sizeof(Scalar) );
+                MemCopy
+                ( Utmp_.Buffer(0,offset), U.LockedBuffer(), LH*U.Width() );
                 offset += U.Width();
             }
             numEntries = colXMap_.Size();
@@ -1080,9 +1045,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
             for( int i=0; i<numEntries; ++i,colXMap_.Increment() )
             {
                 Dense<Scalar>& U = *colXMap_.CurrentEntry();
-                std::memcpy
-                ( Utmp_.Buffer(0,offset), U.LockedBuffer(),
-                  LH*U.Width()*sizeof(Scalar) );
+                MemCopy
+                ( Utmp_.Buffer(0,offset), U.LockedBuffer(), LH*U.Width() );
                 offset += U.Width();
             }
 
@@ -1101,9 +1065,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
             VSqrEig_.resize( totalrank );
             Vtmp_.Resize( LW, totalrank, LW );
             
-            std::memcpy
-            ( Vtmp_.Buffer(0,offset), SF.D.LockedBuffer(),
-              LW*SF.D.Width()*sizeof(Scalar) );
+            MemCopy
+            ( Vtmp_.Buffer(0,offset), SF.D.LockedBuffer(), LW*SF.D.Width() );
             offset += SF.D.Width();
 
             int numEntries = VMap_.Size();
@@ -1111,9 +1074,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
             for( int i=0; i<numEntries; ++i,VMap_.Increment() )
             {
                 Dense<Scalar>& V = *VMap_.CurrentEntry();
-                std::memcpy
-                ( Vtmp_.Buffer(0,offset), V.LockedBuffer(),
-                  LW*V.Width()*sizeof(Scalar) );
+                MemCopy
+                ( Vtmp_.Buffer(0,offset), V.LockedBuffer(), LW*V.Width() );
                 offset += V.Width();
             }
             numEntries = rowXMap_.Size();
@@ -1121,9 +1083,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
             for( int i=0; i<numEntries; ++i,rowXMap_.Increment() )
             {
                 Dense<Scalar>& V = *rowXMap_.CurrentEntry();
-                std::memcpy
-                ( Vtmp_.Buffer(0,offset), V.LockedBuffer(),
-                  LW*V.Width()*sizeof(Scalar) );
+                MemCopy
+                ( Vtmp_.Buffer(0,offset), V.LockedBuffer(), LW*V.Width() );
                 offset += V.Width();
             }
 
@@ -1154,9 +1115,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
             USqrEig_.resize( totalrank );
             Utmp_.Resize( LH, totalrank, LH );
             
-            std::memcpy
-            ( Utmp_.Buffer(0,offset), F.U.LockedBuffer(),
-              LH*F.U.Width()*sizeof(Scalar) );
+            MemCopy
+            ( Utmp_.Buffer(0,offset), F.U.LockedBuffer(), LH*F.U.Width() );
             offset=F.U.Width();
 //Print
 //_Utmp.Print("_Utmp");
@@ -1175,9 +1135,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
             VSqrEig_.resize( totalrank );
             Vtmp_.Resize( LW, totalrank, LW );
             
-            std::memcpy
-            ( Vtmp_.Buffer(0,offset), F.V.LockedBuffer(),
-              LW*F.V.Width()*sizeof(Scalar) );
+            MemCopy
+            ( Vtmp_.Buffer(0,offset), F.V.LockedBuffer(), LW*F.V.Width() );
             offset=F.V.Width();
 
 //Print
@@ -1214,8 +1173,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFReduces
 
     const int numLevels = teams_->NumLevels();
     const int numReduces = numLevels-1;
-    std::vector<int> sizes( numReduces );
-    std::memset( &sizes[0], 0, numReduces*sizeof(int) );
+    std::vector<int> sizes( numReduces, 0 );
     MultiplyHMatCompressFReducesCount( sizes, startLevel, endLevel );
 
     int totalSize = 0;
@@ -1304,22 +1262,18 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFReducesPack
     {
         if( level_ < startLevel )
             break;
-        int Size=USqr_.Height()*USqr_.Width();
-        if( Size > 0 )
+        int size=USqr_.Height()*USqr_.Width();
+        if( size > 0 )
         {
-            std::memcpy
-            ( &buffer[offsets[level_]], USqr_.LockedBuffer(),
-              Size*sizeof(Scalar) );
-            offsets[level_] += Size;
+            MemCopy( &buffer[offsets[level_]], USqr_.LockedBuffer(), size );
+            offsets[level_] += size;
         }
 
-        Size=VSqr_.Height()*VSqr_.Width();
-        if( Size > 0 )
+        size=VSqr_.Height()*VSqr_.Width();
+        if( size > 0 )
         {
-            std::memcpy
-            ( &buffer[offsets[level_]], VSqr_.LockedBuffer(),
-              Size*sizeof(Scalar) );
-            offsets[level_] += Size;
+            MemCopy( &buffer[offsets[level_]], VSqr_.LockedBuffer(), size );
+            offsets[level_] += size;
         }
         break;
     }
@@ -1373,22 +1327,18 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFReducesUnpack
         const int teamRank = mpi::CommRank( team );
         if( teamRank ==0 )
         {
-            int Size=USqr_.Height()*USqr_.Width();                
-            if( Size > 0 )
+            int size=USqr_.Height()*USqr_.Width();                
+            if( size > 0 )
             {
-                std::memcpy
-                ( USqr_.Buffer(), &buffer[offsets[level_]],
-                  Size*sizeof(Scalar) );
-                offsets[level_] += Size;
+                MemCopy( USqr_.Buffer(), &buffer[offsets[level_]], size );
+                offsets[level_] += size;
             }
 
-            Size=VSqr_.Height()*VSqr_.Width();
-            if( Size > 0 )
+            size=VSqr_.Height()*VSqr_.Width();
+            if( size > 0 )
             {
-                std::memcpy
-                ( VSqr_.Buffer(), &buffer[offsets[level_]],
-                  Size*sizeof(Scalar) );
-                offsets[level_] += Size;
+                MemCopy( VSqr_.Buffer(), &buffer[offsets[level_]], size );
+                offsets[level_] += size;
             }
         }
         break;
@@ -1467,7 +1417,7 @@ _VSqr.Print("_VSqr Before svd");*/
                            &evdRealWork[0], lrwork );
 //Print
 //std::cout << "Size: " << USqr_.Height() << std::endl;
-EVD_Count++;
+                ::evdCount++;
             }
                                                                      
             if( !VSqr_.IsEmpty() )
@@ -1481,7 +1431,7 @@ EVD_Count++;
                            &evdRealWork[0], lrwork );
 //Print
 //std::cout << "Size: " << VSqr_.Height() << std::endl;
-EVD_Count++;
+                ::evdCount++;
             }
 /*//Print
 if(level_==3 && block_.type==LOW_RANK)
@@ -1658,9 +1608,9 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrixPack
         const int teamRank = mpi::CommRank( team );
         if( teamRank ==0 && VSqr_.Height() > 0 )
         {
-            std::memcpy
+            MemCopy
             ( &buffer[offsets[targetRoot_]], VSqr_.LockedBuffer(),
-              VSqr_.Height()*VSqr_.Width()*sizeof(Scalar) );
+              VSqr_.Height()*VSqr_.Width() );
             offsets[targetRoot_] += VSqr_.Height()*VSqr_.Width();
         }
         break;
@@ -1711,9 +1661,9 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrixUnpack
         if( teamRank ==0 && USqr_.Height() > 0 )
         {
             VSqr_.Resize( USqr_.Height(), USqr_.Width(), USqr_.LDim() );
-            std::memcpy
+            MemCopy
             ( VSqr_.Buffer(), &buffer[offsets[sourceRoot_]],
-              VSqr_.Height()*VSqr_.Width()*sizeof(Scalar) );
+              VSqr_.Height()*VSqr_.Width() );
             offsets[sourceRoot_] += VSqr_.Height()*VSqr_.Width();
 
         }
@@ -1887,9 +1837,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassVectorPack
         const int teamRank = mpi::CommRank( team );
         if( teamRank ==0 && VSqrEig_.size() > 0 )
         {
-            std::memcpy
-            ( &buffer[offsets[targetRoot_]], &VSqrEig_[0],
-              VSqrEig_.size()*sizeof(Real) );
+            MemCopy
+            ( &buffer[offsets[targetRoot_]], &VSqrEig_[0], VSqrEig_.size() );
             offsets[targetRoot_] += VSqrEig_.size();
         }
         break;
@@ -1940,10 +1889,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassVectorUnpack
         if( teamRank ==0 && USqrEig_.size() > 0 )
         {
             VSqrEig_.resize( USqrEig_.size() );
-
-            std::memcpy
-            ( &VSqrEig_[0], &buffer[offsets[sourceRoot_]],
-              VSqrEig_.size()*sizeof(Real) );
+            MemCopy
+            ( &VSqrEig_[0], &buffer[offsets[sourceRoot_]], VSqrEig_.size() );
             offsets[sourceRoot_] += VSqrEig_.size();
         }
         break;
@@ -2527,9 +2474,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackDataPack
             if( teamRank ==0 )
             {
                 int size=BSqrVH_.Height()*BSqrVH_.Width();
-                std::memcpy
-                ( &buffer[offsets[sourceRoot_]], BSqrVH_.LockedBuffer(),
-                  size*sizeof(Scalar) );
+                MemCopy
+                ( &buffer[offsets[sourceRoot_]], BSqrVH_.LockedBuffer(), size );
                 offsets[sourceRoot_] += size;
             }
         }
@@ -2541,24 +2487,20 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackDataPack
             if( inTargetTeam_ )
             {
                 int size = m*SF.rank;
-                std::memcpy
-                ( &buffer[offsets[sourceRoot_]], SF.D.LockedBuffer(),
-                  size*sizeof(Scalar) );
+                MemCopy
+                ( &buffer[offsets[sourceRoot_]], SF.D.LockedBuffer(), size );
                 offsets[sourceRoot_] += size;
-            
             }
             else
             {
                 int size = n*SF.rank;
-                std::memcpy
-                ( &buffer[offsets[targetRoot_]], SF.D.LockedBuffer(),
-                  size*sizeof(Scalar) );
+                MemCopy
+                ( &buffer[offsets[targetRoot_]], SF.D.LockedBuffer(), size );
                 offsets[targetRoot_] += size;
                 
                 size = n*m;
-                std::memcpy
-                ( &buffer[offsets[targetRoot_]], D_.LockedBuffer(),
-                  size*sizeof(Scalar) );
+                MemCopy
+                ( &buffer[offsets[targetRoot_]], D_.LockedBuffer(), size );
                 offsets[targetRoot_] += size;
             }
         }
@@ -2573,11 +2515,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackDataPack
             UMap_.ResetIterator();
             const Dense<Scalar>& U = *UMap_.CurrentEntry();
             if( Height() != U.Height() )
-                throw std::logic_error("Packing SPLIT_DENSE, the height does not fit");
+                throw std::logic_error
+                ("Packing SPLIT_DENSE, the height does not fit");
             int size=U.Height()*U.Width();
-            std::memcpy
-            ( &buffer[offsets[sourceRoot_]], U.LockedBuffer(),
-              size*sizeof(Scalar) );
+            MemCopy( &buffer[offsets[sourceRoot_]], U.LockedBuffer(), size );
             offsets[sourceRoot_] += size;
             UMap_.Clear();
         }
@@ -2629,9 +2570,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackDataUnpack
             if( teamRank ==0 )
             {
                 int size=BSqrVH_.Height()*BSqrVH_.Width();
-                std::memcpy
-                ( BSqrVH_.Buffer(), &buffer[offsets[targetRoot_]],
-                  size*sizeof(Scalar) );
+                MemCopy
+                ( BSqrVH_.Buffer(), &buffer[offsets[targetRoot_]], size );
                 offsets[targetRoot_] += size;
             }
         }
@@ -2644,25 +2584,19 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackDataUnpack
             {
                 int size = n*SF.rank;
                 SFD_.Resize(n, SF.rank, n);
-                std::memcpy
-                ( SFD_.Buffer(), &buffer[offsets[sourceRoot_]],
-                  size*sizeof(Scalar) );
+                MemCopy( SFD_.Buffer(), &buffer[offsets[sourceRoot_]], size );
                 offsets[sourceRoot_] += size;
             
                 size = n*m;
                 D_.Resize(m, n, m);
-                std::memcpy
-                ( D_.Buffer(), &buffer[offsets[sourceRoot_]],
-                  size*sizeof(Scalar) );
+                MemCopy( D_.Buffer(), &buffer[offsets[sourceRoot_]], size );
                 offsets[sourceRoot_] += size;
             }
             else
             {
                 int size = m*SF.rank;
                 SFD_.Resize(m, SF.rank, m);
-                std::memcpy
-                ( SFD_.Buffer(), &buffer[offsets[targetRoot_]],
-                  size*sizeof(Scalar) );
+                MemCopy( SFD_.Buffer(), &buffer[offsets[targetRoot_]], size );
                 offsets[targetRoot_] += size;
             }
         }
@@ -2680,9 +2614,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackDataUnpack
             const Dense<Scalar>& V = *VMap_.CurrentEntry();
             U.Resize(Height(), V.Width(), Height());
             int size=U.Height()*U.Width();
-            std::memcpy
-            ( U.Buffer(), &buffer[offsets[targetRoot_]], 
-              size*sizeof(Scalar) );
+            MemCopy( U.Buffer(), &buffer[offsets[targetRoot_]], size );
             offsets[targetRoot_] += size;
         }
         break;
@@ -2754,11 +2686,6 @@ std::cout << USqrEig_.size() << " " << VSqrEig_.size() << " " << block_.type << 
                     Eigmax=sqrt( USqrEig_[USqrEig_.size()-1] );
                 else
                     Eigmax=0;
-//Print
-//if(level_==3 && block_.type==LOW_RANK)
-//for(int i=0; i<USqrEig_.size(); i++)
-//    std::cout << USqrEig_[i] << " ";
-//std::cout << std::endl;
                 for(int j=0; j<USqr_.Width(); ++j)
                     if(sqrt(std::abs(USqrEig_[j])) > error*error )
                     {
@@ -2781,9 +2708,6 @@ std::cout << "Run until here 1.5" << std::endl;
 
                 BL_.Resize(USqr_.Height(), BSqrU_.Width(), USqr_.Height());
 
-//print
-//_BSqrU.Print("BU*BS");
-//_USqr.Print("USqr/Ueig");
 if(print)
 std::cout << "Run until here 1.8" << std::endl;
                 blas::Gemm
@@ -2791,14 +2715,6 @@ std::cout << "Run until here 1.8" << std::endl;
                   Scalar(1), USqr_.LockedBuffer(),  USqr_.LDim(),
                              BSqrU_.LockedBuffer(), BSqrU_.LDim(),
                   Scalar(0), BL_.Buffer(), BL_.LDim() );
-/*
-                BL_.Resize(USqr_.Height(), BSqrU_.Width(), USqr_.Height());
-                blas::Gemm
-                ( 'N', option, USqr_.Height(), BSqrU_.Width(), USqr_.Width(), 
-                  Scalar(1), USqr_.LockedBuffer(),  USqr_.LDim(),
-                             USqr_.LockedBuffer(), USqr_.LDim(),
-                  Scalar(0), BL_.Buffer(), BL_.LDim() );
-            */
             }
 
 //print
@@ -2806,11 +2722,6 @@ if(print)
 std::cout << "Run until here 2, " << BSqrVH_.LDim() << " " << BSqrVH_.Height() << " " << BSqrVH_.Width() << std::endl;
             if(inSourceTeam_ && VSqrEig_.size() > 0)
             {
-/*//Print
-mpi::Comm teamp = teams_->Team( 0 );
-const int teamRankp = mpi::CommRank( teamp );
-if( level_ == 3 && teamRankp == 0 && block_.type == LOW_RANK)
-_BSqrVH.Print("_BSqrVH_Post");*/
                 Real Eigmax;
                 if( VSqrEig_[VSqrEig_.size()-1] > (Real)0 )
                     Eigmax=sqrt(VSqrEig_[VSqrEig_.size()-1]);
@@ -2829,23 +2740,6 @@ _BSqrVH.Print("_BSqrVH_Post");*/
                             VSqr_.Set(i,j, Scalar(0));
                     }
 
-/*mpi::Comm teamp = teams_->Team( 0 );
-const int teamRankp = mpi::CommRank( teamp );
-if( level_ == 3 && teamRankp == 0 && block_.type==LOW_RANK && Vtmp_.Height() == 2 && Utmp_.Height() == 2)
-{
-    //_BL.Print("_BL");
-    //_BR.Print("_BR");
-    Dense<Scalar> BLRT;
-    BLRT.Resize(VSqr_.Height(), VSqr_.Height(), VSqr_.Height());
-    blas::Gemm
-    ( option, 'N', VSqr_.Height(), VSqr_.Height(), VSqr_.Width(),
-      Scalar(1), VSqr_.LockedBuffer(), VSqr_.LDim(),
-                 VSqr_.LockedBuffer(), VSqr_.LDim(),
-      Scalar(0), BLRT.Buffer(), BLRT.LDim());
-    BLRT.Print("BLRT********************************************************");
-    VSqr_.Print("_VSqr*****************************************");
-}*/
-
                 BR_.Resize(VSqr_.Height(), BSqrVH_.Height(), VSqr_.Height());
 
                 blas::Gemm
@@ -2853,34 +2747,6 @@ if( level_ == 3 && teamRankp == 0 && block_.type==LOW_RANK && Vtmp_.Height() == 
                   Scalar(1), VSqr_.LockedBuffer(),  VSqr_.LDim(),
                              BSqrVH_.LockedBuffer(), BSqrVH_.LDim(),
                   Scalar(0), BR_.Buffer(), BR_.LDim() );
-/*
-                BR_.Resize(VSqr_.Height(), BSqrVH_.Height(), VSqr_.Height());
-                blas::Gemm
-                ( 'N', option, VSqr_.Height(), BSqrVH_.Height(), VSqr_.Width(),
-                  Scalar(1), VSqr_.LockedBuffer(),  VSqr_.LDim(),
-                             VSqr_.LockedBuffer(), VSqr_.LDim(),
-                  Scalar(0), BR_.Buffer(), BR_.LDim() );
-//                BR_.Print("_BR");*/
-//Print
-mpi::Comm teamp = teams_->Team( 0 );
-const int teamRankp = mpi::CommRank( teamp );
-if( level_ == 3 && teamRankp == 0 && block_.type==LOW_RANK )
-{
-    std::ofstream myfile;
-    myfile.open("Check.txt", std::ios::app);
-    //_BL.Print(myfile,"_BL");
-    //_BR.Print(myfile,"_BR");
-    Dense<Scalar> BLRT;
-    BLRT.Resize(BL_.Height(), BR_.Height(), BL_.Height());
-    blas::Gemm
-    ( 'N', option, BL_.Height(), BR_.Height(), BL_.Width(),
-      Scalar(1), BL_.LockedBuffer(), BL_.LDim(),
-                 BR_.LockedBuffer(), BR_.LDim(),
-      Scalar(0), BLRT.Buffer(), BLRT.LDim());
-    BLRT.Print(myfile,"BLRT********************************************************");
-    myfile.close();
-}
-                
             }
 
         }
@@ -2901,8 +2767,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcastsNum
 #endif
     const int numLevels = teams_->NumLevels();
     const int numBroadcasts = numLevels-1;
-    std::vector<int> sizes( numBroadcasts );
-    std::memset( &sizes[0], 0, numBroadcasts*sizeof(int) );
+    std::vector<int> sizes( numBroadcasts, 0 );
     MultiplyHMatCompressFBroadcastsNumCount( sizes, startLevel, endLevel );
 
     int totalSize = 0;
@@ -2948,9 +2813,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcastsNumCount
         break;
     }
     case DIST_LOW_RANK:
-//Print
-//if( level_ <2)
-//_BL.Print("_BL");
     {
         if( level_ < startLevel )
             break;
@@ -3096,8 +2958,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcasts
 #endif
     const int numLevels = teams_->NumLevels();
     const int numBroadcasts = numLevels-1;
-    std::vector<int> sizes( numBroadcasts );
-    std::memset( &sizes[0], 0, numBroadcasts*sizeof(int) );
+    std::vector<int> sizes( numBroadcasts, 0 );
     MultiplyHMatCompressFBroadcastsCount( sizes, startLevel, endLevel );
 
     int totalSize = 0;
@@ -3193,19 +3054,15 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcastsPack
         {
             if( BL_.Height() > 0 )
             {
-                int Size = BL_.Height()*BL_.Width();
-                std::memcpy
-                ( &buffer[offsets[level_]], BL_.LockedBuffer(),
-                  Size*sizeof(Scalar) );
-                offsets[level_] += Size;
+                int size = BL_.Height()*BL_.Width();
+                MemCopy( &buffer[offsets[level_]], BL_.LockedBuffer(), size );
+                offsets[level_] += size;
             }
             if( BR_.Height() > 0 )
             {
-                int Size = BR_.Height()*BR_.Width();
-                std::memcpy
-                ( &buffer[offsets[level_]], BR_.LockedBuffer(),
-                  Size*sizeof(Scalar) );
-                offsets[level_] += Size;
+                int size = BR_.Height()*BR_.Width();
+                MemCopy( &buffer[offsets[level_]], BR_.LockedBuffer(), size );
+                offsets[level_] += size;
             }
         }
         break;
@@ -3258,19 +3115,15 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcastsUnpack
             break;
         if( BL_.Height() > 0 )                                  
         { 
-            int Size = BL_.Height()*BL_.Width();
-            std::memcpy
-            ( BL_.Buffer(), &buffer[offsets[level_]],
-              Size*sizeof(Scalar) );
-            offsets[level_] += Size;
+            int size = BL_.Height()*BL_.Width();
+            MemCopy( BL_.Buffer(), &buffer[offsets[level_]], size );
+            offsets[level_] += size;
         }
         if( BR_.Height() > 0 )
         {                                                      
-            int Size = BR_.Height()*BR_.Width();
-            std::memcpy
-            ( BR_.Buffer(), &buffer[offsets[level_]],
-              Size*sizeof(Scalar) );
-            offsets[level_] += Size;
+            int size = BR_.Height()*BR_.Width();
+            MemCopy( BR_.Buffer(), &buffer[offsets[level_]], size );
+            offsets[level_] += size;
         }
         break;
     }
@@ -3758,9 +3611,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFCompressless
             for( int i=0; i<numEntries; ++i,UMap_.Increment() )
             {
                 Dense<Scalar>& U = *UMap_.CurrentEntry();
-                std::memcpy
-                ( Utmp.Buffer(0,offset), U.LockedBuffer(),
-                  LH*U.Width()*sizeof(Scalar) );
+                MemCopy
+                ( Utmp.Buffer(0,offset), U.LockedBuffer(), LH*U.Width() );
                 offset += U.Width();
             }
             numEntries = colXMap_.Size();
@@ -3768,9 +3620,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFCompressless
             for( int i=0; i<numEntries; ++i,colXMap_.Increment() )
             {
                 Dense<Scalar>& U = *colXMap_.CurrentEntry();
-                std::memcpy
-                ( Utmp.Buffer(0,offset), U.LockedBuffer(),
-                  LH*U.Width()*sizeof(Scalar) );
+                MemCopy
+                ( Utmp.Buffer(0,offset), U.LockedBuffer(), LH*U.Width() );
                 offset += U.Width();
             }
         }
@@ -3795,9 +3646,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFCompressless
             for( int i=0; i<numEntries; ++i,VMap_.Increment() )
             {
                 Dense<Scalar>& V = *VMap_.CurrentEntry();
-                std::memcpy
-                ( Vtmp.Buffer(0,offset), V.LockedBuffer(),
-                  LW*V.Width()*sizeof(Scalar) );
+                MemCopy
+                ( Vtmp.Buffer(0,offset), V.LockedBuffer(), LW*V.Width() );
                 offset += V.Width();
             }
             numEntries = rowXMap_.Size();
@@ -3805,9 +3655,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFCompressless
             for( int i=0; i<numEntries; ++i,rowXMap_.Increment() )
             {
                 Dense<Scalar>& V = *rowXMap_.CurrentEntry();
-                std::memcpy
-                ( Vtmp.Buffer(0,offset), V.LockedBuffer(),
-                  LW*V.Width()*sizeof(Scalar) );
+                MemCopy
+                ( Vtmp.Buffer(0,offset), V.LockedBuffer(), LW*V.Width() );
                 offset += V.Width();
             }
         }
@@ -3840,9 +3689,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFCompressless
             for( int i=0; i<numEntries; ++i,UMap_.Increment() )
             {
                 Dense<Scalar>& U = *UMap_.CurrentEntry();
-                std::memcpy
-                ( Utmp.Buffer(0,offset), U.LockedBuffer(),
-                  LH*U.Width()*sizeof(Scalar) );
+                MemCopy
+                ( Utmp.Buffer(0,offset), U.LockedBuffer(), LH*U.Width() );
                 offset += U.Width();
             }
             numEntries = colXMap_.Size();
@@ -3850,9 +3698,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFCompressless
             for( int i=0; i<numEntries; ++i,colXMap_.Increment() )
             {
                 Dense<Scalar>& U = *colXMap_.CurrentEntry();
-                std::memcpy
-                ( Utmp.Buffer(0,offset), U.LockedBuffer(),
-                  LH*U.Width()*sizeof(Scalar) );
+                MemCopy
+                ( Utmp.Buffer(0,offset), U.LockedBuffer(), LH*U.Width() );
                 offset += U.Width();
             }
         }
@@ -3877,9 +3724,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFCompressless
             for( int i=0; i<numEntries; ++i,VMap_.Increment() )
             {
                 Dense<Scalar>& V = *VMap_.CurrentEntry();
-                std::memcpy
-                ( Vtmp.Buffer(0,offset), V.LockedBuffer(),
-                  LW*V.Width()*sizeof(Scalar) );
+                MemCopy
+                ( Vtmp.Buffer(0,offset), V.LockedBuffer(), LW*V.Width() );
                 offset += V.Width();
             }
             numEntries = rowXMap_.Size();
@@ -3887,9 +3733,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFCompressless
             for( int i=0; i<numEntries; ++i,rowXMap_.Increment() )
             {
                 Dense<Scalar>& V = *rowXMap_.CurrentEntry();
-                std::memcpy
-                ( Vtmp.Buffer(0,offset), V.LockedBuffer(),
-                  LW*V.Width()*sizeof(Scalar) );
+                MemCopy
+                ( Vtmp.Buffer(0,offset), V.LockedBuffer(), LW*V.Width() );
                 offset += V.Width();
             }
         }
@@ -3921,9 +3766,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFCompressless
             for( int i=0; i<numEntries; ++i,UMap_.Increment() )
             {
                 Dense<Scalar>& U = *UMap_.CurrentEntry();
-                std::memcpy
-                ( Utmp.Buffer(0,offset), U.LockedBuffer(),
-                  LH*U.Width()*sizeof(Scalar) );
+                MemCopy
+                ( Utmp.Buffer(0,offset), U.LockedBuffer(), LH*U.Width() );
                 offset += U.Width();
             }
             numEntries = colXMap_.Size();
@@ -3931,9 +3775,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFCompressless
             for( int i=0; i<numEntries; ++i,colXMap_.Increment() )
             {
                 Dense<Scalar>& U = *colXMap_.CurrentEntry();
-                std::memcpy
-                ( Utmp.Buffer(0,offset), U.LockedBuffer(),
-                  LH*U.Width()*sizeof(Scalar) );
+                MemCopy
+                ( Utmp.Buffer(0,offset), U.LockedBuffer(), LH*U.Width() );
                 offset += U.Width();
             }
         }
@@ -3957,9 +3800,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFCompressless
             for( int i=0; i<numEntries; ++i,VMap_.Increment() )
             {
                 Dense<Scalar>& V = *VMap_.CurrentEntry();
-                std::memcpy
-                ( Vtmp.Buffer(0,offset), V.LockedBuffer(),
-                  LW*V.Width()*sizeof(Scalar) );
+                MemCopy
+                ( Vtmp.Buffer(0,offset), V.LockedBuffer(), LW*V.Width() );
                 offset += V.Width();
             }
             numEntries = rowXMap_.Size();
@@ -3967,9 +3809,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFCompressless
             for( int i=0; i<numEntries; ++i,rowXMap_.Increment() )
             {
                 Dense<Scalar>& V = *rowXMap_.CurrentEntry();
-                std::memcpy
-                ( Vtmp.Buffer(0,offset), V.LockedBuffer(),
-                  LW*V.Width()*sizeof(Scalar) );
+                MemCopy
+                ( Vtmp.Buffer(0,offset), V.LockedBuffer(), LW*V.Width() );
                 offset += V.Width();
             }
         }

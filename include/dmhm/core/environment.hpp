@@ -80,6 +80,22 @@ public:
 
 typedef unsigned char byte;
 
+template<typename T>
+inline void
+MemCopy( T* dest, const T* source, std::size_t numEntries )
+{
+    // This can be optimized/generalized later
+    std::memcpy( dest, source, numEntries*sizeof(T) );
+}
+
+template<typename T>
+inline void
+MemZero( T* buffer, std::size_t numEntries )
+{
+    // This can be optimized/generalized later
+    std::memset( buffer, 0, numEntries*sizeof(T) );
+}
+
 template<typename Real>
 inline Real 
 Abs( Real alpha )

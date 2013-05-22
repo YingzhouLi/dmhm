@@ -47,8 +47,7 @@ void RoundedUpdate
         // Copy A.V into the right half of B.V
         B.V.Resize( n, r );
         for( int j=0; j<Ar; ++j )
-            std::memcpy
-            ( B.V.Buffer(0,j+Br), A.V.LockedBuffer(0,j), n*sizeof(Real) );
+            MemCopy( B.V.Buffer(0,j+Br), A.V.LockedBuffer(0,j), n );
 
         return;
     }
@@ -73,9 +72,9 @@ void RoundedUpdate
     // Form V := [A.V B.V]
     Dense<Real> V( n, r );
     for( int j=0; j<Ar; ++j )
-        std::memcpy( V.Buffer(0,j), A.V.LockedBuffer(0,j), n*sizeof(Real) );
+        MemCopy( V.Buffer(0,j), A.V.LockedBuffer(0,j), n );
     for( int j=0; j<Br; ++j )
-        std::memcpy( V.Buffer(0,j+Ar), B.V.LockedBuffer(0,j), n*sizeof(Real) );
+        MemCopy( V.Buffer(0,j+Ar), B.V.LockedBuffer(0,j), n );
 
 #if defined(PIVOTED_QR)
     // TODO 
@@ -95,21 +94,15 @@ void RoundedUpdate
 
     // Copy R1 (the left factor's R from QR) into a zeroed buffer
     workU.resize( r*r );
-    std::memset( &workU[0], 0, r*r*sizeof(Real) );
+    MemZero( &workU[0], r*r );
     for( int j=0; j<r; ++j )
-    {
-        std::memcpy
-        ( &workU[j*r], U.LockedBuffer(0,j), std::min(m,j+1)*sizeof(Real) );
-    }
+        MemCopy( &workU[j*r], U.LockedBuffer(0,j), std::min(m,j+1) );
 
     // Copy R2 (the right factor's R from QR) into a zeroed buffer
     workV.resize( r*r );
-    std::memset( &workV[0], 0, r*r*sizeof(Real) );
+    MemZero( &workV[0], r*r );
     for( int j=0; j<r; ++j )
-    {
-        std::memcpy
-        ( &workV[j*r], V.LockedBuffer(0,j), std::min(n,j+1)*sizeof(Real) );
-    }
+        MemCopy( &workV[j*r], V.LockedBuffer(0,j), std::min(n,j+1) );
 
     // Form W := R1 R2^T.
     Dense<Real> W( minDimU, minDimV );
@@ -206,8 +199,7 @@ void RoundedUpdate
         // Copy A.V into the right half of B.V
         B.V.Resize( n, r );
         for( int j=0; j<Ar; ++j )
-            std::memcpy
-            ( B.V.Buffer(0,j+Br), A.V.LockedBuffer(0,j), n*sizeof(Scalar) );
+            MemCopy( B.V.Buffer(0,j+Br), A.V.LockedBuffer(0,j), n );
 
         return;
     }
@@ -232,11 +224,9 @@ void RoundedUpdate
     // Form V := [A.V B.V]
     Dense<Scalar> V( n, r );
     for( int j=0; j<Ar; ++j )
-        std::memcpy
-        ( V.Buffer(0,j), A.V.LockedBuffer(0,j), n*sizeof(Scalar) );
+        MemCopy( V.Buffer(0,j), A.V.LockedBuffer(0,j), n );
     for( int j=0; j<Br; ++j )
-        std::memcpy
-        ( V.Buffer(0,j+Ar), B.V.LockedBuffer(0,j), n*sizeof(Scalar) );
+        MemCopy( V.Buffer(0,j+Ar), B.V.LockedBuffer(0,j), n );
 
 #if defined(PIVOTED_QR)
     // TODO 
@@ -256,17 +246,15 @@ void RoundedUpdate
 
     // Copy R1 (the left factor's R from QR) into a zeroed buffer
     workU.resize( r*r );
-    std::memset( &workU[0], 0, r*r*sizeof(Scalar) );
+    MemZero( &workU[0], r*r );
     for( int j=0; j<r; ++j )
-        std::memcpy
-        ( &workU[j*r], U.LockedBuffer(0,j), std::min(m,j+1)*sizeof(Scalar) );
+        MemCopy( &workU[j*r], U.LockedBuffer(0,j), std::min(m,j+1) );
 
     // Copy R2 (the right factor's R from QR) into a zeroed buffer
     workV.resize( r*r );
-    std::memset( &workV[0], 0, r*r*sizeof(Scalar) );
+    MemZero( &workV[0], r*r );
     for( int j=0; j<r; ++j )
-        std::memcpy
-        ( &workV[j*r], V.LockedBuffer(0,j), std::min(n,j+1)*sizeof(Scalar) );
+        MemCopy( &workV[j*r], V.LockedBuffer(0,j), std::min(n,j+1) );
 
     // Form W := R1 R2^[T,H]
     const char option = 'T';

@@ -276,8 +276,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressReduces
 
     const int numLevels = teams_->NumLevels();
     const int numReduces = numLevels-1;
-    std::vector<int> sizes( numReduces );
-    std::memset( &sizes[0], 0, numReduces*sizeof(int) );
+    std::vector<int> sizes( numReduces, 0 );
     MultiplyHMatFHHCompressReducesCount( sizes, startLevel, endLevel );
 
     int totalSize = 0;
@@ -369,40 +368,32 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressReducesPack
     {
         if( level_ < startLevel )
             break;
-        int Size=colUSqr_.Height()*colUSqr_.Width();
-        if( Size > 0 )
+        int size=colUSqr_.Height()*colUSqr_.Width();
+        if( size > 0 )
         {
-            std::memcpy
-            ( &buffer[offsets[level_]], colUSqr_.LockedBuffer(),
-              Size*sizeof(Scalar) );
-            offsets[level_] += Size;
+            MemCopy( &buffer[offsets[level_]], colUSqr_.LockedBuffer(), size );
+            offsets[level_] += size;
         }
 
-        Size=colPinv_.Height()*colPinv_.Width();
-        if( Size > 0 )
+        size=colPinv_.Height()*colPinv_.Width();
+        if( size > 0 )
         {
-            std::memcpy
-            ( &buffer[offsets[level_]], colPinv_.LockedBuffer(),
-              Size*sizeof(Scalar) );
-            offsets[level_] += Size;
+            MemCopy( &buffer[offsets[level_]], colPinv_.LockedBuffer(), size );
+            offsets[level_] += size;
         }
 
-        Size=rowUSqr_.Height()*rowUSqr_.Width();
-        if( Size > 0 )
+        size=rowUSqr_.Height()*rowUSqr_.Width();
+        if( size > 0 )
         {
-            std::memcpy
-            ( &buffer[offsets[level_]], rowUSqr_.LockedBuffer(),
-              Size*sizeof(Scalar) );
-            offsets[level_] += Size;
+            MemCopy( &buffer[offsets[level_]], rowUSqr_.LockedBuffer(), size );
+            offsets[level_] += size;
         }
 
-        Size=rowPinv_.Height()*rowPinv_.Width();
-        if( Size > 0 )
+        size=rowPinv_.Height()*rowPinv_.Width();
+        if( size > 0 )
         {
-            std::memcpy
-            ( &buffer[offsets[level_]], rowPinv_.LockedBuffer(),
-              Size*sizeof(Scalar) );
-            offsets[level_] += Size;
+            MemCopy( &buffer[offsets[level_]], rowPinv_.LockedBuffer(), size );
+            offsets[level_] += size;
         }
         break;
     }
@@ -456,40 +447,32 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressReducesUnpack
         const int teamRank = mpi::CommRank( team );
         if( teamRank ==0 )
         {
-            int Size=colUSqr_.Height()*colUSqr_.Width();                
-            if( Size > 0 )
+            int size=colUSqr_.Height()*colUSqr_.Width();                
+            if( size > 0 )
             {
-                std::memcpy
-                ( colUSqr_.Buffer(), &buffer[offsets[level_]],
-                  Size*sizeof(Scalar) );
-                offsets[level_] += Size;
+                MemCopy( colUSqr_.Buffer(), &buffer[offsets[level_]], size );
+                offsets[level_] += size;
             }
 
-            Size=colPinv_.Height()*colPinv_.Width();                
-            if( Size > 0 )
+            size=colPinv_.Height()*colPinv_.Width();                
+            if( size > 0 )
             {
-                std::memcpy
-                ( colPinv_.Buffer(), &buffer[offsets[level_]],
-                  Size*sizeof(Scalar) );
-                offsets[level_] += Size;
+                MemCopy( colPinv_.Buffer(), &buffer[offsets[level_]], size );
+                offsets[level_] += size;
             }
 
-            Size=rowUSqr_.Height()*rowUSqr_.Width();
-            if( Size > 0 )
+            size=rowUSqr_.Height()*rowUSqr_.Width();
+            if( size > 0 )
             {
-                std::memcpy
-                ( rowUSqr_.Buffer(), &buffer[offsets[level_]],
-                  Size*sizeof(Scalar) );
-                offsets[level_] += Size;
+                MemCopy( rowUSqr_.Buffer(), &buffer[offsets[level_]], size );
+                offsets[level_] += size;
             }
 
-            Size=rowPinv_.Height()*rowPinv_.Width();                
-            if( Size > 0 )
+            size=rowPinv_.Height()*rowPinv_.Width();                
+            if( size > 0 )
             {
-                std::memcpy
-                ( rowPinv_.Buffer(), &buffer[offsets[level_]],
-                  Size*sizeof(Scalar) );
-                offsets[level_] += Size;
+                MemCopy( rowPinv_.Buffer(), &buffer[offsets[level_]], size );
+                offsets[level_] += size;
             }
 
         }
@@ -538,12 +521,12 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressMidcompute
         if( teamRank == 0 )
         {
             // Calculate Eigenvalues of Squared Matrix               
-            int Sizemax = std::max(colUSqr_.Height(), rowUSqr_.Height());
+            int maxSize = std::max(colUSqr_.Height(), rowUSqr_.Height());
              
             int lwork, lrwork, liwork;
-            lwork=lapack::EVDWorkSize( Sizemax );
-            lrwork=lapack::EVDRealWorkSize( Sizemax );
-            liwork=lapack::EVDIntWorkSize( Sizemax );
+            lwork=lapack::EVDWorkSize( maxSize );
+            lrwork=lapack::EVDRealWorkSize( maxSize );
+            liwork=lapack::EVDIntWorkSize( maxSize );
                     
             std::vector<Scalar> evdWork(lwork);
             std::vector<Real> evdRealWork(lrwork);
@@ -566,19 +549,20 @@ _VSqr.Print("_VSqr Before svd");*/
 
                 //colOmegaT = T1' Omega2
                 Dense<Scalar> colOmegaT;
-                colOmegaT.Resize(colPinv_.Height(), colPinv_.Width(), colPinv_.LDim());
-                std::memcpy
+                colOmegaT.Resize
+                ( colPinv_.Height(), colPinv_.Width(), colPinv_.LDim() );
+                MemCopy
                 ( colOmegaT.Buffer(), colPinv_.LockedBuffer(),
-                  colPinv_.Height()*colPinv_.Width()*sizeof(Scalar) );
+                  colPinv_.Height()*colPinv_.Width() );
 
-                Real Eigmax;
+                Real maxEig;
                 if( colUSqrEig_[colUSqrEig_.size()-1]>0 )
-                    Eigmax=sqrt( colUSqrEig_[colUSqrEig_.size()-1] );
+                    maxEig=sqrt( colUSqrEig_[colUSqrEig_.size()-1] );
                 else
-                    Eigmax=0;
+                    maxEig=0;
 
                 for(int j=0; j<colUSqrEig_.size(); j++)
-                    if( colUSqrEig_[j] > error*Eigmax*colUSqrEig_.size() )
+                    if( colUSqrEig_[j] > error*maxEig*colUSqrEig_.size() )
                     {
                         Real sqrteig=sqrt(colUSqrEig_[j]);
                         for(int i=0; i<colUSqr_.Height(); ++i)
@@ -625,21 +609,21 @@ _VSqr.Print("_VSqr Before svd");*/
             if( rowUSqr_.Height() > 0 )
             {
                 lapack::EVD
-                ('V', 'U', rowUSqr_.Height(), 
-                           rowUSqr_.Buffer(), rowUSqr_.LDim(),
-                           &rowUSqrEig_[0],
-                           &evdWork[0],     lwork,
-                           &evdIntWork[0],  liwork,
-                           &evdRealWork[0], lrwork );
+                ( 'V', 'U', rowUSqr_.Height(), 
+                            rowUSqr_.Buffer(), rowUSqr_.LDim(),
+                            &rowUSqrEig_[0],
+                            &evdWork[0],     lwork,
+                            &evdIntWork[0],  liwork,
+                            &evdRealWork[0], lrwork );
 
-                Real Eigmax;
+                Real maxEig;
                 if( rowUSqrEig_[rowUSqrEig_.size()-1]>0 )
-                    Eigmax=sqrt( rowUSqrEig_[rowUSqrEig_.size()-1] );
+                    maxEig=sqrt( rowUSqrEig_[rowUSqrEig_.size()-1] );
                 else
-                    Eigmax=0;
+                    maxEig=0;
 
                 for(int j=0; j<rowUSqrEig_.size(); j++)
-                    if( rowUSqrEig_[j] > error*Eigmax*rowUSqrEig_.size() )
+                    if( rowUSqrEig_[j] > error*maxEig*rowUSqrEig_.size() )
                     {
                         Real sqrteig=sqrt(rowUSqrEig_[j]);
                         for(int i=0; i<rowUSqr_.Height(); ++i)
@@ -698,8 +682,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressBroadcasts
 #endif
     const int numLevels = teams_->NumLevels();
     const int numBroadcasts = numLevels-1;
-    std::vector<int> sizes( numBroadcasts );
-    std::memset( &sizes[0], 0, numBroadcasts*sizeof(int) );
+    std::vector<int> sizes( numBroadcasts, 0 );
     MultiplyHMatFHHCompressBroadcastsCount( sizes, startLevel, endLevel );
 
     int totalSize = 0;
@@ -795,19 +778,15 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressBroadcastsPack
         {
             if( BL_.Height() > 0 )
             {
-                int Size = BL_.Height()*BL_.Width();
-                std::memcpy
-                ( &buffer[offsets[level_]], BL_.LockedBuffer(),
-                  Size*sizeof(Scalar) );
-                offsets[level_] += Size;
+                int size = BL_.Height()*BL_.Width();
+                MemCopy( &buffer[offsets[level_]], BL_.LockedBuffer(), size );
+                offsets[level_] += size;
             }
             if( BR_.Height() > 0 )
             {
-                int Size = BR_.Height()*BR_.Width();
-                std::memcpy
-                ( &buffer[offsets[level_]], BR_.LockedBuffer(),
-                  Size*sizeof(Scalar) );
-                offsets[level_] += Size;
+                int size = BR_.Height()*BR_.Width();
+                MemCopy( &buffer[offsets[level_]], BR_.LockedBuffer(), size );
+                offsets[level_] += size;
             }
         }
         break;
@@ -860,19 +839,15 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressBroadcastsUnpack
             break;
         if( BL_.Height() > 0 )                                  
         { 
-            int Size = BL_.Height()*BL_.Width();
-            std::memcpy
-            ( BL_.Buffer(), &buffer[offsets[level_]],
-              Size*sizeof(Scalar) );
-            offsets[level_] += Size;
+            int size = BL_.Height()*BL_.Width();
+            MemCopy( BL_.Buffer(), &buffer[offsets[level_]], size );
+            offsets[level_] += size;
         }
         if( BR_.Height() > 0 )
         {                                                      
-            int Size = BR_.Height()*BR_.Width();
-            std::memcpy
-            ( BR_.Buffer(), &buffer[offsets[level_]],
-              Size*sizeof(Scalar) );
-            offsets[level_] += Size;
+            int size = BR_.Height()*BR_.Width();
+            MemCopy( BR_.Buffer(), &buffer[offsets[level_]], size );
+            offsets[level_] += size;
         }
         break;
     }

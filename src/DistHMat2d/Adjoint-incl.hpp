@@ -267,9 +267,9 @@ DistHMat2d<Scalar>::AdjointPassDataPack
         if( B.inSourceTeam_ )
         {
             SplitDense& SD = *B.block_.data.SD;
-            std::memcpy
+            MemCopy
             ( &buffer[offsets[B.targetRoot_]], SD.D.LockedBuffer(),
-              SD.D.Height()*SD.D.Width()*sizeof(Scalar) );
+              SD.D.Height()*SD.D.Width() );
             offsets[B.targetRoot_] += SD.D.Height()*SD.D.Width();
         }
         break;

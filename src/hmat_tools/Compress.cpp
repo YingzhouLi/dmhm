@@ -146,9 +146,9 @@ void Compress( int maxRank, LowRank<Real>& A )
 
     // Copy R1 (the left factor's R from QR) into a zeroed buffer
     {
-        std::memset( &buffer[0], 0, blockSize*sizeof(Real) );
+        MemZero( &buffer[0], blockSize );
         for( int j=0; j<r; ++j )
-            std::memcpy( &buffer[j*r], A.U.LockedBuffer(0,j), j*sizeof(Real) );
+            MemCopy( &buffer[j*r], A.U.LockedBuffer(0,j), j );
     }
 
     //------------------------------------------------------------------------//
@@ -181,10 +181,7 @@ void Compress( int maxRank, LowRank<Real>& A )
 
     // Copy the result of the QR factorization of A.U into a temporary buffer
     for( int j=0; j<r; ++j )
-    {
-        std::memcpy
-        ( &buffer[2*blockSize+j*m], A.U.LockedBuffer(0,j), m*sizeof(Real) );
-    }
+        MemCopy( &buffer[2*blockSize+j*m], A.U.LockedBuffer(0,j), m );
     // Logically shrink A.U 
     A.U.Resize( m, roundedRank );
     // Zero the shrunk buffer
@@ -205,10 +202,7 @@ void Compress( int maxRank, LowRank<Real>& A )
 
     // Copy the result of the QR factorization of A.V into a temporary buffer
     for( int j=0; j<r; ++j )
-    {
-        std::memcpy
-        ( &buffer[2*blockSize+j*n], A.V.LockedBuffer(0,j), n*sizeof(Real) );
-    }
+        MemCopy( &buffer[2*blockSize+j*n], A.V.LockedBuffer(0,j), n );
     // Logically shrink A.V
     A.V.Resize( n, roundedRank );
     // Zero the shrunk buffer
@@ -278,10 +272,9 @@ void Compress( int maxRank, LowRank<std::complex<Real> >& A )
 
     // Copy R1 (the left factor's R from QR) into a zeroed buffer
     {
-        std::memset( &buffer[0], 0, blockSize*sizeof(Scalar) );
+        MemZero( &buffer[0], blockSize );
         for( int j=0; j<r; ++j )
-            std::memcpy
-            ( &buffer[j*r], A.U.LockedBuffer(0,j), j*sizeof(Scalar) );
+            MemCopy( &buffer[j*r], A.U.LockedBuffer(0,j), j );
     }
 
     //------------------------------------------------------------------------//
@@ -318,10 +311,7 @@ void Compress( int maxRank, LowRank<std::complex<Real> >& A )
 
     // Copy the result of the QR factorization of A.U into a temporary buffer
     for( int j=0; j<r; ++j )
-    {
-        std::memcpy
-        ( &buffer[2*blockSize+j*m], A.U.LockedBuffer(0,j), m*sizeof(Scalar) );
-    }
+        MemCopy( &buffer[2*blockSize+j*m], A.U.LockedBuffer(0,j), m );
     // Logically shrink A.U
     A.U.Resize( m, roundedRank );
     // Zero the shrunk buffer
@@ -342,10 +332,7 @@ void Compress( int maxRank, LowRank<std::complex<Real> >& A )
 
     // Copy the result of the QR factorization of A.V into a temporary buffer
     for( int j=0; j<r; ++j )
-    {
-        std::memcpy
-        ( &buffer[2*blockSize+j*n], A.V.LockedBuffer(0,j), n*sizeof(Scalar) );
-    }
+        MemCopy( &buffer[2*blockSize+j*n], A.V.LockedBuffer(0,j), n );
     // Logically shrink A.V
     A.V.Resize( n, roundedRank );
     // Zero the shrunk buffer

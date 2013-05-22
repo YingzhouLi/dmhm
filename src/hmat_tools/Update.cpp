@@ -84,8 +84,7 @@ void Update
     // B.V := [B.V A.V]
     B.V.Resize( B.Width(), newRank );
     for( int j=0; j<Ar; ++j )
-        std::memcpy
-        ( B.V.Buffer(0,j+Br), A.V.LockedBuffer(0,j), n*sizeof(Scalar) );
+        MemCopy( B.V.Buffer(0,j+Br), A.V.LockedBuffer(0,j), n );
 }
 
 // Dense updated with low-rank, B := alpha A + beta B

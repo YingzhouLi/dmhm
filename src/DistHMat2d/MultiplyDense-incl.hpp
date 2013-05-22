@@ -905,8 +905,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDenseSums
     // Compute the message sizes for each reduce 
     const int numLevels = teams_->NumLevels();
     const int numReduces = numLevels-1;
-    std::vector<int> sizes( numReduces );
-    std::memset( &sizes[0], 0, numReduces*sizeof(int) );
+    std::vector<int> sizes( numReduces, 0 );
     TransposeMultiplyDenseSumsCount( sizes, context.numRhs );
 
     // Pack all of the data to be reduced into a single buffer
@@ -1031,14 +1030,13 @@ DistHMat2d<Scalar>::MultiplyDenseSumsPack
         const DistLowRank& DF = *block_.data.DF;
         const Dense<Scalar>& Z = *context.block.data.Z;
         if( Z.Height() == Z.LDim() )
-            std::memcpy
-            ( &buffer[offsets[level_]], Z.LockedBuffer(), 
-              DF.rank*numRhs*sizeof(Scalar) );
+            MemCopy
+            ( &buffer[offsets[level_]], Z.LockedBuffer(), DF.rank*numRhs );
         else
             for( int j=0; j<numRhs; ++j )
-                std::memcpy
+                MemCopy
                 ( &buffer[offsets[level_]+j*DF.rank], Z.LockedBuffer(0,j),
-                  DF.rank*sizeof(Scalar) );
+                  DF.rank );
         offsets[level_] += DF.rank*numRhs;
         break;
     }
@@ -1078,14 +1076,13 @@ DistHMat2d<Scalar>::TransposeMultiplyDenseSumsPack
         const DistLowRank& DF = *block_.data.DF;
         const Dense<Scalar>& Z = *context.block.data.Z;
         if( Z.Height() == Z.LDim() )
-            std::memcpy
-            ( &buffer[offsets[level_]], Z.LockedBuffer(), 
-              DF.rank*numRhs*sizeof(Scalar) );
+            MemCopy
+            ( &buffer[offsets[level_]], Z.LockedBuffer(), DF.rank*numRhs );
         else
             for( int j=0; j<numRhs; ++j )
-                std::memcpy
+                MemCopy
                 ( &buffer[offsets[level_]+j*DF.rank], Z.LockedBuffer(0,j),
-                  DF.rank*sizeof(Scalar) );
+                  DF.rank );
         offsets[level_] += DF.rank*numRhs;
         break;
     }
@@ -1129,14 +1126,14 @@ DistHMat2d<Scalar>::MultiplyDenseSumsUnpack
         if( teamRank == 0 )
         {
             if( Z.Height() == Z.LDim() )
-                std::memcpy
+                MemCopy
                 ( Z.Buffer(), &buffer[offsets[level_]], 
-                  DF.rank*numRhs*sizeof(Scalar) );
+                  DF.rank*numRhs );
             else
                 for( int j=0; j<numRhs; ++j )
-                    std::memcpy
+                    MemCopy
                     ( Z.Buffer(0,j), &buffer[offsets[level_]+j*DF.rank],
-                      DF.rank*sizeof(Scalar) );
+                      DF.rank );
             offsets[level_] += DF.rank*numRhs;
         }
         break;
@@ -1181,14 +1178,12 @@ DistHMat2d<Scalar>::TransposeMultiplyDenseSumsUnpack
         if( teamRank == 0 )
         {
             if( Z.Height() == Z.LDim() )
-                std::memcpy
-                ( Z.Buffer(), &buffer[offsets[level_]], 
-                  DF.rank*numRhs*sizeof(Scalar) );
+                MemCopy( Z.Buffer(), &buffer[offsets[level_]], DF.rank );
             else
                 for( int j=0; j<numRhs; ++j )
-                    std::memcpy
+                    MemCopy
                     ( Z.Buffer(0,j), &buffer[offsets[level_]+j*DF.rank],
-                      DF.rank*sizeof(Scalar) );
+                      DF.rank );
             offsets[level_] += DF.rank*numRhs;
         }
         break;
@@ -1381,9 +1376,9 @@ DistHMat2d<Scalar>::MultiplyDensePassDataPack
                     throw std::logic_error
                     ("Z's height did not match its ldim for DIST_LOW_RANK");
 #endif
-                std::memcpy
+                MemCopy
                 ( &buffer[offsets[targetRoot_]], Z.LockedBuffer(),
-                  Z.Height()*Z.Width()*sizeof(Scalar) );
+                  Z.Height()*Z.Width() );
                 offsets[targetRoot_] += Z.Height()*Z.Width();
                 Z.Clear();
             }
@@ -1401,9 +1396,9 @@ DistHMat2d<Scalar>::MultiplyDensePassDataPack
                     throw std::logic_error
                     ("Z's height did not match its ldim for SPLIT_LOW_RANK");
 #endif
-            std::memcpy
+            MemCopy
             ( &buffer[offsets[targetRoot_]], Z.LockedBuffer(),
-              Z.Height()*Z.Width()*sizeof(Scalar) );
+              Z.Height()*Z.Width() );
             offsets[targetRoot_] += Z.Height()*Z.Width();
             Z.Clear();
         }
@@ -1419,9 +1414,9 @@ DistHMat2d<Scalar>::MultiplyDensePassDataPack
                     throw std::logic_error
                     ("Z's height did not match its ldim for SPLIT_DENSE");
 #endif
-            std::memcpy
+            MemCopy
             ( &buffer[offsets[targetRoot_]], Z.LockedBuffer(),
-              Z.Height()*Z.Width()*sizeof(Scalar) );
+              Z.Height()*Z.Width() );
             offsets[targetRoot_] += Z.Height()*Z.Width();
             Z.Clear();
         }
@@ -1482,9 +1477,8 @@ DistHMat2d<Scalar>::MultiplyDensePassDataUnpack
             {
                 Dense<Scalar>& Z = *context.block.data.Z;
                 Z.Resize( DF.rank, numRhs, DF.rank );
-                std::memcpy
-                ( Z.Buffer(), &buffer[offsets[sourceRoot_]],
-                  DF.rank*numRhs*sizeof(Scalar) );
+                MemCopy
+                ( Z.Buffer(), &buffer[offsets[sourceRoot_]], DF.rank*numRhs );
                 offsets[sourceRoot_] += DF.rank*numRhs;
             }
         }
@@ -1497,9 +1491,8 @@ DistHMat2d<Scalar>::MultiplyDensePassDataUnpack
         {
             Dense<Scalar>& Z = *context.block.data.Z;
             Z.Resize( SF.rank, numRhs, SF.rank );
-            std::memcpy
-            ( Z.Buffer(), &buffer[offsets[sourceRoot_]],
-              SF.rank*numRhs*sizeof(Scalar) );
+            MemCopy
+            ( Z.Buffer(), &buffer[offsets[sourceRoot_]], SF.rank*numRhs );
             offsets[sourceRoot_] += SF.rank*numRhs;
         }
         break;
@@ -1510,9 +1503,8 @@ DistHMat2d<Scalar>::MultiplyDensePassDataUnpack
         {
             Dense<Scalar>& Z = *context.block.data.Z;
             Z.Resize( Height(), numRhs, Height() );
-            std::memcpy
-            ( Z.Buffer(), &buffer[offsets[sourceRoot_]],
-              Z.Height()*numRhs*sizeof(Scalar) );
+            MemCopy
+            ( Z.Buffer(), &buffer[offsets[sourceRoot_]], Z.Height()*numRhs );
             offsets[sourceRoot_] += Z.Height()*numRhs;
         }
         break;
@@ -1740,9 +1732,9 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePassDataPack
             if( teamRank == 0 )
             {
                 Dense<Scalar>& Z = *context.block.data.Z;
-                std::memcpy
+                MemCopy
                 ( &buffer[offsets[sourceRoot_]], Z.LockedBuffer(),
-                  Z.Height()*Z.Width()*sizeof(Scalar) );
+                  Z.Height()*Z.Width() );
                 offsets[sourceRoot_] += Z.Height()*Z.Width();
                 Z.Clear();
             }
@@ -1755,9 +1747,9 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePassDataPack
         if( SF.rank != 0 )
         {
             Dense<Scalar>& Z = *context.block.data.Z;
-            std::memcpy
+            MemCopy
             ( &buffer[offsets[sourceRoot_]], Z.LockedBuffer(),
-              Z.Height()*Z.Width()*sizeof(Scalar) );
+              Z.Height()*Z.Width() );
             offsets[sourceRoot_] += Z.Height()*Z.Width();
             Z.Clear();
         }
@@ -1772,17 +1764,14 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePassDataPack
             {
                 Scalar* start = &buffer[offsets[sourceRoot_]];
                 for( int j=0; j<numRhs; ++j )
-                {
-                    std::memcpy
-                    ( &start[height*j], XLocal.LockedBuffer(0,j),
-                      height*sizeof(Scalar) );
-                }
+                    MemCopy
+                    ( &start[height*j], XLocal.LockedBuffer(0,j), height );
             }
             else
             {
-                std::memcpy
+                MemCopy
                 ( &buffer[offsets[sourceRoot_]], XLocal.LockedBuffer(),
-                  height*numRhs*sizeof(Scalar) );
+                  height*numRhs );
             }
             offsets[sourceRoot_] += height*numRhs;
         }
@@ -1843,9 +1832,8 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePassDataUnpack
             {
                 Dense<Scalar>& Z = *context.block.data.Z;
                 Z.Resize( DF.rank, numRhs, DF.rank );
-                std::memcpy
-                ( Z.Buffer(), &buffer[offsets[targetRoot_]],
-                  DF.rank*numRhs*sizeof(Scalar) );
+                MemCopy
+                ( Z.Buffer(), &buffer[offsets[targetRoot_]], DF.rank*numRhs );
                 offsets[targetRoot_] += DF.rank*numRhs;
             }
         }
@@ -1858,9 +1846,8 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePassDataUnpack
         {
             Dense<Scalar>& Z = *context.block.data.Z;
             Z.Resize( SF.rank, numRhs, SF.rank );
-            std::memcpy
-            ( Z.Buffer(), &buffer[offsets[targetRoot_]],
-              SF.rank*numRhs*sizeof(Scalar) );
+            MemCopy
+            ( Z.Buffer(), &buffer[offsets[targetRoot_]], SF.rank*numRhs );
             offsets[targetRoot_] += SF.rank*numRhs;
         }
         break;
@@ -1872,9 +1859,8 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePassDataUnpack
         {
             Dense<Scalar>& Z = *context.block.data.Z;
             Z.Resize( height, numRhs, height );
-            std::memcpy
-            ( Z.Buffer(), &buffer[offsets[targetRoot_]],
-              height*numRhs*sizeof(Scalar) );
+            MemCopy
+            ( Z.Buffer(), &buffer[offsets[targetRoot_]], height*numRhs );
             offsets[targetRoot_] += height*numRhs;
         }
         break;
@@ -1907,8 +1893,7 @@ DistHMat2d<Scalar>::MultiplyDenseBroadcasts
     // Compute the message sizes for each broadcast
     const int numLevels = teams_->NumLevels();
     const int numBroadcasts = numLevels-1;
-    std::vector<int> sizes( numBroadcasts );
-    std::memset( &sizes[0], 0, numBroadcasts*sizeof(int) );
+    std::vector<int> sizes( numBroadcasts, 0 );
     MultiplyDenseBroadcastsCount( sizes, context.numRhs );
 
     // Pack all of the data to be broadcasted into a single buffer
@@ -1941,8 +1926,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDenseBroadcasts
     // Compute the message sizes for each broadcast
     const int numLevels = teams_->NumLevels();
     const int numBroadcasts = numLevels-1;
-    std::vector<int> sizes( numBroadcasts );
-    std::memset( &sizes[0], 0, numBroadcasts*sizeof(int) );
+    std::vector<int> sizes( numBroadcasts, 0 );
     TransposeMultiplyDenseBroadcastsCount( sizes, context.numRhs );
 
     // Pack all of the data to be broadcasted into a single buffer
@@ -2073,9 +2057,8 @@ DistHMat2d<Scalar>::MultiplyDenseBroadcastsPack
             if( Z.LDim() != DF.rank )
                 throw std::logic_error("Z's height did not match its ldim");
 #endif
-            std::memcpy
-            ( &buffer[offsets[level_]], Z.LockedBuffer(), 
-              DF.rank*numRhs*sizeof(Scalar) );
+            MemCopy
+            ( &buffer[offsets[level_]], Z.LockedBuffer(), DF.rank*numRhs );
             offsets[level_] += DF.rank*numRhs;
         }
         break;
@@ -2119,9 +2102,8 @@ DistHMat2d<Scalar>::TransposeMultiplyDenseBroadcastsPack
         {
             const DistLowRank& DF = *block_.data.DF;
             const Dense<Scalar>& Z = *context.block.data.Z;
-            std::memcpy
-            ( &buffer[offsets[level_]], Z.LockedBuffer(), 
-              DF.rank*numRhs*sizeof(Scalar) );
+            MemCopy
+            ( &buffer[offsets[level_]], Z.LockedBuffer(), DF.rank*numRhs );
             offsets[level_] += DF.rank*numRhs;
         }
         break;
@@ -2164,9 +2146,7 @@ DistHMat2d<Scalar>::MultiplyDenseBroadcastsUnpack
         if( DF.rank != 0 )
         {
             Z.Resize( DF.rank, numRhs, DF.rank );
-            std::memcpy
-            ( Z.Buffer(), &buffer[offsets[level_]], 
-              DF.rank*numRhs*sizeof(Scalar) );
+            MemCopy( Z.Buffer(), &buffer[offsets[level_]], DF.rank*numRhs );
             offsets[level_] += DF.rank*numRhs;
         }
         break;
@@ -2209,9 +2189,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDenseBroadcastsUnpack
         if( DF.rank != 0 )
         {
             Z.Resize( DF.rank, numRhs, DF.rank );
-            std::memcpy
-            ( Z.Buffer(), &buffer[offsets[level_]], 
-              DF.rank*numRhs*sizeof(Scalar) );
+            MemCopy( Z.Buffer(), &buffer[offsets[level_]], DF.rank*numRhs );
             offsets[level_] += DF.rank*numRhs;
         }
         break;
