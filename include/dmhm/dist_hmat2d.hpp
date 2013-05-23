@@ -1152,9 +1152,6 @@ private:
       int startLevel, int endLevel );
     void MultiplyHMatCompressFMidcompute
     ( Real error, int startLevel, int endLevel );
-    // Did not used.
-    void MultiplyHMatCompressFEigenTrunc
-    ( Real error, int startLevel, int endLevel );
     void MultiplyHMatCompressFPassbackNum
     ( int startLevel, int endLevel );
     void MultiplyHMatCompressFPassbackNumCount
@@ -1216,40 +1213,58 @@ private:
     ( const DistHMat2d<Scalar>& B, DistHMat2d<Scalar>& C,
       int startLevel, int endLevel, 
       int startUpdate, int endUpdate);
-    void MultiplyHMatFHHCompressSum
-    ( int startLevel, int endLevel );
     void MultiplyHMatFHHCompressPrecompute
     ( const DistHMat2d<Scalar>& B, DistHMat2d<Scalar>& C,
       int startLevel, int endLevel, 
       int startUpdate, int endUpdate, int update );
     void MultiplyHMatFHHCompressReduces
-    ( int startLevel, int endLevel );
+    ( const DistHMat2d<Scalar>& B, DistHMat2d<Scalar>& C,
+      int startLevel, int endLevel, 
+      int startUpdate, int endUpdate, int update );
     void MultiplyHMatFHHCompressReducesCount
-    ( std::vector<int>& sizes, int startLevel, int endLevel ) const;
+    ( const DistHMat2d<Scalar>& B, DistHMat2d<Scalar>& C,
+      std::vector<int>& sizes,
+      int startLevel, int endLevel, 
+      int startUpdate, int endUpdate, int update ) const;
     void MultiplyHMatFHHCompressReducesPack
-    ( std::vector<Scalar>& buffer, std::vector<int>& offsets,
-      int startLevel, int endLevel ) const;
+    ( const DistHMat2d<Scalar>& B, DistHMat2d<Scalar>& C,
+      std::vector<Scalar>& buffer, std::vector<int>& offsets,
+      int startLevel, int endLevel, 
+      int startUpdate, int endUpdate, int update ) const;
     void MultiplyHMatFHHCompressTreeReduces
     ( std::vector<Scalar>& buffer, std::vector<int>& sizes ) const;
     void MultiplyHMatFHHCompressReducesUnpack
-    ( const std::vector<Scalar>& buffer, std::vector<int>& offsets,
-      int startLevel, int endLevel );
+    ( const DistHMat2d<Scalar>& B, DistHMat2d<Scalar>& C,
+      const std::vector<Scalar>& buffer, std::vector<int>& offsets,
+      int startLevel, int endLevel, 
+      int startUpdate, int endUpdate, int update );
     void MultiplyHMatFHHCompressMidcompute
     ( Real error, int startLevel, int endLevel );
     void MultiplyHMatFHHCompressBroadcasts
-    ( int startLevel, int endLevel );
+    ( const DistHMat2d<Scalar>& B, DistHMat2d<Scalar>& C,
+      int startLevel, int endLevel, 
+      int startUpdate, int endUpdate, int update );
     void MultiplyHMatFHHCompressBroadcastsCount
-    ( std::vector<int>& sizes, int startLevel, int endLevel ) const;
+    ( const DistHMat2d<Scalar>& B, DistHMat2d<Scalar>& C,
+      std::vector<int>& sizes,
+      int startLevel, int endLevel, 
+      int startUpdate, int endUpdate, int update ) const;
     void MultiplyHMatFHHCompressBroadcastsPack
-    ( std::vector<Scalar>& buffer, std::vector<int>& offsets,
-      int startLevel, int endLevel ) const;
+    ( const DistHMat2d<Scalar>& B, DistHMat2d<Scalar>& C,
+      std::vector<Scalar>& buffer, std::vector<int>& offsets,
+      int startLevel, int endLevel, 
+      int startUpdate, int endUpdate, int update ) const;
     void MultiplyHMatFHHCompressTreeBroadcasts
     ( std::vector<Scalar>& buffer, std::vector<int>& sizes ) const;
     void MultiplyHMatFHHCompressBroadcastsUnpack
-    ( std::vector<Scalar>& buffer, std::vector<int>& offsets,
-      int startLevel, int endLevel );
+    ( const DistHMat2d<Scalar>& B, DistHMat2d<Scalar>& C,
+      const std::vector<Scalar>& buffer, std::vector<int>& offsets,
+      int startLevel, int endLevel, 
+      int startUpdate, int endUpdate, int update );
     void MultiplyHMatFHHCompressPostcompute
-    ( int startLevel, int endLevel );
+    ( const DistHMat2d<Scalar>& B, DistHMat2d<Scalar>& C,
+      int startLevel, int endLevel, 
+      int startUpdate, int endUpdate, int update );
     void MultiplyHMatFHHCompressCleanup
     ( int startLevel, int endLevel );
     // TODO: The rest of the Compress routines
@@ -1305,9 +1320,9 @@ private:
          beganColSpaceComp_, finishedColSpaceComp_;
     Dense<Scalar> colOmega_, rowOmega_, colT_, rowT_;
     
-    Dense<Scalar> colU_, rowU_, colPinv_, rowPinv_;
-    Dense<Scalar> colUSqr_, rowUSqr_;
-    std::vector<Real> colUSqrEig_, rowUSqrEig_;
+    MemoryMap<int,Dense<Scalar> > colPinvMap_, rowPinvMap_;
+    MemoryMap<int,Dense<Scalar> > colUSqrMap_, rowUSqrMap_;
+    MemoryMap<int,Dense<Scalar> > BLMap_, BRMap_;
     MultiplyDenseContext colContext_, rowContext_;
 };
 

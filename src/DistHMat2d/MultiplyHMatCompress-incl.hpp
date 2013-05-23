@@ -9,7 +9,7 @@
 
 #include "./Truncation-incl.hpp"
 
-int evdCount;
+int evd_Count;
 
 namespace dmhm {
 
@@ -37,7 +37,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompress( int startLevel, int endLevel )
     MultiplyHMatCompressFPrecompute( startLevel, endLevel);
     MultiplyHMatCompressFReduces( startLevel, endLevel );
 
-    ::evdCount=0;
+    evd_Count=0;
     MultiplyHMatCompressFEigenDecomp( startLevel, endLevel );
     MultiplyHMatCompressFPassMatrix( startLevel, endLevel );
     MultiplyHMatCompressFPassVector( startLevel, endLevel );
@@ -162,6 +162,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
             MemCopy
             ( DF.ULocal.Buffer(0,rank-oldRank), ULocalCopy.LockedBuffer(), 
               localHeight*oldRank );
+
         }
         if( inSourceTeam_ )
         {
@@ -174,6 +175,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
             MemCopy
             ( DF.VLocal.Buffer(0,rank-oldRank), VLocalCopy.LockedBuffer(),
               localWidth*oldRank );
+
         }
         DF.rank = rank;
         break;
@@ -232,6 +234,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
             MemCopy
             ( SF.D.Buffer(0,rank-oldRank), UCopy.LockedBuffer(), 
               height*oldRank );
+
         }
         else
         {
@@ -335,7 +338,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
                     rOffset -= r;
                     for( int j=0; j<r; ++j )
                         MemCopy
-                        ( firstU.Buffer(0,rOffset+j), U.LockedBuffer(0,j), m );
+                        ( firstU.Buffer(0,rOffset+j), U.LockedBuffer(0,j),
+                          m );
                     UMap_.EraseCurrentEntry();
                 }
             }
@@ -380,7 +384,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
                     rOffset -= r;
                     for( int j=0; j<r; ++j )
                         MemCopy
-                        ( firstV.Buffer(0,rOffset+j), V.LockedBuffer(0,j), n );
+                        ( firstV.Buffer(0,rOffset+j), V.LockedBuffer(0,j),
+                          n );
                     VMap_.EraseCurrentEntry();
                 }
             }
@@ -422,6 +427,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
     }
 }
 
+
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyHMatCompressLowRankImport( int rank )
@@ -438,11 +444,11 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankImport( int rank )
     {
         Node& node = *block_.data.N;
         mpi::Comm team = teams_->Team( level_ );
-        const int teamSize = mpi::CommSize( team );
+        const int teamsize = mpi::CommSize( team );
         const int teamRank = mpi::CommRank( team );
 
         int newRank = rank;
-        if( teamSize == 2 )
+        if( teamsize == 2 )
         {
             if( inTargetTeam_ )
             {
@@ -499,7 +505,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankImport( int rank )
             else
                 VMap_.Clear();
         }
-        else // teamSize >= 4
+        else // teamsize >= 4
         {
             if( inTargetTeam_ )
             {
@@ -620,7 +626,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankImport( int rank )
                 const int r = X.Width();
                 for( int j=0; j<r; ++j )
                     MemCopy
-                    ( mainU->Buffer(0,newRank+j), X.LockedBuffer(0,j), m );
+                    ( mainU->Buffer(0,newRank+j), X.LockedBuffer(0,j),
+                      m );
                 colXMap_.EraseCurrentEntry();
                 newRank += r;
             }
@@ -634,7 +641,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankImport( int rank )
                 const int r = U.Width();
                 for( int j=0; j<r; ++j )
                     MemCopy
-                    ( mainU->Buffer(0,newRank+j), U.LockedBuffer(0,j), m );
+                    ( mainU->Buffer(0,newRank+j), U.LockedBuffer(0,j),
+                      m );
                 UMap_.EraseCurrentEntry();
                 newRank += r;
             }
@@ -663,7 +671,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankImport( int rank )
                 const int r = X.Width();
                 for( int j=0; j<r; ++j )
                     MemCopy
-                    ( mainV->Buffer(0,newRank+j), X.LockedBuffer(0,j), n );
+                    ( mainV->Buffer(0,newRank+j), X.LockedBuffer(0,j),
+                      n );
                 rowXMap_.EraseCurrentEntry();
                 newRank += r;
             }
@@ -677,7 +686,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankImport( int rank )
                 const int r = V.Width();
                 for( int j=0; j<r; ++j )
                     MemCopy
-                    ( mainV->Buffer(0,newRank+j), V.LockedBuffer(0,j), n );
+                    ( mainV->Buffer(0,newRank+j), V.LockedBuffer(0,j),
+                      n );
                 VMap_.EraseCurrentEntry();
                 newRank += r;
             }
@@ -713,10 +723,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressImportU
     {
         Node& node = *block_.data.N;
         mpi::Comm team = teams_->Team( level_ );
-        const int teamSize = mpi::CommSize( team );
+        const int teamsize = mpi::CommSize( team );
         const int teamRank = mpi::CommRank( team );
 
-        if( teamSize == 2 )
+        if( teamsize == 2 )
         {
             const int tStart = (teamRank==0 ? 0 : 2);            
             const int tStop = (teamRank==0 ? 2 : 4);
@@ -730,7 +740,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressImportU
                     node.Child(t,s).MultiplyHMatCompressImportU( rank, USub );
             }
         }
-        else  // teamSize >= 4
+        else  // teamsize >= 4
         {
             for( int t=0; t<4; ++t )
                 for( int s=0; s<4; ++s )
@@ -811,10 +821,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressImportV
     {
         Node& node = *block_.data.N;
         mpi::Comm team = teams_->Team( level_ );
-        const int teamSize = mpi::CommSize( team );
+        const int teamsize = mpi::CommSize( team );
         const int teamRank = mpi::CommRank( team );
 
-        if( teamSize == 2 )
+        if( teamsize == 2 )
         {
             const int sStart = (teamRank==0 ? 0 : 2);            
             const int sStop = (teamRank==0 ? 2 : 4);
@@ -828,7 +838,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressImportV
                     node.Child(t,s).MultiplyHMatCompressImportV( rank, VSub );
             }
         }
-        else  // teamSize >= 4
+        else  // teamsize >= 4
         {
             for( int t=0; t<4; ++t )
                 for( int s=0; s<4; ++s )
@@ -1118,8 +1128,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
             MemCopy
             ( Utmp_.Buffer(0,offset), F.U.LockedBuffer(), LH*F.U.Width() );
             offset=F.U.Width();
-//Print
-//_Utmp.Print("_Utmp");
             blas::Gemm
             ( 'C', 'N', totalrank, totalrank, LH,
              Scalar(1), Utmp_.LockedBuffer(), Utmp_.LDim(),
@@ -1139,8 +1147,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
             ( Vtmp_.Buffer(0,offset), F.V.LockedBuffer(), LW*F.V.Width() );
             offset=F.V.Width();
 
-//Print
-//_Vtmp.Print("_Vtmp");
             blas::Gemm
             ( 'C', 'N', totalrank, totalrank, LW,
              Scalar(1), Vtmp_.LockedBuffer(), Vtmp_.LDim(),
@@ -1152,14 +1158,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
     default:
         break;
     }
-/*//Print
-mpi::Comm teamp = teams_->Team( 0 );
-const int teamRankp = mpi::CommRank( teamp );
-if( level_ == 3 && teamRankp == 0 && block_.type == LOW_RANK)
-{
-_USqr.Print("_USqr******************************************");
-_VSqr.Print("_VSqr******************************************");
-}*/
 }
 
 template<typename Scalar>
@@ -1176,10 +1174,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFReduces
     std::vector<int> sizes( numReduces, 0 );
     MultiplyHMatCompressFReducesCount( sizes, startLevel, endLevel );
 
-    int totalSize = 0;
+    int totalsize = 0;
     for(int i=0; i<numReduces; ++i)
-        totalSize += sizes[i];
-    std::vector<Scalar> buffer( totalSize );
+        totalsize += sizes[i];
+    std::vector<Scalar> buffer( totalsize );
     std::vector<int> offsets( numReduces );
     for( int i=0, offset=0; i<numReduces; offset+=sizes[i], ++i )
         offsets[i] = offset;
@@ -1388,26 +1386,19 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFEigenDecomp
         if( teamRank == 0 )
         {
             // Calculate Eigenvalues of Squared Matrix               
-            int Sizemax = std::max(USqr_.Height(), VSqr_.Height());
+            int sizemax = std::max(USqr_.Height(), VSqr_.Height());
              
             int lwork, lrwork, liwork;
-            lwork=lapack::EVDWorkSize( Sizemax );
-            lrwork=lapack::EVDRealWorkSize( Sizemax );
-            liwork=lapack::EVDIntWorkSize( Sizemax );
+            lwork=lapack::EVDWorkSize( sizemax );
+            lrwork=lapack::EVDRealWorkSize( sizemax );
+            liwork=lapack::EVDIntWorkSize( sizemax );
                     
             std::vector<Scalar> evdWork(lwork);
             std::vector<Real> evdRealWork(lrwork);
             std::vector<int> evdIntWork(liwork);
-/*//Print
-mpi::Comm teamp = teams_->Team( 0 );
-const int teamRankp = mpi::CommRank( teamp );
-if( level_ == 3 && teamRankp == 0 && block_.type == LOW_RANK)
-_VSqr.Print("_VSqr Before svd");*/
                                                                      
             if( !USqr_.IsEmpty() )
             {
-//Print
-//_USqr.Print("USqr_Before_EVD");
                 lapack::EVD
                 ('V', 'U', USqr_.Height(), 
                            USqr_.Buffer(), USqr_.LDim(),
@@ -1415,9 +1406,7 @@ _VSqr.Print("_VSqr Before svd");*/
                            &evdWork[0],     lwork,
                            &evdIntWork[0],  liwork,
                            &evdRealWork[0], lrwork );
-//Print
-//std::cout << "Size: " << USqr_.Height() << std::endl;
-                ::evdCount++;
+                evd_Count++;
             }
                                                                      
             if( !VSqr_.IsEmpty() )
@@ -1429,14 +1418,8 @@ _VSqr.Print("_VSqr Before svd");*/
                            &evdWork[0],     lwork,
                            &evdIntWork[0],  liwork,
                            &evdRealWork[0], lrwork );
-//Print
-//std::cout << "Size: " << VSqr_.Height() << std::endl;
-                ::evdCount++;
+                evd_Count++;
             }
-/*//Print
-if(level_==3 && block_.type==LOW_RANK)
-std::cout << "MaxEig before pass: " << *std::max_element( USqrEig_.begin(), USqrEig_.end()) << " " << *std::max_element( VSqrEig_.begin(), VSqrEig_.end()) << std::endl;
-*/
         }
         break;
     }
@@ -1454,56 +1437,56 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrix
     CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFPassMatrix");
 #endif
     // Compute send and recv sizes
-    std::map<int,int> sendSizes, recvSizes;
+    std::map<int,int> sendsizes, recvsizes;
     MultiplyHMatCompressFPassMatrixCount
-    ( sendSizes, recvSizes, startLevel, endLevel );
+    ( sendsizes, recvsizes, startLevel, endLevel );
 
     // Compute the offsets
-    int totalSendSize=0, totalRecvSize=0;
+    int totalSendsize=0, totalRecvsize=0;
     std::map<int,int> sendOffsets, recvOffsets;
     std::map<int,int>::iterator it;
-    for( it=sendSizes.begin(); it!=sendSizes.end(); ++it )
+    for( it=sendsizes.begin(); it!=sendsizes.end(); ++it )
     {
-        sendOffsets[it->first] = totalSendSize;
-        totalSendSize += it->second;
+        sendOffsets[it->first] = totalSendsize;
+        totalSendsize += it->second;
     }
-    for( it=recvSizes.begin(); it!=recvSizes.end(); ++it )
+    for( it=recvsizes.begin(); it!=recvsizes.end(); ++it )
     {
-        recvOffsets[it->first] = totalRecvSize;
-        totalRecvSize += it->second;
+        recvOffsets[it->first] = totalRecvsize;
+        totalRecvsize += it->second;
     }
 
     // Fill the send buffer
-    std::vector<Scalar> sendBuffer(totalSendSize);
+    std::vector<Scalar> sendBuffer(totalSendsize);
     std::map<int,int> offsets = sendOffsets;
     MultiplyHMatCompressFPassMatrixPack
     ( sendBuffer, offsets, startLevel, endLevel );
 
     // Start the non-blocking recvs
     mpi::Comm comm = teams_->Team( 0 );
-    const int numRecvs = recvSizes.size();
+    const int numRecvs = recvsizes.size();
     std::vector<mpi::Request> recvRequests( numRecvs );
-    std::vector<Scalar> recvBuffer( totalRecvSize );
+    std::vector<Scalar> recvBuffer( totalRecvsize );
     int offset = 0;
-    for( it=recvSizes.begin(); it!=recvSizes.end(); ++it )
+    for( it=recvsizes.begin(); it!=recvsizes.end(); ++it )
     {
         const int source = it->first;
         mpi::IRecv
-        ( &recvBuffer[recvOffsets[source]], recvSizes[source], source, 0,
+        ( &recvBuffer[recvOffsets[source]], recvsizes[source], source, 0,
           comm, recvRequests[offset++] );
     }
 
     mpi::Barrier( comm );
 
     // Start the non-blocking sends
-    const int numSends = sendSizes.size();
+    const int numSends = sendsizes.size();
     std::vector<mpi::Request> sendRequests( numSends );
     offset = 0;
-    for( it=sendSizes.begin(); it!=sendSizes.end(); ++it )
+    for( it=sendsizes.begin(); it!=sendsizes.end(); ++it )
     {
         const int dest = it->first;
         mpi::ISend
-        ( &sendBuffer[sendOffsets[dest]], sendSizes[dest], dest, 0,
+        ( &sendBuffer[sendOffsets[dest]], sendsizes[dest], dest, 0,
           comm, sendRequests[offset++] );
     }
 
@@ -1519,7 +1502,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrix
 template<typename Scalar>
 void 
 DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrixCount
-( std::map<int,int>& sendSizes, std::map<int,int>& recvSizes,
+( std::map<int,int>& sendsizes, std::map<int,int>& recvsizes,
   int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
@@ -1539,7 +1522,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrixCount
             for( int t=0; t<4; ++t )
                 for( int s=0; s<4; ++s )
                     node.Child(t,s).MultiplyHMatCompressFPassMatrixCount
-                    ( sendSizes, recvSizes, startLevel, endLevel );
+                    ( sendsizes, recvsizes, startLevel, endLevel );
         }
         break;
     }
@@ -1557,9 +1540,9 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrixCount
         if( teamRank ==0 )
         {
             if( inSourceTeam_ )
-                AddToMap( sendSizes, targetRoot_, VSqr_.Height()*VSqr_.Width() );
+                AddToMap( sendsizes, targetRoot_, VSqr_.Height()*VSqr_.Width() );
             else
-                AddToMap( recvSizes, sourceRoot_, USqr_.Height()*USqr_.Width() );
+                AddToMap( recvsizes, sourceRoot_, USqr_.Height()*USqr_.Width() );
         }
         break;
     }
@@ -1683,56 +1666,56 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassVector
     CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFPassVector");
 #endif
     // Compute send and recv sizes
-    std::map<int,int> sendSizes, recvSizes;
+    std::map<int,int> sendsizes, recvsizes;
     MultiplyHMatCompressFPassVectorCount
-    ( sendSizes, recvSizes, startLevel, endLevel );
+    ( sendsizes, recvsizes, startLevel, endLevel );
 
     // Compute the offsets
-    int totalSendSize=0, totalRecvSize=0;
+    int totalSendsize=0, totalRecvsize=0;
     std::map<int,int> sendOffsets, recvOffsets;
     std::map<int,int>::iterator it;
-    for( it=sendSizes.begin(); it!=sendSizes.end(); ++it )
+    for( it=sendsizes.begin(); it!=sendsizes.end(); ++it )
     {
-        sendOffsets[it->first] = totalSendSize;
-        totalSendSize += it->second;
+        sendOffsets[it->first] = totalSendsize;
+        totalSendsize += it->second;
     }
-    for( it=recvSizes.begin(); it!=recvSizes.end(); ++it )
+    for( it=recvsizes.begin(); it!=recvsizes.end(); ++it )
     {
-        recvOffsets[it->first] = totalRecvSize;
-        totalRecvSize += it->second;
+        recvOffsets[it->first] = totalRecvsize;
+        totalRecvsize += it->second;
     }
 
     // Fill the send buffer
-    std::vector<Real> sendBuffer(totalSendSize);
+    std::vector<Real> sendBuffer(totalSendsize);
     std::map<int,int> offsets = sendOffsets;
     MultiplyHMatCompressFPassVectorPack
     ( sendBuffer, offsets, startLevel, endLevel );
 
     // Start the non-blocking recvs
     mpi::Comm comm = teams_->Team( 0 );
-    const int numRecvs = recvSizes.size();
+    const int numRecvs = recvsizes.size();
     std::vector<mpi::Request> recvRequests( numRecvs );
-    std::vector<Real> recvBuffer( totalRecvSize );
+    std::vector<Real> recvBuffer( totalRecvsize );
     int offset = 0;
-    for( it=recvSizes.begin(); it!=recvSizes.end(); ++it )
+    for( it=recvsizes.begin(); it!=recvsizes.end(); ++it )
     {
         const int source = it->first;
         mpi::IRecv
-        ( &recvBuffer[recvOffsets[source]], recvSizes[source], source, 0,
+        ( &recvBuffer[recvOffsets[source]], recvsizes[source], source, 0,
           comm, recvRequests[offset++] );
     }
 
     mpi::Barrier( comm );
 
     // Start the non-blocking sends
-    const int numSends = sendSizes.size();
+    const int numSends = sendsizes.size();
     std::vector<mpi::Request> sendRequests( numSends );
     offset = 0;
-    for( it=sendSizes.begin(); it!=sendSizes.end(); ++it )
+    for( it=sendsizes.begin(); it!=sendsizes.end(); ++it )
     {
         const int dest = it->first;
         mpi::ISend
-        ( &sendBuffer[sendOffsets[dest]], sendSizes[dest], dest, 0,
+        ( &sendBuffer[sendOffsets[dest]], sendsizes[dest], dest, 0,
           comm, sendRequests[offset++] );
     }
 
@@ -1748,7 +1731,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassVector
 template<typename Scalar>
 void 
 DistHMat2d<Scalar>::MultiplyHMatCompressFPassVectorCount
-( std::map<int,int>& sendSizes, std::map<int,int>& recvSizes,
+( std::map<int,int>& sendsizes, std::map<int,int>& recvsizes,
   int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
@@ -1768,7 +1751,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassVectorCount
             for( int t=0; t<4; ++t )
                 for( int s=0; s<4; ++s )
                     node.Child(t,s).MultiplyHMatCompressFPassVectorCount
-                    ( sendSizes, recvSizes, startLevel, endLevel );
+                    ( sendsizes, recvsizes, startLevel, endLevel );
         }
         break;
     }
@@ -1786,9 +1769,9 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassVectorCount
         if( teamRank ==0 )
         {
             if( inSourceTeam_ )
-                AddToMap( sendSizes, targetRoot_, VSqrEig_.size() );
+                AddToMap( sendsizes, targetRoot_, VSqrEig_.size() );
             else
-                AddToMap( recvSizes, sourceRoot_, USqrEig_.size() );
+                AddToMap( recvsizes, sourceRoot_, USqrEig_.size() );
         }
         break;
     }
@@ -1937,13 +1920,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
             break;
         mpi::Comm team = teams_->Team( level_ );
         const int teamRank = mpi::CommRank( team );
-//Print
-//std::cout << USqr_.Height() << " " << USqr_.Width() << " " << USqr_.IsEmpty() << std::endl;
         if( teamRank == 0 && !USqr_.IsEmpty() && inTargetTeam_ )
         {
-//Print
-//_USqr.Print("USqr");
-//_VSqr.Print("VSqr");
             if( USqr_.Height() != VSqr_.Height() ||
                 USqrEig_.size() != VSqrEig_.size() )
             {
@@ -1964,40 +1942,23 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
                          VSqr_.LockedBuffer(), VSqr_.LDim(),
               Scalar(0), BSqr_.Buffer(),       BSqr_.LDim() );
 
-//Print
-//_BSqr.Print("BSqr");
             hmat_tools::Conjugate(BSqr_);
-//Print
-//_BSqr.Print("BSqr");
-/*//Print
-mpi::Comm teamp = teams_->Team( 0 );
-const int teamRankp = mpi::CommRank( teamp );
-if( level_ == 3 && teamRankp == 0 && block_.type == LOW_RANK)
-_VSqr.Print("_VSqr Before svd");*/
-//Print
-//_VSqr.Print("_VSqr");
-//std::cout << "_VSqrEig" << std::endl;
-//for( int i=0; i<VSqrEig_.size(); ++i)
-//    std::cout << VSqrEig_[i] << "  ";
-//std::cout << std::endl;
             std::vector<Real> USqrSigma(USqrEig_.size());
             std::vector<Real> VSqrSigma(VSqrEig_.size());
             for( int i=0; i<USqrEig_.size(); ++i)
                 if( USqrEig_[i] > (Real)0 )
                     USqrSigma[i] = sqrt(USqrEig_[i]);
                 else
-                    USqrSigma[i] = (Real)0;
+                    USqrSigma[i] = -sqrt(-USqrEig_[i]);
             for( int i=0; i<VSqrEig_.size(); ++i)
                 if( VSqrEig_[i] > (Real)0 )
                     VSqrSigma[i] = sqrt(VSqrEig_[i]);
                 else
-                    VSqrSigma[i] = (Real)0;
+                    VSqrSigma[i] = -sqrt(-VSqrEig_[i]);
 
             for( int j=0; j<BSqr_.Width(); ++j)
                 for( int i=0; i<BSqr_.Height(); ++i)
                     BSqr_.Set(i,j, BSqr_.Get(i,j)*USqrSigma[i]*VSqrSigma[j]);
-//Print
-//_BSqr.Print("BSqr");
 
             int m = BSqr_.Height();
             int n = BSqr_.Width();
@@ -2012,35 +1973,14 @@ _VSqr.Print("_VSqr Before svd");*/
 
             std::vector<Scalar> work(lwork);
             std::vector<Real> rwork(lrwork);
-/*//Print
-mpi::Comm teamp = teams_->Team( 0 );
-const int teamRankp = mpi::CommRank( teamp );
-if( level_ == 3 && teamRankp == 0 && block_.type == LOW_RANK)
-_BSqr.Print("_BSqr Before svd");*/
             lapack::SVD
             ('S', 'S' ,m ,n, 
              BSqr_.Buffer(), BSqr_.LDim(), &BSigma_[0],
              BSqrU_.Buffer(), BSqrU_.LDim(),
              BSqrVH_.Buffer(), BSqrVH_.LDim(),
              &work[0], lwork, &rwork[0] );
-/*//Print
-mpi::Comm teamp = teams_->Team( 0 );
-const int teamRankp = mpi::CommRank( teamp );
-if( level_ == 3 && teamRankp == 0 && block_.type == LOW_RANK)
-_BSqrVH.Print("_BSqrVH After svd");*/
 
             SVDTrunc(BSqrU_, BSigma_, BSqrVH_, error);
-//Print
-//_BSqrU.Print("BSqrU");
-//Print
-//_BSqrVH.Print("BSqrVH");
-//Print
-//mpi::Comm teamp = teams_->Team( 0 );
-//const int teamRankp = mpi::CommRank( teamp );
-//if( level_ == 3 && teamRankp == 0 && block_.type==LOW_RANK && Vtmp_.Height() == 2 && Utmp_.Height() == 2)
-//std::cout << "Height: " << Utmp_.Height() << " Width: " << Vtmp_.Height() << " B(1,1): " << WrapScalar(BSqrVH_.Get(10,10)) << std::endl;
-//_BSqrVH.Print("_SqrVH_Mid");
-
         }
         break;
     }
@@ -2059,56 +1999,56 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackNum
 #endif
 
     // Compute send and recv sizes
-    std::map<int,int> sendSizes, recvSizes;
+    std::map<int,int> sendsizes, recvsizes;
     MultiplyHMatCompressFPassbackNumCount
-    ( sendSizes, recvSizes, startLevel, endLevel );
+    ( sendsizes, recvsizes, startLevel, endLevel );
 
     // Compute the offsets
-    int totalSendSize=0, totalRecvSize=0;
+    int totalSendsize=0, totalRecvsize=0;
     std::map<int,int> sendOffsets, recvOffsets;
     std::map<int,int>::iterator it;
-    for( it=sendSizes.begin(); it!=sendSizes.end(); ++it )
+    for( it=sendsizes.begin(); it!=sendsizes.end(); ++it )
     {
-        sendOffsets[it->first] = totalSendSize;
-        totalSendSize += it->second;
+        sendOffsets[it->first] = totalSendsize;
+        totalSendsize += it->second;
     }
-    for( it=recvSizes.begin(); it!=recvSizes.end(); ++it )
+    for( it=recvsizes.begin(); it!=recvsizes.end(); ++it )
     {
-        recvOffsets[it->first] = totalRecvSize;
-        totalRecvSize += it->second;
+        recvOffsets[it->first] = totalRecvsize;
+        totalRecvsize += it->second;
     }
 
     // Fill the send buffer
-    std::vector<int> sendBuffer(totalSendSize);
+    std::vector<int> sendBuffer(totalSendsize);
     std::map<int,int> offsets = sendOffsets;
     MultiplyHMatCompressFPassbackNumPack
     ( sendBuffer, offsets, startLevel, endLevel );
 
     // Start the non-blocking recvs
     mpi::Comm comm = teams_->Team( 0 );
-    const int numRecvs = recvSizes.size();
+    const int numRecvs = recvsizes.size();
     std::vector<mpi::Request> recvRequests( numRecvs );
-    std::vector<int> recvBuffer( totalRecvSize );
+    std::vector<int> recvBuffer( totalRecvsize );
     int offset = 0;
-    for( it=recvSizes.begin(); it!=recvSizes.end(); ++it )
+    for( it=recvsizes.begin(); it!=recvsizes.end(); ++it )
     {
         const int source = it->first;
         mpi::IRecv
-        ( &recvBuffer[recvOffsets[source]], recvSizes[source], source, 0,
+        ( &recvBuffer[recvOffsets[source]], recvsizes[source], source, 0,
           comm, recvRequests[offset++] );
     }
 
     mpi::Barrier( comm );
 
     // Start the non-blocking sends
-    const int numSends = sendSizes.size();
+    const int numSends = sendsizes.size();
     std::vector<mpi::Request> sendRequests( numSends );
     offset = 0;
-    for( it=sendSizes.begin(); it!=sendSizes.end(); ++it )
+    for( it=sendsizes.begin(); it!=sendsizes.end(); ++it )
     {
         const int dest = it->first;
         mpi::ISend
-        ( &sendBuffer[sendOffsets[dest]], sendSizes[dest], dest, 0,
+        ( &sendBuffer[sendOffsets[dest]], sendsizes[dest], dest, 0,
           comm, sendRequests[offset++] );
     }
 
@@ -2124,7 +2064,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackNum
 template<typename Scalar>
 void 
 DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackNumCount
-( std::map<int,int>& sendSizes, std::map<int,int>& recvSizes,
+( std::map<int,int>& sendsizes, std::map<int,int>& recvsizes,
   int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
@@ -2144,7 +2084,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackNumCount
             for( int t=0; t<4; ++t )
                 for( int s=0; s<4; ++s )
                     node.Child(t,s).MultiplyHMatCompressFPassbackNumCount
-                    ( sendSizes, recvSizes, startLevel, endLevel );
+                    ( sendsizes, recvsizes, startLevel, endLevel );
         }
         break;
     }
@@ -2162,9 +2102,9 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackNumCount
         if( teamRank ==0 )
         {
             if( inTargetTeam_ )
-                AddToMap( sendSizes, sourceRoot_, 1 );
+                AddToMap( sendsizes, sourceRoot_, 1 );
             else
-                AddToMap( recvSizes, targetRoot_, 1 );
+                AddToMap( recvsizes, targetRoot_, 1 );
         }
         break;
     }
@@ -2285,56 +2225,56 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackData
 #endif
 
     // Compute send and recv sizes
-    std::map<int,int> sendSizes, recvSizes;
+    std::map<int,int> sendsizes, recvsizes;
     MultiplyHMatCompressFPassbackDataCount
-    ( sendSizes, recvSizes, startLevel, endLevel );
+    ( sendsizes, recvsizes, startLevel, endLevel );
 
     // Compute the offsets
-    int totalSendSize=0, totalRecvSize=0;
+    int totalSendsize=0, totalRecvsize=0;
     std::map<int,int> sendOffsets, recvOffsets;
     std::map<int,int>::iterator it;
-    for( it=sendSizes.begin(); it!=sendSizes.end(); ++it )
+    for( it=sendsizes.begin(); it!=sendsizes.end(); ++it )
     {
-        sendOffsets[it->first] = totalSendSize;
-        totalSendSize += it->second;
+        sendOffsets[it->first] = totalSendsize;
+        totalSendsize += it->second;
     }
-    for( it=recvSizes.begin(); it!=recvSizes.end(); ++it )
+    for( it=recvsizes.begin(); it!=recvsizes.end(); ++it )
     {
-        recvOffsets[it->first] = totalRecvSize;
-        totalRecvSize += it->second;
+        recvOffsets[it->first] = totalRecvsize;
+        totalRecvsize += it->second;
     }
 
     // Fill the send buffer
-    std::vector<Scalar> sendBuffer(totalSendSize);
+    std::vector<Scalar> sendBuffer(totalSendsize);
     std::map<int,int> offsets = sendOffsets;
     MultiplyHMatCompressFPassbackDataPack
     ( sendBuffer, offsets, startLevel, endLevel );
 
     // Start the non-blocking recvs
     mpi::Comm comm = teams_->Team( 0 );
-    const int numRecvs = recvSizes.size();
+    const int numRecvs = recvsizes.size();
     std::vector<mpi::Request> recvRequests( numRecvs );
-    std::vector<Scalar> recvBuffer( totalRecvSize );
+    std::vector<Scalar> recvBuffer( totalRecvsize );
     int offset = 0;
-    for( it=recvSizes.begin(); it!=recvSizes.end(); ++it )
+    for( it=recvsizes.begin(); it!=recvsizes.end(); ++it )
     {
         const int source = it->first;
         mpi::IRecv
-        ( &recvBuffer[recvOffsets[source]], recvSizes[source], source, 0,
+        ( &recvBuffer[recvOffsets[source]], recvsizes[source], source, 0,
           comm, recvRequests[offset++] );
     }
 
     mpi::Barrier( comm );
 
     // Start the non-blocking sends
-    const int numSends = sendSizes.size();
+    const int numSends = sendsizes.size();
     std::vector<mpi::Request> sendRequests( numSends );
     offset = 0;
-    for( it=sendSizes.begin(); it!=sendSizes.end(); ++it )
+    for( it=sendsizes.begin(); it!=sendsizes.end(); ++it )
     {
         const int dest = it->first;
         mpi::ISend
-        ( &sendBuffer[sendOffsets[dest]], sendSizes[dest], dest, 0,
+        ( &sendBuffer[sendOffsets[dest]], sendsizes[dest], dest, 0,
           comm, sendRequests[offset++] );
     }
 
@@ -2350,7 +2290,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackData
 template<typename Scalar>
 void 
 DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackDataCount
-( std::map<int,int>& sendSizes, std::map<int,int>& recvSizes,
+( std::map<int,int>& sendsizes, std::map<int,int>& recvsizes,
   int startLevel, int endLevel )
 {
 #ifndef RELEASE
@@ -2370,7 +2310,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackDataCount
             for( int t=0; t<4; ++t )
                 for( int s=0; s<4; ++s )
                     node.Child(t,s).MultiplyHMatCompressFPassbackDataCount
-                    ( sendSizes, recvSizes, startLevel, endLevel );
+                    ( sendsizes, recvsizes, startLevel, endLevel );
         }
         break;
     }
@@ -2388,9 +2328,9 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackDataCount
             if( teamRank ==0 )
             {
                 if( inTargetTeam_ )
-                    AddToMap( sendSizes, sourceRoot_, BSqrVH_.Height()*BSqrVH_.Width() );
+                    AddToMap( sendsizes, sourceRoot_, BSqrVH_.Height()*BSqrVH_.Width() );
                 else
-                    AddToMap( recvSizes, targetRoot_, BSqrVH_.Height()*BSqrVH_.Width() );
+                    AddToMap( recvsizes, targetRoot_, BSqrVH_.Height()*BSqrVH_.Width() );
             }
         }
         else if( block_.type == SPLIT_LOW_RANK )
@@ -2398,13 +2338,13 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackDataCount
             const SplitLowRank& SF = *block_.data.SF;
             if( inTargetTeam_ )
             {
-                AddToMap( sendSizes, sourceRoot_, Height()*SF.rank );
-                AddToMap( recvSizes, sourceRoot_, Width()*SF.rank+Width()*Height() );
+                AddToMap( sendsizes, sourceRoot_, Height()*SF.rank );
+                AddToMap( recvsizes, sourceRoot_, Width()*SF.rank+Width()*Height() );
             }
             else
             {
-                AddToMap( sendSizes, targetRoot_, Width()*SF.rank+Width()*Height() );
-                AddToMap( recvSizes, targetRoot_, Height()*SF.rank );
+                AddToMap( sendsizes, targetRoot_, Width()*SF.rank+Width()*Height() );
+                AddToMap( recvsizes, targetRoot_, Height()*SF.rank );
             }
         }
         break;
@@ -2417,13 +2357,13 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackDataCount
         {
             UMap_.ResetIterator();
             const Dense<Scalar>& U = *UMap_.CurrentEntry();
-            AddToMap( sendSizes, sourceRoot_, Height()*U.Width() );
+            AddToMap( sendsizes, sourceRoot_, Height()*U.Width() );
         }
         else
         {
             VMap_.ResetIterator();
             const Dense<Scalar>& V = *VMap_.CurrentEntry();
-            AddToMap( recvSizes, targetRoot_, Height()*V.Width() );
+            AddToMap( recvsizes, targetRoot_, Height()*V.Width() );
         }
 
         break;
@@ -2490,6 +2430,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackDataPack
                 MemCopy
                 ( &buffer[offsets[sourceRoot_]], SF.D.LockedBuffer(), size );
                 offsets[sourceRoot_] += size;
+            
             }
             else
             {
@@ -2518,7 +2459,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackDataPack
                 throw std::logic_error
                 ("Packing SPLIT_DENSE, the height does not fit");
             int size=U.Height()*U.Width();
-            MemCopy( &buffer[offsets[sourceRoot_]], U.LockedBuffer(), size );
+            MemCopy
+            ( &buffer[offsets[sourceRoot_]], U.LockedBuffer(), size );
             offsets[sourceRoot_] += size;
             UMap_.Clear();
         }
@@ -2584,19 +2526,22 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackDataUnpack
             {
                 int size = n*SF.rank;
                 SFD_.Resize(n, SF.rank, n);
-                MemCopy( SFD_.Buffer(), &buffer[offsets[sourceRoot_]], size );
+                MemCopy
+                ( SFD_.Buffer(), &buffer[offsets[sourceRoot_]], size );
                 offsets[sourceRoot_] += size;
             
                 size = n*m;
                 D_.Resize(m, n, m);
-                MemCopy( D_.Buffer(), &buffer[offsets[sourceRoot_]], size );
+                MemCopy
+                ( D_.Buffer(), &buffer[offsets[sourceRoot_]], size );
                 offsets[sourceRoot_] += size;
             }
             else
             {
                 int size = m*SF.rank;
                 SFD_.Resize(m, SF.rank, m);
-                MemCopy( SFD_.Buffer(), &buffer[offsets[targetRoot_]], size );
+                MemCopy
+                ( SFD_.Buffer(), &buffer[offsets[targetRoot_]], size );
                 offsets[targetRoot_] += size;
             }
         }
@@ -2614,7 +2559,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackDataUnpack
             const Dense<Scalar>& V = *VMap_.CurrentEntry();
             U.Resize(Height(), V.Width(), Height());
             int size=U.Height()*U.Width();
-            MemCopy( U.Buffer(), &buffer[offsets[targetRoot_]], size );
+            MemCopy
+            ( U.Buffer(), &buffer[offsets[targetRoot_]],  size );
             offsets[targetRoot_] += size;
         }
         break;
@@ -2662,34 +2608,26 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPostcompute
             break;
         mpi::Comm team = teams_->Team( level_ );
         const int teamRank = mpi::CommRank( team );
-// RYAN: Please do not check in code like this...
-mpi::Comm teamp = teams_->Team( 0 );
-const int teamRankp = mpi::CommRank( teamp );
-int print;
-if(teamRankp==1)
-print=0;
-else
-print=0;
         if( teamRank == 0 )
         {
             const char option = 'T';
-//print
-if(print)
-std::cout << "Run until here 1" << std::endl;
             if( inTargetTeam_ && USqrEig_.size() > 0)
             {
-//Print
-if(print)
-std::cout << USqrEig_.size() << " " << VSqrEig_.size() << " " << block_.type << std::endl;
                 Real Eigmax;
                 if( USqrEig_[USqrEig_.size()-1] > (Real)0 )
-                    Eigmax=sqrt( USqrEig_[USqrEig_.size()-1] );
+                    Eigmax= USqrEig_[USqrEig_.size()-1] ;
                 else
                     Eigmax=0;
+                Real TruncBound = sqrt(std::abs(error)*Eigmax*USqrEig_.size());
                 for(int j=0; j<USqr_.Width(); ++j)
-                    if(sqrt(std::abs(USqrEig_[j])) > error*error )
+                {
+                    Real sqrteig;
+                    if( USqrEig_[j]>0 )
+                        sqrteig=sqrt(USqrEig_[j]);
+                    else
+                        sqrteig=-sqrt(-USqrEig_[j]);
+                    if(sqrteig > TruncBound )
                     {
-                        Real sqrteig=sqrt(std::abs(USqrEig_[j]));
                         for(int i=0; i<USqr_.Height(); ++i)
                             USqr_.Set(i,j,USqr_.Get(i,j)/sqrteig);
                     }
@@ -2698,18 +2636,14 @@ std::cout << USqrEig_.size() << " " << VSqrEig_.size() << " " << block_.type << 
                         for(int i=0; i<USqr_.Height(); ++i)
                             USqr_.Set(i,j, Scalar(0));
                     }
+                }
 
-//print
-if(print)
-std::cout << "Run until here 1.5" << std::endl;
                 for(int j=0; j<BSqrU_.Width(); ++j)
                     for(int i=0; i<BSqrU_.Height(); ++i)
                         BSqrU_.Set(i,j,BSqrU_.Get(i,j)*BSigma_[j]);
 
                 BL_.Resize(USqr_.Height(), BSqrU_.Width(), USqr_.Height());
 
-if(print)
-std::cout << "Run until here 1.8" << std::endl;
                 blas::Gemm
                 ( 'N', 'N', USqr_.Height(), BSqrU_.Width(), USqr_.Width(), 
                   Scalar(1), USqr_.LockedBuffer(),  USqr_.LDim(),
@@ -2717,20 +2651,23 @@ std::cout << "Run until here 1.8" << std::endl;
                   Scalar(0), BL_.Buffer(), BL_.LDim() );
             }
 
-//print
-if(print)
-std::cout << "Run until here 2, " << BSqrVH_.LDim() << " " << BSqrVH_.Height() << " " << BSqrVH_.Width() << std::endl;
             if(inSourceTeam_ && VSqrEig_.size() > 0)
             {
                 Real Eigmax;
                 if( VSqrEig_[VSqrEig_.size()-1] > (Real)0 )
-                    Eigmax=sqrt(VSqrEig_[VSqrEig_.size()-1]);
+                    Eigmax=VSqrEig_[VSqrEig_.size()-1];
                 else
                     Eigmax=0;
+                Real TruncBound = sqrt(std::abs(error)*Eigmax*VSqrEig_.size());
                 for(int j=0; j<VSqr_.Width(); ++j)
-                    if(sqrt(std::abs(VSqrEig_[j])) > error*error )
+                {
+                    Real sqrteig;
+                    if( VSqrEig_[j]>0 )
+                        sqrteig=sqrt(VSqrEig_[j]);
+                    else
+                        sqrteig=-sqrt(-VSqrEig_[j]);
+                    if( sqrteig > TruncBound )
                     {
-                        Real sqrteig=sqrt(std::abs(VSqrEig_[j]));
                         for(int i=0; i<VSqr_.Height(); ++i)
                             VSqr_.Set(i,j,VSqr_.Get(i,j)/sqrteig);
                     }
@@ -2739,6 +2676,7 @@ std::cout << "Run until here 2, " << BSqrVH_.LDim() << " " << BSqrVH_.Height() <
                         for(int i=0; i<VSqr_.Height(); ++i)
                             VSqr_.Set(i,j, Scalar(0));
                     }
+                }
 
                 BR_.Resize(VSqr_.Height(), BSqrVH_.Height(), VSqr_.Height());
 
@@ -2770,10 +2708,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcastsNum
     std::vector<int> sizes( numBroadcasts, 0 );
     MultiplyHMatCompressFBroadcastsNumCount( sizes, startLevel, endLevel );
 
-    int totalSize = 0;
+    int totalsize = 0;
     for(int i=0; i<numBroadcasts; ++i)
-        totalSize += sizes[i];
-    std::vector<int> buffer( totalSize );
+        totalsize += sizes[i];
+    std::vector<int> buffer( totalsize );
     std::vector<int> offsets( numBroadcasts );
     for( int i=0, offset=0; i<numBroadcasts; offset+=sizes[i], ++i )
         offsets[i] = offset;
@@ -2961,10 +2899,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcasts
     std::vector<int> sizes( numBroadcasts, 0 );
     MultiplyHMatCompressFBroadcastsCount( sizes, startLevel, endLevel );
 
-    int totalSize = 0;
+    int totalsize = 0;
     for(int i=0; i<numBroadcasts; ++i)
-        totalSize += sizes[i];
-    std::vector<Scalar> buffer( totalSize );
+        totalsize += sizes[i];
+    std::vector<Scalar> buffer( totalsize );
     std::vector<int> offsets( numBroadcasts );
     for( int i=0, offset=0; i<numBroadcasts; offset+=sizes[i], ++i )
         offsets[i] = offset;
@@ -3061,7 +2999,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcastsPack
             if( BR_.Height() > 0 )
             {
                 int size = BR_.Height()*BR_.Width();
-                MemCopy( &buffer[offsets[level_]], BR_.LockedBuffer(), size );
+                MemCopy ( &buffer[offsets[level_]], BR_.LockedBuffer(), size );
                 offsets[level_] += size;
             }
         }
@@ -3330,20 +3268,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
     {
         if( level_ < startLevel )
             break;
-//Print
-//mpi::Comm teamp = teams_->Team( 0 );
-//const int teamRankp = mpi::CommRank( teamp );
-//if( level_ == 3 && teamRankp == 0 && block_.type==LOW_RANK && Vtmp_.Height() == 2 && Utmp_.Height() == 2)
-//{
-//    BL_.Print("_BL");
-//    BR_.Print("_BR");
-//}
         if( !haveDenseUpdate_ )
         {
             if( !BL_.IsEmpty() )                                       
             { 
-//Print                                                                
-//_BL.Print("_BL");
                 LowRank<Scalar> &F = *block_.data.F;
                 Dense<Scalar> &U = F.U;
                 U.Resize(Utmp_.Height(), BL_.Width(), Utmp_.Height());
@@ -3353,11 +3281,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
                  Scalar(1), Utmp_.LockedBuffer(), Utmp_.LDim(),
                             BL_.LockedBuffer(), BL_.LDim(),
                  Scalar(0), U.Buffer(),         U.LDim() );
+
             }
             if( !BR_.IsEmpty() )
             {                                                      
-//Print                                                                
-//_BR.Print("_BR");
                 LowRank<Scalar> &F = *block_.data.F;
                 Dense<Scalar> &V = F.V;
                 V.Resize(Vtmp_.Height(), BR_.Width(), Vtmp_.Height());
@@ -3551,270 +3478,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFCleanup
         ZMap_.Clear();
         colXMap_.Clear();
         rowXMap_.Clear();
-    }
-    default:
-        break;
-    }
-}
-
-template<typename Scalar>
-void
-DistHMat2d<Scalar>::MultiplyHMatCompressFCompressless
-( int startLevel, int endLevel )
-{
-#ifndef RELEASE
-    CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFCompressless");
-#endif
-    if( Height() == 0 || Width() == 0 )
-        return;
-
-    switch( block_.type )
-    {
-    case DIST_NODE:
-    case SPLIT_NODE:
-    case NODE:
-    {
-        if( level_+1 < endLevel )
-        {
-            Node& node = *block_.data.N;
-            for( int t=0; t<4; ++t )
-                for( int s=0; s<4; ++s)
-                    node.Child(t,s).MultiplyHMatCompressFCompressless
-                    ( startLevel, endLevel );
-        }
-        break;
-    }
-    case DIST_LOW_RANK:
-    {
-        if( level_ < startLevel )
-            break;
-        int LH=LocalHeight();
-        int LW=LocalWidth();
-        if( inTargetTeam_ )                                  
-        {
-            int offset=0;
-            int totalrank=colXMap_.TotalWidth() + UMap_.TotalWidth();
-            DistLowRank &DF = *block_.data.DF;
-            Dense<Scalar> &Utmp = DF.ULocal;
-            DF.rank = totalrank;
-//Print
-//std::cout << Utmp.Height()*Utmp.Width() << std::endl;
-            if( Utmp.Height()*Utmp.Width() != 0)
-            {
-                offset=Utmp.Width();
-                totalrank+=Utmp.Width();
-            }
-            Utmp.Resize( LH, totalrank, LH );
-            
-            int numEntries = UMap_.Size();
-            UMap_.ResetIterator();
-            for( int i=0; i<numEntries; ++i,UMap_.Increment() )
-            {
-                Dense<Scalar>& U = *UMap_.CurrentEntry();
-                MemCopy
-                ( Utmp.Buffer(0,offset), U.LockedBuffer(), LH*U.Width() );
-                offset += U.Width();
-            }
-            numEntries = colXMap_.Size();
-            colXMap_.ResetIterator();
-            for( int i=0; i<numEntries; ++i,colXMap_.Increment() )
-            {
-                Dense<Scalar>& U = *colXMap_.CurrentEntry();
-                MemCopy
-                ( Utmp.Buffer(0,offset), U.LockedBuffer(), LH*U.Width() );
-                offset += U.Width();
-            }
-        }
-        if( inSourceTeam_ )
-        {                                                      
-            int offset=0;
-            int totalrank=rowXMap_.TotalWidth() + VMap_.TotalWidth();
-            DistLowRank &DF = *block_.data.DF;
-            Dense<Scalar> &Vtmp = DF.VLocal;
-            DF.rank = totalrank;
-//Print
-//std::cout << Vtmp.Height()*Vtmp.Width() << std::endl;
-            if( Vtmp.Height()*Vtmp.Width() != 0)
-            {
-                offset=Vtmp.Width();
-                totalrank+=Vtmp.Width();
-            }
-            Vtmp.Resize( LW, totalrank, LW );
-            
-            int numEntries = VMap_.Size();
-            VMap_.ResetIterator();
-            for( int i=0; i<numEntries; ++i,VMap_.Increment() )
-            {
-                Dense<Scalar>& V = *VMap_.CurrentEntry();
-                MemCopy
-                ( Vtmp.Buffer(0,offset), V.LockedBuffer(), LW*V.Width() );
-                offset += V.Width();
-            }
-            numEntries = rowXMap_.Size();
-            rowXMap_.ResetIterator();
-            for( int i=0; i<numEntries; ++i,rowXMap_.Increment() )
-            {
-                Dense<Scalar>& V = *rowXMap_.CurrentEntry();
-                MemCopy
-                ( Vtmp.Buffer(0,offset), V.LockedBuffer(), LW*V.Width() );
-                offset += V.Width();
-            }
-        }
-        break;
-    }
-    case SPLIT_LOW_RANK:
-    {
-        if( level_ < startLevel )
-            break;
-        int LH=LocalHeight();
-        int LW=LocalWidth();
-        if( inTargetTeam_ )                                  
-        {
-            int offset=0;
-            int totalrank=colXMap_.TotalWidth() + UMap_.TotalWidth();
-            SplitLowRank &SF = *block_.data.SF;
-            Dense<Scalar> &Utmp = SF.D;
-            SF.rank = totalrank;
-//Print
-//std::cout << Utmp.Height()*Utmp.Width() << std::endl;
-            if( Utmp.Height()*Utmp.Width() != 0)
-            {
-                offset=Utmp.Width();
-                totalrank+=Utmp.Width();
-            }
-            Utmp.Resize( LH, totalrank, LH );
-            
-            int numEntries = UMap_.Size();
-            UMap_.ResetIterator();
-            for( int i=0; i<numEntries; ++i,UMap_.Increment() )
-            {
-                Dense<Scalar>& U = *UMap_.CurrentEntry();
-                MemCopy
-                ( Utmp.Buffer(0,offset), U.LockedBuffer(), LH*U.Width() );
-                offset += U.Width();
-            }
-            numEntries = colXMap_.Size();
-            colXMap_.ResetIterator();
-            for( int i=0; i<numEntries; ++i,colXMap_.Increment() )
-            {
-                Dense<Scalar>& U = *colXMap_.CurrentEntry();
-                MemCopy
-                ( Utmp.Buffer(0,offset), U.LockedBuffer(), LH*U.Width() );
-                offset += U.Width();
-            }
-        }
-        if( inSourceTeam_ )
-        {                                                      
-            int offset=0;
-            int totalrank=rowXMap_.TotalWidth() + VMap_.TotalWidth();
-            SplitLowRank &SF = *block_.data.SF;
-            Dense<Scalar> &Vtmp = SF.D;
-            SF.rank = totalrank;
-//Print
-//std::cout << Vtmp.Height()*Vtmp.Width() << std::endl;
-            if( Vtmp.Height()*Vtmp.Width() != 0)
-            {
-                offset=Vtmp.Width();
-                totalrank+=Vtmp.Width();
-            }
-            Vtmp.Resize( LW, totalrank, LW );
-            
-            int numEntries = VMap_.Size();
-            VMap_.ResetIterator();
-            for( int i=0; i<numEntries; ++i,VMap_.Increment() )
-            {
-                Dense<Scalar>& V = *VMap_.CurrentEntry();
-                MemCopy
-                ( Vtmp.Buffer(0,offset), V.LockedBuffer(), LW*V.Width() );
-                offset += V.Width();
-            }
-            numEntries = rowXMap_.Size();
-            rowXMap_.ResetIterator();
-            for( int i=0; i<numEntries; ++i,rowXMap_.Increment() )
-            {
-                Dense<Scalar>& V = *rowXMap_.CurrentEntry();
-                MemCopy
-                ( Vtmp.Buffer(0,offset), V.LockedBuffer(), LW*V.Width() );
-                offset += V.Width();
-            }
-        }
-        break;
-    }
-    case LOW_RANK:
-    {
-        if( level_ < startLevel )
-            break;
-        int LH=LocalHeight();
-        int LW=LocalWidth();
-        if( inTargetTeam_ )                                  
-        {
-            int offset=0;
-            int totalrank=colXMap_.TotalWidth() + UMap_.TotalWidth();
-            LowRank<Scalar> &F = *block_.data.F;
-            Dense<Scalar> &Utmp = F.U;
-//Print
-//std::cout << Utmp.Height()*Utmp.Width() << std::endl;
-            if( Utmp.Height()*Utmp.Width() != 0)
-            {
-                offset=Utmp.Width();
-                totalrank+=Utmp.Width();
-            }
-            Utmp.Resize( LH, totalrank, LH );
-            
-            int numEntries = UMap_.Size();
-            UMap_.ResetIterator();
-            for( int i=0; i<numEntries; ++i,UMap_.Increment() )
-            {
-                Dense<Scalar>& U = *UMap_.CurrentEntry();
-                MemCopy
-                ( Utmp.Buffer(0,offset), U.LockedBuffer(), LH*U.Width() );
-                offset += U.Width();
-            }
-            numEntries = colXMap_.Size();
-            colXMap_.ResetIterator();
-            for( int i=0; i<numEntries; ++i,colXMap_.Increment() )
-            {
-                Dense<Scalar>& U = *colXMap_.CurrentEntry();
-                MemCopy
-                ( Utmp.Buffer(0,offset), U.LockedBuffer(), LH*U.Width() );
-                offset += U.Width();
-            }
-        }
-        if( inSourceTeam_ )
-        {                                                      
-            int offset=0;
-            int totalrank=rowXMap_.TotalWidth() + VMap_.TotalWidth();
-            LowRank<Scalar> &F = *block_.data.F;
-            Dense<Scalar> &Vtmp = F.V;
-//Print
-//std::cout << Vtmp.Height()*Vtmp.Width() << std::endl;
-            if( Vtmp.Height()*Vtmp.Width() != 0)
-            {
-                offset=Vtmp.Width();
-                totalrank+=Vtmp.Width();
-            }
-            Vtmp.Resize( LW, totalrank, LW );
-            
-            int numEntries = VMap_.Size();
-            VMap_.ResetIterator();
-            for( int i=0; i<numEntries; ++i,VMap_.Increment() )
-            {
-                Dense<Scalar>& V = *VMap_.CurrentEntry();
-                MemCopy
-                ( Vtmp.Buffer(0,offset), V.LockedBuffer(), LW*V.Width() );
-                offset += V.Width();
-            }
-            numEntries = rowXMap_.Size();
-            rowXMap_.ResetIterator();
-            for( int i=0; i<numEntries; ++i,rowXMap_.Increment() )
-            {
-                Dense<Scalar>& V = *rowXMap_.CurrentEntry();
-                MemCopy
-                ( Vtmp.Buffer(0,offset), V.LockedBuffer(), LW*V.Width() );
-                offset += V.Width();
-            }
-        }
-        break;
     }
     default:
         break;

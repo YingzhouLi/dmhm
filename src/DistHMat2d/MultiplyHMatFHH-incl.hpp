@@ -1666,7 +1666,6 @@ DistHMat2d<Scalar>::MultiplyHMatFHHFinalizeFormLowRank
                                      rightUpdate,       rank,
                           Scalar(0), X.Buffer(),        X.LDim() );
                         hmat_tools::Conjugate( X );
-
                         rightOffsets[teamLevel] += rank*rank;
                     }
                 }

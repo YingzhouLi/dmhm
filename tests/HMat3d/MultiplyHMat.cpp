@@ -141,7 +141,6 @@ main( int argc, char* argv[] )
         double fillStopTime = mpi::Time();
         std::cout << "done: " << fillStopTime-fillStartTime << " seconds." 
                   << std::endl;
-
         // Convert to H-matrix form
         std::cout << "Constructing H-matrix...";
         std::cout.flush();
@@ -161,11 +160,11 @@ main( int argc, char* argv[] )
         double invertStopTime = mpi::Time();
         std::cout << "done: " << invertStopTime-invertStartTime 
                   << " seconds." << std::endl;
-        if( print )
-        {
-            A.Print("A");
-            B.Print("B");
-        }
+        //if( print )
+        //{
+        //    A.Print("A");
+        //    B.Print("B");
+        //}
         if( structure )
         {
 #ifdef HAVE_QT5
@@ -184,8 +183,8 @@ main( int argc, char* argv[] )
         double multStopTime = mpi::Time();
         std::cout << "done: " << multStopTime-multStartTime
                   << " seconds." << std::endl;
-        if( print )
-            C.Print("C");
+        //if( print )
+        //    C.Print("C");
         if( structure )
         {
 #ifdef HAVE_QT5
@@ -211,22 +210,22 @@ main( int argc, char* argv[] )
             X.Resize( m, numRhs );
             SerialGaussianRandomVectors( X );
         }
-        if( print )
-            X.Print("X");
+        //if( print )
+        //    X.Print("X");
         
         Dense<Scalar> Y, Z;
         // Y := AZ := ABX
         B.Multiply( (Scalar)1, X, Z );
         A.Multiply( (Scalar)1, Z, Y );
-        if( print )
-        {
-            Z.Print("Z := B X");
-            Y.Print("Y := A Z = A B X");
-        }
+        //if( print )
+        //{
+        //    Z.Print("Z := B X");
+        //    Y.Print("Y := A Z = A B X");
+        //}
         // Z := CX
         C.Multiply( (Scalar)1, X, Z );
-        if( print )
-            Z.Print("Z := C X");
+        //if( print )
+        //    Z.Print("Z := C X");
 
         if( print )
         {

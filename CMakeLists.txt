@@ -1,5 +1,4 @@
 #
-# Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
 # The University of Texas at Austin, and Stanford University
 #
 # This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -20,7 +19,7 @@ option(AVOID_COMPLEX_MPI "Avoid complex MPI routines for robustness" ON)
 mark_as_advanced(AVOID_COMPLEX_MPI)
 
 # Whether or not to use Qt5 for visualization if it is found (experimental)
-option(USE_QT5 "Attempt to use Qt5?" ON)
+option(USE_QT5 "Attempt to use Qt5?" OFF)
 
 if(RELEASE)
     set(CXX_FLAGS "-O3" CACHE STRING "CXX flags")
@@ -216,7 +215,7 @@ target_link_libraries(cmake-dummy-lib ${EXTERNAL_LIBS})
 set(MPI_LINK_FLAGS "${MPI_CXX_LINK_FLAGS}")
 if(BUILD_TESTS)
   set(TEST_DIR ${PROJECT_SOURCE_DIR}/tests)
-  set(TEST_TYPES core hmat_tools HMat2d DistHMat2d HMat3d)
+  set(TEST_TYPES core hmat_tools HMat2d DistHMat2d HMat3d DistHMat3d)
   set(core_TESTS MemoryMap ParallelLcg Timer)
   set(hmat_tools_TESTS MatrixAdd Compress ConvertSubmatrix PackedQR)
   set(HMat2d_TESTS Invert LowRankConstructor MultiplyHMat Pack)
@@ -224,6 +223,9 @@ if(BUILD_TESTS)
                             RandomMultiplyHMat RandomMultiplyVectors
                             InvertHMat)
   set(HMat3d_TESTS Invert LowRankConstructor MultiplyHMat Pack)
+  set(DistHMat3d_TESTS Ghost ImportSparse MultiplyHMat Pack 
+                            RandomMultiplyHMat RandomMultiplyVectors
+                            InvertHMat)
   
   foreach(TYPE ${TEST_TYPES})
     set(OUTPUT_DIR "${PROJECT_BINARY_DIR}/bin/${TYPE}")

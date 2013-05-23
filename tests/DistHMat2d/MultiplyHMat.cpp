@@ -157,8 +157,8 @@ main( int argc, char* argv[] )
         {
             std::cout << "done: " << invertStopTime-invertStartTime 
                       << " seconds." << std::endl;
-            if( print )
-                ASerial.Print("ASerial");
+            //if( print )
+            //    ASerial.Print("ASerial");
             if( structure )
             {
 #ifdef HAVE_QT5
