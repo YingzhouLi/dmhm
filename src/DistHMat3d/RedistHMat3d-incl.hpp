@@ -31,7 +31,7 @@ DistHMat3d<Scalar>::PackedSizes
 
     // Initialize for the recursion
     packedSizes.resize( p );
-    std::memset( &packedSizes[0], 0, p*sizeof(std::size_t) );
+    MemZero( &packedSizes[0], p );
     std::vector<int> localSizes( p );
     ComputeLocalSizes( localSizes, H );
 

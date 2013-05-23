@@ -174,9 +174,8 @@ DistHMat3d<Scalar>::MultiplyHMatParallelQR
                                 const int T = std::min(j+1,t);
 
                                 // Read column strip from X    
-                                std::memcpy
-                                ( &qrLevel[qrOffset], X.LockedBuffer(0,j),
-                                  S*sizeof(Scalar) );
+                                MemCopy
+                                ( &qrLevel[qrOffset], X.LockedBuffer(0,j), S );
                                 qrOffset += S;
 
                                 // Read column strip from recvBuffer
@@ -199,9 +198,8 @@ DistHMat3d<Scalar>::MultiplyHMatParallelQR
                                 qrOffset += S;
 
                                 // Read column strip from X
-                                std::memcpy
-                                ( &qrLevel[qrOffset], X.LockedBuffer(0,j),
-                                  T*sizeof(Scalar) );
+                                MemCopy
+                                ( &qrLevel[qrOffset], X.LockedBuffer(0,j), T );
                                 qrOffset += T;
                             }
                         }
@@ -224,9 +222,9 @@ DistHMat3d<Scalar>::MultiplyHMatParallelQR
                                 const int TPrev = std::min(j+1,tPrev);
 
                                 // Read column strip from the previous qrBuffer
-                                std::memcpy
+                                MemCopy
                                 ( &qrLevel[qrOffset], &qrLevel[qrPrevOffset],
-                                  S*sizeof(Scalar) );
+                                  S );
                                 qrOffset += S;
                                 qrPrevOffset += SPrev + TPrev;
 
@@ -252,9 +250,9 @@ DistHMat3d<Scalar>::MultiplyHMatParallelQR
                                 qrOffset += S;
 
                                 // Read column strip from the previous qrBuffer
-                                std::memcpy
+                                MemCopy
                                 ( &qrLevel[qrOffset], &qrLevel[qrPrevOffset],
-                                  T*sizeof(Scalar) );
+                                  T );
                                 qrOffset += T;
                                 qrPrevOffset += SPrev + TPrev;
                             }
@@ -328,9 +326,8 @@ DistHMat3d<Scalar>::MultiplyHMatParallelQR
                                 const int T = std::min(j+1,t);
 
                                 // Read column strip from X    
-                                std::memcpy
-                                ( &qrLevel[qrOffset], X.LockedBuffer(0,j),
-                                  S*sizeof(Scalar) );
+                                MemCopy
+                                ( &qrLevel[qrOffset], X.LockedBuffer(0,j), S );
                                 qrOffset += S;
 
                                 // Read column strip from recvBuffer
@@ -353,9 +350,8 @@ DistHMat3d<Scalar>::MultiplyHMatParallelQR
                                 qrOffset += S;
 
                                 // Read column strip from X
-                                std::memcpy
-                                ( &qrLevel[qrOffset], X.LockedBuffer(0,j),
-                                  T*sizeof(Scalar) );
+                                MemCopy
+                                ( &qrLevel[qrOffset], X.LockedBuffer(0,j), T );
                                 qrOffset += T;
                             }
                         }
@@ -378,9 +374,9 @@ DistHMat3d<Scalar>::MultiplyHMatParallelQR
                                 const int TPrev = std::min(j+1,tPrev);
 
                                 // Read column strip from last qrBuffer
-                                std::memcpy
+                                MemCopy
                                 ( &qrLevel[qrOffset], &qrLevel[qrPrevOffset],
-                                  S*sizeof(Scalar) );
+                                  S );
                                 qrOffset += S;
                                 qrPrevOffset += SPrev + TPrev;
 
@@ -406,9 +402,9 @@ DistHMat3d<Scalar>::MultiplyHMatParallelQR
                                 qrOffset += S;
 
                                 // Read column strip from last qrBuffer
-                                std::memcpy
+                                MemCopy
                                 ( &qrLevel[qrOffset], &qrLevel[qrPrevOffset],
-                                  T*sizeof(Scalar) );
+                                  T );
                                 qrOffset += T;
                                 qrPrevOffset += SPrev + TPrev;
                             }
@@ -499,9 +495,8 @@ DistHMat3d<Scalar>::MultiplyHMatParallelQR
                             const int TPrev = std::min(j+1,tPrev);
 
                             // Read column strip from last qrBuffer
-                            std::memcpy
-                            ( &qrLevel[qrOffset], &qrLevel[qrPrevOffset],
-                              S*sizeof(Scalar) );
+                            MemCopy
+                            ( &qrLevel[qrOffset], &qrLevel[qrPrevOffset], S );
                             qrOffset += S;
                             qrPrevOffset += SPrev + TPrev;
 
@@ -527,9 +522,8 @@ DistHMat3d<Scalar>::MultiplyHMatParallelQR
                             qrOffset += S;
 
                             // Read column strip from last qrBuffer
-                            std::memcpy
-                            ( &qrLevel[qrOffset], &qrLevel[qrPrevOffset],
-                              T*sizeof(Scalar) );
+                            MemCopy
+                            ( &qrLevel[qrOffset], &qrLevel[qrPrevOffset], T );
                             qrOffset += T;
                             qrPrevOffset += SPrev + TPrev;
                         }

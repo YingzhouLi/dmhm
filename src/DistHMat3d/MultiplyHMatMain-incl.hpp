@@ -1122,8 +1122,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainSums
     // Compute the message sizes for each reduce
     const unsigned numTeamLevels = teams_->NumLevels();
     const unsigned numReduces = numTeamLevels-1;
-    std::vector<int> sizes( numReduces );
-    std::memset( &sizes[0], 0, numReduces*sizeof(int) );
+    std::vector<int> sizes( numReduces, 0 );
     A.MultiplyHMatMainSumsCountA( sizes, startLevel, endLevel );
     B.MultiplyHMatMainSumsCountB( sizes, startLevel, endLevel );
     A.MultiplyHMatMainSumsCountC
@@ -1505,10 +1504,9 @@ DistHMat3d<Scalar>::MultiplyHMatMainSumsPackC
                 if( DFA.rank != 0 && DFB.rank != 0 )
                 {
                     const unsigned teamLevel = A.teams_->TeamLevel(A.level_);
-                    std::memcpy
+                    MemCopy
                     ( &buffer[offsets[teamLevel]], 
-                      C.ZMap_.Get( key ).LockedBuffer(),
-                      DFA.rank*DFB.rank*sizeof(Scalar) );
+                      C.ZMap_.Get( key ).LockedBuffer(), DFA.rank*DFB.rank );
                     offsets[teamLevel] += DFA.rank*DFB.rank;
                 }
             }
@@ -1594,9 +1592,9 @@ DistHMat3d<Scalar>::MultiplyHMatMainSumsUnpackC
                 if( DFA.rank != 0 && DFB.rank != 0 )
                 {
                     const unsigned teamLevel = A.teams_->TeamLevel(A.level_);
-                    std::memcpy
+                    MemCopy
                     ( C.ZMap_.Get( key ).Buffer(), &buffer[offsets[teamLevel]],
-                      DFA.rank*DFB.rank*sizeof(Scalar) );
+                      DFA.rank*DFB.rank );
                     offsets[teamLevel] += DFA.rank*DFB.rank;
                 }
             }
@@ -2708,9 +2706,9 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataPackC
                 if( A.inSourceTeam_ && DFA.rank != 0 && DFB.rank != 0  )
                 {
                     Dense<Scalar>& ZC = C.ZMap_.Get( key );
-                    std::memcpy
+                    MemCopy
                     ( &sendBuffer[offsets[A.targetRoot_]], ZC.LockedBuffer(),
-                      DFA.rank*DFB.rank*sizeof(Scalar) );
+                      DFA.rank*DFB.rank );
                     offsets[A.targetRoot_] += DFA.rank*DFB.rank;
                     ZC.Clear();
                     C.ZMap_.Erase( key );
@@ -2763,9 +2761,9 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataPackC
             if( A.inSourceTeam_ && SFA.rank != 0 && SFB.rank != 0 )
             {
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
-                std::memcpy
+                MemCopy
                 ( &sendBuffer[offsets[A.targetRoot_]], ZC.LockedBuffer(),
-                  SFA.rank*SFB.rank*sizeof(Scalar) );
+                  SFA.rank*SFB.rank );
                 offsets[A.targetRoot_] += SFA.rank*SFB.rank;
                 ZC.Clear();
                 C.ZMap_.Erase( key );
@@ -2782,9 +2780,9 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataPackC
             if( SFA.rank != 0 && FB.Rank() != 0 )
             {
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
-                std::memcpy
+                MemCopy
                 ( &sendBuffer[offsets[A.targetRoot_]], ZC.LockedBuffer(),
-                  SFA.rank*FB.Rank()*sizeof(Scalar) );
+                  SFA.rank*FB.Rank() );
                 offsets[A.targetRoot_] += SFA.rank*FB.Rank();
                 ZC.Clear();
                 C.ZMap_.Erase( key );
@@ -2799,9 +2797,9 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataPackC
             // Pass data for D/F += F D
             if( B.inTargetTeam_ && B.Height() != 0 && SFA.rank != 0 )
             {
-                std::memcpy
+                MemCopy
                 ( &sendBuffer[offsets[B.sourceRoot_]], SFA.D.LockedBuffer(),
-                  B.Height()*SFA.rank*sizeof(Scalar) );
+                  B.Height()*SFA.rank );
                 offsets[B.sourceRoot_] += B.Height()*SFA.rank;
             }
             break;
@@ -2848,9 +2846,9 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataPackC
             // Pass data for D/F += F D
             if( B.Height() != 0 && FA.Rank() != 0 )
             {
-                std::memcpy
+                MemCopy
                 ( &sendBuffer[offsets[B.sourceRoot_]], FA.V.LockedBuffer(),
-                  B.Height()*FA.Rank()*sizeof(Scalar) );
+                  B.Height()*FA.Rank() );
                 offsets[B.sourceRoot_] += B.Height()*FA.Rank();
             }
             break;
@@ -2886,9 +2884,9 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataPackC
             if( A.inSourceTeam_ && A.Height() != 0 && SFB.rank != 0 )
             {
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
-                std::memcpy
+                MemCopy
                 ( &sendBuffer[offsets[A.targetRoot_]], ZC.LockedBuffer(),
-                  A.Height()*SFB.rank*sizeof(Scalar) );
+                  A.Height()*SFB.rank );
                 offsets[A.targetRoot_] += A.Height()*SFB.rank;
                 ZC.Clear();
                 C.ZMap_.Erase( key );
@@ -2904,9 +2902,9 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataPackC
             if( A.Height() != 0 && FB.Rank() != 0 )
             {
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
-                std::memcpy
+                MemCopy
                 ( &sendBuffer[offsets[A.targetRoot_]], ZC.LockedBuffer(), 
-                  A.Height()*FB.Rank()*sizeof(Scalar) );
+                  A.Height()*FB.Rank() );
                 offsets[A.targetRoot_] += A.Height()*FB.Rank();
                 ZC.Clear();
                 C.ZMap_.Erase( key );
@@ -2920,9 +2918,9 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataPackC
             if( B.inTargetTeam_ && A.Height() != 0 && A.Width() != 0 )
             {
                 const SplitDense& SDA = *A.block_.data.SD;
-                std::memcpy
+                MemCopy
                 ( &sendBuffer[offsets[B.sourceRoot_]], SDA.D.LockedBuffer(),
-                  A.Height()*A.Width()*sizeof(Scalar) );
+                  A.Height()*A.Width() );
                 offsets[B.sourceRoot_] += A.Height()*A.Width();
             }
             break;
@@ -2961,9 +2959,9 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataPackC
             if( A.Height() != 0 && A.Width() != 0 )
             {
                 const Dense<Scalar>& DA = *A.block_.data.D;
-                std::memcpy
+                MemCopy
                 ( &sendBuffer[offsets[B.sourceRoot_]], DA.LockedBuffer(),
-                  A.Height()*A.Width()*sizeof(Scalar) );
+                  A.Height()*A.Width() );
                 offsets[B.sourceRoot_] += A.Height()*A.Width();
             }
             break;
@@ -3156,9 +3154,9 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataUnpackC
                     if( teamRank == 0 )
                     {
                         Dense<Scalar>& ZC = C.ZMap_.Get( key ); 
-                        std::memcpy
+                        MemCopy
                         ( ZC.Buffer(), &recvBuffer[offsets[A.sourceRoot_]],
-                          DFA.rank*DFB.rank*sizeof(Scalar) );
+                          DFA.rank*DFB.rank );
                         offsets[A.sourceRoot_] += DFA.rank*DFB.rank;
                     }
                 }
@@ -3175,9 +3173,9 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataUnpackC
                 if( teamRank == 0 )
                 {
                     Dense<Scalar>& ZC = C.ZMap_.Get( key );
-                    std::memcpy
+                    MemCopy
                     ( ZC.Buffer(), &recvBuffer[offsets[A.sourceRoot_]],
-                      DFA.rank*DFGB.rank*sizeof(Scalar) );
+                      DFA.rank*DFGB.rank );
                     offsets[A.sourceRoot_] += DFA.rank*DFGB.rank;
                 }
             }
@@ -3250,10 +3248,9 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataUnpackC
             {
                 C.ZMap_.Set( key, new Dense<Scalar>( SFA.rank, SFB.rank ) );
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
-
-                std::memcpy
+                MemCopy
                 ( ZC.Buffer(), &recvBuffer[offsets[A.sourceRoot_]],
-                  SFA.rank*SFB.rank*sizeof(Scalar) );
+                  SFA.rank*SFB.rank );
                 offsets[A.sourceRoot_] += SFA.rank*SFB.rank;
             }
             break;
@@ -3266,10 +3263,9 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataUnpackC
             {
                 C.ZMap_.Set( key, new Dense<Scalar>( SFA.rank, SFGB.rank ) );
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
-
-                std::memcpy
+                MemCopy
                 ( ZC.Buffer(), &recvBuffer[offsets[A.sourceRoot_]],
-                  SFA.rank*SFGB.rank*sizeof(Scalar) );
+                  SFA.rank*SFGB.rank );
                 offsets[A.sourceRoot_] += SFA.rank*SFGB.rank;
             }
             break;
@@ -3285,10 +3281,9 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataUnpackC
             {
                 C.ZMap_.Set( key, new Dense<Scalar>( SFA.rank, FGB.rank ) );
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
-
-                std::memcpy
+                MemCopy
                 ( ZC.Buffer(), &recvBuffer[offsets[A.sourceRoot_]],
-                  SFA.rank*FGB.rank*sizeof(Scalar) );
+                  SFA.rank*FGB.rank );
                 offsets[A.sourceRoot_] += SFA.rank*FGB.rank;
             }
             break;
@@ -3299,10 +3294,9 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataUnpackC
             {
                 C.ZMap_.Set( key, new Dense<Scalar>( B.Height(), SFA.rank ) );
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
-
-                std::memcpy
+                MemCopy
                 ( ZC.Buffer(), &recvBuffer[offsets[B.targetRoot_]],
-                  B.Height()*SFA.rank*sizeof(Scalar) );
+                  B.Height()*SFA.rank );
                 offsets[B.targetRoot_] += B.Height()*SFA.rank;
             }
             break;
@@ -3345,9 +3339,9 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataUnpackC
             {
                 C.ZMap_.Set( key, new Dense<Scalar>( B.Height(), SFGA.rank ) );
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
-                std::memcpy
+                MemCopy
                 ( ZC.Buffer(), &recvBuffer[offsets[B.targetRoot_]],
-                  B.Height()*SFGA.rank*sizeof(Scalar) );
+                  B.Height()*SFGA.rank );
                 offsets[B.targetRoot_] += B.Height()*SFGA.rank;
             }
             break;
@@ -3386,10 +3380,9 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataUnpackC
             {
                 C.ZMap_.Set( key, new Dense<Scalar>( B.Height(), FGA.rank ) );
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
-
-                std::memcpy
+                MemCopy
                 ( ZC.Buffer(), &recvBuffer[offsets[B.targetRoot_]],
-                  B.Height()*FGA.rank*sizeof(Scalar) );
+                  B.Height()*FGA.rank );
                 offsets[B.targetRoot_] += B.Height()*FGA.rank;
             }
             break;
@@ -3423,10 +3416,9 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataUnpackC
                     C.ZMap_.Set
                     ( key, new Dense<Scalar>( A.Height(), SFB.rank ) );
                     Dense<Scalar>& ZC = C.ZMap_.Get( key );
-
-                    std::memcpy
+                    MemCopy
                     ( ZC.Buffer(), &recvBuffer[offsets[A.sourceRoot_]],
-                      A.Height()*SFB.rank*sizeof(Scalar) );
+                      A.Height()*SFB.rank );
                     offsets[A.sourceRoot_] += A.Height()*SFB.rank;
                 }
             }
@@ -3439,10 +3431,9 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataUnpackC
             {
                 C.ZMap_.Set( key, new Dense<Scalar>( A.Height(), SFGB.rank ) );
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
-
-                std::memcpy
+                MemCopy
                 ( ZC.Buffer(), &recvBuffer[offsets[A.sourceRoot_]],
-                  A.Height()*SFGB.rank*sizeof(Scalar) );
+                  A.Height()*SFGB.rank );
                 offsets[A.sourceRoot_] += A.Height()*SFGB.rank;
             }
             break;
@@ -3457,10 +3448,9 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataUnpackC
             {
                 C.ZMap_.Set( key, new Dense<Scalar>( A.Height(), FGB.rank ) );
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
-
-                std::memcpy
+                MemCopy
                 ( ZC.Buffer(), &recvBuffer[offsets[A.sourceRoot_]],
-                  A.Height()*FGB.rank*sizeof(Scalar) );
+                  A.Height()*FGB.rank );
                 offsets[A.sourceRoot_] += A.Height()*FGB.rank;
             }
             break;
@@ -3475,10 +3465,9 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataUnpackC
                 if( C.inSourceTeam_ )
                 {
                     C.ZMap_.Set( key, new Dense<Scalar>( m, k ) );
-                    std::memcpy
+                    MemCopy
                     ( C.ZMap_.Get( key ).Buffer(), 
-                      &recvBuffer[offsets[B.targetRoot_]],
-                      m*k*sizeof(Scalar) );
+                      &recvBuffer[offsets[B.targetRoot_]], m*k );
                     offsets[B.targetRoot_] += m*k;
                 }
             }
@@ -3518,10 +3507,9 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataUnpackC
             if( m != 0 && k != 0 )
             {
                 C.ZMap_.Set( key, new Dense<Scalar>( m, k ) );
-                std::memcpy
+                MemCopy
                 ( C.ZMap_.Get( key ).Buffer(), 
-                  &recvBuffer[offsets[B.targetRoot_]],
-                  m*k*sizeof(Scalar) );
+                  &recvBuffer[offsets[B.targetRoot_]], m*k );
                 offsets[B.targetRoot_] += m*k; 
             }
             break;
@@ -3567,8 +3555,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainBroadcasts
     // Compute the message sizes for each broadcast
     const unsigned numTeamLevels = teams_->NumLevels();
     const unsigned numBroadcasts = numTeamLevels-1;
-    std::vector<int> sizes( numBroadcasts );
-    std::memset( &sizes[0], 0, numBroadcasts*sizeof(int) );
+    std::vector<int> sizes( numBroadcasts, 0 );
     A.MultiplyHMatMainBroadcastsCountA( sizes, startLevel, endLevel );
     B.MultiplyHMatMainBroadcastsCountB( sizes, startLevel, endLevel );
     A.MultiplyHMatMainBroadcastsCountC
@@ -3975,10 +3962,9 @@ DistHMat3d<Scalar>::MultiplyHMatMainBroadcastsPackC
                 if( teamRank == 0 && DFA.rank != 0 && DFB.rank != 0 )
                 {
                     const unsigned teamLevel = A.teams_->TeamLevel(A.level_);
-                    std::memcpy
+                    MemCopy
                     ( &buffer[offsets[teamLevel]], 
-                      C.ZMap_.Get( key ).LockedBuffer(),
-                      DFA.rank*DFB.rank*sizeof(Scalar) );
+                      C.ZMap_.Get( key ).LockedBuffer(), DFA.rank*DFB.rank );
                     offsets[teamLevel] += DFA.rank*DFB.rank;
                 }
             }
@@ -3996,10 +3982,9 @@ DistHMat3d<Scalar>::MultiplyHMatMainBroadcastsPackC
                 if( teamRank == 0 && DFA.rank != 0 && DFGB.rank != 0 )
                 {
                     const unsigned teamLevel = A.teams_->TeamLevel(A.level_);
-                    std::memcpy
+                    MemCopy
                     ( &buffer[offsets[teamLevel]],
-                      C.ZMap_.Get( key ).LockedBuffer(),
-                      DFA.rank*DFGB.rank*sizeof(Scalar) );
+                      C.ZMap_.Get( key ).LockedBuffer(), DFA.rank*DFGB.rank );
                     offsets[teamLevel] += DFA.rank*DFGB.rank;
                 }
             }
@@ -4083,9 +4068,9 @@ DistHMat3d<Scalar>::MultiplyHMatMainBroadcastsUnpackC
                 if( DFA.rank != 0 && DFB.rank != 0 )
                 {
                     const unsigned teamLevel = A.teams_->TeamLevel(A.level_);
-                    std::memcpy
+                    MemCopy
                     ( C.ZMap_.Get( key ).Buffer(), &buffer[offsets[teamLevel]],
-                      DFA.rank*DFB.rank*sizeof(Scalar) );
+                      DFA.rank*DFB.rank );
                     offsets[teamLevel] += DFA.rank*DFB.rank;
                 }
             }
@@ -4101,9 +4086,9 @@ DistHMat3d<Scalar>::MultiplyHMatMainBroadcastsUnpackC
                 if( DFA.rank != 0 && DFGB.rank != 0 )
                 {
                     const unsigned teamLevel = A.teams_->TeamLevel(A.level_);
-                    std::memcpy
+                    MemCopy
                     ( C.ZMap_.Get( key ).Buffer(), &buffer[offsets[teamLevel]],
-                      DFA.rank*DFGB.rank*sizeof(Scalar) );
+                      DFA.rank*DFGB.rank );
                     offsets[teamLevel] += DFA.rank*DFGB.rank;
                 }
             }
