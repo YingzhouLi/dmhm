@@ -1248,7 +1248,10 @@ private:
       int startLevel, int endLevel, 
       int startUpdate, int endUpdate, int update );
     void MultiplyHMatFHHCompressMidcompute
-    ( Real error, int startLevel, int endLevel );
+    ( const DistHMat3d<Scalar>& B, DistHMat3d<Scalar>& C,
+      Real epsilon,
+      int startLevel, int endLevel, 
+      int startUpdate, int endUpdate, int update );
     void MultiplyHMatFHHCompressBroadcasts
     ( const DistHMat3d<Scalar>& B, DistHMat3d<Scalar>& C,
       int startLevel, int endLevel, 

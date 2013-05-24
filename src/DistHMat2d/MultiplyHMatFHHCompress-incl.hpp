@@ -30,7 +30,8 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompress
     
     // TODO: Allow for this to be overridden 
     const Real epsilon = lapack::MachineEpsilon<Real>();
-    C.MultiplyHMatFHHCompressMidcompute( epsilon, startLevel, endLevel );
+    MultiplyHMatFHHCompressMidcompute
+    ( B, C, epsilon, startLevel, endLevel, startUpdate, endUpdate, 0 );
 
     MultiplyHMatFHHCompressBroadcasts
     ( B, C, startLevel, endLevel, startUpdate, endUpdate, 0  );
@@ -79,13 +80,13 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressPrecompute
                 if( C.level_ >= startLevel && C.level_ < endLevel &&
                     update >= startUpdate && update < endUpdate )
                 {
-                    const unsigned teamLevel = C.teams_->TeamLevel(C.level_);
                     if( C.inTargetTeam_ ) 
                     {
                         const int key = A.sourceOffset_;
                         const Dense<Scalar>& colU = C.colXMap_.Get( key );
-                        int Trank = colU.Width();
-                        int Omegarank = A.rowOmega_.Width();
+                        const int Trank = colU.Width();
+                        const int LH = colU.Height();
+                        const int Omegarank = A.rowOmega_.Width();
 
                         C.colUSqrMap_.Set
                         ( key, new Dense<Scalar>( Trank, Trank ) );
@@ -101,25 +102,26 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressPrecompute
                         //_colUSqr = ( A B Omega1)' ( A B Omega1 )
                         // TODO: Replace this with a Herk call...
                         blas::Gemm
-                        ( 'C', 'N', Trank, Trank, A.LocalHeight(),
+                        ( 'C', 'N', Trank, Trank, LH,
                          Scalar(1), colU.LockedBuffer(), colU.LDim(),
                                     colU.LockedBuffer(), colU.LDim(),
                          Scalar(0), colUSqr.Buffer(), colUSqr.LDim() );
 
                         //_colPinv = Omega2' (A B Omega1)
                         blas::Gemm
-                        ( 'C', 'N', Omegarank, Trank, A.LocalHeight(),
+                        ( 'C', 'N', Omegarank, Trank, LH,
                           Scalar(1), A.rowOmega_.LockedBuffer(), 
                                      A.rowOmega_.LDim(),
                                      colU.LockedBuffer(), colU.LDim(),
-                          Scalar(0), colPinv.Buffer(),      Omegarank );
+                          Scalar(0), colPinv.Buffer(),  colPinv.LDim() );
                     }
                     if( C.inSourceTeam_ )
                     {
                         const int key = A.sourceOffset_;
                         const Dense<Scalar>& rowU = C.rowXMap_.Get( key );
-                        int Trank = rowU.Width();
-                        int Omegarank = B.colOmega_.Width();
+                        const int Trank = rowU.Width();
+                        const int LH = rowU.Height();
+                        const int Omegarank = B.colOmega_.Width();
 
                         C.rowUSqrMap_.Set
                         ( key, new Dense<Scalar>( Trank, Trank ) );
@@ -135,18 +137,18 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressPrecompute
                         //_rowUSqr = ( B' A' Omega2 )' ( B' A' Omega2 )
                         // TODO: Replace this with a Herk call...
                         blas::Gemm
-                        ( 'C', 'N', Trank, Trank, B.LocalWidth(),
+                        ( 'C', 'N', Trank, Trank, LH,
                          Scalar(1), rowU.LockedBuffer(), rowU.LDim(),
                                     rowU.LockedBuffer(), rowU.LDim(),
                          Scalar(0), rowUSqr.Buffer(), rowUSqr.LDim() );
 
                         //_rowPinv = Omega1' (B' A' Omega2)
                         blas::Gemm
-                        ( 'C', 'N', Omegarank, Trank, B.LocalWidth(),
+                        ( 'C', 'N', Omegarank, Trank, LH,
                           Scalar(1), B.colOmega_.LockedBuffer(), 
                                      B.colOmega_.LDim(),
                                      rowU.LockedBuffer(), rowU.LDim(),
-                          Scalar(0), rowPinv.Buffer(),      Omegarank );
+                          Scalar(0), rowPinv.Buffer(), rowPinv.LDim() );
                     }
                 }
             }
@@ -505,229 +507,216 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressReducesUnpack
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyHMatFHHCompressMidcompute
-( Real epsilon, int startLevel, int endLevel )
+( const DistHMat2d<Scalar>& B,
+        DistHMat2d<Scalar>& C,
+  Real epsilon,
+  int startLevel, int endLevel,
+  int startUpdate, int endUpdate, int update )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MultiplyHMatFHHCompressMidcompute");
 #endif
-    if( Height() == 0 || Width() == 0 )
+    const DistHMat2d<Scalar>& A = *this;
+    if( (!A.inTargetTeam_ && !A.inSourceTeam_ && !B.inSourceTeam_) ||
+        A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
         return;
-
-    switch( block_.type )
+    switch( A.block_.type )
     {
     case DIST_NODE:
+    case DIST_NODE_GHOST:
     case SPLIT_NODE:
+    case SPLIT_NODE_GHOST:
     case NODE:
-    {
-        if( level_+1 < endLevel )
+    case NODE_GHOST:
+        switch( B.block_.type )
         {
-            Node& node = *block_.data.N;                                 
-            for( int t=0; t<4; ++t )
-                for( int s=0; s<4; ++s )
-                    node.Child(t,s).MultiplyHMatFHHCompressMidcompute
-                    ( epsilon, startLevel, endLevel);
-        }
-        break;
-    }
-    case DIST_LOW_RANK:
-    case SPLIT_LOW_RANK:
-    case LOW_RANK:
-    {
-        if( level_ < startLevel )
+        case DIST_NODE:
+        case DIST_NODE_GHOST:
+        case SPLIT_NODE:
+        case SPLIT_NODE_GHOST:
+        case NODE:
+        case NODE_GHOST:
+            if( C.Admissible() )
+            {
+                mpi::Comm team = teams_->Team( C.level_ );
+                const int teamRank = mpi::CommRank( team );
+                if( teamRank != 0 )
+                    break;
+                if( C.level_ >= startLevel && C.level_ < endLevel &&
+                    update >= startUpdate && update < endUpdate )
+                {
+                    const int key = A.sourceOffset_;
+                    int sizemax=0;                                               
+                    if( C.inTargetTeam_ )
+                    {
+                        Dense<Scalar>& X = C.colUSqrMap_.Get( key );
+                        sizemax = std::max( sizemax, X.Height() );
+                    }
+                    if( C.inSourceTeam_ )
+                    {
+                        Dense<Scalar>& X = C.rowUSqrMap_.Get( key );
+                        sizemax = std::max( sizemax, X.Height() );
+                    }
+                    int lwork, lrwork, liwork;
+                    lwork=lapack::EVDWorkSize( sizemax );
+                    lrwork=lapack::EVDRealWorkSize( sizemax );
+                    liwork=lapack::EVDIntWorkSize( sizemax );
+                            
+                    std::vector<Scalar> evdWork(lwork);
+                    std::vector<Real> evdRealWork(lrwork);
+                    std::vector<int> evdIntWork(liwork);
+                    if( C.inTargetTeam_ ) 
+                    {
+                        Dense<Scalar>& USqr = C.colUSqrMap_.Get( key );
+                        Dense<Scalar>& Pinv = C.colPinvMap_.Get( key );
+                        Dense<Scalar>& BL = C.BLMap_.Get( key );
+                        
+                        const int k = USqr.Height();
+                        std::vector<Real> USqrEig( k );
+                        lapack::EVD  
+                        ( 'V', 'U', k, USqr.Buffer(), USqr.LDim(),
+                                   &USqrEig[0],
+                                   &evdWork[0],     lwork,
+                                   &evdIntWork[0],  liwork,
+                                   &evdRealWork[0], lrwork );
+                                                                                            
+                        //colOmegaT = Omega2' T1
+                        Dense<Scalar> OmegaT;
+                        hmat_tools::Copy( Pinv, OmegaT );
+                                                                                            
+                        Real maxEig = 0;
+                        if( k > 0 )
+                            maxEig = std::max( USqrEig[k-1], Real(0) );
+                                                                                            
+                        const Real tolerance = sqrt(epsilon*maxEig*k);
+                        for( int j=0; j<k; j++ )
+                        {
+                            const Real omega = std::max( USqrEig[j], Real(0) );
+                            const Real sqrtOmega = sqrt( omega );
+                            if( sqrtOmega > tolerance )
+                                for( int i=0; i<k; ++i )
+                                    USqr.Set(i,j,USqr.Get(i,j)/sqrtOmega);
+                            else
+                                MemZero( USqr.Buffer(0,j), k );
+                        }
+                        
+                        blas::Gemm
+                        ( 'N', 'N', OmegaT.Height(), k, k,
+                         Scalar(1), OmegaT.LockedBuffer(), OmegaT.LDim(),
+                                    USqr.LockedBuffer(), USqr.LDim(),
+                         Scalar(0), Pinv.Buffer(), Pinv.LDim() );
+                                                                                            
+                        int rank=std::min(Pinv.Height(), Pinv.Width());
+                        std::vector<Real> singularValues(rank);
+                        std::vector<Scalar> U(rank*Pinv.Height()), 
+                                            VH(rank*Pinv.Width());
+                        int lsvdwork=lapack::SVDWorkSize(Pinv.Height(), Pinv.Width());
+                        int lrsvdwork=lapack::SVDRealWorkSize(Pinv.Height(), Pinv.Width());
+                        std::vector<Scalar> svdWork(lsvdwork);
+                        std::vector<Real> svdRealWork(lrsvdwork);
+                        lapack::AdjointPseudoInverse
+                        ( Pinv.Height(), Pinv.Width(), Pinv.Buffer(), Pinv.LDim(),
+                          &singularValues[0], &U[0], Pinv.Height(), &VH[0], rank,
+                          &svdWork[0], lsvdwork, &svdRealWork[0], epsilon);
+                                                                                            
+                        Dense<Scalar> Ztmp(k, Pinv.Height());
+                        blas::Gemm
+                        ( 'N', 'C', k, Pinv.Height(), k,
+                         Scalar(1), USqr.LockedBuffer(), USqr.LDim(),
+                                    Pinv.LockedBuffer(), Pinv.LDim(),
+                         Scalar(0), Ztmp.Buffer(), Ztmp.LDim() );
+                        
+                        blas::Gemm
+                        ( 'N', 'N', k, OmegaT.Width(), Ztmp.Width(),
+                         Scalar(1), Ztmp.LockedBuffer(), Ztmp.LDim(),
+                                    OmegaT.LockedBuffer(), OmegaT.LDim(),
+                         Scalar(0), BL.Buffer(), BL.LDim() );
+                    }
+                    if( C.inSourceTeam_ )
+                    {
+                        Dense<Scalar>& USqr = C.rowUSqrMap_.Get( key );
+                        Dense<Scalar>& Pinv = C.rowPinvMap_.Get( key );
+                        Dense<Scalar>& BR = C.BRMap_.Get( key );
+                                                                                            
+                        const int k = USqr.Height();
+                        std::vector<Real> USqrEig( k );
+                        lapack::EVD  
+                        ( 'V', 'U', k, USqr.Buffer(), USqr.LDim(),
+                                   &USqrEig[0],
+                                   &evdWork[0],     lwork,
+                                   &evdIntWork[0],  liwork,
+                                   &evdRealWork[0], lrwork );
+                                                                                            
+                        //colOmegaT = Omega2' T1
+                        Dense<Scalar> OmegaT;
+                        hmat_tools::Copy( Pinv, OmegaT );
+                                                                                            
+                        Real maxEig = 0;
+                        if( k > 0 )
+                            maxEig = std::max( USqrEig[k-1], Real(0) );
+                                                                                            
+                        const Real tolerance = sqrt(epsilon*maxEig*k);
+                        for( int j=0; j<k; j++ )
+                        {
+                            const Real omega = std::max( USqrEig[j], Real(0) );
+                            const Real sqrtOmega = sqrt( omega );
+                            if( sqrtOmega > tolerance )
+                                for( int i=0; i<k; ++i )
+                                    USqr.Set(i,j,USqr.Get(i,j)/sqrtOmega);
+                            else
+                                MemZero( USqr.Buffer(0,j), k );
+                        }
+                        
+                        blas::Gemm
+                        ( 'N', 'N', OmegaT.Height(), k, k,
+                         Scalar(1), OmegaT.LockedBuffer(), OmegaT.LDim(),
+                                    USqr.LockedBuffer(), USqr.LDim(),
+                         Scalar(0), Pinv.Buffer(), Pinv.LDim() );
+                                                                                            
+                        int rank=std::min(Pinv.Height(), Pinv.Width());
+                        std::vector<Real> singularValues(rank);
+                        std::vector<Scalar> U(rank*Pinv.Height()), 
+                                            VH(rank*Pinv.Width());
+                        int lsvdwork=lapack::SVDWorkSize(Pinv.Height(), Pinv.Width());
+                        int lrsvdwork=lapack::SVDRealWorkSize(Pinv.Height(), Pinv.Width());
+                        std::vector<Scalar> svdWork(lsvdwork);
+                        std::vector<Real> svdRealWork(lrsvdwork);
+                        lapack::AdjointPseudoInverse
+                        ( Pinv.Height(), Pinv.Width(), Pinv.Buffer(), Pinv.LDim(),
+                          &singularValues[0], &U[0], Pinv.Height(), &VH[0], rank,
+                          &svdWork[0], lsvdwork, &svdRealWork[0], epsilon);
+                                                                                            
+                        blas::Gemm
+                        ( 'N', 'C', k, Pinv.Height(), k,
+                         Scalar(1), USqr.LockedBuffer(), USqr.LDim(),
+                                    Pinv.LockedBuffer(), Pinv.LDim(),
+                         Scalar(0), BR.Buffer(), BR.LDim() );
+                    }
+                }
+            }
+            else if( C.level_+1 < endLevel )
+            {
+                Node& nodeA = *A.block_.data.N;
+                const Node& nodeB = *B.block_.data.N;
+                Node& nodeC = *C.block_.data.N;
+                for( int t=0; t<4; ++t )
+                    for( int s=0; s<4; ++s )
+                        for( int r=0; r<4; ++r )
+                            nodeA.Child(t,r).
+                            MultiplyHMatFHHCompressMidcompute
+                            ( nodeB.Child(r,s), nodeC.Child(t,s), epsilon,
+                              startLevel, endLevel, startUpdate, endUpdate, r );
+            }
             break;
-        mpi::Comm team = teams_->Team( level_ );
-        const int teamRank = mpi::CommRank( team );
-        if( teamRank == 0 )
-        {
-            // Calculate Eigenvalues of Squared Matrix               
-            int sizemax=0;
-            if( inTargetTeam_ )
-            {
-                colUSqrMap_.ResetIterator();
-                const unsigned numEntries = colUSqrMap_.Size();
-                for( int i=0; i<numEntries; ++i,colUSqrMap_.Increment())
-                {
-                    Dense<Scalar>& X = *colUSqrMap_.CurrentEntry();
-                    sizemax = std::max( sizemax, X.Height() );
-                }
-            }
-            else
-            {
-                rowUSqrMap_.ResetIterator();
-                const unsigned numEntries = rowUSqrMap_.Size();
-                for( int i=0; i<numEntries; ++i,rowUSqrMap_.Increment())
-                {
-                    Dense<Scalar>& X = *rowUSqrMap_.CurrentEntry();
-                    sizemax = std::max( sizemax, X.Height() );
-                }
-            }
-             
-            int lwork, lrwork, liwork;
-            lwork=lapack::EVDWorkSize( sizemax );
-            lrwork=lapack::EVDRealWorkSize( sizemax );
-            liwork=lapack::EVDIntWorkSize( sizemax );
-                    
-            std::vector<Scalar> evdWork(lwork);
-            std::vector<Real> evdRealWork(lrwork);
-            std::vector<int> evdIntWork(liwork);
-                                                                     
-            if( inTargetTeam_ )
-            {
-#ifndef RELEASE
-                if( colUSqrMap_.Size() != colPinvMap_.Size() )
-                    throw std::logic_error
-                    ("Number of colUSqr not equal to number of colPinv");
-#endif
-                colUSqrMap_.ResetIterator();
-                const unsigned numEntries = colUSqrMap_.Size();
-                for(int i=0; i<numEntries; ++i, colUSqrMap_.Increment() ) 
-                {
-                    int key = colUSqrMap_.CurrentKey();
-                    Dense<Scalar>& USqr = *colUSqrMap_.CurrentEntry();
-                    Dense<Scalar>& Pinv = colPinvMap_.Get( key );
-                    Dense<Scalar>& BL = BLMap_.Get( key );
-                    
-                    const int k = USqr.Height();
-                    std::vector<Real> USqrEig( k );
-                    lapack::EVD  
-                    ( 'V', 'U', k, USqr.Buffer(), USqr.LDim(),
-                               &USqrEig[0],
-                               &evdWork[0],     lwork,
-                               &evdIntWork[0],  liwork,
-                               &evdRealWork[0], lrwork );
-
-                    //colOmegaT = Omega2' T1
-                    Dense<Scalar> OmegaT;
-                    hmat_tools::Copy( Pinv, OmegaT );
- 
-                    Real maxEig = 0;
-                    if( k > 0 )
-                        maxEig = std::max( USqrEig[k-1], Real(0) );
- 
-                    const Real tolerance = sqrt(epsilon*maxEig*k);
-                    for( int j=0; j<k; j++ )
-                    {
-                        const Real omega = std::max( USqrEig[j], Real(0) );
-                        const Real sqrtOmega = sqrt( omega );
-                        if( sqrtOmega > tolerance )
-                            for( int i=0; i<k; ++i )
-                                USqr.Set(i,j,USqr.Get(i,j)/sqrtOmega);
-                        else
-                            MemZero( USqr.Buffer(0,j), k );
-                    }
-                    
-                    blas::Gemm
-                    ( 'N', 'N', OmegaT.Height(), k, k,
-                     Scalar(1), OmegaT.LockedBuffer(), OmegaT.LDim(),
-                                USqr.LockedBuffer(), USqr.LDim(),
-                     Scalar(0), Pinv.Buffer(), Pinv.LDim() );
- 
-                    int rank=std::min(Pinv.Height(), Pinv.Width());
-                    std::vector<Real> singularValues(rank);
-                    std::vector<Scalar> U(rank*Pinv.Height()), 
-                                        VH(rank*Pinv.Width());
-                    int lsvdwork=lapack::SVDWorkSize(Pinv.Height(), Pinv.Width());
-                    int lrsvdwork=lapack::SVDRealWorkSize(Pinv.Height(), Pinv.Width());
-                    std::vector<Scalar> svdWork(lsvdwork);
-                    std::vector<Real> svdRealWork(lrsvdwork);
-                    lapack::AdjointPseudoInverse
-                    ( Pinv.Height(), Pinv.Width(), Pinv.Buffer(), Pinv.LDim(),
-                      &singularValues[0], &U[0], Pinv.Height(), &VH[0], rank,
-                      &svdWork[0], lsvdwork, &svdRealWork[0]);
- 
-                    Dense<Scalar> Ztmp(k, Pinv.Height());
-                    blas::Gemm
-                    ( 'N', 'C', k, Pinv.Height(), k,
-                     Scalar(1), USqr.LockedBuffer(), USqr.LDim(),
-                                Pinv.LockedBuffer(), Pinv.LDim(),
-                     Scalar(0), Ztmp.Buffer(), Ztmp.LDim() );
-                    
-                    blas::Gemm
-                    ( 'N', 'N', k, OmegaT.Width(), Ztmp.Width(),
-                     Scalar(1), Ztmp.LockedBuffer(), Ztmp.LDim(),
-                                OmegaT.LockedBuffer(), OmegaT.LDim(),
-                     Scalar(0), BL.Buffer(), BL.LDim() );
-                }
-            }
-                                                                     
-            if( inSourceTeam_ )
-            {
-#ifndef RELEASE
-                if( rowUSqrMap_.Size() != rowPinvMap_.Size() )
-                    throw std::logic_error
-                    ("Number of rowUSqr not equal to number of rowPinv");
-#endif
-                rowUSqrMap_.ResetIterator();
-                const unsigned numEntries = rowUSqrMap_.Size();
-                for(int i=0; i<numEntries; ++i, rowUSqrMap_.Increment() )
-                {
-                    int key = rowUSqrMap_.CurrentKey();
-                    Dense<Scalar>& USqr = *rowUSqrMap_.CurrentEntry();
-                    Dense<Scalar>& Pinv = rowPinvMap_.Get( key );
-                    Dense<Scalar>& BR = BRMap_.Get( key );
-
-                    const int k = USqr.Height();
-                    std::vector<Real> USqrEig( k );
-                    lapack::EVD  
-                    ( 'V', 'U', k, USqr.Buffer(), USqr.LDim(),
-                               &USqrEig[0],
-                               &evdWork[0],     lwork,
-                               &evdIntWork[0],  liwork,
-                               &evdRealWork[0], lrwork );
-               
-                    //colOmegaT = Omega2' T1
-                    Dense<Scalar> OmegaT;
-                    hmat_tools::Copy( Pinv, OmegaT );
-          
-                    Real maxEig = 0;
-                    if( k > 0 )
-                        maxEig = std::max( USqrEig[k-1], Real(0) );
- 
-                    const Real tolerance = sqrt(epsilon*maxEig*k);
-                    for( int j=0; j<k; j++ )
-                    {
-                        const Real omega = std::max( USqrEig[j], Real(0) );
-                        const Real sqrtOmega = sqrt( omega );
-                        if( sqrtOmega > tolerance )
-                            for( int i=0; i<k; ++i )
-                                USqr.Set(i,j,USqr.Get(i,j)/sqrtOmega);
-                        else
-                            MemZero( USqr.Buffer(0,j), k );
-                    }
-                    
-                    blas::Gemm
-                    ( 'N', 'N', OmegaT.Height(), k, k,
-                     Scalar(1), OmegaT.LockedBuffer(), OmegaT.LDim(),
-                                USqr.LockedBuffer(), USqr.LDim(),
-                     Scalar(0), Pinv.Buffer(), Pinv.LDim() );
-    
-                    int rank=std::min(Pinv.Height(), Pinv.Width());
-                    std::vector<Real> singularValues(rank);
-                    std::vector<Scalar> U(rank*Pinv.Height()), 
-                                        VH(rank*Pinv.Width());
-                    int lsvdwork=lapack::SVDWorkSize(Pinv.Height(), Pinv.Width());
-                    int lrsvdwork=lapack::SVDRealWorkSize(Pinv.Height(), Pinv.Width());
-                    std::vector<Scalar> svdWork(lsvdwork);
-                    std::vector<Real> svdRealWork(lrsvdwork);
-                    lapack::AdjointPseudoInverse
-                    ( Pinv.Height(), Pinv.Width(), Pinv.Buffer(), Pinv.LDim(),
-                      &singularValues[0], &U[0], Pinv.Height(), &VH[0], rank,
-                      &svdWork[0], lsvdwork, &svdRealWork[0]);
-         
-                    blas::Gemm
-                    ( 'N', 'C', k, Pinv.Height(), k,
-                     Scalar(1), USqr.LockedBuffer(), USqr.LDim(),
-                                Pinv.LockedBuffer(), Pinv.LDim(),
-                     Scalar(0), BR.Buffer(), BR.LDim() );
-                }
-            }
+        default:
+            break;
         }
         break;
-    }
     default:
         break;
     }
 }
+
 
 template<typename Scalar>
 void

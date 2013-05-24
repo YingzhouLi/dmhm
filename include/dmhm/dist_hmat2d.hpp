@@ -1239,7 +1239,10 @@ private:
       int startLevel, int endLevel, 
       int startUpdate, int endUpdate, int update );
     void MultiplyHMatFHHCompressMidcompute
-    ( Real epsilon, int startLevel, int endLevel );
+    ( const DistHMat2d<Scalar>& B, DistHMat2d<Scalar>& C,
+      Real epsilon,
+      int startLevel, int endLevel, 
+      int startUpdate, int endUpdate, int update );
     void MultiplyHMatFHHCompressBroadcasts
     ( const DistHMat2d<Scalar>& B, DistHMat2d<Scalar>& C,
       int startLevel, int endLevel, 

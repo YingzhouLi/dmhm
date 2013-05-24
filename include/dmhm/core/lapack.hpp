@@ -1374,6 +1374,321 @@ inline void AdjointPseudoInverse
     ( 'N', 'N', m, n, k, 1, U, ldu, VH, ldvh, 0, A, lda );
 }
 
+inline void AdjointPseudoInverse
+( int m, int n, 
+  float* A, int lda,
+  float* s, 
+  float* U, int ldu, 
+  float* VH, int ldvh,
+  float* work, int lwork,
+  float* realWork, float epsilon )
+{
+#ifndef RELEASE
+    CallStackEntry entry("lapack::AdjointPseudoInverse");
+    if( lda == 0 )
+        throw std::logic_error("lda was 0");
+    if( ldu == 0 )
+        throw std::logic_error("ldu was 0");
+    if( ldvh == 0 )
+        throw std::logic_error("ldvh was 0");
+#endif
+    lapack::SVD( 'S', 'S', m, n, A, lda, s, U, ldu, VH, ldvh, work, lwork );
+
+    // Get the safe minimum for our singular value thresholding
+    char cmach = 'S';
+    const int k = std::min( m, n );
+    const float safeMin = std::max(s[0],(float)0)*k*epsilon;
+
+#if defined(PACK_DURING_PSEUDO_INVERSE)
+    // Combine the inversion of the sufficiently large singular values with 
+    // the scaling of U. We can skip the columns of U that correspond to 
+    // numerically zero singular values
+    int packedColumns = 0;
+    for( int j=0; j<k; ++j )
+    {
+        if( s[j] >= safeMin )
+        {
+            const float invSigma = 1 / s[j];
+            // Split our approach based on whether or not the source and 
+            // destination buffers are the same
+            if( packedColumns == j )
+            {
+                float* RESTRICT UCol = &U[j*ldu];
+                for( int i=0; i<m; ++i ) 
+                    UCol[i] *= invSigma;
+            }
+            else
+            {
+                // Form the scaled column of U in its packed location
+                float* RESTRICT UPackedCol = &U[packedColumns*ldu];
+                const float* RESTRICT UCol = &U[j*ldu];
+                for( int i=0; i<m; ++i )
+                    UPackedCol[i] = invSigma*UCol[i];
+                // Since we moved a column of U, we have to move the
+                // corresponding column of V as well. This may ruin the benefit
+                // of the packed approach
+                for( int i=0; i<n; ++i )
+                    VH[packedColumns+i*ldvh] = VH[j+i*ldvh];
+            }
+            ++packedColumns;
+        }
+    }
+
+    // Form A := U V^H, where U and V have been compressed
+    blas::Gemm
+    ( 'N', 'N', m, n, packedColumns, 1, U, ldu, VH, ldvh, 0, A, lda );
+#else
+    // Scale the columns of U using thresholded inversion of the singular values
+    for( int j=0; j<k; ++j )
+    {
+        if( s[j] >= safeMin )
+        {
+            // Scale the j'th column by 1/s[j]
+            const float invSigma = 1 / s[j];
+            float* RESTRICT UCol = &U[j*ldu];
+            for( int i=0; i<m; ++i ) 
+                UCol[i] *= invSigma;
+        }
+        else
+        {
+            // Scale the j'th column by 0
+            std::memset( &U[j*ldu], 0, m*sizeof(float) );
+        }
+    }
+
+    // Form A := U V^H, where U has been scaled
+    blas::Gemm
+    ( 'N', 'N', m, n, k, 1, U, ldu, VH, ldvh, 0, A, lda );
+#endif // PACK_DURING_PSEUDO_INVERSE
+}
+
+inline void AdjointPseudoInverse
+( int m, int n, 
+  double* A, int lda,
+  double* s, 
+  double* U, int ldu, 
+  double* VH, int ldvh,
+  double* work, int lwork,
+  double* realWork, double epsilon )
+{
+#ifndef RELEASE
+    CallStackEntry entry("lapack::AdjointPseudoInverse");
+    if( lda == 0 )
+        throw std::logic_error("lda was 0");
+    if( ldu == 0 )
+        throw std::logic_error("ldu was 0");
+    if( ldvh == 0 )
+        throw std::logic_error("ldvh was 0");
+#endif
+    lapack::SVD( 'S', 'S', m, n, A, lda, s, U, ldu, VH, ldvh, work, lwork );
+
+    // Get the safe minimum for our singular value thresholding
+    char cmach = 'S';
+    const int k = std::min( m, n );
+    const double safeMin = std::max(s[0],(double)0)*k*epsilon;
+
+#if defined(PACK_DURING_PSEUDO_INVERSE)
+    // Combine the inversion of the sufficiently large singular values with 
+    // the scaling of U. We can skip the columns of U that correspond to 
+    // numerically zero singular values
+    int packedColumns = 0;
+    for( int j=0; j<k; ++j )
+    {
+        if( s[j] >= safeMin )
+        {
+            const double invSigma = 1 / s[j];
+            // Split our approach based on whether or not the source and 
+            // destination buffers are the same
+            if( packedColumns == j )
+            {
+                double* RESTRICT UCol = &U[j*ldu];
+                for( int i=0; i<m; ++i ) 
+                    UCol[i] *= invSigma;
+            }
+            else
+            {
+                // Form the scaled column of U in its packed location
+                double* RESTRICT UPackedCol = &U[packedColumns*ldu];
+                const double* RESTRICT UCol = &U[j*ldu];
+                for( int i=0; i<m; ++i )
+                    UPackedCol[i] = invSigma*UCol[i];
+                // Since we moved a column of U, we have to move the
+                // corresponding column of V as well. This may ruin the benefit
+                // of the packed approach
+                for( int i=0; i<n; ++i )
+                    VH[packedColumns+i*ldvh] = VH[j+i*ldvh];
+            }
+            ++packedColumns;
+        }
+    }
+
+    // Form A := U V^H, where U and V have been compressed
+    blas::Gemm
+    ( 'N', 'N', m, n, packedColumns, 1, U, ldu, VH, ldvh, 0, A, lda );
+#else
+    // Scale the columns of U using thresholded inversion of the singular values
+    for( int j=0; j<k; ++j )
+    {
+        if( s[j] >= safeMin )
+        {
+            // Scale the j'th column by 1/s[j]
+            const double invSigma = 1 / s[j];
+            double* RESTRICT UCol = &U[j*ldu];
+            for( int i=0; i<m; ++i ) 
+                UCol[i] *= invSigma;
+        }
+        else
+        {
+            // Scale the j'th column by 0
+            std::memset( &U[j*ldu], 0, m*sizeof(double) );
+        }
+    }
+
+    // Form A := U V^H, where U has been scaled
+    blas::Gemm
+    ( 'N', 'N', m, n, k, 1, U, ldu, VH, ldvh, 0, A, lda );
+#endif // PACK_DURING_PSEUDO_INVERSE
+}
+
+inline void AdjointPseudoInverse
+( int m, int n, 
+  std::complex<float>* A, int lda,
+  float* s, 
+  std::complex<float>* U, int ldu, 
+  std::complex<float>* VH, int ldvh,
+  std::complex<float>* work, int lwork, 
+  float* rwork, float epsilon )
+{
+#ifndef RELEASE
+    CallStackEntry entry("lapack::AdjointPseudoInverse");
+    if( lda == 0 )
+        throw std::logic_error("lda was 0");
+    if( ldu == 0 )
+        throw std::logic_error("ldu was 0");
+    if( ldvh == 0 )
+        throw std::logic_error("ldvh was 0");
+#endif
+    lapack::SVD
+    ( 'S', 'S', m, n, A, lda, s, U, ldu, VH, ldvh, work, lwork, rwork );
+
+    // Get the safe minimum for our singular value thresholding
+    char cmach = 'S';
+    const int k = std::min( m, n );
+    const float safeMin = std::max(s[0],(float)0)*k*epsilon;
+
+#if defined(PACK_DURING_PSEUDO_INVERSE)
+    // Combine the inversion of the sufficiently large singular values with 
+    // the scaling of U. We can skip the columns of U that correspond to 
+    // numerically zero singular values
+    int packedColumns = 0;
+    for( int j=0; j<k; ++j )
+    {
+        if( s[j] >= safeMin )
+        {
+            const float invSigma = 1 / s[j];
+            // Split our approach based on whether or not the source and 
+            // destination buffers are the same
+            if( packedColumns == j )
+            {
+                std::complex<float>* RESTRICT UCol = &U[j*ldu];
+                for( int i=0; i<m; ++i ) 
+                    UCol[i] *= invSigma;
+            }
+            else
+            {
+                // Form the scaled column of U in its packed location
+                std::complex<float>* RESTRICT 
+                    UPackedCol = &U[packedColumns*ldu];
+                const std::complex<float>* RESTRICT UCol = &U[j*ldu];
+                for( int i=0; i<m; ++i )
+                    UPackedCol[i] = invSigma*UCol[i];
+                // Since we moved a column of U, we have to move the
+                // corresponding column of V as well. This may ruin the benefit
+                // of the packed approach
+                for( int i=0; i<n; ++i )
+                    VH[packedColumns+i*ldvh] = VH[j+i*ldvh];
+            }
+            ++packedColumns;
+        }
+    }
+
+    // Form A := U V^H, where U and V have been compressed
+    blas::Gemm
+    ( 'N', 'N', m, n, packedColumns, 1, U, ldu, VH, ldvh, 0, A, lda );
+#else
+    // Scale the columns of U using thresholded inversion of the singular values
+    for( int j=0; j<k; ++j )
+    {
+        if( s[j] >= safeMin )
+        {
+            // Scale the j'th column by 1/s[j]
+            const float invSigma = 1 / s[j];
+            std::complex<float>* RESTRICT UCol = &U[j*ldu];
+            for( int i=0; i<m; ++i ) 
+                UCol[i] *= invSigma;
+        }
+        else
+        {
+            // Scale the j'th column by 0
+            std::memset( &U[j*ldu], 0, m*sizeof(std::complex<float>) );
+        }
+    }
+
+    // Form A := U V^H, where U has been scaled
+    blas::Gemm
+    ( 'N', 'N', m, n, k, 1, U, ldu, VH, ldvh, 0, A, lda );
+#endif // PACK_DURING_PSEUDO_INVERSE
+}
+
+inline void AdjointPseudoInverse
+( int m, int n, 
+  std::complex<double>* A, int lda,
+  double* s, 
+  std::complex<double>* U, int ldu, 
+  std::complex<double>* VH, int ldvh,
+  std::complex<double>* work, int lwork, 
+  double* rwork, double epsilon )
+{
+#ifndef RELEASE
+    CallStackEntry entry("lapack::AdjointPseudoInverse");
+    if( lda == 0 )
+        throw std::logic_error("lda was 0");
+    if( ldu == 0 )
+        throw std::logic_error("ldu was 0");
+    if( ldvh == 0 )
+        throw std::logic_error("ldvh was 0");
+#endif
+    lapack::SVD
+    ( 'S', 'S', m, n, A, lda, s, U, ldu, VH, ldvh, work, lwork, rwork );
+
+    // Get the safe minimum for our singular value thresholding
+    char cmach = 'S';
+    const int k = std::min( m, n );
+    const double safeMin = std::max(s[0],(double)0)*k*epsilon;
+
+    // Scale the columns of U using thresholded inversion of the singular values
+    for( int j=0; j<k; ++j )
+    {
+        if( s[j] >= safeMin )
+        {
+            // Scale the j'th column by 1/s[j]
+            const double invSigma = 1 / s[j];
+            std::complex<double>* RESTRICT UCol = &U[j*ldu];
+            for( int i=0; i<m; ++i ) 
+                UCol[i] *= invSigma;
+        }
+        else
+        {
+            // Scale the j'th column by 0
+            std::memset( &U[j*ldu], 0, m*sizeof(std::complex<double>) );
+        }
+    }
+
+    // Form A := U V^H, where U has been scaled
+    blas::Gemm
+    ( 'N', 'N', m, n, k, 1, U, ldu, VH, ldvh, 0, A, lda );
+}
+
 //----------------------------------------------------------------------------//
 // LU Factorization                                                           //
 //----------------------------------------------------------------------------//

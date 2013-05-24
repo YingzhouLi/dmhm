@@ -54,7 +54,7 @@ imagesc(A);
 %%
 filename='./ELocal_';
 E=[];
-for i=0:7
+for i=0:0
     run([filename int2str(i) '.m']);
     E=[E;ELocal{i+1}];
 end
