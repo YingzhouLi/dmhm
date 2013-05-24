@@ -21,7 +21,7 @@ main( int argc, char* argv[] )
     {
         const int xSize = Input("--xSize","x dimension size",15);
         const int ySize = Input("--ySize","y dimension size",15);
-		const int zSize = Input("--zSize","z dimension size",15);
+        const int zSize = Input("--zSize","z dimension size",15);
         const int numLevels = Input("--numLevels","depth of H-matrix tree",4);
         const bool strong = Input("--strong","strongly admissible?",false);
         const int maxRank = Input("--maxRank","maximum rank of blocks",5);

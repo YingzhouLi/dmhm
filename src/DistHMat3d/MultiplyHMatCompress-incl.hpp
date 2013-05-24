@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Yingzhou Li, Lexing Ying, 
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -9,7 +9,7 @@
 
 #include "./Truncation-incl.hpp"
 
-int evd_Count;
+int evdCount;
 
 namespace dmhm {
 
@@ -20,7 +20,6 @@ DistHMat3d<Scalar>::MultiplyHMatCompress( int startLevel, int endLevel )
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompress");
 #endif
-    Real error = lapack::MachineEpsilon<Real>();
     //Written By Ryan Li
     // Compress low-rank F matrix into much lower form.
     // Our low-rank matrix is UV', we want to compute eigenvalues and 
@@ -37,7 +36,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompress( int startLevel, int endLevel )
     MultiplyHMatCompressFPrecompute( startLevel, endLevel);
     MultiplyHMatCompressFReduces( startLevel, endLevel );
 
-    evd_Count=0;
+    evdCount=0;
     MultiplyHMatCompressFEigenDecomp( startLevel, endLevel );
     MultiplyHMatCompressFPassMatrix( startLevel, endLevel );
     MultiplyHMatCompressFPassVector( startLevel, endLevel );
@@ -48,7 +47,10 @@ DistHMat3d<Scalar>::MultiplyHMatCompress( int startLevel, int endLevel )
     // BSqr_ = sqrt(USqrEig_) USqr_' VSqr_ sqrt(VSqrEig_)
     // Then BSqr_ also will be used to store the eigenvectors
     // of B. BSqrEig_ stores eigenvalues of B.
-    MultiplyHMatCompressFMidcompute( error, startLevel, endLevel );
+    //
+    // TODO: Allow this value to be overridden
+    const Real relTol = lapack::MachineEpsilon<Real>();
+    MultiplyHMatCompressFMidcompute( relTol, startLevel, endLevel );
     MultiplyHMatCompressFPassbackNum( startLevel, endLevel );
     MultiplyHMatCompressFPassbackData( startLevel, endLevel );
 
@@ -57,10 +59,11 @@ DistHMat3d<Scalar>::MultiplyHMatCompress( int startLevel, int endLevel )
     // Also overwrite the BSqrU = BSqrU BSigma
     // Compute VSqr*sqrt(VSqrEig)^-1 BSqrV = BR
     // We overwrite the VSqr = VSqr*sqrt(VSqrEig)^-1
-    MultiplyHMatCompressFPostcompute( error, startLevel, endLevel );
+    //
+    // TODO: Allow this value to be overridden
+    const Real epsilon = lapack::MachineEpsilon<Real>();
+    MultiplyHMatCompressFPostcompute( epsilon, startLevel, endLevel );
 
-//    Real zeroerror = (Real) 0.1;
-//    MultiplyHMatCompressFEigenTrunc( zeroerror );
     MultiplyHMatCompressFBroadcastsNum( startLevel, endLevel );
     MultiplyHMatCompressFBroadcasts( startLevel, endLevel );
     // Compute the final U and V store in the usual space.
@@ -407,9 +410,8 @@ DistHMat3d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
             const Dense<Scalar>& U = *UMap_.CurrentEntry();
             const Dense<Scalar>& V = *VMap_.CurrentEntry();
             const int r = U.Width();
-            const char option = 'T';
             blas::Gemm
-            ( 'N', option, m, n, r,
+            ( 'N', 'T', m, n, r,
               Scalar(1), U.LockedBuffer(), U.LDim(),
                          V.LockedBuffer(), V.LDim(),
               Scalar(1), D.Buffer(),       D.LDim() );
@@ -966,7 +968,6 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPrecompute
         int LH=LocalHeight();
         int LW=LocalWidth();
         int offset=0;
-        const char option = 'T';
         int totalrank=colXMap_.TotalWidth() + UMap_.TotalWidth() + DF.ULocal.Width();
         
         if( inTargetTeam_ && totalrank > 0 && LH > 0 )
@@ -1056,7 +1057,6 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPrecompute
         int LH=LocalHeight();
         int LW=LocalWidth();
         int offset=0;
-        const char option = 'T';
         int totalrank = colXMap_.TotalWidth() + 
                         UMap_.TotalWidth() + SF.D.Width();
         
@@ -1145,7 +1145,6 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPrecompute
         int LH=LocalHeight();
         int LW=LocalWidth();
         int offset=0;
-        const char option = 'T';
         int totalrank = F.U.Width();
         
         if( totalrank > MaxRank() && LH > 0 )
@@ -1157,6 +1156,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPrecompute
             MemCopy
             ( Utmp_.Buffer(0,offset), F.U.LockedBuffer(), LH*F.U.Width() );
             offset=F.U.Width();
+            // TODO: Replace this with a Herk
             blas::Gemm
             ( 'C', 'N', totalrank, totalrank, LH,
              Scalar(1), Utmp_.LockedBuffer(), Utmp_.LDim(),
@@ -1176,6 +1176,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPrecompute
             ( Vtmp_.Buffer(0,offset), F.V.LockedBuffer(), LW*F.V.Width() );
             offset=F.V.Width();
 
+            // TODO: Replace this with a Herk
             blas::Gemm
             ( 'C', 'N', totalrank, totalrank, LW,
              Scalar(1), Vtmp_.LockedBuffer(), Vtmp_.LDim(),
@@ -1435,7 +1436,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFEigenDecomp
                            &evdWork[0],     lwork,
                            &evdIntWork[0],  liwork,
                            &evdRealWork[0], lrwork );
-                evd_Count++;
+                evdCount++;
             }
                                                                      
             if( !VSqr_.IsEmpty() )
@@ -1447,7 +1448,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFEigenDecomp
                            &evdWork[0],     lwork,
                            &evdIntWork[0],  liwork,
                            &evdRealWork[0], lrwork );
-                evd_Count++;
+                evdCount++;
             }
         }
         break;
@@ -1915,7 +1916,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassVectorUnpack
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatCompressFMidcompute
-( Real error, int startLevel, int endLevel )
+( Real relTol, int startLevel, int endLevel )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompressFMidcompute");
@@ -1935,7 +1936,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFMidcompute
             for( int t=0; t<8; ++t )
                 for( int s=0; s<8; ++s)
                     node.Child(t,s).MultiplyHMatCompressFMidcompute
-                    ( error, startLevel, endLevel );
+                    ( relTol, startLevel, endLevel );
         }
         break;
     }
@@ -1951,55 +1952,40 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFMidcompute
         const int teamRank = mpi::CommRank( team );
         if( teamRank == 0 && !USqr_.IsEmpty() && inTargetTeam_ )
         {
+#ifndef RELEASE
             if( USqr_.Height() != VSqr_.Height() ||
                 USqrEig_.size() != VSqrEig_.size() )
-            {
-#ifndef RELEASE
                 throw std::logic_error("Dimension error during calculation");
 #endif
-            }
-            const char option = 'T';
+            const int k = USqr_.Height();
 
-          //  EVDTrunc(USqr_, USqrEig_, error);
-          //  EVDTrunc(VSqr_, VSqrEig_, error);
-
-            BSqr_.Resize(USqr_.Width(), VSqr_.Width(), USqr_.Width());
-
+            BSqr_.Resize( k, k );
             blas::Gemm
-            ( option, 'N', USqr_.Width(), VSqr_.Width(), USqr_.LDim(),
+            ( 'T', 'N', k, k, k,
               Scalar(1), USqr_.LockedBuffer(), USqr_.LDim(),
                          VSqr_.LockedBuffer(), VSqr_.LDim(),
               Scalar(0), BSqr_.Buffer(),       BSqr_.LDim() );
 
-            hmat_tools::Conjugate(BSqr_);
-            std::vector<Real> USqrSigma(USqrEig_.size());
-            std::vector<Real> VSqrSigma(VSqrEig_.size());
-            for( int i=0; i<USqrEig_.size(); ++i)
-                if( USqrEig_[i] > (Real)0 )
-                    USqrSigma[i] = sqrt(USqrEig_[i]);
-                else
-                    USqrSigma[i] = -sqrt(-USqrEig_[i]);
-            for( int i=0; i<VSqrEig_.size(); ++i)
-                if( VSqrEig_[i] > (Real)0 )
-                    VSqrSigma[i] = sqrt(VSqrEig_[i]);
-                else
-                    VSqrSigma[i] = -sqrt(-VSqrEig_[i]);
-
-            for( int j=0; j<BSqr_.Width(); ++j)
-                for( int i=0; i<BSqr_.Height(); ++i)
-                    BSqr_.Set(i,j, BSqr_.Get(i,j)*USqrSigma[i]*VSqrSigma[j]);
+            hmat_tools::Conjugate( BSqr_ );
+            std::vector<Real> USqrSigma(k), VSqrSigma(k);
+            for( int i=0; i<k; ++i)
+                USqrSigma[i] = sqrt( std::max( USqrEig_[i], Real(0) ) );
+            for( int i=0; i<k; ++i)
+                VSqrSigma[i] = sqrt( std::max( VSqrEig_[i], Real(0) ) );
 
             int m = BSqr_.Height();
             int n = BSqr_.Width();
-            int k = std::min(m, n);
+            for( int j=0; j<n; ++j)
+                for( int i=0; i<m; ++i)
+                    BSqr_.Set(i,j, BSqr_.Get(i,j)*USqrSigma[i]*VSqrSigma[j]);
 
-            BSqrU_.Resize(m,k,m);
-            BSqrVH_.Resize(k,n,k);
-            BSigma_.resize(k);
+            const int minDim = std::min( m, n );
+            BSqrU_.Resize( m, minDim );
+            BSqrVH_.Resize( minDim, n );
+            BSigma_.resize( minDim );
 
-            int lwork = lapack::SVDWorkSize(m,n);
-            int lrwork = lapack::SVDRealWorkSize(m,n);
-
+            const int lwork = lapack::SVDWorkSize(m,n);
+            const int lrwork = lapack::SVDRealWorkSize(m,n);
             std::vector<Scalar> work(lwork);
             std::vector<Real> rwork(lrwork);
             lapack::SVD
@@ -2009,7 +1995,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFMidcompute
              BSqrVH_.Buffer(), BSqrVH_.LDim(),
              &work[0], lwork, &rwork[0] );
 
-            SVDTrunc(BSqrU_, BSigma_, BSqrVH_, error);
+            SVDTrunc( BSqrU_, BSigma_, BSqrVH_, relTol );
         }
         break;
     }
@@ -2026,7 +2012,6 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackNum
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompressFPassbackNum");
 #endif
-
     // Compute send and recv sizes
     std::map<int,int> sendSizes, recvSizes;
     MultiplyHMatCompressFPassbackNumCount
@@ -2603,7 +2588,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackDataUnpack
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatCompressFPostcompute
-( Real error, int startLevel, int endLevel )
+( Real epsilon, int startLevel, int endLevel )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompressFPostcompute");
@@ -2623,7 +2608,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPostcompute
             for( int t=0; t<8; ++t )
                 for( int s=0; s<8; ++s)
                     node.Child(t,s).MultiplyHMatCompressFPostcompute
-                    ( error, startLevel, endLevel );
+                    ( epsilon, startLevel, endLevel );
         }
         break;
     }
@@ -2639,83 +2624,59 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPostcompute
         const int teamRank = mpi::CommRank( team );
         if( teamRank == 0 )
         {
-            const char option = 'T';
-            if( inTargetTeam_ && USqrEig_.size() > 0)
+            const int kU = USqrEig_.size();
+            if( inTargetTeam_ && kU > 0)
             {
-                Real Eigmax;
-                if( USqrEig_[USqrEig_.size()-1] > (Real)0 )
-                    Eigmax= USqrEig_[USqrEig_.size()-1] ;
-                else
-                    Eigmax=0;
-                Real TruncBound = sqrt(std::abs(error)*Eigmax*USqrEig_.size());
-                for(int j=0; j<USqr_.Width(); ++j)
+                const Real maxEig = std::max( USqrEig_[kU-1], Real(0) );
+                const Real tolerance = sqrt(epsilon*maxEig*kU);
+                for( int j=0; j<kU; ++j )
                 {
-                    Real sqrteig;
-                    if( USqrEig_[j]>0 )
-                        sqrteig=sqrt(USqrEig_[j]);
+                    const Real omega = std::max( USqrEig_[j], Real(0) );
+                    const Real sqrtOmega = sqrt( omega );
+                    if( sqrtOmega > tolerance )
+                        for(int i=0; i<kU; ++i)
+                            USqr_.Set(i,j,USqr_.Get(i,j)/sqrtOmega);
                     else
-                        sqrteig=-sqrt(-USqrEig_[j]);
-                    if(sqrteig > TruncBound )
-                    {
-                        for(int i=0; i<USqr_.Height(); ++i)
-                            USqr_.Set(i,j,USqr_.Get(i,j)/sqrteig);
-                    }
-                    else
-                    {
-                        for(int i=0; i<USqr_.Height(); ++i)
-                            USqr_.Set(i,j, Scalar(0));
-                    }
+                        MemZero( USqr_.Buffer(0,j), kU );
                 }
 
-                for(int j=0; j<BSqrU_.Width(); ++j)
-                    for(int i=0; i<BSqrU_.Height(); ++i)
+                const int m = BSqrU_.Height();
+                const int n = BSqrU_.Width();
+                for(int j=0; j<n; ++j)
+                    for(int i=0; i<m; ++i)
                         BSqrU_.Set(i,j,BSqrU_.Get(i,j)*BSigma_[j]);
 
-                BL_.Resize(USqr_.Height(), BSqrU_.Width(), USqr_.Height());
-
+                BL_.Resize( kU, n );
                 blas::Gemm
-                ( 'N', 'N', USqr_.Height(), BSqrU_.Width(), USqr_.Width(), 
+                ( 'N', 'N', kU, n, kU, 
                   Scalar(1), USqr_.LockedBuffer(),  USqr_.LDim(),
                              BSqrU_.LockedBuffer(), BSqrU_.LDim(),
                   Scalar(0), BL_.Buffer(), BL_.LDim() );
             }
 
-            if(inSourceTeam_ && VSqrEig_.size() > 0)
+            const int kV = VSqrEig_.size();
+            if( inSourceTeam_ && kV > 0 )
             {
-                Real Eigmax;
-                if( VSqrEig_[VSqrEig_.size()-1] > (Real)0 )
-                    Eigmax=VSqrEig_[VSqrEig_.size()-1];
-                else
-                    Eigmax=0;
-                Real TruncBound = sqrt(std::abs(error)*Eigmax*VSqrEig_.size());
-                for(int j=0; j<VSqr_.Width(); ++j)
+                const Real maxEig = std::max( VSqrEig_[kV-1], Real(0) );
+                const Real tolerance = sqrt(epsilon*maxEig*kV);
+                for( int j=0; j<kV; ++j )
                 {
-                    Real sqrteig;
-                    if( VSqrEig_[j]>0 )
-                        sqrteig=sqrt(VSqrEig_[j]);
+                    const Real omega = std::max( VSqrEig_[j], Real(0) );
+                    const Real sqrtOmega = sqrt( omega );
+                    if( sqrtOmega > tolerance )
+                        for( int i=0; i<kV; ++i )
+                            VSqr_.Set(i,j,VSqr_.Get(i,j)/sqrtOmega);
                     else
-                        sqrteig=-sqrt(-VSqrEig_[j]);
-                    if( sqrteig > TruncBound )
-                    {
-                        for(int i=0; i<VSqr_.Height(); ++i)
-                            VSqr_.Set(i,j,VSqr_.Get(i,j)/sqrteig);
-                    }
-                    else
-                    {
-                        for(int i=0; i<VSqr_.Height(); ++i)
-                            VSqr_.Set(i,j, Scalar(0));
-                    }
+                        MemZero( VSqr_.Buffer(0,j), kV );
                 }
 
-                BR_.Resize(VSqr_.Height(), BSqrVH_.Height(), VSqr_.Height());
-
+                BR_.Resize( kV, BSqrVH_.Height() );
                 blas::Gemm
-                ( 'N', option, VSqr_.Height(), BSqrVH_.Height(), VSqr_.Width(),
+                ( 'N', 'T', kV, BSqrVH_.Height(), kV,
                   Scalar(1), VSqr_.LockedBuffer(),  VSqr_.LDim(),
                              BSqrVH_.LockedBuffer(), BSqrVH_.LDim(),
                   Scalar(0), BR_.Buffer(), BR_.LDim() );
             }
-
         }
         break;
     }
@@ -3195,13 +3156,12 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFFinalcompute
             SplitLowRank &SF = *block_.data.SF;
             const int m = Height();
             const int n = Width();
-            const char option = 'T';
             if( inTargetTeam_ )
             {
                 Dense<Scalar>& SFU = SF.D;
                 Dense<Scalar>& SFV = SFD_;
                 blas::Gemm                                   
-                ('N', option, m, n, SF.rank,
+                ('N', 'T', m, n, SF.rank,
                  Scalar(1), SFU.LockedBuffer(), SFU.LDim(),
                             SFV.LockedBuffer(), SFV.LDim(),
                  Scalar(1), D_.Buffer(),        D_.LDim() );
@@ -3211,7 +3171,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFFinalcompute
                 Dense<Scalar>& SFU = SFD_;
                 Dense<Scalar>& SFV = SF.D;
                 blas::Gemm                                   
-                ('N', option, m, n, SF.rank,
+                ('N', 'T', m, n, SF.rank,
                  Scalar(1), SFU.LockedBuffer(), SFU.LDim(),
                             SFV.LockedBuffer(), SFV.LDim(),
                  Scalar(1), D_.Buffer(),        D_.LDim() );
@@ -3335,9 +3295,8 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFFinalcompute
             const int r = F.Rank();
 
             // Add U V^[T/H] onto the dense update
-            const char option = 'T';
             blas::Gemm
-            ( 'N', option, m, n, r, 
+            ( 'N', 'T', m, n, r, 
               Scalar(1), F.U.LockedBuffer(), F.U.LDim(),
                          F.V.LockedBuffer(), F.V.LDim(),
               Scalar(1), D_.Buffer(),        D_.LDim() );
@@ -3411,10 +3370,8 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFFinalcompute
             const Dense<Scalar>& U = *UMap_.CurrentEntry();
             const Dense<Scalar>& V = *VMap_.CurrentEntry();
 
-            const char option = 'T';
-
             blas::Gemm
-            ('N', option, m, n, U.Width(),
+            ('N', 'T', m, n, U.Width(),
              Scalar(1), U.LockedBuffer(), U.LDim(),
                         V.LockedBuffer(), V.LDim(),
              Scalar(1), SD.D.Buffer(), SD.D.LDim() );
@@ -3436,10 +3393,8 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFFinalcompute
             const Dense<Scalar>& U = *UMap_.CurrentEntry();
             const Dense<Scalar>& V = *VMap_.CurrentEntry();
 
-            const char option = 'T';
-
             blas::Gemm
-            ('N', option, m, n, U.Width(),
+            ('N', 'T', m, n, U.Width(),
              Scalar(1), U.LockedBuffer(), U.LDim(),
                         V.LockedBuffer(), V.LDim(),
              Scalar(1), D.Buffer(), D.LDim() );

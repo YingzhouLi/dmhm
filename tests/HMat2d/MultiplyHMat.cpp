@@ -81,8 +81,11 @@ main( int argc, char* argv[] )
         const bool print = Input("--print","print matrices?",false);
         const bool structure = Input("--structure","print structure?",true);
         const bool multI = Input("--multI","multiply identity?",false);
+        const int oversample = Input("--oversample","number of extra basis vecs",4);
         ProcessInput();
         PrintInputReport();
+
+        SetOversample( oversample );
 
         const int m = xSize*ySize;
         const int n = xSize*ySize;

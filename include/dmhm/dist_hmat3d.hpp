@@ -16,9 +16,8 @@
 
 namespace dmhm {
 
-// A distributed H-matrix class that assumes a quasi3d box domain and requires
-// a power of two number of processes. It does not yet support implicit 
-// symmetry.
+// A distributed H-matrix class that assumes a 3d box and a power-of-two number 
+// of processes. It does not yet support implicit symmetry.
 template<typename Scalar>
 class DistHMat3d
 {
@@ -57,7 +56,7 @@ public:
     /*
      * Public static member functions
      */
-    static int SampleRank( int approxRank ) { return approxRank + 4; }
+    static int SampleRank( int approxRank ) { return approxRank + Oversample(); }
 
     static std::size_t PackedSizes
     ( std::vector<std::size_t>& packedSizes,

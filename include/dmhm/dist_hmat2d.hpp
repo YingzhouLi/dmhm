@@ -16,7 +16,7 @@
 
 namespace dmhm {
 
-// A distributed H-matrix class that assumes a quasi2d box domain and requires
+// A distributed H-matrix class that assumes a 2d box domain and requires
 // a power of two number of processes. It does not yet support implicit 
 // symmetry.
 template<typename Scalar>
@@ -57,7 +57,7 @@ public:
     /*
      * Public static member functions
      */
-    static int SampleRank( int approxRank ) { return approxRank + 4; }
+    static int SampleRank( int approxRank ) { return approxRank + Oversample(); }
 
     static std::size_t PackedSizes
     ( std::vector<std::size_t>& packedSizes,
@@ -1101,9 +1101,9 @@ private:
       int startLevel, int endLevel,
       int startUpdate, int endUpdate, int update ) const;
 
-    void EVDTrunc( Dense<Scalar>& Q, std::vector<Real>& w, Real error );
+    void EVDTrunc( Dense<Scalar>& Q, std::vector<Real>& w, Real epsilon );
     void SVDTrunc
-    ( Dense<Scalar>& U, std::vector<Real>& w, Dense<Scalar>& VH, Real error );
+    ( Dense<Scalar>& U, std::vector<Real>& w, Dense<Scalar>& VH, Real epsilon );
 
     void MultiplyHMatCompress( int startLevel, int endLevel );
     void MultiplyHMatCompressLowRankCountAndResize( int rank );
@@ -1151,7 +1151,7 @@ private:
     ( const std::vector<Real>& buffer, std::map<int,int>& offsets,
       int startLevel, int endLevel );
     void MultiplyHMatCompressFMidcompute
-    ( Real error, int startLevel, int endLevel );
+    ( Real epsilon, int startLevel, int endLevel );
     void MultiplyHMatCompressFPassbackNum
     ( int startLevel, int endLevel );
     void MultiplyHMatCompressFPassbackNumCount
@@ -1175,7 +1175,7 @@ private:
     ( const std::vector<Scalar>& buffer, std::map<int,int>& offsets,
       int startLevel, int endLevel );
     void MultiplyHMatCompressFPostcompute
-    ( Real error, int startLevel, int endLevel );
+    ( Real epsilon, int startLevel, int endLevel );
     void MultiplyHMatCompressFBroadcastsNum
     ( int startLevel, int endLevel );
     void MultiplyHMatCompressFBroadcastsNumCount
@@ -1239,7 +1239,7 @@ private:
       int startLevel, int endLevel, 
       int startUpdate, int endUpdate, int update );
     void MultiplyHMatFHHCompressMidcompute
-    ( Real error, int startLevel, int endLevel );
+    ( Real epsilon, int startLevel, int endLevel );
     void MultiplyHMatFHHCompressBroadcasts
     ( const DistHMat2d<Scalar>& B, DistHMat2d<Scalar>& C,
       int startLevel, int endLevel, 

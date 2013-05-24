@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Yingzhou Li, Lexing Ying, 
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -12,46 +12,50 @@ namespace dmhm {
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::EVDTrunc
-( Dense<Scalar>& Q, std::vector<Real>& w, Real error )
+( Dense<Scalar>& Q, std::vector<Real>& w, Real relTol )
 {
-    int ldq=Q.LDim();
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::EVDTrunc");
-    if( ldq ==0 )
-        throw std::logic_error("ldq was 0");
 #endif
-    int L;
-    for(L=0; L<ldq; ++L )
-        if( w[L]>error*w[ldq-1])
+    const int k = w.size();
+    if( k == 0 )
+        return;
+
+    const Real maxEig = w[k-1];
+    const Real tolerance = relTol*maxEig;
+    int cutoff;
+    for( cutoff=0; cutoff<k; ++cutoff )
+        if( w[cutoff] > tolerance )
             break;
 
-    w.erase( w.begin(), w.begin()+L );
-    Q.EraseCol(0, L-1);
+    w.erase( w.begin(), w.begin()+cutoff );
+    Q.EraseCols( 0, cutoff-1 );
 }
-
 
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::SVDTrunc
-( Dense<Scalar>& U, std::vector<Real>& w,
-  Dense<Scalar>& VH, Real error )
+( Dense<Scalar>& U, std::vector<Real>& s,
+  Dense<Scalar>& VH, Real relTol )
 {
-    int ldq=w.size();
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::EVDTrunc");
-    if( ldq ==0 )
-        throw std::logic_error("ldq was 0");
 #endif
-    int ldu=U.LDim();
-    int ldvh=VH.LDim();
-    int k=ldvh;
-    int L;
-    for(L=std::min(k,maxRank_)-1; L>=0; --L )
-        if( w[L]>error*w[0]*w.size() )
+    const int m = U.Height();
+    const int n = VH.Width();
+    const int k = s.size();
+    if( k == 0 )
+        return;
+
+    const Real twoNorm = s[0];
+    const Real tolerance = relTol*twoNorm;
+    int cutoff;
+    for( cutoff=std::min(k,maxRank_)-1; cutoff>=0; --cutoff )
+        if( s[cutoff] > tolerance )
             break;
-    w.resize(L+1);
-    U.Resize(ldu, L+1, ldu);
-    VH.EraseRow(L+1, ldvh-1);
+    s.resize( cutoff+1 );
+    U.Resize( m, cutoff+1 );
+    VH.EraseRows( cutoff+1, n-1 );
 }
 
 } // namespace dmhm

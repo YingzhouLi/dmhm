@@ -29,7 +29,7 @@ public:
     /*
      * Public static member functions
      */
-    static int SampleRank( int approxRank ) { return approxRank + 4; }
+    static int SampleRank( int approxRank ) { return approxRank + Oversample(); }
 
     static void BuildNaturalToHierarchicalMap
     ( std::vector<int>& map, int xSize, int ySize, int numLevels );

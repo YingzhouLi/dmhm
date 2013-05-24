@@ -82,7 +82,7 @@ main( int argc, char* argv[] )
     {
         const int xSize = Input("--xSize","size of x dimension",15);
         const int ySize = Input("--ySize","size of y dimension",15);
-		const int zSize = Input("--zSize","size of z dimension",15);
+        const int zSize = Input("--zSize","size of z dimension",15);
         const int numLevels = Input("--numLevels","depth of H-matrix tree",4);
         const bool strong = Input("--strong","strongly admissible?",false);
         const int maxRank = Input("--maxRank","maximum rank of block",5);
@@ -90,8 +90,11 @@ main( int argc, char* argv[] )
         const bool print = Input("--print","print matrices?",false);
         const bool structure = Input("--structure","print structure?",true);
         const bool multI = Input("--multI","multiply by identity?",false);
+        const int oversample = Input("--oversample","number of extra basis vecs",4);
         ProcessInput();
         PrintInputReport();
+
+        SetOversample( oversample );
 
         const int m = xSize*ySize*zSize;
         const int n = xSize*ySize*zSize;

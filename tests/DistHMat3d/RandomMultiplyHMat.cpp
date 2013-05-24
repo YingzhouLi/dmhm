@@ -22,14 +22,17 @@ main( int argc, char* argv[] )
     {
         const int xSize = Input("--xSize","size of x dimension",15);
         const int ySize = Input("--ySize","size of y dimension",15);
-		const int zSize = Input("--zSize","size of z dimension",15);
+        const int zSize = Input("--zSize","size of z dimension",15);
         const int numLevels = Input("--numLevels","depth of H-matrix tree",4);
         const bool strong = Input("--strong","strongly admissible?",false);
         const int maxRank = Input("--maxRank","maximum rank of block",5);
         const int multType = Input("--multType","multiply type",2);
         const bool structure = Input("--structure","print structure?",true);
+        const int oversample = Input("--oversample","number of extra basis vecs",4);
         ProcessInput();
         PrintInputReport();
+
+        SetOversample( oversample );
 
         // Set up two random distributed H-matrices
         if( commRank == 0 )

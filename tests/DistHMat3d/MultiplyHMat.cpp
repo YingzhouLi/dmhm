@@ -86,15 +86,19 @@ main( int argc, char* argv[] )
         const int numLevels = Input("--numLevels","depth of H-matrix tree",4);
         const bool strong = Input("--strong","strongly admissible?",false);
         const int maxRank = Input("--maxRank","maximum rank of block",5);
-    	const int multType = Input("--multType","multiply type",2);
+        const int multType = Input("--multType","multiply type",2);
         const bool print = Input("--print","print matrices?",false);
         const bool structure = Input("--structure","print structure?",true);
         const bool multI = Input("--multI","multiply by identity?",false);
-		ProcessInput();
-		PrintInputReport();
-	    const int m = xSize*ySize*zSize;
-    	const int n = xSize*ySize*zSize;
-		
+        const int oversample = Input("--oversample","number of extra basis vecs",4);
+        ProcessInput();
+        PrintInputReport();
+
+        SetOversample( oversample );
+
+        const int m = xSize*ySize*zSize;
+        const int n = xSize*ySize*zSize;
+
         Sparse<Scalar> S;
         S.height = m;
         S.width = n;
@@ -102,7 +106,7 @@ main( int argc, char* argv[] )
 
         std::vector<int> map;
         HMat::BuildNaturalToHierarchicalMap
-		( map, xSize, ySize, zSize, numLevels );
+        ( map, xSize, ySize, zSize, numLevels );
 
         std::vector<int> inverseMap( m );
         for( int i=0; i<m; ++i )
@@ -475,7 +479,7 @@ main( int argc, char* argv[] )
             EFile << "];\n";
         }
     }
-	catch( ArgException& e ) { }
+    catch( ArgException& e ) { }
     catch( std::exception& e )
     {
         std::cerr << "Process " << commRank << " caught message: " << e.what() 

@@ -78,6 +78,9 @@ public:
 };
 #endif
 
+int Oversample();
+void SetOversample( int oversample );
+
 typedef unsigned char byte;
 
 template<typename T>

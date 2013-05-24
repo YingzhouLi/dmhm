@@ -27,6 +27,8 @@ dmhm::MpiArgs* args = 0;
 std::stack<std::string> callStack; 
 #endif
 
+int oversample=4;
+
 }
 
 namespace dmhm {
@@ -139,5 +141,11 @@ void DumpCallStack()
     std::cerr << msg.str() << std::endl;
 }
 #endif
+
+int Oversample()
+{ return ::oversample; }
+
+void SetOversample( int oversample )
+{ ::oversample = oversample; }
 
 } // namespace dhmhm

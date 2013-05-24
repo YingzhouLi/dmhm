@@ -23,7 +23,7 @@ main( int argc, char* argv[] )
     {
         const int xSize = Input("--xSize","size of x dimension",15);
         const int ySize = Input("--ySize","size of y dimension",15);
-		const int zSize = Input("--zSize","size of z dimension",15);
+        const int zSize = Input("--zSize","size of z dimension",15);
         const int numLevels = Input("--numLevels","depth of H-matrix",4);
         const bool strong = Input("--strong","strongly admissible?",false);
         const int maxRank = Input("--maxRank","maximum rank of block",5);

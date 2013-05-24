@@ -62,8 +62,8 @@ public:
     int LDim() const;
     void Resize( int height, int width );
     void Resize( int height, int width, int ldim );
-    void EraseCol( int first, int last );
-    void EraseRow( int first, int last );
+    void EraseCols( int first, int last );
+    void EraseRows( int first, int last );
     void Erase( int colfirst, int collast, int rowfirst, int rowlast );
     void Clear();
 
@@ -278,20 +278,20 @@ Dense<Scalar>::Resize( int height, int width, int ldim )
 
 template<typename Scalar>
 inline void
-Dense<Scalar>::EraseCol( int first, int last )
+Dense<Scalar>::EraseCols( int first, int last )
 {
 #ifndef RELEASE
-    CallStackEntry entry("Dense::EraseCol");
+    CallStackEntry entry("Dense::EraseCols");
     if( viewing_ )
         throw std::logic_error("Cannot erase views");
-    if( first < 0 || last > width_+1 )
+    if( first < 0 || last >= width_ )
         throw std::logic_error("First and last must be in the range of matrix");
     if( type_ == SYMMETRIC )
         throw std::logic_error("Destroyed symmetry of symmetric matrix");
 #endif
     if( first <= last )
     {
-        width_ = width_-last+first-1;                                                 
+        width_ = width_-last+first-1;
         memory_.erase
         ( memory_.begin()+first*ldim_, memory_.begin()+(last+1)*ldim_ );
         buffer_ = &memory_[0];
@@ -300,21 +300,21 @@ Dense<Scalar>::EraseCol( int first, int last )
 
 template<typename Scalar>
 inline void
-Dense<Scalar>::EraseRow( int first, int last )
+Dense<Scalar>::EraseRows( int first, int last )
 {
 #ifndef RELEASE
-    CallStackEntry entry("Dense::EraseRow");
+    CallStackEntry entry("Dense::EraseRows");
     if( viewing_ )
         throw std::logic_error("Cannot erase views");
-    if( first < 0 || last > height_+1 )
+    if( first < 0 || last >= height_ )
         throw std::logic_error("First and last must be in the range of matrix");
     if( type_ == SYMMETRIC )
         throw std::logic_error("Destroyed symmetry of symmetric matrix");
 #endif
-    if(first <= last)
+    if( first <= last )
     {
-        height_ = height_-last+first-1;                                                     
-        for( int i=width_-1; i>=0; --i)
+        height_ = height_-last+first-1;  
+        for( int i=width_-1; i>=0; --i )
             memory_.erase
             ( memory_.begin()+i*ldim_+first, memory_.begin()+i*ldim_+last+1 );
         buffer_ = &memory_[0];
@@ -331,17 +331,16 @@ Dense<Scalar>::Erase( int colfirst, int collast, int rowfirst, int rowlast )
     CallStackEntry entry("Dense::Erase");
     if( viewing_ )
         throw std::logic_error("Cannot erase views");
-    if( rowfirst < 0 || rowlast > height_+1 || 
-        colfirst<0 || collast > width_+1 )
+    if( rowfirst < 0 || rowlast >= height_ || 
+        colfirst<0 || collast >= width_ )
         throw std::logic_error("First and last must be in the range of matrix");
     if( type_ == SYMMETRIC && ( colfirst != rowfirst || collast != rowlast ) )
         throw std::logic_error("Destroyed symmetry of symmetric matrix");
     if( type_ == SYMMETRIC )
         type_ = GENERAL;
 #endif
-        
-    EraseCol( colfirst, collast );
-    EraseRow( rowfirst, rowlast );
+    EraseCols( colfirst, collast );
+    EraseRows( rowfirst, rowlast );
 #ifndef RELEASE
     type_ = typetmp;
 #endif

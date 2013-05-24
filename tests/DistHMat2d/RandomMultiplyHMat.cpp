@@ -27,8 +27,12 @@ main( int argc, char* argv[] )
         const int maxRank = Input("--maxRank","maximum rank of block",5);
         const int multType = Input("--multType","multiply type",2);
         const bool structure = Input("--structure","print structure?",true);
+        const int oversample = Input("--oversample","number of extra basis vecs",4);
         ProcessInput();
         PrintInputReport();
+
+        // Allow for extra basis vectors to be used
+        SetOversample( oversample );
 
         // Set up two random distributed H-matrices
         if( commRank == 0 )

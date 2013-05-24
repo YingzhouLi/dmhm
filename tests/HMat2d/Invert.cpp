@@ -166,8 +166,11 @@ main( int argc, char* argv[] )
         const int maxRank = Input("--maxRank","maximum rank of block",5);
         const bool print = Input("--print","print matrices?",false);
         const bool structure = Input("--structure","print structure?",true);
+        const int oversample = Input("--oversample","number of extra basis vecs",4);
         ProcessInput();
         PrintInputReport();
+
+        SetOversample( oversample );
 
         const int m = xSize*ySize;
         const int n = xSize*ySize;

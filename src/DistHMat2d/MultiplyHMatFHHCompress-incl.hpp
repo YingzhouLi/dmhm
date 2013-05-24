@@ -21,7 +21,6 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompress
     CallStackEntry entry("DistHMat2d::MultiplyHMatFHHCompress");
 #endif
     const DistHMat2d<Scalar>& A = *this;
-    Real error = lapack::MachineEpsilon<Real>();
     
     MultiplyHMatFHHCompressPrecompute
     ( B, C, startLevel, endLevel, startUpdate, endUpdate, 0 );
@@ -29,8 +28,9 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompress
     MultiplyHMatFHHCompressReduces
     ( B, C, startLevel, endLevel, startUpdate, endUpdate, 0 );
     
-    C.MultiplyHMatFHHCompressMidcompute
-    ( error, startLevel, endLevel );
+    // TODO: Allow for this to be overridden 
+    const Real epsilon = lapack::MachineEpsilon<Real>();
+    C.MultiplyHMatFHHCompressMidcompute( epsilon, startLevel, endLevel );
 
     MultiplyHMatFHHCompressBroadcasts
     ( B, C, startLevel, endLevel, startUpdate, endUpdate, 0  );
@@ -99,6 +99,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressPrecompute
                         ( key, new Dense<Scalar>( Trank, Trank ) );
 
                         //_colUSqr = ( A B Omega1)' ( A B Omega1 )
+                        // TODO: Replace this with a Herk call...
                         blas::Gemm
                         ( 'C', 'N', Trank, Trank, A.LocalHeight(),
                          Scalar(1), colU.LockedBuffer(), colU.LDim(),
@@ -108,10 +109,10 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressPrecompute
                         //_colPinv = Omega2' (A B Omega1)
                         blas::Gemm
                         ( 'C', 'N', Omegarank, Trank, A.LocalHeight(),
-                          Scalar(1), A.rowOmega_.LockedBuffer(), A.rowOmega_.LDim(),
+                          Scalar(1), A.rowOmega_.LockedBuffer(), 
+                                     A.rowOmega_.LDim(),
                                      colU.LockedBuffer(), colU.LDim(),
                           Scalar(0), colPinv.Buffer(),      Omegarank );
-
                     }
                     if( C.inSourceTeam_ )
                     {
@@ -132,6 +133,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressPrecompute
                         ( key, new Dense<Scalar>( Trank, Omegarank ) );
 
                         //_rowUSqr = ( B' A' Omega2 )' ( B' A' Omega2 )
+                        // TODO: Replace this with a Herk call...
                         blas::Gemm
                         ( 'C', 'N', Trank, Trank, B.LocalWidth(),
                          Scalar(1), rowU.LockedBuffer(), rowU.LDim(),
@@ -141,7 +143,8 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressPrecompute
                         //_rowPinv = Omega1' (B' A' Omega2)
                         blas::Gemm
                         ( 'C', 'N', Omegarank, Trank, B.LocalWidth(),
-                          Scalar(1), B.colOmega_.LockedBuffer(), B.colOmega_.LDim(),
+                          Scalar(1), B.colOmega_.LockedBuffer(), 
+                                     B.colOmega_.LDim(),
                                      rowU.LockedBuffer(), rowU.LDim(),
                           Scalar(0), rowPinv.Buffer(),      Omegarank );
                     }
@@ -502,7 +505,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressReducesUnpack
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyHMatFHHCompressMidcompute
-( Real error, int startLevel, int endLevel )
+( Real epsilon, int startLevel, int endLevel )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MultiplyHMatFHHCompressMidcompute");
@@ -522,7 +525,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressMidcompute
             for( int t=0; t<4; ++t )
                 for( int s=0; s<4; ++s )
                     node.Child(t,s).MultiplyHMatFHHCompressMidcompute
-                    ( error, startLevel, endLevel);
+                    ( epsilon, startLevel, endLevel);
         }
         break;
     }
@@ -583,56 +586,46 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressMidcompute
                     Dense<Scalar>& USqr = *colUSqrMap_.CurrentEntry();
                     Dense<Scalar>& Pinv = colPinvMap_.Get( key );
                     Dense<Scalar>& BL = BLMap_.Get( key );
-                    std::vector<Real> USqrEig(USqr.Height());
+                    
+                    const int k = USqr.Height();
+                    std::vector<Real> USqrEig( k );
                     lapack::EVD  
-                    ('V', 'U', USqr.Height(), 
-                               USqr.Buffer(), USqr.LDim(),
+                    ( 'V', 'U', k, USqr.Buffer(), USqr.LDim(),
                                &USqrEig[0],
                                &evdWork[0],     lwork,
                                &evdIntWork[0],  liwork,
                                &evdRealWork[0], lrwork );
 
-
                     //colOmegaT = Omega2' T1
                     Dense<Scalar> OmegaT;
-                    hmat_tools::Copy(Pinv, OmegaT);
+                    hmat_tools::Copy( Pinv, OmegaT );
  
-                    Real Eigmax;
-                    if( USqrEig[USqrEig.size()-1] > (Real)0 )
-                        Eigmax= USqrEig[USqrEig.size()-1] ;
-                    else
-                        Eigmax=0;
+                    Real maxEig = 0;
+                    if( k > 0 )
+                        maxEig = std::max( USqrEig[k-1], Real(0) );
  
-                    Real TruncBound = sqrt(std::abs(error)*Eigmax*USqrEig.size());
-                    for(int j=0; j<USqrEig.size(); j++)
+                    const Real tolerance = sqrt(epsilon*maxEig*k);
+                    for( int j=0; j<k; j++ )
                     {
-                        Real sqrteig;
-                        if( USqrEig[j]>0 )
-                            sqrteig=sqrt(USqrEig[j]);
+                        const Real omega = std::max( USqrEig[j], Real(0) );
+                        const Real sqrtOmega = sqrt( omega );
+                        if( sqrtOmega > tolerance )
+                            for( int i=0; i<k; ++i )
+                                USqr.Set(i,j,USqr.Get(i,j)/sqrtOmega);
                         else
-                            sqrteig=-sqrt(-USqrEig[j]);
- 
-                        if( sqrteig > TruncBound )
-                        {
-                            for(int i=0; i<USqr.Height(); ++i)
-                                USqr.Set(i,j,USqr.Get(i,j)/sqrteig);
-                        }
-                        else
-                        {
-                            for(int i=0; i<USqr.Height(); ++i)
-                                USqr.Set(i,j,Scalar(0));
-                        }
+                            MemZero( USqr.Buffer(0,j), k );
                     }
                     
                     blas::Gemm
-                    ( 'N', 'N', OmegaT.Height(), USqr.Width(), USqr.Height(),
+                    ( 'N', 'N', OmegaT.Height(), k, k,
                      Scalar(1), OmegaT.LockedBuffer(), OmegaT.LDim(),
                                 USqr.LockedBuffer(), USqr.LDim(),
                      Scalar(0), Pinv.Buffer(), Pinv.LDim() );
  
                     int rank=std::min(Pinv.Height(), Pinv.Width());
                     std::vector<Real> singularValues(rank);
-                    std::vector<Scalar> U(rank*Pinv.Height()), VH(rank*Pinv.Width());
+                    std::vector<Scalar> U(rank*Pinv.Height()), 
+                                        VH(rank*Pinv.Width());
                     int lsvdwork=lapack::SVDWorkSize(Pinv.Height(), Pinv.Width());
                     int lrsvdwork=lapack::SVDRealWorkSize(Pinv.Height(), Pinv.Width());
                     std::vector<Scalar> svdWork(lsvdwork);
@@ -642,15 +635,15 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressMidcompute
                       &singularValues[0], &U[0], Pinv.Height(), &VH[0], rank,
                       &svdWork[0], lsvdwork, &svdRealWork[0]);
  
-                    Dense<Scalar> Ztmp(USqr.Height(), Pinv.Height());
+                    Dense<Scalar> Ztmp(k, Pinv.Height());
                     blas::Gemm
-                    ( 'N', 'C', USqr.Height(), Pinv.Height(), USqr.Width(),
+                    ( 'N', 'C', k, Pinv.Height(), k,
                      Scalar(1), USqr.LockedBuffer(), USqr.LDim(),
                                 Pinv.LockedBuffer(), Pinv.LDim(),
                      Scalar(0), Ztmp.Buffer(), Ztmp.LDim() );
                     
                     blas::Gemm
-                    ( 'N', 'N', Ztmp.Height(), OmegaT.Width(), Ztmp.Width(),
+                    ( 'N', 'N', k, OmegaT.Width(), Ztmp.Width(),
                      Scalar(1), Ztmp.LockedBuffer(), Ztmp.LDim(),
                                 OmegaT.LockedBuffer(), OmegaT.LDim(),
                      Scalar(0), BL.Buffer(), BL.LDim() );
@@ -668,59 +661,50 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressMidcompute
                 const unsigned numEntries = rowUSqrMap_.Size();
                 for(int i=0; i<numEntries; ++i, rowUSqrMap_.Increment() )
                 {
-					int key = rowUSqrMap_.CurrentKey();
+                    int key = rowUSqrMap_.CurrentKey();
                     Dense<Scalar>& USqr = *rowUSqrMap_.CurrentEntry();
                     Dense<Scalar>& Pinv = rowPinvMap_.Get( key );
                     Dense<Scalar>& BR = BRMap_.Get( key );
-                    std::vector<Real> USqrEig(USqr.Height());
-                    lapack::EVD                                                                 
-                    ('V', 'U', USqr.Height(), 
-                               USqr.Buffer(), USqr.LDim(),
+
+                    const int k = USqr.Height();
+                    std::vector<Real> USqrEig( k );
+                    lapack::EVD  
+                    ( 'V', 'U', k, USqr.Buffer(), USqr.LDim(),
                                &USqrEig[0],
                                &evdWork[0],     lwork,
                                &evdIntWork[0],  liwork,
                                &evdRealWork[0], lrwork );
-                                                                                                
+               
                     //colOmegaT = Omega2' T1
                     Dense<Scalar> OmegaT;
-                    hmat_tools::Copy(Pinv, OmegaT);
-                                                                                                
-                    Real Eigmax;
-                    if( USqrEig[USqrEig.size()-1] > (Real)0 )
-                        Eigmax= USqrEig[USqrEig.size()-1] ;
-                    else
-                        Eigmax=0;
-                                                                                                
-                    Real TruncBound = sqrt(std::abs(error)*Eigmax*USqrEig.size());
-                    for(int j=0; j<USqrEig.size(); j++)
+                    hmat_tools::Copy( Pinv, OmegaT );
+          
+                    Real maxEig = 0;
+                    if( k > 0 )
+                        maxEig = std::max( USqrEig[k-1], Real(0) );
+ 
+                    const Real tolerance = sqrt(epsilon*maxEig*k);
+                    for( int j=0; j<k; j++ )
                     {
-                        Real sqrteig;
-                        if( USqrEig[j]>0 )
-                            sqrteig=sqrt(USqrEig[j]);
+                        const Real omega = std::max( USqrEig[j], Real(0) );
+                        const Real sqrtOmega = sqrt( omega );
+                        if( sqrtOmega > tolerance )
+                            for( int i=0; i<k; ++i )
+                                USqr.Set(i,j,USqr.Get(i,j)/sqrtOmega);
                         else
-                            sqrteig=-sqrt(-USqrEig[j]);
-                                                                                                
-                        if( sqrteig > TruncBound )
-                        {
-                            for(int i=0; i<USqr.Height(); ++i)
-                                USqr.Set(i,j,USqr.Get(i,j)/sqrteig);
-                        }
-                        else
-                        {
-                            for(int i=0; i<USqr.Height(); ++i)
-                                USqr.Set(i,j,Scalar(0));
-                        }
+                            MemZero( USqr.Buffer(0,j), k );
                     }
                     
                     blas::Gemm
-                    ( 'N', 'N', OmegaT.Height(), USqr.Width(), USqr.Height(),
+                    ( 'N', 'N', OmegaT.Height(), k, k,
                      Scalar(1), OmegaT.LockedBuffer(), OmegaT.LDim(),
                                 USqr.LockedBuffer(), USqr.LDim(),
                      Scalar(0), Pinv.Buffer(), Pinv.LDim() );
-                                                                                                
+    
                     int rank=std::min(Pinv.Height(), Pinv.Width());
                     std::vector<Real> singularValues(rank);
-                    std::vector<Scalar> U(rank*Pinv.Height()), VH(rank*Pinv.Width());
+                    std::vector<Scalar> U(rank*Pinv.Height()), 
+                                        VH(rank*Pinv.Width());
                     int lsvdwork=lapack::SVDWorkSize(Pinv.Height(), Pinv.Width());
                     int lrsvdwork=lapack::SVDRealWorkSize(Pinv.Height(), Pinv.Width());
                     std::vector<Scalar> svdWork(lsvdwork);
@@ -729,13 +713,12 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressMidcompute
                     ( Pinv.Height(), Pinv.Width(), Pinv.Buffer(), Pinv.LDim(),
                       &singularValues[0], &U[0], Pinv.Height(), &VH[0], rank,
                       &svdWork[0], lsvdwork, &svdRealWork[0]);
-                                                                                                
+         
                     blas::Gemm
-                    ( 'N', 'C', USqr.Height(), Pinv.Height(), USqr.Width(),
+                    ( 'N', 'C', k, Pinv.Height(), k,
                      Scalar(1), USqr.LockedBuffer(), USqr.LDim(),
                                 Pinv.LockedBuffer(), Pinv.LDim(),
                      Scalar(0), BR.Buffer(), BR.LDim() );
-                    //hmat_tools::Conjugate( BR );
                 }
             }
         }
@@ -1086,7 +1069,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressPostcompute
                          Scalar(1), colU.LockedBuffer(), colU.LDim(),
                                     BL.LockedBuffer(), BL.LDim(),
                          Scalar(0), Ztmp.Buffer(),  Ztmp.LDim() );
-                        hmat_tools::Copy(Ztmp, colU);
+                        hmat_tools::Copy( Ztmp, colU );
                     }                                                       
                     if( C.inSourceTeam_ )                                   
                     {                                                       
@@ -1098,7 +1081,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressPostcompute
                          Scalar(1), rowU.LockedBuffer(), rowU.LDim(),
                                     BR.LockedBuffer(), BR.LDim(),
                          Scalar(0), Ztmp.Buffer(),  Ztmp.LDim() );
-                        hmat_tools::Copy(Ztmp, rowU);
+                        hmat_tools::Copy( Ztmp, rowU );
                         hmat_tools::Conjugate( rowU );
                     }                                                       
                 }
