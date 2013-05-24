@@ -28,11 +28,17 @@ main( int argc, char* argv[] )
         const int maxRank = Input("--maxRank","maximum rank of block",5);
         const int multType = Input("--multType","multiply type",2);
         const bool structure = Input("--structure","print structure?",true);
-        const int oversample = Input("--oversample","number of extra basis vecs",4);
+        const int oversample = Input("--oversample","num extra basis vecs",4);
+        const double midcomputeTol = 
+            Input("--midcomputeTol","tolerance for midcompute stage",1e-16);
+        const double compressionTol =
+            Input("--compressionTol","tolerance for compression",1e-16);
         ProcessInput();
         PrintInputReport();
 
         SetOversample( oversample );
+        SetMidcomputeTolerance<double>( midcomputeTol );
+        SetCompressionTolerance<double>( compressionTol );
 
         // Set up two random distributed H-matrices
         if( commRank == 0 )

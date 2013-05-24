@@ -28,6 +28,10 @@ std::stack<std::string> callStack;
 #endif
 
 int oversample=4;
+float midcomputeTolFloat=1e-5;
+float compressionTolFloat=1e-5;
+double midcomputeTolDouble=1e-16;
+double compressionTolDouble=1e-16;
 
 }
 
@@ -147,5 +151,49 @@ int Oversample()
 
 void SetOversample( int oversample )
 { ::oversample = oversample; }
+
+template<typename Real>
+Real CompressionTolerance();
+
+template<>
+float CompressionTolerance<float>()
+{ return ::compressionTolFloat; }
+
+template<>
+double CompressionTolerance<double>()
+{ return ::compressionTolDouble; }
+
+template<typename Real>
+void SetCompressionTolerance( Real relTol );
+
+template<>
+void SetCompressionTolerance<float>( float relTol )
+{ ::compressionTolFloat = relTol; }
+
+template<>
+void SetCompressionTolerance<double>( double relTol )
+{ ::compressionTolDouble = relTol; }
+
+template<typename Real>
+Real MidcomputeTolerance();
+
+template<>
+float MidcomputeTolerance<float>()
+{ return ::midcomputeTolFloat; }
+
+template<>
+double MidcomputeTolerance<double>()
+{ return ::midcomputeTolDouble; }
+
+template<typename Real>
+void SetMidcomputeTolerance( Real tolerance );
+
+template<>
+void SetMidcomputeTolerance<float>( float tolerance )
+{ ::midcomputeTolFloat = tolerance; }
+
+template<>
+void SetMidcomputeTolerance<double>( double tolerance )
+{ ::midcomputeTolDouble = tolerance; }
 
 } // namespace dhmhm

@@ -1270,6 +1270,80 @@ inline void AdjointPseudoInverse
     ( m, n, A, lda, s, U, ldu, VH, ldvh, work, lwork, rwork, epsilon );
 }
 
+inline void AdjointPseudoInverse
+( int m, int n, float* A, int lda, float epsilon )
+{
+#ifndef RELEASE
+    CallStackEntry entry("lapack::AdjointPseudoInverse");
+#endif
+    const int minDim = std::min( m, n );
+    if( minDim == 0 )
+        return;
+
+    const int lwork = SVDWorkSize( m, n );
+    std::vector<float> s(minDim), U(m*minDim), VH(minDim*n),
+                       work(lwork);
+    AdjointPseudoInverse
+    ( m, n, A, lda, &s[0], &U[0], m, &VH[0], minDim, 
+      &work[0], lwork, 0, epsilon );
+}
+
+inline void AdjointPseudoInverse
+( int m, int n, double* A, int lda, double epsilon )
+{
+#ifndef RELEASE
+    CallStackEntry entry("lapack::AdjointPseudoInverse");
+#endif
+    const int minDim = std::min( m, n );
+    if( minDim == 0 )
+        return;
+
+    const int lwork = SVDWorkSize( m, n );
+    std::vector<double> s(minDim), U(m*minDim), VH(minDim*n),
+                        work(lwork);
+    AdjointPseudoInverse
+    ( m, n, A, lda, &s[0], &U[0], m, &VH[0], minDim, 
+      &work[0], lwork, 0, epsilon );
+}
+
+inline void AdjointPseudoInverse
+( int m, int n, std::complex<float>* A, int lda, float epsilon )
+{
+#ifndef RELEASE
+    CallStackEntry entry("lapack::AdjointPseudoInverse");
+#endif
+    const int minDim = std::min( m, n );
+    if( minDim == 0 )
+        return;
+
+    const int lwork = SVDWorkSize( m, n );
+    const int lrwork = SVDRealWorkSize( m, n );
+    std::vector<float> s(minDim), rwork(lrwork);
+    std::vector<std::complex<float> > U(m*minDim), VH(minDim*n), work(lwork);
+    AdjointPseudoInverse
+    ( m, n, A, lda, &s[0], &U[0], m, &VH[0], minDim, 
+      &work[0], lwork, &rwork[0], epsilon );
+}
+
+inline void AdjointPseudoInverse
+( int m, int n, std::complex<double>* A, int lda, double epsilon )
+{
+#ifndef RELEASE
+    CallStackEntry entry("lapack::AdjointPseudoInverse");
+#endif
+    const int minDim = std::min( m, n );
+    if( minDim == 0 )
+        return;
+
+    const int lwork = SVDWorkSize( m, n );
+    const int lrwork = SVDRealWorkSize( m, n );
+    std::vector<double> s(minDim), rwork(lrwork);
+    std::vector<std::complex<double> > U(m*minDim), VH(minDim*n), work(lwork);
+    AdjointPseudoInverse
+    ( m, n, A, lda, &s[0], &U[0], m, &VH[0], minDim, 
+      &work[0], lwork, &rwork[0], epsilon );
+}
+
 //----------------------------------------------------------------------------//
 // LU Factorization                                                           //
 //----------------------------------------------------------------------------//
@@ -1753,6 +1827,66 @@ inline void EVD
         throw std::runtime_error( s.str().c_str() );
     }
 #endif
+}
+
+inline void EVD
+( char jobz, char uplo, int n, float* A, int lda, float* w )
+{
+#ifndef RELEASE
+    CallStackEntry entry("lapack::EVD");
+#endif
+    const int lwork = EVDWorkSize( n );
+    const int liwork = EVDIntWorkSize( n );
+    std::vector<float> work( lwork );
+    std::vector<int> iwork( liwork );
+    EVD( jobz, uplo, n, A, lda, w, &work[0], lwork, &iwork[0], liwork, 0, 0 );
+}
+
+inline void EVD
+( char jobz, char uplo, int n, double* A, int lda, double* w )
+{
+#ifndef RELEASE
+    CallStackEntry entry("lapack::EVD");
+#endif
+    const int lwork = EVDWorkSize( n );
+    const int liwork = EVDIntWorkSize( n );
+    std::vector<double> work( lwork );
+    std::vector<int> iwork( liwork );
+    EVD( jobz, uplo, n, A, lda, w, &work[0], lwork, &iwork[0], liwork, 0, 0 );
+}
+
+inline void EVD
+( char jobz, char uplo, int n, std::complex<float>* A, int lda, float* w )
+{
+#ifndef RELEASE
+    CallStackEntry entry("lapack::EVD");
+#endif
+    const int lwork = EVDWorkSize( n );
+    const int liwork = EVDIntWorkSize( n );
+    const int lrwork = EVDRealWorkSize( n );
+    std::vector<std::complex<float> > work( lwork );
+    std::vector<int> iwork( liwork );
+    std::vector<float> rwork( lrwork );
+    EVD
+    ( jobz, uplo, n, A, lda, w, 
+      &work[0], lwork, &iwork[0], liwork, &rwork[0], lrwork );
+}
+
+inline void EVD
+( char jobz, char uplo, int n, std::complex<double>* A, int lda, double* w )
+{
+#ifndef RELEASE
+    CallStackEntry entry("lapack::EVD");
+#endif
+    const int lwork = EVDWorkSize( n );
+    const int liwork = EVDIntWorkSize( n );
+    const int lrwork = EVDRealWorkSize( n );
+    std::vector<std::complex<double> > work( lwork );
+    std::vector<int> iwork( liwork );
+    std::vector<double> rwork( lrwork );
+    EVD
+    ( jobz, uplo, n, A, lda, w,
+      &work[0], lwork, &iwork[0], liwork, &rwork[0], lrwork );
 }
 
 } // namespace lapack

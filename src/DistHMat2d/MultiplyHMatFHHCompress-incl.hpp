@@ -28,10 +28,9 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompress
     MultiplyHMatFHHCompressReduces
     ( B, C, startLevel, endLevel, startUpdate, endUpdate, 0 );
     
-    // TODO: Allow for this to be overridden 
-    const Real epsilon = lapack::MachineEpsilon<Real>();
+    const Real midcomputeTol = MidcomputeTolerance<Real>();
     MultiplyHMatFHHCompressMidcompute
-    ( B, C, epsilon, startLevel, endLevel, startUpdate, endUpdate, 0 );
+    ( B, C, midcomputeTol, startLevel, endLevel, startUpdate, endUpdate, 0 );
 
     MultiplyHMatFHHCompressBroadcasts
     ( B, C, startLevel, endLevel, startUpdate, endUpdate, 0  );
@@ -546,25 +545,6 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressMidcompute
                     update >= startUpdate && update < endUpdate )
                 {
                     const int key = A.sourceOffset_;
-                    int sizemax=0;                                               
-                    if( C.inTargetTeam_ )
-                    {
-                        Dense<Scalar>& X = C.colUSqrMap_.Get( key );
-                        sizemax = std::max( sizemax, X.Height() );
-                    }
-                    if( C.inSourceTeam_ )
-                    {
-                        Dense<Scalar>& X = C.rowUSqrMap_.Get( key );
-                        sizemax = std::max( sizemax, X.Height() );
-                    }
-                    int lwork, lrwork, liwork;
-                    lwork=lapack::EVDWorkSize( sizemax );
-                    lrwork=lapack::EVDRealWorkSize( sizemax );
-                    liwork=lapack::EVDIntWorkSize( sizemax );
-                            
-                    std::vector<Scalar> evdWork(lwork);
-                    std::vector<Real> evdRealWork(lrwork);
-                    std::vector<int> evdIntWork(liwork);
                     if( C.inTargetTeam_ ) 
                     {
                         Dense<Scalar>& USqr = C.colUSqrMap_.Get( key );
@@ -574,20 +554,19 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressMidcompute
                         const int k = USqr.Height();
                         std::vector<Real> USqrEig( k );
                         lapack::EVD  
-                        ( 'V', 'U', k, USqr.Buffer(), USqr.LDim(),
-                                   &USqrEig[0],
-                                   &evdWork[0],     lwork,
-                                   &evdIntWork[0],  liwork,
-                                   &evdRealWork[0], lrwork );
-                                                                                            
+                        ( 'V', 'U', k, 
+                          USqr.Buffer(), USqr.LDim(), &USqrEig[0] );
+   
                         //colOmegaT = Omega2' T1
                         Dense<Scalar> OmegaT;
                         hmat_tools::Copy( Pinv, OmegaT );
-                                                                                            
+                     
                         Real maxEig = 0;
                         if( k > 0 )
                             maxEig = std::max( USqrEig[k-1], Real(0) );
-                                                                                            
+    
+                        // TODO: Iterate backwards to compute cutoff in manner
+                        //       similar to AdjointPseudoInverse
                         const Real tolerance = sqrt(epsilon*maxEig*k);
                         for( int j=0; j<k; j++ )
                         {
@@ -605,21 +584,12 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressMidcompute
                          Scalar(1), OmegaT.LockedBuffer(), OmegaT.LDim(),
                                     USqr.LockedBuffer(), USqr.LDim(),
                          Scalar(0), Pinv.Buffer(), Pinv.LDim() );
-                                                                                            
-                        int rank=std::min(Pinv.Height(), Pinv.Width());
-                        std::vector<Real> singularValues(rank);
-                        std::vector<Scalar> U(rank*Pinv.Height()), 
-                                            VH(rank*Pinv.Width());
-                        int lsvdwork=lapack::SVDWorkSize(Pinv.Height(), Pinv.Width());
-                        int lrsvdwork=lapack::SVDRealWorkSize(Pinv.Height(), Pinv.Width());
-                        std::vector<Scalar> svdWork(lsvdwork);
-                        std::vector<Real> svdRealWork(lrsvdwork);
+   
                         lapack::AdjointPseudoInverse
-                        ( Pinv.Height(), Pinv.Width(), Pinv.Buffer(), Pinv.LDim(),
-                          &singularValues[0], &U[0], Pinv.Height(), &VH[0], rank,
-                          &svdWork[0], lsvdwork, &svdRealWork[0], epsilon);
-                                                                                            
-                        Dense<Scalar> Ztmp(k, Pinv.Height());
+                        ( Pinv.Height(), Pinv.Width(), 
+                          Pinv.Buffer(), Pinv.LDim(), epsilon );
+ 
+                        Dense<Scalar> Ztmp( k, Pinv.Height() );
                         blas::Gemm
                         ( 'N', 'C', k, Pinv.Height(), k,
                          Scalar(1), USqr.LockedBuffer(), USqr.LDim(),
@@ -637,24 +607,23 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressMidcompute
                         Dense<Scalar>& USqr = C.rowUSqrMap_.Get( key );
                         Dense<Scalar>& Pinv = C.rowPinvMap_.Get( key );
                         Dense<Scalar>& BR = C.BRMap_.Get( key );
-                                                                                            
+   
                         const int k = USqr.Height();
                         std::vector<Real> USqrEig( k );
                         lapack::EVD  
-                        ( 'V', 'U', k, USqr.Buffer(), USqr.LDim(),
-                                   &USqrEig[0],
-                                   &evdWork[0],     lwork,
-                                   &evdIntWork[0],  liwork,
-                                   &evdRealWork[0], lrwork );
-                                                                                            
+                        ( 'V', 'U', k, 
+                          USqr.Buffer(), USqr.LDim(), &USqrEig[0] );
+     
                         //colOmegaT = Omega2' T1
                         Dense<Scalar> OmegaT;
                         hmat_tools::Copy( Pinv, OmegaT );
-                                                                                            
+   
                         Real maxEig = 0;
                         if( k > 0 )
                             maxEig = std::max( USqrEig[k-1], Real(0) );
-                                                                                            
+   
+                        // TODO: Iterate backwards to compute cutoff in manner
+                        //       similar to AdjointPseudoInverse
                         const Real tolerance = sqrt(epsilon*maxEig*k);
                         for( int j=0; j<k; j++ )
                         {
@@ -672,20 +641,11 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressMidcompute
                          Scalar(1), OmegaT.LockedBuffer(), OmegaT.LDim(),
                                     USqr.LockedBuffer(), USqr.LDim(),
                          Scalar(0), Pinv.Buffer(), Pinv.LDim() );
-                                                                                            
-                        int rank=std::min(Pinv.Height(), Pinv.Width());
-                        std::vector<Real> singularValues(rank);
-                        std::vector<Scalar> U(rank*Pinv.Height()), 
-                                            VH(rank*Pinv.Width());
-                        int lsvdwork=lapack::SVDWorkSize(Pinv.Height(), Pinv.Width());
-                        int lrsvdwork=lapack::SVDRealWorkSize(Pinv.Height(), Pinv.Width());
-                        std::vector<Scalar> svdWork(lsvdwork);
-                        std::vector<Real> svdRealWork(lrsvdwork);
+        
                         lapack::AdjointPseudoInverse
-                        ( Pinv.Height(), Pinv.Width(), Pinv.Buffer(), Pinv.LDim(),
-                          &singularValues[0], &U[0], Pinv.Height(), &VH[0], rank,
-                          &svdWork[0], lsvdwork, &svdRealWork[0], epsilon);
-                                                                                            
+                        ( Pinv.Height(), Pinv.Width(), 
+                          Pinv.Buffer(), Pinv.LDim(), epsilon );
+   
                         blas::Gemm
                         ( 'N', 'C', k, Pinv.Height(), k,
                          Scalar(1), USqr.LockedBuffer(), USqr.LDim(),

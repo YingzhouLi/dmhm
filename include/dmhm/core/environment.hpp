@@ -81,6 +81,32 @@ public:
 int Oversample();
 void SetOversample( int oversample );
 
+template<typename Real>
+Real CompressionTolerance();
+template<>
+float CompressionTolerance<float>();
+template<>
+double CompressionTolerance<double>();
+template<typename Real>
+void SetCompressionTolerance( Real relTol );
+template<>
+void SetCompressionTolerance<float>( float relTol );
+template<>
+void SetCompressionTolerance<double>( double relTol );
+
+template<typename Real>
+Real MidcomputeTolerance();
+template<>
+float MidcomputeTolerance<float>();
+template<>
+double MidcomputeTolerance<double>();
+template<typename Real>
+void SetMidcomputeTolerance( Real tolerance );
+template<>
+void SetMidcomputeTolerance<float>( float tolerance );
+template<>
+void SetMidcomputeTolerance<double>( double tolerance );
+
 typedef unsigned char byte;
 
 template<typename T>

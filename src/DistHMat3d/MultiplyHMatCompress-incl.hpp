@@ -48,9 +48,8 @@ DistHMat3d<Scalar>::MultiplyHMatCompress( int startLevel, int endLevel )
     // Then BSqr_ also will be used to store the eigenvectors
     // of B. BSqrEig_ stores eigenvalues of B.
     //
-    // TODO: Allow this value to be overridden
-    const Real relTol = lapack::MachineEpsilon<Real>();
-    MultiplyHMatCompressFMidcompute( relTol, startLevel, endLevel );
+    const Real midcomputeTol = MidcomputeTolerance<Real>();
+    MultiplyHMatCompressFMidcompute( midcomputeTol, startLevel, endLevel );
     MultiplyHMatCompressFPassbackNum( startLevel, endLevel );
     MultiplyHMatCompressFPassbackData( startLevel, endLevel );
 
@@ -60,9 +59,8 @@ DistHMat3d<Scalar>::MultiplyHMatCompress( int startLevel, int endLevel )
     // Compute VSqr*sqrt(VSqrEig)^-1 BSqrV = BR
     // We overwrite the VSqr = VSqr*sqrt(VSqrEig)^-1
     //
-    // TODO: Allow this value to be overridden
-    const Real epsilon = lapack::MachineEpsilon<Real>();
-    MultiplyHMatCompressFPostcompute( epsilon, startLevel, endLevel );
+    const Real compressionTol = CompressionTolerance<Real>();
+    MultiplyHMatCompressFPostcompute( compressionTol, startLevel, endLevel );
 
     MultiplyHMatCompressFBroadcastsNum( startLevel, endLevel );
     MultiplyHMatCompressFBroadcasts( startLevel, endLevel );
@@ -1416,38 +1414,18 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFEigenDecomp
         if( teamRank == 0 )
         {
             // Calculate Eigenvalues of Squared Matrix               
-            int sizemax = std::max(USqr_.Height(), VSqr_.Height());
-             
-            int lwork, lrwork, liwork;
-            lwork=lapack::EVDWorkSize( sizemax );
-            lrwork=lapack::EVDRealWorkSize( sizemax );
-            liwork=lapack::EVDIntWorkSize( sizemax );
-                    
-            std::vector<Scalar> evdWork(lwork);
-            std::vector<Real> evdRealWork(lrwork);
-            std::vector<int> evdIntWork(liwork);
-                                                                     
             if( !USqr_.IsEmpty() )
             {
                 lapack::EVD
-                ('V', 'U', USqr_.Height(), 
-                           USqr_.Buffer(), USqr_.LDim(),
-                           &USqrEig_[0],
-                           &evdWork[0],     lwork,
-                           &evdIntWork[0],  liwork,
-                           &evdRealWork[0], lrwork );
+                ( 'V', 'U', USqr_.Height(), 
+                  USqr_.Buffer(), USqr_.LDim(), &USqrEig_[0] );
                 evdCount++;
             }
-                                                                     
             if( !VSqr_.IsEmpty() )
             {
                 lapack::EVD
-                ('V', 'U', VSqr_.Height(), 
-                           VSqr_.Buffer(), VSqr_.LDim(),
-                           &VSqrEig_[0],
-                           &evdWork[0],     lwork,
-                           &evdIntWork[0],  liwork,
-                           &evdRealWork[0], lrwork );
+                ( 'V', 'U', VSqr_.Height(), 
+                  VSqr_.Buffer(), VSqr_.LDim(), &VSqrEig_[0] );
                 evdCount++;
             }
         }

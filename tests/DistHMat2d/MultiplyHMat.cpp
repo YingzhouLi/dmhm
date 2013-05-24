@@ -75,12 +75,17 @@ main( int argc, char* argv[] )
         const bool print = Input("--print","print matrices?",false);
         const bool structure = Input("--structure","print structure?",true);
         const bool multI = Input("--multI","multiply by identity?",false);
-        const int oversample = Input("--oversample","number of extra basis vecs",4);
+        const int oversample = Input("--oversample","num extra basis vecs",4);
+        const double midcomputeTol = 
+            Input("--midcomputeTol","tolerance for midcompute stage",1e-16);
+        const double compressionTol =
+            Input("--compressionTol","tolerance for compression",1e-16);
         ProcessInput();
         PrintInputReport();
 
-        // Allow for the number of extra basis vectors to be increased
         SetOversample( oversample );
+        SetMidcomputeTolerance<double>( midcomputeTol );
+        SetCompressionTolerance<double>( compressionTol );
 
         const int m = xSize*ySize;
         const int n = xSize*ySize;
