@@ -601,6 +601,9 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompressMidcompute
                          Scalar(1), Ztmp.LockedBuffer(), Ztmp.LDim(),
                                     OmegaT.LockedBuffer(), OmegaT.LDim(),
                          Scalar(0), BL.Buffer(), BL.LDim() );
+
+                        OmegaT.Clear();
+                        Ztmp.Clear();
                     }
                     if( C.inSourceTeam_ )
                     {
@@ -651,6 +654,8 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompressMidcompute
                          Scalar(1), USqr.LockedBuffer(), USqr.LDim(),
                                     Pinv.LockedBuffer(), Pinv.LDim(),
                          Scalar(0), BR.Buffer(), BR.LDim() );
+
+                         OmegaT.Clear();
                     }
                 }
             }
@@ -1018,6 +1023,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompressPostcompute
                                     BL.LockedBuffer(), BL.LDim(),
                          Scalar(0), Ztmp.Buffer(),  Ztmp.LDim() );
                         hmat_tools::Copy( Ztmp, colU );
+                        Ztmp.Clear();
                     }                                                       
                     if( C.inSourceTeam_ )                                   
                     {                                                       
@@ -1031,6 +1037,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompressPostcompute
                          Scalar(0), Ztmp.Buffer(),  Ztmp.LDim() );
                         hmat_tools::Copy( Ztmp, rowU );
                         hmat_tools::Conjugate( rowU );
+                        Ztmp.Clear();
                     }                                                       
                 }
             }
@@ -1039,9 +1046,9 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompressPostcompute
                 Node& nodeA = *A.block_.data.N;
                 const Node& nodeB = *B.block_.data.N;
                 Node& nodeC = *C.block_.data.N;
-                for( int t=0; t<4; ++t )
-                    for( int s=0; s<4; ++s )
-                        for( int r=0; r<4; ++r )
+                for( int t=0; t<8; ++t )
+                    for( int s=0; s<8; ++s )
+                        for( int r=0; r<8; ++r )
                             nodeA.Child(t,r).
                             MultiplyHMatFHHCompressPostcompute
                             ( nodeB.Child(r,s), nodeC.Child(t,s),

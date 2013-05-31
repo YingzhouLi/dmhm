@@ -76,4 +76,9 @@ for i=0:7
     run([filename int2str(i) '.m']);
     Z=[Z;ZLocal{i+1}];
 end
-imagesc(abs(Z));
+imagesc(abs(Z))
+
+%%
+run(['./E.m']);
+E=EMat;
+imagesc(abs(E));

@@ -470,7 +470,7 @@ DistHMat3d<Scalar>::TransposeMultiplyDensePrecompute
                     ( XLocal, tOffset, 0, node.targetSizes[t], numRhs );        
                     for( int s=0; s<8; ++s )                                    
                         if( s < s_start || s>=s_end )                           
-                            node.Child(t,s).MultiplyDensePrecompute                 
+                            node.Child(t,s).TransposeMultiplyDensePrecompute                 
                             ( nodeContext.Child(t,s),                               
                               alpha, XLocalSub, YLocalSub );                        
                 }                                                               
@@ -484,7 +484,7 @@ DistHMat3d<Scalar>::TransposeMultiplyDensePrecompute
                     XLocalSub.LockedView                                    
                     ( XLocal, tOffset, 0, node.targetSizes[t], numRhs );    
                     for( int s=0; s<8; ++s )                                
-                        node.Child(t,s).MultiplyDensePrecompute             
+                        node.Child(t,s).TransposeMultiplyDensePrecompute             
                         ( nodeContext.Child(t,s),                           
                           alpha, XLocalSub, YLocal );                       
                 }                                                           
@@ -1560,8 +1560,8 @@ DistHMat3d<Scalar>::TransposeMultiplyDensePassDataPack
         const int teamSize = mpi::CommSize( team );
         if( teamSize > 4 )
         {
-            for( int t=0; t<4; ++t )
-                for( int s=0; s<4; ++s )
+            for( int t=0; t<8; ++t )
+                for( int s=0; s<8; ++s )
                     node.Child(t,s).TransposeMultiplyDensePassDataPack
                     ( nodeContext.Child(t,s), XLocal, buffer, offsets );
         }
@@ -2168,7 +2168,7 @@ DistHMat3d<Scalar>::MultiplyDensePostcompute
                 {                                                               
                     YLocalSub.View                                              
                     ( YLocal, tOffset, 0, node.targetSizes[t], numRhs );        
-                    for( int s=2; s<8; ++s )                                    
+                    for( int s=0; s<8; ++s )                                    
                         if( s<s_start || s>=s_end )                             
                             node.Child(t,s).MultiplyDensePostcompute            
                             ( nodeContext.Child(t,s),                           

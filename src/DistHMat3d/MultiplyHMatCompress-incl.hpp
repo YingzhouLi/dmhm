@@ -29,15 +29,21 @@ DistHMat3d<Scalar>::MultiplyHMatCompress( int startLevel, int endLevel )
     // Everything about V are same in VSqr_ and VSqrEig_.
     
 //    MultiplyHMatCompressFCompressless( startLevel, endLevel );
+std::cout << "HMatCompress" << std::endl;
     mpi::Comm team = teams_->Team( level_ );
     const int teamRank = mpi::CommRank( team );
     MultiplyHMatCompressLowRankCountAndResize(0);
+std::cout << "HMatCompressLowImport" << std::endl;
     MultiplyHMatCompressLowRankImport(0);
+std::cout << "HMatCompressPrecompute" << std::endl;
     MultiplyHMatCompressFPrecompute( startLevel, endLevel);
+std::cout << "HMatCompressReduces" << std::endl;
     MultiplyHMatCompressFReduces( startLevel, endLevel );
 
     evdCount=0;
+std::cout << "HMatCompressDecomp" << std::endl;
     MultiplyHMatCompressFEigenDecomp( startLevel, endLevel );
+std::cout << "HMatCompressPass" << std::endl;
     MultiplyHMatCompressFPassMatrix( startLevel, endLevel );
     MultiplyHMatCompressFPassVector( startLevel, endLevel );
 
@@ -49,7 +55,9 @@ DistHMat3d<Scalar>::MultiplyHMatCompress( int startLevel, int endLevel )
     // of B. BSqrEig_ stores eigenvalues of B.
     //
     const Real midcomputeTol = MidcomputeTolerance<Real>();
+std::cout << "HMatCompressMidcompute" << std::endl;
     MultiplyHMatCompressFMidcompute( midcomputeTol, startLevel, endLevel );
+std::cout << "HMatCompressPassback" << std::endl;
     MultiplyHMatCompressFPassbackNum( startLevel, endLevel );
     MultiplyHMatCompressFPassbackData( startLevel, endLevel );
 
@@ -60,11 +68,14 @@ DistHMat3d<Scalar>::MultiplyHMatCompress( int startLevel, int endLevel )
     // We overwrite the VSqr = VSqr*sqrt(VSqrEig)^-1
     //
     const Real compressionTol = CompressionTolerance<Real>();
+std::cout << "HMatCompressPostcompute" << std::endl;
     MultiplyHMatCompressFPostcompute( compressionTol, startLevel, endLevel );
 
+std::cout << "HMatCompressBroadcast" << std::endl;
     MultiplyHMatCompressFBroadcastsNum( startLevel, endLevel );
     MultiplyHMatCompressFBroadcasts( startLevel, endLevel );
     // Compute the final U and V store in the usual space.
+std::cout << "HMatCompressFinal" << std::endl;
     MultiplyHMatCompressFFinalcompute( startLevel, endLevel );
     
     // Clean up all the space used in this file
@@ -1144,6 +1155,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPrecompute
         int LW=LocalWidth();
         int offset=0;
         int totalrank = F.U.Width();
+        std::cout << LH << " " << LW << " " << totalrank << std::endl;
         
         if( totalrank > MaxRank() && LH > 0 )
         {

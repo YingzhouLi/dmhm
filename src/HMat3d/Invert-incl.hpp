@@ -89,7 +89,7 @@ HMat3d<Scalar>::DirectInvert()
             for( int i=l-1; i>=0; --i )
             {
                 // NOTE: For upper-triangular matrices, change the loop to
-                //       for( int j=l; j<4; ++j )
+                //       for( int j=l; j<8; ++j )
                 for( int j=0; j<8; ++j )
                 {
                     // A_ij -= B_il A_lj

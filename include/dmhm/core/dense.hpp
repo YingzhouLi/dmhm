@@ -179,7 +179,9 @@ Dense<Scalar>::Dense
 template<typename Scalar>
 inline 
 Dense<Scalar>::~Dense()
-{ }
+{
+    memory_.clear();
+}
 
 template<typename Scalar>
 inline void
