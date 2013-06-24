@@ -127,6 +127,9 @@ DistHMat3d<Scalar>::AdjointCopy( const DistHMat3d<Scalar>& B )
         hmat_tools::Adjoint( *B.block_.data.D, *A.block_.data.D );
         break;
     }
+    default:
+        // Ghost nodes. TODO: Copy rank
+        break;
     }
 }
 
