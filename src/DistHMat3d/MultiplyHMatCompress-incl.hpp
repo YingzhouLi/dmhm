@@ -976,7 +976,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPrecompute
             
             MemCopy
             ( Utmp_.Buffer(0,offset), DF.ULocal.LockedBuffer(),
-              LH*DF.ULocal.Width()*sizeof(Scalar) );
+              LH*DF.ULocal.Width() );
             offset += DF.ULocal.Width();
 
             int numEntries = UMap_.Size();
