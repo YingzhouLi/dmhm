@@ -69,7 +69,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompress( int startLevel, int endLevel )
     
     // Clean up all the space used in this file
     // Also, clean up the colXMap_, rowXMap_, UMap_, VMap_, ZMap_
-    //MultiplyHMatCompressFCleanup( startLevel, endLevel );
+    MultiplyHMatCompressFCleanup( startLevel, endLevel );
 }
 
 template<typename Scalar>
@@ -946,6 +946,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
             MemCopy
             ( Utmp_.Buffer(0,offset), DF.ULocal.LockedBuffer(),
               LH*DF.ULocal.Width() );
+            DF.ULocal.Clear();
             offset += DF.ULocal.Width();
 
             int numEntries = UMap_.Size();
@@ -957,6 +958,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
                 ( Utmp_.Buffer(0,offset), U.LockedBuffer(), LH*U.Width() );
                 offset += U.Width();
             }
+            UMap_.Clear();
             numEntries = colXMap_.Size();
             colXMap_.ResetIterator();
             for( int i=0; i<numEntries; ++i,colXMap_.Increment() )
@@ -966,6 +968,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
                 ( Utmp_.Buffer(0,offset), U.LockedBuffer(), LH*U.Width() );
                 offset += U.Width();
             }
+            colXMap_.Clear();
 
             // TODO: Replace with Herk
             blas::Gemm
@@ -986,6 +989,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
             MemCopy
             ( Vtmp_.Buffer(0,offset), DF.VLocal.LockedBuffer(),
               LW*DF.VLocal.Width() );
+            DF.VLocal.Clear();
             offset += DF.VLocal.Width();
 
             int numEntries = VMap_.Size();
@@ -997,6 +1001,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
                 ( Vtmp_.Buffer(0,offset), V.LockedBuffer(), LW*V.Width() );
                 offset += V.Width();
             }
+            VMap_.Clear();
             numEntries = rowXMap_.Size();
             rowXMap_.ResetIterator();
             for( int i=0; i<numEntries; ++i,rowXMap_.Increment() )
@@ -1006,6 +1011,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
                 ( Vtmp_.Buffer(0,offset), V.LockedBuffer(), LW*V.Width() );
                 offset += V.Width();
             }
+            rowXMap_.Clear();
 
             // TODO: Replace with Herk
             blas::Gemm
@@ -1037,6 +1043,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
             
             MemCopy
             ( Utmp_.Buffer(0,offset), SF.D.LockedBuffer(), LH*SF.D.Width() );
+            SF.D.Clear();
             offset += SF.D.Width();
 
             int numEntries = UMap_.Size();
@@ -1048,6 +1055,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
                 ( Utmp_.Buffer(0,offset), U.LockedBuffer(), LH*U.Width() );
                 offset += U.Width();
             }
+            UMap_.Clear();
             numEntries = colXMap_.Size();
             colXMap_.ResetIterator();
             for( int i=0; i<numEntries; ++i,colXMap_.Increment() )
@@ -1057,6 +1065,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
                 ( Utmp_.Buffer(0,offset), U.LockedBuffer(), LH*U.Width() );
                 offset += U.Width();
             }
+            colXMap_.Clear();
 
             // TODO: Replace with Herk
             blas::Gemm
@@ -1076,6 +1085,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
             
             MemCopy
             ( Vtmp_.Buffer(0,offset), SF.D.LockedBuffer(), LW*SF.D.Width() );
+            SF.D.Clear();
             offset += SF.D.Width();
 
             int numEntries = VMap_.Size();
@@ -1087,6 +1097,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
                 ( Vtmp_.Buffer(0,offset), V.LockedBuffer(), LW*V.Width() );
                 offset += V.Width();
             }
+            VMap_.Clear();
             numEntries = rowXMap_.Size();
             rowXMap_.ResetIterator();
             for( int i=0; i<numEntries; ++i,rowXMap_.Increment() )
@@ -1096,6 +1107,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
                 ( Vtmp_.Buffer(0,offset), V.LockedBuffer(), LW*V.Width() );
                 offset += V.Width();
             }
+            rowXMap_.Clear();
 
             // TODO: Replace with Herk
             blas::Gemm
@@ -1127,6 +1139,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
             MemCopy
             ( Utmp_.Buffer(0,offset), F.U.LockedBuffer(), LH*F.U.Width() );
             offset=F.U.Width();
+            F.U.Clear();
             // TODO: Replace with Herk
             blas::Gemm
             ( 'C', 'N', totalrank, totalrank, LH,
@@ -1145,6 +1158,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
             
             MemCopy
             ( Vtmp_.Buffer(0,offset), F.V.LockedBuffer(), LW*F.V.Width() );
+            F.V.Clear();
             offset=F.V.Width();
 
             // TODO: Replace with Herk
@@ -1235,7 +1249,7 @@ template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyHMatCompressFReducesPack
 ( std::vector<Scalar>& buffer, std::vector<int>& offsets,
-  int startLevel, int endLevel ) const
+  int startLevel, int endLevel )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFReducePack");
@@ -1261,11 +1275,15 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFReducesPack
     {
         if( level_ < startLevel )
             break;
+        mpi::Comm team = teams_->Team( level_ );
+        const int teamRank = mpi::CommRank( team );
         int size=USqr_.Height()*USqr_.Width();
         if( size > 0 )
         {
             MemCopy( &buffer[offsets[level_]], USqr_.LockedBuffer(), size );
             offsets[level_] += size;
+            if( teamRank != 0 )
+                USqr_.Clear();
         }
 
         size=VSqr_.Height()*VSqr_.Width();
@@ -1273,6 +1291,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFReducesPack
         {
             MemCopy( &buffer[offsets[level_]], VSqr_.LockedBuffer(), size );
             offsets[level_] += size;
+            if( teamRank != 0 )
+                VSqr_.Clear();
         }
         break;
     }
@@ -1948,6 +1968,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
              &work[0], lwork, &rwork[0] );
 
             SVDTrunc( BSqrU_, BSigma_, BSqrVH_, relTol );
+            BSqr_.Clear();
         }
         break;
     }
@@ -2383,6 +2404,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackDataPack
                 MemCopy
                 ( &buffer[offsets[sourceRoot_]], BSqrVH_.LockedBuffer(), size );
                 offsets[sourceRoot_] += size;
+                BSqrVH_.Clear();
             }
         }
         else if( block_.type == SPLIT_LOW_RANK )
@@ -2602,6 +2624,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPostcompute
                   Scalar(1), USqr_.LockedBuffer(),  USqr_.LDim(),
                              BSqrU_.LockedBuffer(), BSqrU_.LDim(),
                   Scalar(0), BL_.Buffer(), BL_.LDim() );
+                USqr_.Clear();
+                BSqrU_.Clear();
             }
 
             const int kV = VSqrEig_.size();
@@ -2626,6 +2650,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPostcompute
                   Scalar(1), VSqr_.LockedBuffer(),  VSqr_.LDim(),
                              BSqrVH_.LockedBuffer(), BSqrVH_.LDim(),
                   Scalar(0), BR_.Buffer(), BR_.LDim() );
+                VSqr_.Clear();
+                BSqrVH_.Clear();
             }
         }
         break;
@@ -3051,6 +3077,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
              Scalar(1), Utmp_.LockedBuffer(), Utmp_.LDim(),
                         BL_.LockedBuffer(), BL_.LDim(),
              Scalar(0), U.Buffer(),         U.LDim() );
+            BL_.Clear();
+            Utmp_.Clear();
         }
         if( inSourceTeam_ )
         {                                                      
@@ -3063,6 +3091,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
              Scalar(1), Vtmp_.LockedBuffer(), Vtmp_.LDim(),
                         BR_.LockedBuffer(), BR_.LDim(),
              Scalar(0), V.Buffer(),         V.LDim() );
+            BR_.Clear();
+            Vtmp_.Clear();
         }
         break;
     }
@@ -3083,6 +3113,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
                  Scalar(1), Utmp_.LockedBuffer(), Utmp_.LDim(),
                             BL_.LockedBuffer(), BL_.LDim(),
                  Scalar(0), U.Buffer(),         U.LDim() );
+                BL_.Clear();
+                Utmp_.Clear();
             }
             if( inSourceTeam_ )
             {                                                      
@@ -3095,6 +3127,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
                  Scalar(1), Vtmp_.LockedBuffer(), Vtmp_.LDim(),
                             BR_.LockedBuffer(), BR_.LDim(),
                  Scalar(0), V.Buffer(),         V.LDim() );
+                BR_.Clear();
+                Vtmp_.Clear();
             }
         }
         else
@@ -3314,6 +3348,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
                         V.LockedBuffer(), V.LDim(),
              Scalar(1), SD.D.Buffer(), SD.D.LDim() );
 
+            UMap_.Clear();
             VMap_.Clear();
         }
         break;

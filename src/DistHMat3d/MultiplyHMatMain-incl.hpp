@@ -3168,8 +3168,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataUnpackC
             const DistLowRankGhost& DFGB = *B.block_.data.DFG;
             if( DFA.rank != 0 && DFGB.rank != 0 )
             {
-                C.ZMap_.Set
-                ( key, new Dense<Scalar>( DFA.rank, DFGB.rank ) );
+                C.ZMap_.Set( key, new Dense<Scalar>( DFA.rank, DFGB.rank ) );
                 if( teamRank == 0 )
                 {
                     Dense<Scalar>& ZC = C.ZMap_.Get( key );

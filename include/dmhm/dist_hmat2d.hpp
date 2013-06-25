@@ -1120,7 +1120,7 @@ private:
     ( std::vector<int>& sizes, int startLevel, int endLevel ) const;
     void MultiplyHMatCompressFReducesPack
     ( std::vector<Scalar>& buffer, std::vector<int>& offsets,
-      int startLevel, int endLevel ) const;
+      int startLevel, int endLevel );
     void MultiplyHMatCompressFTreeReduces
     ( std::vector<Scalar>& buffer, std::vector<int>& sizes ) const;
     void MultiplyHMatCompressFReducesUnpack

@@ -1,12 +1,12 @@
-%%
-filename='./ALocal_';
-A=[];
-for i=0:7
-    run([filename int2str(i) '.m']);
-    A=[A;ALocal{i+1}];
-end
-
-imagesc(A);
+% %%
+% filename='./ALocal_';
+% A=[];
+% for i=0:7
+%     run([filename int2str(i) '.m']);
+%     A=[A;ALocal{i+1}];
+% end
+% 
+% imagesc(A);
 
 % %%
 % filename='./BLocal_';
@@ -54,31 +54,31 @@ imagesc(A);
 %%
 filename='./ELocal_';
 E=[];
-for i=0:0
+for i=0:3
     run([filename int2str(i) '.m']);
     E=[E;ELocal{i+1}];
 end
 imagesc(abs(E));
 
-%%
-filename='./YLocal_';
-Y=[];
-for i=0:3
-    run([filename int2str(i) '.m']);
-    Y=[Y;YLocal{i+1}];
-end
-imagesc(abs(Y));
-
-%%
-filename='./ZLocal_';
-Z=[];
-for i=0:7
-    run([filename int2str(i) '.m']);
-    Z=[Z;ZLocal{i+1}];
-end
-imagesc(abs(Z))
-
-%%
-run(['./E.m']);
-E=EMat;
-imagesc(abs(E));
+% %%
+% filename='./YLocal_';
+% Y=[];
+% for i=0:3
+%     run([filename int2str(i) '.m']);
+%     Y=[Y;YLocal{i+1}];
+% end
+% imagesc(abs(Y));
+% 
+% %%
+% filename='./ZLocal_';
+% Z=[];
+% for i=0:7
+%     run([filename int2str(i) '.m']);
+%     Z=[Z;ZLocal{i+1}];
+% end
+% imagesc(abs(Z))
+% 
+% %%
+% run(['./E.m']);
+% E=EMat;
+% imagesc(abs(E));

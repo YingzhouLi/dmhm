@@ -21,7 +21,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompress
     CallStackEntry entry("DistHMat3d::MultiplyHMatFHHCompress");
 #endif
     const DistHMat3d<Scalar>& A = *this;
-    
+
     MultiplyHMatFHHCompressPrecompute
     ( B, C, startLevel, endLevel, startUpdate, endUpdate, 0 );
 
@@ -99,7 +99,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompressPrecompute
                         ( key, new Dense<Scalar>( Trank, Trank ) );
 
                         //_colUSqr = ( A B Omega1)' ( A B Omega1 )
-                        // TODO: Replace with Herk
+                        // TODO: Replace this with a Herk call...
                         blas::Gemm
                         ( 'C', 'N', Trank, Trank, LH,
                          Scalar(1), colU.LockedBuffer(), colU.LDim(),
@@ -134,7 +134,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompressPrecompute
                         ( key, new Dense<Scalar>( Trank, Omegarank ) );
 
                         //_rowUSqr = ( B' A' Omega2 )' ( B' A' Omega2 )
-                        // TODO: Replace with Herk
+                        // TODO: Replace this with a Herk call...
                         blas::Gemm
                         ( 'C', 'N', Trank, Trank, LH,
                          Scalar(1), rowU.LockedBuffer(), rowU.LDim(),
@@ -556,15 +556,15 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompressMidcompute
                         lapack::EVD  
                         ( 'V', 'U', k, 
                           USqr.Buffer(), USqr.LDim(), &USqrEig[0] );
-  
+   
                         //colOmegaT = Omega2' T1
                         Dense<Scalar> OmegaT;
                         hmat_tools::Copy( Pinv, OmegaT );
-  
+                     
                         Real maxEig = 0;
                         if( k > 0 )
                             maxEig = std::max( USqrEig[k-1], Real(0) );
-     
+    
                         // TODO: Iterate backwards to compute cutoff in manner
                         //       similar to AdjointPseudoInverse
                         const Real tolerance = sqrt(epsilon*maxEig*k);
@@ -584,11 +584,11 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompressMidcompute
                          Scalar(1), OmegaT.LockedBuffer(), OmegaT.LDim(),
                                     USqr.LockedBuffer(), USqr.LDim(),
                          Scalar(0), Pinv.Buffer(), Pinv.LDim() );
-     
+   
                         lapack::AdjointPseudoInverse
                         ( Pinv.Height(), Pinv.Width(), 
                           Pinv.Buffer(), Pinv.LDim(), epsilon );
-   
+ 
                         Dense<Scalar> Ztmp( k, Pinv.Height() );
                         blas::Gemm
                         ( 'N', 'C', k, Pinv.Height(), k,
@@ -601,30 +601,27 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompressMidcompute
                          Scalar(1), Ztmp.LockedBuffer(), Ztmp.LDim(),
                                     OmegaT.LockedBuffer(), OmegaT.LDim(),
                          Scalar(0), BL.Buffer(), BL.LDim() );
-
-                        OmegaT.Clear();
-                        Ztmp.Clear();
                     }
                     if( C.inSourceTeam_ )
                     {
                         Dense<Scalar>& USqr = C.rowUSqrMap_.Get( key );
                         Dense<Scalar>& Pinv = C.rowPinvMap_.Get( key );
                         Dense<Scalar>& BR = C.BRMap_.Get( key );
-     
+   
                         const int k = USqr.Height();
                         std::vector<Real> USqrEig( k );
                         lapack::EVD  
                         ( 'V', 'U', k, 
                           USqr.Buffer(), USqr.LDim(), &USqrEig[0] );
-   
+     
                         //colOmegaT = Omega2' T1
                         Dense<Scalar> OmegaT;
                         hmat_tools::Copy( Pinv, OmegaT );
-      
+   
                         Real maxEig = 0;
                         if( k > 0 )
                             maxEig = std::max( USqrEig[k-1], Real(0) );
-  
+   
                         // TODO: Iterate backwards to compute cutoff in manner
                         //       similar to AdjointPseudoInverse
                         const Real tolerance = sqrt(epsilon*maxEig*k);
@@ -644,7 +641,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompressMidcompute
                          Scalar(1), OmegaT.LockedBuffer(), OmegaT.LDim(),
                                     USqr.LockedBuffer(), USqr.LDim(),
                          Scalar(0), Pinv.Buffer(), Pinv.LDim() );
- 
+        
                         lapack::AdjointPseudoInverse
                         ( Pinv.Height(), Pinv.Width(), 
                           Pinv.Buffer(), Pinv.LDim(), epsilon );
@@ -654,8 +651,6 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompressMidcompute
                          Scalar(1), USqr.LockedBuffer(), USqr.LDim(),
                                     Pinv.LockedBuffer(), Pinv.LDim(),
                          Scalar(0), BR.Buffer(), BR.LDim() );
-
-                         OmegaT.Clear();
                     }
                 }
             }
@@ -1023,7 +1018,6 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompressPostcompute
                                     BL.LockedBuffer(), BL.LDim(),
                          Scalar(0), Ztmp.Buffer(),  Ztmp.LDim() );
                         hmat_tools::Copy( Ztmp, colU );
-                        Ztmp.Clear();
                     }                                                       
                     if( C.inSourceTeam_ )                                   
                     {                                                       
@@ -1037,7 +1031,6 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompressPostcompute
                          Scalar(0), Ztmp.Buffer(),  Ztmp.LDim() );
                         hmat_tools::Copy( Ztmp, rowU );
                         hmat_tools::Conjugate( rowU );
-                        Ztmp.Clear();
                     }                                                       
                 }
             }

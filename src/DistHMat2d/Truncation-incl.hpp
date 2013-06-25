@@ -17,7 +17,7 @@ DistHMat2d<Scalar>::EVDTrunc
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::EVDTrunc");
 #endif
-    int k = w.size();
+    const int k = w.size();
     if( k == 0 )
         return;
 
