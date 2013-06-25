@@ -179,9 +179,7 @@ Dense<Scalar>::Dense
 template<typename Scalar>
 inline 
 Dense<Scalar>::~Dense()
-{
-    memory_.clear();
-}
+{ }
 
 template<typename Scalar>
 inline void
@@ -365,7 +363,8 @@ Dense<Scalar>::Clear()
     ldim_ = 1;
     viewing_ = false;
     lockedView_ = false;
-    memory_.clear();
+
+    std::vector<Scalar>().swap(memory_);
     buffer_ = 0;
     lockedBuffer_ = 0;
     type_ = GENERAL;

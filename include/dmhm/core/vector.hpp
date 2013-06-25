@@ -128,7 +128,8 @@ Vector<Scalar>::Clear()
     height_ = 0;
     viewing_ = false;
     lockedView_ = false;
-    memory_.clear();
+
+    std::vector<Scalar>().swap(memory_);
     buffer_ = 0;
     lockedBuffer_ = 0;
 }
