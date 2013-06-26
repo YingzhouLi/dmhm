@@ -42,7 +42,7 @@ DistHMat3d<Scalar>::SVDTrunc
     CallStackEntry entry("DistHMat3d::EVDTrunc");
 #endif
     const int m = U.Height();
-    const int n = VH.Width();
+    const int n = VH.Height();
     const int k = s.size();
     if( k == 0 )
         return;

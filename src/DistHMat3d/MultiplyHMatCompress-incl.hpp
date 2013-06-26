@@ -1165,45 +1165,48 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPrecompute
         int offset=0;
         int totalrank = F.U.Width();
         
-        if( totalrank > MaxRank() && LH > 0 )
+        if( LH > totalrank && LW > totalrank )
         {
-            memCount += totalrank*(totalrank+LH+1);
-            USqr_.Resize( totalrank, totalrank, totalrank );
-            USqrEig_.resize( totalrank );
-            Utmp_.Resize( LH, totalrank, LH );
-            
-            MemCopy
-            ( Utmp_.Buffer(0,offset), F.U.LockedBuffer(), LH*F.U.Width() );
-            offset=F.U.Width();
-            F.U.Clear();
-            // TODO: Replace with Herk
-            blas::Gemm
-            ( 'C', 'N', totalrank, totalrank, LH,
-             Scalar(1), Utmp_.LockedBuffer(), Utmp_.LDim(),
-                        Utmp_.LockedBuffer(), Utmp_.LDim(),
-             Scalar(0), USqr_.Buffer(),       USqr_.LDim() );
-        }
-
-        totalrank = F.V.Width();
-        offset = 0;
-        if( totalrank > MaxRank() && LW > 0 )
-        {
-            memCount += totalrank*(totalrank+LW+1);
-            VSqr_.Resize( totalrank, totalrank, totalrank );
-            VSqrEig_.resize( totalrank );
-            Vtmp_.Resize( LW, totalrank, LW );
-            
-            MemCopy
-            ( Vtmp_.Buffer(0,offset), F.V.LockedBuffer(), LW*F.V.Width() );
-            F.V.Clear();
-            offset=F.V.Width();
-
-            // TODO: Replace with Herk
-            blas::Gemm
-            ( 'C', 'N', totalrank, totalrank, LW,
-             Scalar(1), Vtmp_.LockedBuffer(), Vtmp_.LDim(),
-                        Vtmp_.LockedBuffer(), Vtmp_.LDim(),
-             Scalar(0), VSqr_.Buffer(),       VSqr_.LDim() );
+            if( totalrank > MaxRank() && LH > 0 )                               
+            {
+				memCount += totalrank*(totalrank+LH+1);
+                USqr_.Resize( totalrank, totalrank, totalrank );
+                USqrEig_.resize( totalrank );
+                Utmp_.Resize( LH, totalrank, LH );
+                
+                MemCopy
+                ( Utmp_.Buffer(0,offset), F.U.LockedBuffer(), LH*F.U.Width() );
+                offset=F.U.Width();
+                F.U.Clear();
+                // TODO: Replace with Herk
+                blas::Gemm
+                ( 'C', 'N', totalrank, totalrank, LH,
+                 Scalar(1), Utmp_.LockedBuffer(), Utmp_.LDim(),
+                            Utmp_.LockedBuffer(), Utmp_.LDim(),
+                 Scalar(0), USqr_.Buffer(),       USqr_.LDim() );
+            }
+                                                                                
+            totalrank = F.V.Width();
+            offset = 0;
+            if( totalrank > MaxRank() && LW > 0 )
+            {
+				memCount += totalrank*(totalrank+LW+1);
+                VSqr_.Resize( totalrank, totalrank, totalrank );
+                VSqrEig_.resize( totalrank );
+                Vtmp_.Resize( LW, totalrank, LW );
+                
+                MemCopy
+                ( Vtmp_.Buffer(0,offset), F.V.LockedBuffer(), LW*F.V.Width() );
+                F.V.Clear();
+                offset=F.V.Width();
+                                                                                
+                // TODO: Replace with Herk
+                blas::Gemm
+                ( 'C', 'N', totalrank, totalrank, LW,
+                 Scalar(1), Vtmp_.LockedBuffer(), Vtmp_.LDim(),
+                            Vtmp_.LockedBuffer(), Vtmp_.LDim(),
+                 Scalar(0), VSqr_.Buffer(),       VSqr_.LDim() );
+            }
         }
         break;
     }
@@ -1433,7 +1436,6 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFEigenDecomp
     }
     case DIST_LOW_RANK:
     case SPLIT_LOW_RANK:
-    case LOW_RANK:
     {
         if( level_ < startLevel )
             break;
@@ -1459,6 +1461,31 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFEigenDecomp
                   VSqr_.Buffer(), VSqr_.LDim(), &VSqrEig_[0] );
                 evdCount++;
             }
+        }
+        break;
+    }
+    case LOW_RANK:
+    {
+        if( level_ < startLevel )
+            break;
+        if( haveDenseUpdate_ )
+            break;
+        LowRank<Scalar> &F = *block_.data.F;
+        const int LH = LocalHeight();
+        const int LW = LocalWidth();
+        const int totalrank = F.U.Width();
+        
+        if( LH > totalrank && LW > totalrank )
+        {
+            lapack::EVD
+            ( 'V', 'U', USqr_.Height(), 
+              USqr_.Buffer(), USqr_.LDim(), &USqrEig_[0] );
+            evdCount++;
+            
+            lapack::EVD
+            ( 'V', 'U', VSqr_.Height(), 
+              VSqr_.Buffer(), VSqr_.LDim(), &VSqrEig_[0] );
+            evdCount++;
         }
         break;
     }
@@ -1951,7 +1978,6 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFMidcompute
     }
     case DIST_LOW_RANK:
     case SPLIT_LOW_RANK:
-    case LOW_RANK:
     {
         if( level_ < startLevel )
             break;
@@ -1999,6 +2025,94 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFMidcompute
             std::vector<Real> rwork(lrwork);
             lapack::SVD
             ('S', 'S' ,m ,n, 
+             BSqr_.Buffer(), BSqr_.LDim(), &BSigma_[0],
+             BSqrU_.Buffer(), BSqrU_.LDim(),
+             BSqrVH_.Buffer(), BSqrVH_.LDim(),
+             &work[0], lwork, &rwork[0] );
+
+            SVDTrunc( BSqrU_, BSigma_, BSqrVH_, relTol );
+            BSqr_.Clear();
+        }
+        break;
+    }
+    case LOW_RANK:
+    {
+        if( level_ < startLevel )
+            break;
+        if( haveDenseUpdate_ )
+            break;
+        LowRank<Scalar> &F = *block_.data.F;
+        const int LH = LocalHeight();
+        const int LW = LocalWidth();
+        const int totalrank = F.U.Width();
+        if( LH > totalrank && LW > totalrank )
+        {
+#ifndef RELEASE
+            if( USqr_.Height() != VSqr_.Height() ||
+                USqrEig_.size() != VSqrEig_.size() )
+                throw std::logic_error("Dimension error during calculation");
+#endif
+            const int k = USqr_.Height();
+
+            BSqr_.Resize( k, k );
+            blas::Gemm
+            ( 'T', 'N', k, k, k,
+              Scalar(1), USqr_.LockedBuffer(), USqr_.LDim(),
+                         VSqr_.LockedBuffer(), VSqr_.LDim(),
+              Scalar(0), BSqr_.Buffer(),       BSqr_.LDim() );
+
+            hmat_tools::Conjugate( BSqr_ );
+            std::vector<Real> USqrSigma(k), VSqrSigma(k);
+            for( int i=0; i<k; ++i)
+                USqrSigma[i] = sqrt( std::max( USqrEig_[i], Real(0) ) );
+            for( int i=0; i<k; ++i)
+                VSqrSigma[i] = sqrt( std::max( VSqrEig_[i], Real(0) ) );
+
+            const int m = BSqr_.Height();
+            const int n = BSqr_.Width();
+            for( int j=0; j<n; ++j)
+                for( int i=0; i<m; ++i)
+                    BSqr_.Set(i,j, BSqr_.Get(i,j)*USqrSigma[i]*VSqrSigma[j]);
+
+            const int minDim = std::min( m, n );
+            BSqrU_.Resize( m, minDim );
+            BSqrVH_.Resize( minDim, n );
+            BSigma_.resize( minDim );
+
+            const int lwork = lapack::SVDWorkSize(m,n);
+            const int lrwork = lapack::SVDRealWorkSize(m,n);
+            std::vector<Scalar> work(lwork);
+            std::vector<Real> rwork(lrwork);
+            lapack::SVD
+            ('S', 'S' ,m ,n, 
+             BSqr_.Buffer(), BSqr_.LDim(), &BSigma_[0],
+             BSqrU_.Buffer(), BSqrU_.LDim(),
+             BSqrVH_.Buffer(), BSqrVH_.LDim(),
+             &work[0], lwork, &rwork[0] );
+
+            SVDTrunc( BSqrU_, BSigma_, BSqrVH_, relTol );
+            BSqr_.Clear();
+        }
+        else
+        {
+            BSqr_.Resize( LH, LW );
+            blas::Gemm
+            ( 'N', 'T', LH, LW, totalrank,
+              Scalar(1), F.U.LockedBuffer(), F.U.LDim(),
+                         F.V.LockedBuffer(), F.V.LDim(),
+              Scalar(0), BSqr_.Buffer(),       BSqr_.LDim() );
+
+            const int minDim = std::min( LH, LW );
+            BSqrU_.Resize( LH, minDim );
+            BSqrVH_.Resize( minDim, LW );
+            BSigma_.resize( minDim );
+
+            const int lwork = lapack::SVDWorkSize(LH,LW);
+            const int lrwork = lapack::SVDRealWorkSize(LH,LW);
+            std::vector<Scalar> work(lwork);
+            std::vector<Real> rwork(lrwork);
+            lapack::SVD
+            ('S', 'S' , LH, LW, 
              BSqr_.Buffer(), BSqr_.LDim(), &BSigma_[0],
              BSqrU_.Buffer(), BSqrU_.LDim(),
              BSqrVH_.Buffer(), BSqrVH_.LDim(),
@@ -2633,6 +2747,15 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPostcompute
         const int teamRank = mpi::CommRank( team );
         if( teamRank == 0 )
         {
+            if( block_.type == LOW_RANK )
+            {
+                LowRank<Scalar> &F = *block_.data.F;
+                const int LH = LocalHeight();
+                const int LW = LocalWidth();
+                const int totalrank = F.U.Width();
+                if( LH < totalrank || LW < totalrank )
+                    break;
+            }
             const int kU = USqrEig_.size();
             if( inTargetTeam_ && kU > 0 )
             {
@@ -3272,27 +3395,42 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFFinalcompute
             break;
         if( !haveDenseUpdate_ )
         {
-            if( !BL_.IsEmpty() )                                       
-            { 
-                LowRank<Scalar> &F = *block_.data.F;
-                Dense<Scalar> &U = F.U;
-                U.Resize( Utmp_.Height(), BL_.Width() );
-                blas::Gemm
-                ('N', 'N', Utmp_.Height(), BL_.Width(), Utmp_.Width(),
-                 Scalar(1), Utmp_.LockedBuffer(), Utmp_.LDim(),
-                            BL_.LockedBuffer(), BL_.LDim(),
-                 Scalar(0), U.Buffer(),         U.LDim() );
+            LowRank<Scalar> &F = *block_.data.F;
+            const int LH = LocalHeight();
+            const int LW = LocalWidth();
+            const int totalrank = F.U.Width();
+            if( LH > totalrank && LW > totalrank )
+            {
+                if( !BL_.IsEmpty() )                                        
+                { 
+                    LowRank<Scalar> &F = *block_.data.F;
+                    Dense<Scalar> &U = F.U;
+                    U.Resize( Utmp_.Height(), BL_.Width() );
+                    blas::Gemm
+                    ('N', 'N', Utmp_.Height(), BL_.Width(), Utmp_.Width(),
+                     Scalar(1), Utmp_.LockedBuffer(), Utmp_.LDim(),
+                                BL_.LockedBuffer(), BL_.LDim(),
+                     Scalar(0), U.Buffer(),         U.LDim() );
+                }
+                if( !BR_.IsEmpty() )
+                {                                                      
+                    LowRank<Scalar> &F = *block_.data.F;
+                    Dense<Scalar> &V = F.V;
+                    V.Resize( Vtmp_.Height(), BR_.Width() );
+                    blas::Gemm
+                    ('N', 'N', Vtmp_.Height(), BR_.Width(), Vtmp_.Width(),
+                     Scalar(1), Vtmp_.LockedBuffer(), Vtmp_.LDim(),
+                                BR_.LockedBuffer(), BR_.LDim(),
+                     Scalar(0), V.Buffer(),         V.LDim() );
+                }
             }
-            if( !BR_.IsEmpty() )
-            {                                                      
-                LowRank<Scalar> &F = *block_.data.F;
-                Dense<Scalar> &V = F.V;
-                V.Resize( Vtmp_.Height(), BR_.Width() );
-                blas::Gemm
-                ('N', 'N', Vtmp_.Height(), BR_.Width(), Vtmp_.Width(),
-                 Scalar(1), Vtmp_.LockedBuffer(), Vtmp_.LDim(),
-                            BR_.LockedBuffer(), BR_.LDim(),
-                 Scalar(0), V.Buffer(),         V.LDim() );
+            else
+            {
+                hmat_tools::Copy( BSqrU_, F.U );
+                F.V.Resize( LW, BSqrVH_.Height() );
+                for( int j=0; j<BSqrVH_.Height(); ++j )
+                    for( int i=0; i<LW; ++i )
+                        F.V.Set(i,j,BSqrVH_.Get(j,i)*BSigma_[j]);
             }
         }
         else
