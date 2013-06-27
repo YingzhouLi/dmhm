@@ -1029,92 +1029,95 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
         if( haveDenseUpdate_ )
             break;
         SplitLowRank &SF = *block_.data.SF;
-        int LH=LocalHeight();
-        int LW=LocalWidth();
+        int LH=Height();
+        int LW=Width();
         int offset=0;
         int totalrank = colXMap_.TotalWidth() + 
                         UMap_.TotalWidth() + SF.D.Width();
         
-        if( inTargetTeam_ && totalrank > 0 && LH > 0 )
+        if( LH > totalrank && LW > totalrank )
         {
-            USqr_.Resize( totalrank, totalrank, totalrank );
-            USqrEig_.resize( totalrank );
-            Utmp_.Resize( LH, totalrank, LH );
-            
-            MemCopy
-            ( Utmp_.Buffer(0,offset), SF.D.LockedBuffer(), LH*SF.D.Width() );
-            SF.D.Clear();
-            offset += SF.D.Width();
-
-            int numEntries = UMap_.Size();
-            UMap_.ResetIterator();
-            for( int i=0; i<numEntries; ++i,UMap_.Increment() )
+            if( inTargetTeam_ && totalrank > 0 && LH > 0 )                        
             {
-                Dense<Scalar>& U = *UMap_.CurrentEntry();
+                USqr_.Resize( totalrank, totalrank, totalrank );
+                USqrEig_.resize( totalrank );
+                Utmp_.Resize( LH, totalrank, LH );
+                
                 MemCopy
-                ( Utmp_.Buffer(0,offset), U.LockedBuffer(), LH*U.Width() );
-                offset += U.Width();
+                ( Utmp_.Buffer(0,offset), SF.D.LockedBuffer(), LH*SF.D.Width() );
+                SF.D.Clear();
+                offset += SF.D.Width();
+                                                                                  
+                int numEntries = UMap_.Size();
+                UMap_.ResetIterator();
+                for( int i=0; i<numEntries; ++i,UMap_.Increment() )
+                {
+                    Dense<Scalar>& U = *UMap_.CurrentEntry();
+                    MemCopy
+                    ( Utmp_.Buffer(0,offset), U.LockedBuffer(), LH*U.Width() );
+                    offset += U.Width();
+                }
+                UMap_.Clear();
+                numEntries = colXMap_.Size();
+                colXMap_.ResetIterator();
+                for( int i=0; i<numEntries; ++i,colXMap_.Increment() )
+                {
+                    Dense<Scalar>& U = *colXMap_.CurrentEntry();
+                    MemCopy
+                    ( Utmp_.Buffer(0,offset), U.LockedBuffer(), LH*U.Width() );
+                    offset += U.Width();
+                }
+                colXMap_.Clear();
+				
+                // TODO: Replace with Herk
+                blas::Gemm
+                ('C', 'N', totalrank, totalrank, LH,
+                 Scalar(1), Utmp_.LockedBuffer(), Utmp_.LDim(),
+                            Utmp_.LockedBuffer(), Utmp_.LDim(),
+                 Scalar(0), USqr_.Buffer(),       USqr_.LDim() );
             }
-            UMap_.Clear();
-            numEntries = colXMap_.Size();
-            colXMap_.ResetIterator();
-            for( int i=0; i<numEntries; ++i,colXMap_.Increment() )
+                                                                                  
+            totalrank=rowXMap_.TotalWidth() + VMap_.TotalWidth() + SF.D.Width();
+            offset = 0;
+            if( inSourceTeam_ && totalrank > 0 && LW > 0 )
             {
-                Dense<Scalar>& U = *colXMap_.CurrentEntry();
+                VSqr_.Resize( totalrank, totalrank, totalrank );
+                VSqrEig_.resize( totalrank );
+                Vtmp_.Resize( LW, totalrank, LW );
+                
                 MemCopy
-                ( Utmp_.Buffer(0,offset), U.LockedBuffer(), LH*U.Width() );
-                offset += U.Width();
+                ( Vtmp_.Buffer(0,offset), SF.D.LockedBuffer(), LW*SF.D.Width() );
+                SF.D.Clear();
+                offset += SF.D.Width();
+                                                                                  
+	            int numEntries = VMap_.Size();
+	            VMap_.ResetIterator();
+	            for( int i=0; i<numEntries; ++i,VMap_.Increment() )
+	            {
+	                Dense<Scalar>& V = *VMap_.CurrentEntry();
+	                MemCopy
+	                ( Vtmp_.Buffer(0,offset), V.LockedBuffer(), LW*V.Width() );
+	                offset += V.Width();
+	            }
+	            VMap_.Clear();
+	            numEntries = rowXMap_.Size();
+	            rowXMap_.ResetIterator();
+	            for( int i=0; i<numEntries; ++i,rowXMap_.Increment() )
+	            {
+	                Dense<Scalar>& V = *rowXMap_.CurrentEntry();
+	                MemCopy
+	                ( Vtmp_.Buffer(0,offset), V.LockedBuffer(), LW*V.Width() );
+	                offset += V.Width();
+	            }
+	            rowXMap_.Clear();
+			
+                // TODO: Replace with Herk
+                blas::Gemm
+                ('C', 'N', totalrank, totalrank, LW,
+                 Scalar(1), Vtmp_.LockedBuffer(), Vtmp_.LDim(),
+                            Vtmp_.LockedBuffer(), Vtmp_.LDim(),
+                 Scalar(0), VSqr_.Buffer(),       VSqr_.LDim() );
             }
-            colXMap_.Clear();
-
-            // TODO: Replace with Herk
-            blas::Gemm
-            ('C', 'N', totalrank, totalrank, LH,
-             Scalar(1), Utmp_.LockedBuffer(), Utmp_.LDim(),
-                        Utmp_.LockedBuffer(), Utmp_.LDim(),
-             Scalar(0), USqr_.Buffer(),       USqr_.LDim() );
-        }
-
-        totalrank=rowXMap_.TotalWidth() + VMap_.TotalWidth() + SF.D.Width();
-        offset = 0;
-        if( inSourceTeam_ && totalrank > 0 && LW > 0 )
-        {
-            VSqr_.Resize( totalrank, totalrank, totalrank );
-            VSqrEig_.resize( totalrank );
-            Vtmp_.Resize( LW, totalrank, LW );
-            
-            MemCopy
-            ( Vtmp_.Buffer(0,offset), SF.D.LockedBuffer(), LW*SF.D.Width() );
-            SF.D.Clear();
-            offset += SF.D.Width();
-
-            int numEntries = VMap_.Size();
-            VMap_.ResetIterator();
-            for( int i=0; i<numEntries; ++i,VMap_.Increment() )
-            {
-                Dense<Scalar>& V = *VMap_.CurrentEntry();
-                MemCopy
-                ( Vtmp_.Buffer(0,offset), V.LockedBuffer(), LW*V.Width() );
-                offset += V.Width();
-            }
-            VMap_.Clear();
-            numEntries = rowXMap_.Size();
-            rowXMap_.ResetIterator();
-            for( int i=0; i<numEntries; ++i,rowXMap_.Increment() )
-            {
-                Dense<Scalar>& V = *rowXMap_.CurrentEntry();
-                MemCopy
-                ( Vtmp_.Buffer(0,offset), V.LockedBuffer(), LW*V.Width() );
-                offset += V.Width();
-            }
-            rowXMap_.Clear();
-
-            // TODO: Replace with Herk
-            blas::Gemm
-            ('C', 'N', totalrank, totalrank, LW,
-             Scalar(1), Vtmp_.LockedBuffer(), Vtmp_.LDim(),
-                        Vtmp_.LockedBuffer(), Vtmp_.LDim(),
-             Scalar(0), VSqr_.Buffer(),       VSqr_.LDim() );
         }
         break;
     }
@@ -1125,8 +1128,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
         if( haveDenseUpdate_ )
             break;
         LowRank<Scalar> &F = *block_.data.F;
-        int LH=LocalHeight();
-        int LW=LocalWidth();
+        int LH=Height();
+        int LW=Width();
         int offset=0;
         int totalrank = F.U.Width();
         
@@ -1398,7 +1401,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFEigenDecomp
         break;
     }
     case DIST_LOW_RANK:
-    case SPLIT_LOW_RANK:
     {
         if( level_ < startLevel )
             break;
@@ -1427,6 +1429,37 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFEigenDecomp
         }
         break;
     }
+    case SPLIT_LOW_RANK:
+    {
+        if( level_ < startLevel )
+            break;
+        if( haveDenseUpdate_ )
+            break;
+        SplitLowRank& SF = *block_.data.SF;
+        const int LH = Height();
+        const int LW = Width();
+        // Here we guarantee that all the data are in SF.D 
+        const int totalrank = SF.rank;
+        
+        if( LH > totalrank && LW > totalrank )
+        {
+            if( !USqr_.IsEmpty() )
+            {
+                lapack::EVD                                     
+                ( 'V', 'U', USqr_.Height(), 
+                  USqr_.Buffer(), USqr_.LDim(), &USqrEig_[0] );
+                evdCount++;
+            }
+            
+            if( !VSqr_.IsEmpty() )
+            {
+                lapack::EVD                                     
+                ( 'V', 'U', VSqr_.Height(), 
+                  VSqr_.Buffer(), VSqr_.LDim(), &VSqrEig_[0] );
+                evdCount++;
+            }
+        }
+    }
     case LOW_RANK:
     {
         if( level_ < startLevel )
@@ -1434,8 +1467,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFEigenDecomp
         if( haveDenseUpdate_ )
             break;
         LowRank<Scalar> &F = *block_.data.F;
-        const int LH = LocalHeight();
-        const int LW = LocalWidth();
+        const int LH = Height();
+        const int LW = Width();
         const int totalrank = F.U.Width();
         
         if( LH > totalrank && LW > totalrank )
@@ -1556,7 +1589,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrixCount
         break;
     }
     case DIST_LOW_RANK:
-    case SPLIT_LOW_RANK:
     {
         if( level_ < startLevel )
             break;
@@ -1575,6 +1607,42 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrixCount
         }
         break;
     }
+    case SPLIT_LOW_RANK:
+    {
+        if( level_ < startLevel )
+            break;
+        if( inSourceTeam_ && inTargetTeam_ )
+            break;
+        if( haveDenseUpdate_ )
+            break;
+        SplitLowRank& SF = *block_.data.SF;
+        const int LH = Height();
+        const int LW = Width();
+        // Here we guarantee that all the data are in SF.D 
+        const int totalrank = SF.rank;
+        
+        if( LH > totalrank && LW > totalrank )
+        {
+            if( inSourceTeam_ )
+                AddToMap( sendsizes, targetRoot_, VSqr_.Height()*VSqr_.Width() );
+            else
+                AddToMap( recvsizes, sourceRoot_, USqr_.Height()*USqr_.Width() );
+        }
+        else
+        {
+            if( inSourceTeam_ )
+            {
+                AddToMap( sendsizes, targetRoot_, SF.D.Height()*SF.D.Width() );
+                AddToMap( recvsizes, targetRoot_, LH*SF.D.Width() );
+            }
+            else
+            {
+                AddToMap( sendsizes, sourceRoot_, SF.D.Height()*SF.D.Width() );
+                AddToMap( recvsizes, sourceRoot_, LW*SF.D.Width() );
+            }
+        }
+        break;
+    }
     default:
         break;
     }
@@ -1589,7 +1657,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrixPack
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFPassMatrixPack");
 #endif
-    if( !inSourceTeam_ || Height() == 0 || Width() == 0 )
+    if(  Height() == 0 || Width() == 0 )
         return;
 
     switch( block_.type )
@@ -1608,7 +1676,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrixPack
         break;
     }
     case DIST_LOW_RANK:
-    case SPLIT_LOW_RANK:
     {
         if( haveDenseUpdate_ )
             break;
@@ -1618,12 +1685,54 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrixPack
             break;
         mpi::Comm team = teams_->Team( level_ );
         const int teamRank = mpi::CommRank( team );
-        if( teamRank ==0 && VSqr_.Height() > 0 )
+        if( teamRank ==0 && VSqr_.Height() > 0 && inSourceTeam_ )
         {
             MemCopy
             ( &buffer[offsets[targetRoot_]], VSqr_.LockedBuffer(),
               VSqr_.Height()*VSqr_.Width() );
             offsets[targetRoot_] += VSqr_.Height()*VSqr_.Width();
+        }
+        break;
+    }
+    case SPLIT_LOW_RANK:
+    {
+        if( level_ < startLevel )
+            break;
+        if( inSourceTeam_ && inTargetTeam_ )
+            break;
+        if( haveDenseUpdate_ )
+            break;
+        SplitLowRank& SF = *block_.data.SF;
+        const int LH = Height();
+        const int LW = Width();
+        // Here we guarantee that all the data are in SF.D 
+        const int totalrank = SF.rank;
+        
+        if( LH > totalrank && LW > totalrank )
+        {
+            if( inTargetTeam_ )
+                break;
+            MemCopy
+            ( &buffer[offsets[targetRoot_]], VSqr_.LockedBuffer(),
+              VSqr_.Height()*VSqr_.Width() );
+            offsets[targetRoot_] += VSqr_.Height()*VSqr_.Width();
+        }
+        else
+        {
+            if( inSourceTeam_ )
+            {
+                MemCopy                                                
+                ( &buffer[offsets[targetRoot_]], SF.D.LockedBuffer(),
+                  SF.D.Height()*SF.D.Width() );
+                offsets[targetRoot_] += SF.D.Height()*SF.D.Width();
+            }
+            else
+            {
+                MemCopy                                                
+                ( &buffer[offsets[sourceRoot_]], SF.D.LockedBuffer(),
+                  SF.D.Height()*SF.D.Width() );
+                offsets[sourceRoot_] += SF.D.Height()*SF.D.Width();
+            }
         }
         break;
     }
@@ -1641,7 +1750,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrixUnpack
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFPassMatrixUnpack");
 #endif
-    if( !inTargetTeam_ || Height() == 0 || Width() == 0 )
+    if( Height() == 0 || Width() == 0 )
         return;
 
     switch( block_.type )
@@ -1660,7 +1769,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrixUnpack
         break;
     }
     case DIST_LOW_RANK:
-    case SPLIT_LOW_RANK:
     {
         if( haveDenseUpdate_ )
             break;
@@ -1670,7 +1778,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrixUnpack
             break;
         mpi::Comm team = teams_->Team( level_ );
         const int teamRank = mpi::CommRank( team );
-        if( teamRank ==0 && USqr_.Height() > 0 )
+        if( teamRank ==0 && USqr_.Height() > 0 && inTargetTeam_ )
         {
             VSqr_.Resize( USqr_.Height(), USqr_.Width(), USqr_.LDim() );
             MemCopy
@@ -1678,6 +1786,49 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrixUnpack
               VSqr_.Height()*VSqr_.Width() );
             offsets[sourceRoot_] += VSqr_.Height()*VSqr_.Width();
 
+        }
+        break;
+    }
+    case SPLIT_LOW_RANK:
+    {
+        if( level_ < startLevel )
+            break;
+        if( haveDenseUpdate_ )
+            break;
+        SplitLowRank& SF = *block_.data.SF;
+        const int LH = Height();
+        const int LW = Width();
+        // Here we guarantee that all the data are in SF.D 
+        const int totalrank = SF.rank;
+        
+        if( LH > totalrank && LW > totalrank )
+        {
+            if( inSourceTeam_ )
+                break;
+            VSqr_.Resize( USqr_.Height(), USqr_.Width(), USqr_.LDim() );
+            MemCopy
+            ( VSqr_.Buffer(), &buffer[offsets[sourceRoot_]],
+              VSqr_.Height()*VSqr_.Width() );
+            offsets[sourceRoot_] += VSqr_.Height()*VSqr_.Width();
+        }
+        else
+        {
+            if( inSourceTeam_ )
+            {
+                SFD_.Resize( LH, totalrank );
+                MemCopy                                                
+                ( SFD_.Buffer(), &buffer[offsets[targetRoot_]],
+                  SFD_.Height()*SFD_.Width() );
+                offsets[targetRoot_] += SFD_.Height()*SFD_.Width();
+            }
+            else
+            {
+                SFD_.Resize( LW, totalrank );
+                MemCopy                                                
+                ( SFD_.Buffer(), &buffer[offsets[sourceRoot_]],
+                  SFD_.Height()*SFD_.Width() );
+                offsets[sourceRoot_] += SFD_.Height()*SFD_.Width();
+            }
         }
         break;
     }
@@ -1785,7 +1936,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassVectorCount
         break;
     }
     case DIST_LOW_RANK:
-    case SPLIT_LOW_RANK:
     {
         if( level_ < startLevel )
             break;
@@ -1796,6 +1946,29 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassVectorCount
         mpi::Comm team = teams_->Team( level_ );
         const int teamRank = mpi::CommRank( team );
         if( teamRank ==0 )
+        {
+            if( inSourceTeam_ )
+                AddToMap( sendsizes, targetRoot_, VSqrEig_.size() );
+            else
+                AddToMap( recvsizes, sourceRoot_, USqrEig_.size() );
+        }
+        break;
+    }
+    case SPLIT_LOW_RANK:
+    {
+        if( level_ < startLevel )
+            break;
+        if( inSourceTeam_ && inTargetTeam_ )
+            break;
+        if( haveDenseUpdate_ )
+            break;
+        SplitLowRank& SF = *block_.data.SF;
+        const int LH = Height();
+        const int LW = Width();
+        // Here we guarantee that all the data are in SF.D 
+        const int totalrank = SF.rank;
+        
+        if( LH > totalrank && LW > totalrank )
         {
             if( inSourceTeam_ )
                 AddToMap( sendsizes, targetRoot_, VSqrEig_.size() );
@@ -1837,7 +2010,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassVectorPack
         break;
     }
     case DIST_LOW_RANK:
-    case SPLIT_LOW_RANK:
     {
         if( level_ < startLevel )
             break;
@@ -1848,6 +2020,28 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassVectorPack
         mpi::Comm team = teams_->Team( level_ );
         const int teamRank = mpi::CommRank( team );
         if( teamRank ==0 && VSqrEig_.size() > 0 )
+        {
+            MemCopy
+            ( &buffer[offsets[targetRoot_]], &VSqrEig_[0], VSqrEig_.size() );
+            offsets[targetRoot_] += VSqrEig_.size();
+        }
+        break;
+    }
+    case SPLIT_LOW_RANK:
+    {
+        if( level_ < startLevel )
+            break;
+        if( inTargetTeam_ )
+            break;
+        if( haveDenseUpdate_ )
+            break;
+        SplitLowRank& SF = *block_.data.SF;
+        const int LH = Height();
+        const int LW = Width();
+        // Here we guarantee that all the data are in SF.D 
+        const int totalrank = SF.rank;
+        
+        if( LH > totalrank && LW > totalrank && VSqrEig_.size() > 0 )
         {
             MemCopy
             ( &buffer[offsets[targetRoot_]], &VSqrEig_[0], VSqrEig_.size() );
@@ -1888,7 +2082,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassVectorUnpack
         break;
     }
     case DIST_LOW_RANK:
-    case SPLIT_LOW_RANK:
     {
         if( level_ < startLevel )
             break;
@@ -1899,6 +2092,29 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassVectorUnpack
         mpi::Comm team = teams_->Team( level_ );
         const int teamRank = mpi::CommRank( team );
         if( teamRank ==0 && USqrEig_.size() > 0 )
+        {
+            VSqrEig_.resize( USqrEig_.size() );
+            MemCopy
+            ( &VSqrEig_[0], &buffer[offsets[sourceRoot_]], VSqrEig_.size() );
+            offsets[sourceRoot_] += VSqrEig_.size();
+        }
+        break;
+    }
+    case SPLIT_LOW_RANK:
+    {
+        if( level_ < startLevel )
+            break;
+        if( inSourceTeam_ )
+            break;
+        if( haveDenseUpdate_ )
+            break;
+        SplitLowRank& SF = *block_.data.SF;
+        const int LH = Height();
+        const int LW = Width();
+        // Here we guarantee that all the data are in SF.D 
+        const int totalrank = SF.rank;
+        
+        if( LH > totalrank && LW > totalrank && USqrEig_.size() > 0)
         {
             VSqrEig_.resize( USqrEig_.size() );
             MemCopy
@@ -1920,7 +2136,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFMidcompute");
 #endif
-    if( !inTargetTeam_ || Height() == 0 || Width() == 0 )
+    if( Height() == 0 || Width() == 0 )
         return;
 
     switch( block_.type )
@@ -1940,7 +2156,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
         break;
     }
     case DIST_LOW_RANK:
-    case SPLIT_LOW_RANK:
     {
         if( level_ < startLevel )
             break;
@@ -1998,6 +2213,109 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
         }
         break;
     }
+    case SPLIT_LOW_RANK:
+    {
+        if( level_ < startLevel )
+            break;
+        if( haveDenseUpdate_ )
+            break;
+        SplitLowRank& SF = *block_.data.SF;
+        const int LH = Height();
+        const int LW = Width();
+        const int totalrank = SF.rank;
+        if( LH > totalrank && LW > totalrank )
+        {
+            if( !USqr_.IsEmpty() && inTargetTeam_ )                               
+            {
+#ifndef RELEASE
+                if( USqr_.Height() != VSqr_.Height() ||
+                    USqrEig_.size() != VSqrEig_.size() )
+                    throw std::logic_error("Dimension error during calculation");
+#endif                                                                            
+                const int k = USqr_.Height();
+                                                                                  
+                BSqr_.Resize( k, k );
+                blas::Gemm
+                ( 'T', 'N', k, k, k,
+                  Scalar(1), USqr_.LockedBuffer(), USqr_.LDim(),
+                             VSqr_.LockedBuffer(), VSqr_.LDim(),
+                  Scalar(0), BSqr_.Buffer(),       BSqr_.LDim() );
+                                                                                  
+                hmat_tools::Conjugate( BSqr_ );
+                std::vector<Real> USqrSigma(k), VSqrSigma(k);
+                for( int i=0; i<k; ++i)
+                    USqrSigma[i] = sqrt( std::max( USqrEig_[i], Real(0) ) );
+                for( int i=0; i<k; ++i)
+                    VSqrSigma[i] = sqrt( std::max( VSqrEig_[i], Real(0) ) );
+                                                                                  
+                const int m = BSqr_.Height();
+                const int n = BSqr_.Width();
+                for( int j=0; j<n; ++j)
+                    for( int i=0; i<m; ++i)
+                        BSqr_.Set(i,j, BSqr_.Get(i,j)*USqrSigma[i]*VSqrSigma[j]);
+                                                                                  
+                const int minDim = std::min( m, n );
+                BSqrU_.Resize( m, minDim );
+                BSqrVH_.Resize( minDim, n );
+                BSigma_.resize( minDim );
+                                                                                  
+                const int lwork = lapack::SVDWorkSize(m,n);
+                const int lrwork = lapack::SVDRealWorkSize(m,n);
+                std::vector<Scalar> work(lwork);
+                std::vector<Real> rwork(lrwork);
+                lapack::SVD
+                ('S', 'S' ,m ,n, 
+                 BSqr_.Buffer(), BSqr_.LDim(), &BSigma_[0],
+                 BSqrU_.Buffer(), BSqrU_.LDim(),
+                 BSqrVH_.Buffer(), BSqrVH_.LDim(),
+                 &work[0], lwork, &rwork[0] );
+                                                                                  
+                SVDTrunc( BSqrU_, BSigma_, BSqrVH_, relTol );
+                BSqr_.Clear();
+            }
+        }
+        else
+        {
+            BSqr_.Resize( LH, LW );
+            if( inSourceTeam_ )
+            {
+                blas::Gemm
+                ( 'N', 'T', LH, LW, totalrank,
+                  Scalar(1), SFD_.LockedBuffer(), SFD_.LDim(),
+                             SF.D.LockedBuffer(), SF.D.LDim(),
+                  Scalar(0), BSqr_.Buffer(),       BSqr_.LDim() );
+            }
+            else
+            {
+                blas::Gemm
+                ( 'N', 'T', LH, LW, totalrank,
+                  Scalar(1), SF.D.LockedBuffer(), SF.D.LDim(),
+                             SFD_.LockedBuffer(), SFD_.LDim(),
+                  Scalar(0), BSqr_.Buffer(),       BSqr_.LDim() );
+            }
+
+            const int minDim = std::min( LH, LW );
+            BSqrU_.Resize( LH, minDim );
+            BSqrVH_.Resize( minDim, LW );
+            BSigma_.resize( minDim );
+
+            const int lwork = lapack::SVDWorkSize(LH,LW);
+            const int lrwork = lapack::SVDRealWorkSize(LH,LW);
+            std::vector<Scalar> work(lwork);
+            std::vector<Real> rwork(lrwork);
+            lapack::SVD
+            ('S', 'S' , LH, LW, 
+             BSqr_.Buffer(), BSqr_.LDim(), &BSigma_[0],
+             BSqrU_.Buffer(), BSqrU_.LDim(),
+             BSqrVH_.Buffer(), BSqrVH_.LDim(),
+             &work[0], lwork, &rwork[0] );
+
+            SVDTrunc( BSqrU_, BSigma_, BSqrVH_, relTol );
+            BSqr_.Clear();
+            SFD_.Clear();
+        }
+        break;
+    }
     case LOW_RANK:
     {
         if( level_ < startLevel )
@@ -2005,8 +2323,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
         if( haveDenseUpdate_ )
             break;
         LowRank<Scalar> &F = *block_.data.F;
-        const int LH = LocalHeight();
-        const int LW = LocalWidth();
+        const int LH = Height();
+        const int LW = Width();
         const int totalrank = F.U.Width();
         if( LH > totalrank && LW > totalrank )
         {
@@ -2190,7 +2508,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackNumCount
         break;
     }
     case DIST_LOW_RANK:
-    case SPLIT_LOW_RANK:
     {
         if( level_ < startLevel )
             break;
@@ -2201,6 +2518,29 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackNumCount
         mpi::Comm team = teams_->Team( level_ );
         const int teamRank = mpi::CommRank( team );
         if( teamRank ==0 )
+        {
+            if( inTargetTeam_ )
+                AddToMap( sendsizes, sourceRoot_, 1 );
+            else
+                AddToMap( recvsizes, targetRoot_, 1 );
+        }
+        break;
+    }
+    case SPLIT_LOW_RANK:
+    {
+        if( level_ < startLevel )
+            break;
+        if( inSourceTeam_ && inTargetTeam_ )
+            break;
+        if( haveDenseUpdate_ )
+            break;
+        SplitLowRank& SF = *block_.data.SF;
+        const int LH = Height();
+        const int LW = Width();
+        // Here we guarantee that all the data are in SF.D 
+        const int totalrank = SF.rank;
+        
+        if( LH > totalrank && LW > totalrank )
         {
             if( inTargetTeam_ )
                 AddToMap( sendsizes, sourceRoot_, 1 );
@@ -2242,7 +2582,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackNumPack
         break;
     }
     case DIST_LOW_RANK:
-    case SPLIT_LOW_RANK:
     {
         if( level_ < startLevel )
             break;
@@ -2253,6 +2592,27 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackNumPack
         mpi::Comm team = teams_->Team( level_ );
         const int teamRank = mpi::CommRank( team );
         if( teamRank ==0 )
+        {
+            buffer[offsets[sourceRoot_]]=BSqrVH_.Height();
+            offsets[sourceRoot_] ++;
+        }
+        break;
+    }
+    case SPLIT_LOW_RANK:
+    {
+        if( level_ < startLevel )
+            break;
+        if( inSourceTeam_ )
+            break;
+        if( haveDenseUpdate_ )
+            break;
+        SplitLowRank& SF = *block_.data.SF;
+        const int LH = Height();
+        const int LW = Width();
+        // Here we guarantee that all the data are in SF.D 
+        const int totalrank = SF.rank;
+        
+        if( LH > totalrank && LW > totalrank )
         {
             buffer[offsets[sourceRoot_]]=BSqrVH_.Height();
             offsets[sourceRoot_] ++;
@@ -2292,7 +2652,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackNumUnpack
         break;
     }
     case DIST_LOW_RANK:
-    case SPLIT_LOW_RANK:
     {
         if( level_ < startLevel )
             break;
@@ -2303,6 +2662,29 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackNumUnpack
         mpi::Comm team = teams_->Team( level_ );
         const int teamRank = mpi::CommRank( team );
         if( teamRank ==0 )
+        {
+            BSqrVH_.Resize
+            ( buffer[offsets[targetRoot_]], VSqr_.Height(), 
+              buffer[offsets[targetRoot_]] );
+            offsets[targetRoot_] ++;
+        }
+        break;
+    }
+    case SPLIT_LOW_RANK:
+    {
+        if( level_ < startLevel )
+            break;
+        if( inTargetTeam_ )
+            break;
+        if( haveDenseUpdate_ )
+            break;
+        SplitLowRank& SF = *block_.data.SF;
+        const int LH = Height();
+        const int LW = Width();
+        // Here we guarantee that all the data are in SF.D 
+        const int totalrank = SF.rank;
+        
+        if( LH > totalrank && LW > totalrank )
         {
             BSqrVH_.Resize
             ( buffer[offsets[targetRoot_]], VSqr_.Height(), 
@@ -2416,7 +2798,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackDataCount
         break;
     }
     case DIST_LOW_RANK:
-    case SPLIT_LOW_RANK:
     {
         if( level_ < startLevel )
             break;
@@ -2434,9 +2815,31 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackDataCount
                     AddToMap( recvsizes, targetRoot_, BSqrVH_.Height()*BSqrVH_.Width() );
             }
         }
-        else if( block_.type == SPLIT_LOW_RANK )
+        break;
+    }
+    case SPLIT_LOW_RANK:
+    {
+        if( level_ < startLevel )
+            break;
+        SplitLowRank& SF = *block_.data.SF;
+        const int LH = Height();
+        const int LW = Width();
+        // Here we guarantee that all the data are in SF.D 
+        const int totalrank = SF.rank;
+        
+        if( !haveDenseUpdate_ )
         {
-            const SplitLowRank& SF = *block_.data.SF;
+            if( LH <= totalrank || LW <= totalrank )
+                break;
+            if( inSourceTeam_ && inTargetTeam_ )
+                break; 
+            if( inTargetTeam_ )
+                AddToMap( sendsizes, sourceRoot_, BSqrVH_.Height()*BSqrVH_.Width() );
+            else
+                AddToMap( recvsizes, targetRoot_, BSqrVH_.Height()*BSqrVH_.Width() );
+        }
+        else
+        {
             if( inTargetTeam_ )
             {
                 AddToMap( sendsizes, sourceRoot_, Height()*SF.rank );
@@ -2502,7 +2905,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackDataPack
         break;
     }
     case DIST_LOW_RANK:
-    case SPLIT_LOW_RANK:
     {
         if( level_ < startLevel )
             break;
@@ -2521,9 +2923,33 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackDataPack
                 BSqrVH_.Clear();
             }
         }
-        else if( block_.type == SPLIT_LOW_RANK )
+        break;
+    }
+    case SPLIT_LOW_RANK:
+    {
+        if( level_ < startLevel )
+            break;
+        SplitLowRank& SF = *block_.data.SF;
+        const int LH = Height();
+        const int LW = Width();
+        // Here we guarantee that all the data are in SF.D 
+        const int totalrank = SF.rank;
+        
+        if( !haveDenseUpdate_ )
         {
-            const SplitLowRank& SF = *block_.data.SF;
+            if( inSourceTeam_ || !inTargetTeam_ )
+                break;
+            if( LH > totalrank && LW > totalrank )
+            {
+                int size=BSqrVH_.Height()*BSqrVH_.Width();
+                MemCopy
+                ( &buffer[offsets[sourceRoot_]], BSqrVH_.LockedBuffer(), size );
+                offsets[sourceRoot_] += size;
+                BSqrVH_.Clear();
+            }
+        }
+        else
+        {
             const int m = Height();
             const int n = Width();
             if( inTargetTeam_ )
@@ -2600,7 +3026,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackDataUnpack
         break;
     }
     case DIST_LOW_RANK:
-    case SPLIT_LOW_RANK:
     {
         if( level_ < startLevel )
             break;
@@ -2618,9 +3043,31 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackDataUnpack
                 offsets[targetRoot_] += size;
             }
         }
-        else if( block_.type == SPLIT_LOW_RANK )
+        break;
+    }
+    case SPLIT_LOW_RANK:
+    {
+        if( level_ < startLevel )
+            break;
+        SplitLowRank& SF = *block_.data.SF;
+        const int LH = Height();
+        const int LW = Width();
+        // Here we guarantee that all the data are in SF.D 
+        const int totalrank = SF.rank;
+        if( !haveDenseUpdate_ )
         {
-            const SplitLowRank& SF = *block_.data.SF;
+            if( inTargetTeam_ || !inSourceTeam_ )
+                break;
+            if( LH > totalrank && LW > totalrank )
+            {
+                int size=BSqrVH_.Height()*BSqrVH_.Width();
+                MemCopy
+                ( BSqrVH_.Buffer(), &buffer[offsets[targetRoot_]], size );
+                offsets[targetRoot_] += size;
+            }
+        }
+        else
+        {
             const int m = Height();
             const int n = Width();
             if( inTargetTeam_ )
@@ -2713,10 +3160,19 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPostcompute
             if( block_.type == LOW_RANK )
             {
                 LowRank<Scalar> &F = *block_.data.F;
-                const int LH = LocalHeight();
-                const int LW = LocalWidth();
+                const int LH = Height();
+                const int LW = Width();
                 const int totalrank = F.U.Width();
-                if( LH < totalrank || LW < totalrank )
+                if( LH <= totalrank || LW <= totalrank )
+                    break;
+            }
+            if( block_.type == SPLIT_LOW_RANK )
+            {
+                SplitLowRank& SF = *block_.data.SF;
+                const int LH = Height();
+                const int LW = Width();
+                const int totalrank = SF.rank;
+                if( LH <= totalrank || LW <= totalrank )
                     break;
             }
             const int kU = USqrEig_.size();
@@ -3225,33 +3681,52 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
             break;
         if( !haveDenseUpdate_ )
         {
-            if( inTargetTeam_ )                                        
-            { 
-                SplitLowRank &SF = *block_.data.SF;
-                Dense<Scalar> &U = SF.D;
-                SF.rank = BL_.Width();
-                U.Resize( Utmp_.Height(), BL_.Width() );
-                blas::Gemm
-                ('N', 'N', Utmp_.Height(), BL_.Width(), Utmp_.Width(),
-                 Scalar(1), Utmp_.LockedBuffer(), Utmp_.LDim(),
-                            BL_.LockedBuffer(), BL_.LDim(),
-                 Scalar(0), U.Buffer(),         U.LDim() );
-                BL_.Clear();
-                Utmp_.Clear();
+            SplitLowRank& SF = *block_.data.SF;
+            const int LH = Height();
+            const int LW = Width();
+            const int totalrank = SF.rank;
+            if( LH > totalrank && LW > totalrank )
+            {
+                if( inTargetTeam_ )                                         
+                { 
+                    Dense<Scalar> &U = SF.D;
+                    SF.rank = BL_.Width();
+                    U.Resize( Utmp_.Height(), BL_.Width() );
+                    blas::Gemm
+                    ('N', 'N', Utmp_.Height(), BL_.Width(), Utmp_.Width(),
+                     Scalar(1), Utmp_.LockedBuffer(), Utmp_.LDim(),
+                                BL_.LockedBuffer(), BL_.LDim(),
+                     Scalar(0), U.Buffer(),         U.LDim() );
+                    BL_.Clear();
+                    Utmp_.Clear();
+                }
+                if( inSourceTeam_ )
+                {                                                      
+                    Dense<Scalar> &V = SF.D;
+                    SF.rank = BR_.Width();
+                    V.Resize( Vtmp_.Height(), BR_.Width() );
+                    blas::Gemm
+                    ('N', 'N', Vtmp_.Height(), BR_.Width(), Vtmp_.Width(),
+                     Scalar(1), Vtmp_.LockedBuffer(), Vtmp_.LDim(),
+                                BR_.LockedBuffer(), BR_.LDim(),
+                     Scalar(0), V.Buffer(),         V.LDim() );
+                    BR_.Clear();
+                    Vtmp_.Clear();
+                }
             }
-            if( inSourceTeam_ )
-            {                                                      
-                SplitLowRank &SF = *block_.data.SF;
-                Dense<Scalar> &V = SF.D;
-                SF.rank = BR_.Width();
-                V.Resize( Vtmp_.Height(), BR_.Width() );
-                blas::Gemm
-                ('N', 'N', Vtmp_.Height(), BR_.Width(), Vtmp_.Width(),
-                 Scalar(1), Vtmp_.LockedBuffer(), Vtmp_.LDim(),
-                            BR_.LockedBuffer(), BR_.LDim(),
-                 Scalar(0), V.Buffer(),         V.LDim() );
-                BR_.Clear();
-                Vtmp_.Clear();
+            else
+            {
+                SF.rank = BSqrU_.Width();
+                if( inTargetTeam_ )                                         
+                    hmat_tools::Copy( BSqrU_, SF.D );
+                if( inSourceTeam_ )
+                {                                                      
+                    SF.D.Resize( LW, BSqrVH_.Height() );
+                    for( int j=0; j<BSqrVH_.Height(); ++j )
+                        for( int i=0; i<LW; ++i )
+                            SF.D.Set(i,j,BSqrVH_.Get(j,i)*BSigma_[j]);
+                }
+            
             }
         }
         else
@@ -3358,8 +3833,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
         if( !haveDenseUpdate_ )
         {
             LowRank<Scalar> &F = *block_.data.F;
-            const int LH = LocalHeight();
-            const int LW = LocalWidth();
+            const int LH = Height();
+            const int LW = Width();
             const int totalrank = F.U.Width();
             if( LH > totalrank && LW > totalrank )
             {
