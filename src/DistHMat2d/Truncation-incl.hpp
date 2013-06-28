@@ -27,6 +27,8 @@ DistHMat2d<Scalar>::EVDTrunc
     for( cutoff=0; cutoff<k; ++cutoff )
         if( w[cutoff] > tolerance )
             break;
+    if( cutoff == k )
+        cutoff = k-1;
 
     w.erase( w.begin(), w.begin()+cutoff );
     Q.EraseCols( 0, cutoff-1 );
@@ -53,6 +55,8 @@ DistHMat2d<Scalar>::SVDTrunc
     for( cutoff=std::min(k,maxRank_)-1; cutoff>=0; --cutoff )
         if( s[cutoff] > tolerance )
             break;
+    if( cutoff < 0 )
+        cutoff = 0;
     s.resize( cutoff+1 );
     U.Resize( m, cutoff+1 );
     VH.EraseRows( cutoff+1, n-1 );

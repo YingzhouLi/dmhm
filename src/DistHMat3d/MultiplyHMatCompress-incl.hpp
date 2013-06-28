@@ -659,7 +659,10 @@ DistHMat3d<Scalar>::MultiplyHMatCompressLowRankImport( int rank )
             }
         }
         else
+        {
             UMap_.Clear();
+            colXMap_.Clear();
+        }
 
         if( inSourceTeam_ )
         {
@@ -704,7 +707,10 @@ DistHMat3d<Scalar>::MultiplyHMatCompressLowRankImport( int rank )
             }
         }
         else
+        {
             VMap_.Clear();
+            rowXMap_.Clear();
+        }
         break;
     }
     case SPLIT_DENSE:
@@ -1448,7 +1454,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFEigenDecomp
         if( teamRank == 0 )
         {
             // Calculate Eigenvalues of Squared Matrix               
-            if( !USqr_.IsEmpty() )
+            if( inTargetTeam_ )
             {
                 lapack::EVD
                 ( 'V', 'U', USqr_.Height(), 
@@ -1456,7 +1462,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFEigenDecomp
                 evdCount++;
             }
                                                                      
-            if( !VSqr_.IsEmpty() )
+            if( inSourceTeam_ )
             {
                 lapack::EVD
                 ( 'V', 'U', VSqr_.Height(), 
@@ -1480,7 +1486,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFEigenDecomp
         
         if( LH > totalrank && LW > totalrank )
         {
-            if( !USqr_.IsEmpty() )
+            if( inTargetTeam_ )
             {
                 lapack::EVD                                     
                 ( 'V', 'U', USqr_.Height(), 
@@ -1488,7 +1494,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFEigenDecomp
                 evdCount++;
             }
             
-            if( !VSqr_.IsEmpty() )
+            if( inSourceTeam_ )
             {
                 lapack::EVD                                     
                 ( 'V', 'U', VSqr_.Height(), 

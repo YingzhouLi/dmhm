@@ -646,7 +646,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankImport( int rank )
             }
         }
         else
+        {
             UMap_.Clear();
+            colXMap_.Clear();
+        }
 
         if( inSourceTeam_ )
         {
@@ -691,7 +694,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankImport( int rank )
             }
         }
         else
+        {
             VMap_.Clear();
+            rowXMap_.Clear();
+        }
         break;
     }
     case SPLIT_DENSE:
@@ -1076,7 +1082,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
                             Utmp_.LockedBuffer(), Utmp_.LDim(),
                  Scalar(0), USqr_.Buffer(),       USqr_.LDim() );
             }
-                                                                                  
             totalrank=rowXMap_.TotalWidth() + VMap_.TotalWidth() + SF.D.Width();
             offset = 0;
             if( inSourceTeam_ && totalrank > 0 && LW > 0 )
@@ -1411,7 +1416,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFEigenDecomp
         if( teamRank == 0 )
         {
             // Calculate Eigenvalues of Squared Matrix               
-            if( !USqr_.IsEmpty() )
+            if( inTargetTeam_ )
             {
                 lapack::EVD
                 ( 'V', 'U', USqr_.Height(), 
@@ -1419,7 +1424,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFEigenDecomp
                 evdCount++;
             }
                                                                      
-            if( !VSqr_.IsEmpty() )
+            if( inSourceTeam_ )
             {
                 lapack::EVD
                 ( 'V', 'U', VSqr_.Height(), 
@@ -1443,7 +1448,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFEigenDecomp
         
         if( LH > totalrank && LW > totalrank )
         {
-            if( !USqr_.IsEmpty() )
+            if( inTargetTeam_ )
             {
                 lapack::EVD                                     
                 ( 'V', 'U', USqr_.Height(), 
@@ -1451,7 +1456,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFEigenDecomp
                 evdCount++;
             }
             
-            if( !VSqr_.IsEmpty() )
+            if( inSourceTeam_ )
             {
                 lapack::EVD                                     
                 ( 'V', 'U', VSqr_.Height(), 
