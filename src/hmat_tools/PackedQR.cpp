@@ -409,9 +409,9 @@ void ApplyPackedQAdjointFromRight
 
 template<typename Scalar>
 void PrintPacked
-( std::ostream& os, const std::string msg, 
+( const std::string msg, 
   const int r, const int s, const int t,
-  const Scalar* packedA )
+  const Scalar* packedA, std::ostream& os )
 {
 #ifndef RELEASE
     CallStackEntry entry("hmat_tools::PrintPacked");
@@ -471,15 +471,6 @@ void PrintPacked
     }
 
     os.flush();
-}
-
-template<typename Scalar>
-void PrintPacked
-( const std::string msg, 
-  const int r, const int s, const int t,
-  const Scalar* packedA )
-{
-    PrintPacked( std::cout, msg, r, s, t, packedA );
 }
 
 template void PackedQR
@@ -604,30 +595,21 @@ template void ApplyPackedQAdjointFromRight
         std::complex<double>* RESTRICT work );
 
 template void PrintPacked
-( std::ostream& os, const std::string msg,
-  const int r, const int s, const int t, const float* packedA );
-template void PrintPacked
-( std::ostream& os, const std::string msg,
-  const int r, const int s, const int t, const double* packedA );
-template void PrintPacked
-( std::ostream& os, const std::string msg,
-  const int r, const int s, const int t, const std::complex<float>* packedA );
-template void PrintPacked
-( std::ostream& os, const std::string msg,
-  const int r, const int s, const int t, const std::complex<double>* packedA );
-
+( const std::string msg,
+  const int r, const int s, const int t, const float* packedA, 
+  std::ostream& os );
 template void PrintPacked
 ( const std::string msg,
-  const int r, const int s, const int t, const float* packedA );
+  const int r, const int s, const int t, const double* packedA,
+  std::ostream& os );
 template void PrintPacked
 ( const std::string msg,
-  const int r, const int s, const int t, const double* packedA );
+  const int r, const int s, const int t, const std::complex<float>* packedA,
+  std::ostream& os );
 template void PrintPacked
 ( const std::string msg,
-  const int r, const int s, const int t, const std::complex<float>* packedA );
-template void PrintPacked
-( const std::string msg,
-  const int r, const int s, const int t, const std::complex<double>* packedA );
+  const int r, const int s, const int t, const std::complex<double>* packedA,
+  std::ostream& os );
 
 } // namespace hmat_tools
 } // namespace dmhm

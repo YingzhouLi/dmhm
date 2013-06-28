@@ -81,7 +81,8 @@ main( int argc, char* argv[] )
         const bool print = Input("--print","print matrices?",false);
         const bool structure = Input("--structure","print structure?",true);
         const bool multI = Input("--multI","multiply identity?",false);
-        const int oversample = Input("--oversample","number of extra basis vecs",4);
+        const int oversample = Input
+            ("--oversample","number of extra basis vecs",4);
         ProcessInput();
         PrintInputReport();
 
@@ -219,11 +220,11 @@ main( int argc, char* argv[] )
             std::ofstream ZFile( "Z.m" );
 
             YFile << "YMat=[\n";
-            Y.Print( YFile, "" );
+            Y.Print( "", YFile );
             YFile << "];\n";
 
             ZFile << "ZMat=[\n";
-            Z.Print( ZFile, "" );
+            Z.Print( "", ZFile );
             ZFile << "];\n";
         }
 
@@ -263,7 +264,7 @@ main( int argc, char* argv[] )
         {
             std::ofstream EFile( "E.m" );
             EFile << "EMat=[\n"; 
-            Z.Print( EFile, "" );
+            Z.Print( "", EFile );
             EFile << "];\n";
         }
     }

@@ -71,8 +71,7 @@ public:
 
     void Set( int i, int j, Scalar value );
     Scalar Get( int i, int j ) const;
-    void Print( std::ostream& os, const std::string tag ) const;
-    void Print( const std::string tag ) const;
+    void Print( const std::string tag, std::ostream& os=std::cout ) const;
 
     Scalar* Buffer( int i=0, int j=0 );
     const Scalar* LockedBuffer( int i=0, int j=0 ) const;
@@ -409,7 +408,7 @@ Dense<Scalar>::Get( int i, int j ) const
 
 template<typename Scalar>
 inline void
-Dense<Scalar>::Print( std::ostream& os, const std::string tag ) const
+Dense<Scalar>::Print( const std::string tag, std::ostream& os ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("Dense::Print");
@@ -437,11 +436,6 @@ Dense<Scalar>::Print( std::ostream& os, const std::string tag ) const
     }
     os.flush();
 }
-
-template<typename Scalar>
-inline void
-Dense<Scalar>::Print( const std::string tag ) const
-{ Print( std::cout, tag ); }
 
 template<typename Scalar>
 inline Scalar*

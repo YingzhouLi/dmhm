@@ -150,7 +150,8 @@ public:
     //------------------------------------------------------------------------//
 
     // Multiply the H-matrix by identity and print the result
-    virtual void Print( const std::string tag ) const;
+    virtual void Print
+    ( const std::string tag, std::ostream& os=std::cout ) const;
 
     // y := alpha H x + beta y
     virtual void Multiply

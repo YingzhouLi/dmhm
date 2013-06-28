@@ -29,11 +29,11 @@ struct LowRank
     int Width() const { return V.Height(); }
     int Rank() const { return U.Width(); }
 
-    void Print( const std::string tag ) const
+    void Print( const std::string tag, std::ostream& os=std::cout ) const
     { 
-        std::cout << tag << ":\n";
-        U.Print( "U" );
-        V.Print( "V" );
+        os << tag << ":\n";
+        U.Print( "U", os );
+        V.Print( "V", os );
     }
 };
 

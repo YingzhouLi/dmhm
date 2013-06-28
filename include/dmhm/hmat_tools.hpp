@@ -797,12 +797,9 @@ void ApplyPackedQAdjointFromRight
 
 template<typename Scalar>
 void PrintPacked
-( std::ostream& os, const std::string msg,
-  const int r, const int s, const int t, const Scalar* packedA );
-template<typename Scalar>
-void PrintPacked
 ( const std::string msg,
-  const int r, const int s, const int t, const Scalar* packedA );
+  const int r, const int s, const int t, const Scalar* packedA,
+  std::ostream& os=std::cout );
 
 //----------------------------------------------------------------------------//
 // Header implementations                                                     //

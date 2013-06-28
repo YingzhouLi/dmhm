@@ -111,7 +111,8 @@ main( int argc, char* argv[] )
         S.symmetric = false;
 
         std::vector<int> map;
-        HMat::BuildNaturalToHierarchicalMap( map, xSize, ySize, zSize, numLevels );
+        HMat::BuildNaturalToHierarchicalMap
+        ( map, xSize, ySize, zSize, numLevels );
 
         std::vector<int> inverseMap( m );
         for( int i=0; i<m; ++i )
@@ -331,7 +332,7 @@ main( int argc, char* argv[] )
             std::ofstream EFile( sE.str().c_str() );
 
             EFile << "BLocal{" << commRank+1 << "}=[\n";
-            ZLocal.Print( EFile, "" );
+            ZLocal.Print( "", EFile );
             EFile << "];\n";
         }
         A.Multiply( Scalar(1), XLocal, ZLocal );
@@ -342,7 +343,7 @@ main( int argc, char* argv[] )
             std::ofstream EFile( sE.str().c_str() );
 
             EFile << "ALocal{" << commRank+1 << "}=[\n";
-            ZLocal.Print( EFile, "" );
+            ZLocal.Print( "", EFile );
             EFile << "];\n";
         }
         // Attempt to multiply the two matrices
@@ -407,7 +408,7 @@ main( int argc, char* argv[] )
             std::ofstream EFile( sE.str().c_str() );
 
             EFile << "BLocal{" << commRank+1 << "}=[\n";
-            ZLocal.Print( EFile, "" );
+            ZLocal.Print( "", EFile );
             EFile << "];\n";
         }
         A.Multiply( Scalar(1), XLocal, ZLocal );
@@ -418,7 +419,7 @@ main( int argc, char* argv[] )
             std::ofstream EFile( sE.str().c_str() );
 
             EFile << "ALocal{" << commRank+1 << "}=[\n";
-            ZLocal.Print( EFile, "" );
+            ZLocal.Print( "", EFile );
             EFile << "];\n";
         }
         */
@@ -436,11 +437,11 @@ main( int argc, char* argv[] )
             std::ofstream ZFile( sZ.str().c_str() );
 
             YFile << "YLocal{" << commRank+1 << "}=[\n";
-            YLocal.Print( YFile, "" );
+            YLocal.Print( "", YFile );
             YFile << "];\n";
 
             ZFile << "ZLocal{" << commRank+1 << "}=[\n";
-            ZLocal.Print( ZFile, "" );
+            ZLocal.Print( "", ZFile );
             ZFile << "];\n";
         }
 
@@ -497,7 +498,7 @@ main( int argc, char* argv[] )
             std::ofstream EFile( sE.str().c_str() );
 
             EFile << "ELocal{" << commRank+1 << "}=[\n";
-            ZLocal.Print( EFile, "" );
+            ZLocal.Print( "", EFile );
             EFile << "];\n";
         }
     }

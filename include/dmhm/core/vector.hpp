@@ -43,7 +43,7 @@ public:
 
     void Set( int i, Scalar value );
     Scalar Get( int i ) const;
-    void Print( const std::string tag ) const;
+    void Print( const std::string tag, std::ostream& os=std::cout ) const;
 
     Scalar* Buffer( int i=0 );
     const Scalar* LockedBuffer( int i=0 ) const;
@@ -169,23 +169,23 @@ Vector<Scalar>::Get( int i ) const
 
 template<typename Scalar>
 inline void
-Vector<Scalar>::Print( const std::string tag ) const
+Vector<Scalar>::Print( const std::string tag, std::ostream& os ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("Vector::Print");
 #endif
-    std::cout << tag << "\n";
+    os << tag << "\n";
     if( lockedView_ )
     {
         for( int i=0; i<height_; ++i )
-            std::cout << WrapScalar(lockedBuffer_[i]) << "\n";
+            os << WrapScalar(lockedBuffer_[i]) << "\n";
     }
     else
     {
         for( int i=0; i<height_; ++i )
-            std::cout << WrapScalar(buffer_[i]) << "\n";
+            os << WrapScalar(buffer_[i]) << "\n";
     }
-    std::cout << std::endl;
+    os << std::endl;
 }
 
 template<typename Scalar>

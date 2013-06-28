@@ -22,7 +22,7 @@ struct Sparse
     std::vector<int> columnIndices;
     std::vector<int> rowOffsets;
 
-    void Print( const std::string tag ) const;
+    void Print( const std::string tag, std::ostream& os=std::cout ) const;
 };
 
 //----------------------------------------------------------------------------//
@@ -31,15 +31,15 @@ struct Sparse
 
 template<typename Scalar>
 inline void
-Sparse<Scalar>::Print( const std::string tag ) const
+Sparse<Scalar>::Print( const std::string tag, std::ostream& os ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("Sparse::Print");
 #endif
     if( symmetric )
-        std::cout << tag << "(symmetric)\n";
+        os << tag << "(symmetric)\n";
     else
-        std::cout << tag << "\n";
+        os << tag << "\n";
 
     for( int i=0; i<height; ++i )
     {
@@ -49,10 +49,10 @@ Sparse<Scalar>::Print( const std::string tag ) const
         {
             const int j = columnIndices[rowOffset+k];
             const Scalar alpha = nonzeros[rowOffset+k];
-            std::cout << i << " " << j << " " << WrapScalar(alpha) << "\n";
+            os << i << " " << j << " " << WrapScalar(alpha) << "\n";
         }
     }
-    std::cout << std::endl;
+    os << std::endl;
 }
 
 } // namespace dmhm

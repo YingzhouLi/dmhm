@@ -34,7 +34,8 @@ public:
     virtual bool StronglyAdmissible() const = 0;
 
     // Display the equivalent dense matrix
-    virtual void Print( const std::string tag ) const = 0;
+    virtual void Print
+    ( const std::string tag, std::ostream& os=std::cout ) const = 0;
 
     // y := alpha A x + beta y
     virtual void Multiply

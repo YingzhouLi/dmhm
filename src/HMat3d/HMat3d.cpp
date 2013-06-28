@@ -286,7 +286,7 @@ HMat3d<Scalar>::Clear()
 
 template<typename Scalar>
 void
-HMat3d<Scalar>::Print( const std::string tag ) const
+HMat3d<Scalar>::Print( const std::string tag, std::ostream& os ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("HMat3d::Print");
@@ -299,7 +299,7 @@ HMat3d<Scalar>::Print( const std::string tag ) const
 
     Dense<Scalar> HFull;
     Multiply( Scalar(1), I, HFull );
-    HFull.Print( tag );
+    HFull.Print( tag, os );
 }
 
 #ifdef HAVE_QT5
