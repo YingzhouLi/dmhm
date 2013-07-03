@@ -1113,8 +1113,6 @@ DistHMat3d<Scalar>::MultiplyDensePassData
         recvOffsets[it->first] = totalRecvSize;
         totalRecvSize += it->second;
     }
-//Print
-//std::cout << totalSendSize << " " << totalRecvSize << std::endl;
 
     // Fill the send buffer
     std::vector<Scalar> sendBuffer( totalSendSize );

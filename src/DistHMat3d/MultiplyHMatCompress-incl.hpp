@@ -1116,7 +1116,6 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPrecompute
                             Utmp_.LockedBuffer(), Utmp_.LDim(),
                  Scalar(0), USqr_.Buffer(),       USqr_.LDim() );
             }
-                                                                                  
             totalrank=rowXMap_.TotalWidth() + VMap_.TotalWidth() + SF.D.Width();
             offset = 0;
             if( inSourceTeam_ && totalrank > 0 && LW > 0 )
@@ -3701,6 +3700,8 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFFinalcompute
              Scalar(0), U.Buffer(),         U.LDim() );
             BL_.Clear();
             Utmp_.Clear();
+            if( DF.ULocal.Height()==0 )
+                DF.ULocal.Resize(LocalHeight(),0);
         }
         if( inSourceTeam_ )
         {                                                      
@@ -3715,6 +3716,8 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFFinalcompute
              Scalar(0), V.Buffer(),         V.LDim() );
             BR_.Clear();
             Vtmp_.Clear();
+            if( DF.VLocal.Height()==0 )
+                DF.VLocal.Resize(LocalWidth(),0);
         }
         break;
     }
@@ -3742,6 +3745,11 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFFinalcompute
                      Scalar(0), U.Buffer(),         U.LDim() );
                     BL_.Clear();
                     Utmp_.Clear();
+                    if( SF.D.Height()==0 )
+                    {
+                        SF.rank = 0;
+                        SF.D.Resize(LH,0);
+                    }
                 }
                 if( inSourceTeam_ )
                 {                                                      
@@ -3755,19 +3763,36 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFFinalcompute
                      Scalar(0), V.Buffer(),         V.LDim() );
                     BR_.Clear();
                     Vtmp_.Clear();
+                    if( SF.D.Height()==0 )
+                    {
+                        SF.rank = 0;
+                        SF.D.Resize(LW,0);
+                    }
                 }
             }
             else
             {
                 SF.rank = BSqrU_.Width();
                 if( inTargetTeam_ )                                         
+                {
                     hmat_tools::Copy( BSqrU_, SF.D );
+                    if( SF.D.Height()==0 )
+                    {
+                        SF.rank = 0;
+                        SF.D.Resize(LH,0);
+                    }
+                }
                 if( inSourceTeam_ )
                 {                                                      
                     SF.D.Resize( LW, BSqrVH_.Height() );
                     for( int j=0; j<BSqrVH_.Height(); ++j )
                         for( int i=0; i<LW; ++i )
                             SF.D.Set(i,j,BSqrVH_.Get(j,i)*BSigma_[j]);
+                    if( SF.D.Height()==0 )
+                    {
+                        SF.rank = 0;
+                        SF.D.Resize(LW,0);
+                    }
                 }
             
             }
@@ -4077,13 +4102,13 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFCleanup
         Vtmp_.Clear();
         USqr_.Clear();
         VSqr_.Clear();
-        USqrEig_.resize(0);
-        VSqrEig_.resize(0);
+        std::vector<Real>().swap(USqrEig_);
+        std::vector<Real>().swap(VSqrEig_);
         BSqr_.Clear();
-        BSqrEig_.resize(0);
+        std::vector<Real>().swap(BSqrEig_);
         BSqrU_.Clear();
         BSqrVH_.Clear();
-        BSigma_.resize(0);
+        std::vector<Real>().swap(BSigma_);
         BL_.Clear();
         BR_.Clear();
         UMap_.Clear();

@@ -20,13 +20,21 @@ DistHMat2d<Scalar>::ParallelEstimateTwoNorm( Real theta, Real confidence )
     if( confidence <= 0 )
         throw std::logic_error("Confidence must be positive.");
 #endif
-    const int n = LocalHeight();
+    const int n = Height();
     const int k = ceil(log(0.8*sqrt(n)*pow(10,confidence))/log(theta));
     mpi::Comm team = teams_->Team( 0 );
 #ifndef RELEASE
-    std::cerr << "Going to use A^" << k  << " in order to estimate "
-              << "||A||_2 within " << (theta-1.0)*100 << "% with probability "
-              << "1-10^{-" << confidence << "}" << std::endl;
+    {
+        const int teamRank = mpi::CommRank( team );
+        if( teamRank ==0 )
+        {
+            std::cerr << "Going to use A^" << k  
+                      << " in order to estimate "
+                      << "||A||_2 within " << (theta-1.0)*100 
+                      << "% with probability "
+                      << "1-10^{-" << confidence << "}" << std::endl;
+        }
+    }
 #endif
     // Sample the unit sphere
     Vector<Scalar> x( n );
@@ -38,6 +46,7 @@ DistHMat2d<Scalar>::ParallelEstimateTwoNorm( Real theta, Real confidence )
         twoNorm = sqrt(twoNorm);
         hmat_tools::Scale( ((Scalar)1)/twoNorm, x );
     }
+
 
     Real estimate = theta; 
     const Real root = ((Real)1) / ((Real)k);
@@ -54,7 +63,11 @@ DistHMat2d<Scalar>::ParallelEstimateTwoNorm( Real theta, Real confidence )
         estimate *= pow( twoNorm, root );
     }
 #ifndef RELEASE
-    std::cerr << "Estimated ||A||_2 as " << estimate << std::endl;
+    {
+        const int teamRank = mpi::CommRank( team );
+        if( teamRank ==0 )
+            std::cerr << "Estimated ||A||_2 as " << estimate << std::endl;
+    }
 #endif
     return estimate;
 }

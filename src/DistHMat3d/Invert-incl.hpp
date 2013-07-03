@@ -39,6 +39,14 @@ DistHMat3d<Scalar>::SchulzInvert
 
     for( int k=0; k<numIterations; ++k )
     {
+#ifndef RELEASE
+        {
+            mpi::Comm team = teams_->Team(0);
+            const int teamRank = mpi::CommRank( team );
+            if( teamRank ==0 )
+                std::cerr << "Iteration: " << k << std::endl;
+        }
+#endif
         // Form Z := 2I - X_k A
         DistHMat3d<Scalar> Z;
         X.Multiply( Scalar(-1), *this, Z, 2 );

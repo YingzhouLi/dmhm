@@ -317,7 +317,7 @@ Dense<Scalar>::EraseRows( int first, int last )
             memory_.erase
             ( memory_.begin()+i*ldim_+first, memory_.begin()+i*ldim_+last+1 );
         buffer_ = &memory_[0];
-        ldim_ = ldim_-last+first-1;
+        ldim_ = std::max( ldim_-last+first-1, 1 );
     }
 }
 
