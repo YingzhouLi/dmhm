@@ -23,8 +23,8 @@ option(USE_QT5 "Attempt to use Qt5?" OFF)
 
 if(RELEASE)
     set(CXX_FLAGS "-O3" CACHE STRING "CXX flags")
-elseif(RELEASE)
-    set(CXX_FLAGS "-O0" CACHE STRING "CXX flags")
+else()
+    set(CXX_FLAGS "-g -Wall" CACHE STRING "CXX flags")
 endif()
 
 find_package(MPI)

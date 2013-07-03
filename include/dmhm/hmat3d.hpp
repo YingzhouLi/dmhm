@@ -92,7 +92,7 @@ public:
     // Reconstruct an H-matrix from its packed form
     HMat3d( const std::vector<byte>& packedHMat );
 
-    ~HMat3d();
+    virtual ~HMat3d();
     void Clear();
 
     void SetToRandom();

@@ -29,8 +29,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompress( int startLevel, int endLevel )
     // Everything about V are same in VSqr_ and VSqrEig_.
     
 //    MultiplyHMatCompressFCompressless( startLevel, endLevel );
-    mpi::Comm team = teams_->Team( level_ );
-    const int teamRank = mpi::CommRank( team );
     MultiplyHMatCompressLowRankCountAndResize(0);
     MultiplyHMatCompressLowRankImport(0);
     MultiplyHMatCompressFPrecompute( startLevel, endLevel);
@@ -152,7 +150,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
         }
 
         // Store the rank and create the space
-        const unsigned teamLevel = teams_->TeamLevel( level_ );
         if( inTargetTeam_ )
         {
             const int oldRank = DF.ULocal.Width();
@@ -183,8 +180,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
     case SPLIT_LOW_RANK:
     {
         SplitLowRank& SF = *block_.data.SF;
-        const unsigned teamLevel = teams_->TeamLevel( level_ );
-
         // Compute the new rank
         if( inTargetTeam_ )
         {
@@ -253,8 +248,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
     case LOW_RANK:
     {
         LowRank<Scalar>& F = *block_.data.F;
-        const unsigned teamLevel = teams_->TeamLevel( level_ );
-        
         // Compute the total new rank
         {
             // Add the F+=HH updates

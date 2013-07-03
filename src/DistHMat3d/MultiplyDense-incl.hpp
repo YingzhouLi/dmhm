@@ -1588,6 +1588,7 @@ DistHMat3d<Scalar>::TransposeMultiplyDensePassDataPack
             {                                                                  
                 XLocalSub.LockedView                                           
                 ( XLocal, tOffset, 0, node.targetSizes[t], numRhs );           
+                // RYAN: Should s_start be used here?
                 for( int s=0; s<8; ++s )                                       
                     node.Child(t,s).TransposeMultiplyDensePassDataPack         
                     ( nodeContext.Child(t,s), XLocalSub, buffer, offsets );    

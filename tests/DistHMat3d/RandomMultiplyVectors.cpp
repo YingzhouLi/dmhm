@@ -14,7 +14,6 @@ main( int argc, char* argv[] )
 {
     Initialize( argc, argv );
     const int commRank = mpi::CommRank( mpi::COMM_WORLD );
-    const int commSize = mpi::CommSize( mpi::COMM_WORLD );
     typedef std::complex<double> Scalar;
     typedef DistHMat3d<Scalar> DistHMat;
 

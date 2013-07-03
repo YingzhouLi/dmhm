@@ -29,7 +29,8 @@ public:
     /*
      * Public static member functions
      */
-    static int SampleRank( int approxRank ) { return approxRank + Oversample(); }
+    static int SampleRank( int approxRank ) 
+    { return approxRank + Oversample(); }
 
     static void BuildNaturalToHierarchicalMap
     ( std::vector<int>& map, int xSize, int ySize, int numLevels );
@@ -87,7 +88,7 @@ public:
     // Reconstruct an H-matrix from its packed form
     HMat2d( const std::vector<byte>& packedHMat );
 
-    ~HMat2d();
+    virtual ~HMat2d();
     void Clear();
 
     void SetToRandom();

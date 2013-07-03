@@ -57,7 +57,6 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressPrecompute
     if( (!A.inTargetTeam_ && !A.inSourceTeam_ && !B.inSourceTeam_) ||
         A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
         return;
-    const int rank = SampleRank( C.MaxRank() );
     switch( A.block_.type )
     {
     case DIST_NODE:

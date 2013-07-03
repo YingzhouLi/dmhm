@@ -117,7 +117,6 @@ main( int argc, char* argv[] )
             const int iNatural = inverseMap[i];
             const int x = iNatural % xSize;
             const int y = (iNatural/xSize) % ySize;
-            const int z = iNatural/(xSize*ySize);
 
             FormRow( x, y, xSize, ySize, row, colIndices );
 
