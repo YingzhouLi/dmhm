@@ -1567,20 +1567,16 @@ DistHMat3d<Scalar>::TransposeMultiplyDensePassDataPack
         {
             Dense<Scalar> XLocalSub;
             const int teamRank = mpi::CommRank( team );
-            int t_start, t_end, s_start, s_end;
+            int t_start, t_end;
             if( teamSize == 4 )
             {
                 t_start = teamRank*2;
                 t_end = teamRank*2+2;
-                s_start = teamRank*2;
-                s_end = teamRank*2+2;
             }
             else
             {
                 t_start = teamRank*4;
                 t_end = teamRank*4+4;
-                s_start = teamRank*4;
-                s_end = teamRank*4+4;
             }
 
             for( int t=t_start,tOffset=0; t<t_end;                          
@@ -1588,7 +1584,6 @@ DistHMat3d<Scalar>::TransposeMultiplyDensePassDataPack
             {                                                                  
                 XLocalSub.LockedView                                           
                 ( XLocal, tOffset, 0, node.targetSizes[t], numRhs );           
-                // RYAN: Should s_start be used here?
                 for( int s=0; s<8; ++s )                                       
                     node.Child(t,s).TransposeMultiplyDensePassDataPack         
                     ( nodeContext.Child(t,s), XLocalSub, buffer, offsets );    

@@ -130,7 +130,7 @@ public:
 #endif
         int width=0;
         typename std::map<T1,T2*>::iterator it = baseMap_.begin();
-        for( int i=0; i<baseMap_.size(); ++i,++it)
+        for( unsigned int i=0; i<baseMap_.size(); ++i,++it)
             width += it->second->Width();
         return width;
     }

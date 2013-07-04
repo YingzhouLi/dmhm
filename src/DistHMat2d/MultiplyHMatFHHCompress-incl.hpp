@@ -20,7 +20,6 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompress
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MultiplyHMatFHHCompress");
 #endif
-    const DistHMat2d<Scalar>& A = *this;
     
     MultiplyHMatFHHCompressPrecompute
     ( B, C, startLevel, endLevel, startUpdate, endUpdate, 0 );
