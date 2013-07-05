@@ -98,6 +98,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressPrecompute
 
                         //_colUSqr = ( A B Omega1)' ( A B Omega1 )
                         // TODO: Replace this with a Herk call...
+                        colUSqr.Init();
                         blas::Gemm
                         ( 'C', 'N', Trank, Trank, LH,
                          Scalar(1), colU.LockedBuffer(), colU.LDim(),
@@ -105,6 +106,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressPrecompute
                          Scalar(0), colUSqr.Buffer(), colUSqr.LDim() );
 
                         //_colPinv = Omega2' (A B Omega1)
+                        colPinv.Init();
                         blas::Gemm
                         ( 'C', 'N', Omegarank, Trank, LH,
                           Scalar(1), A.rowOmega_.LockedBuffer(), 
@@ -133,6 +135,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressPrecompute
 
                         //_rowUSqr = ( B' A' Omega2 )' ( B' A' Omega2 )
                         // TODO: Replace this with a Herk call...
+                        rowUSqr.Init();
                         blas::Gemm
                         ( 'C', 'N', Trank, Trank, LH,
                          Scalar(1), rowU.LockedBuffer(), rowU.LDim(),
@@ -140,6 +143,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressPrecompute
                          Scalar(0), rowUSqr.Buffer(), rowUSqr.LDim() );
 
                         //_rowPinv = Omega1' (B' A' Omega2)
+                        rowPinv.Init();
                         blas::Gemm
                         ( 'C', 'N', Omegarank, Trank, LH,
                           Scalar(1), B.colOmega_.LockedBuffer(), 
@@ -577,6 +581,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressMidcompute
                                 MemZero( USqr.Buffer(0,j), k );
                         }
                         
+                        Pinv.Init();
                         blas::Gemm
                         ( 'N', 'N', OmegaT.Height(), k, k,
                          Scalar(1), OmegaT.LockedBuffer(), OmegaT.LDim(),
@@ -588,12 +593,14 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressMidcompute
                           Pinv.Buffer(), Pinv.LDim(), epsilon );
  
                         Dense<Scalar> Ztmp( k, Pinv.Height() );
+                        Ztmp.Init();
                         blas::Gemm
                         ( 'N', 'C', k, Pinv.Height(), k,
                          Scalar(1), USqr.LockedBuffer(), USqr.LDim(),
                                     Pinv.LockedBuffer(), Pinv.LDim(),
                          Scalar(0), Ztmp.Buffer(), Ztmp.LDim() );
                         
+                        BL.Init();
                         blas::Gemm
                         ( 'N', 'N', k, OmegaT.Width(), Ztmp.Width(),
                          Scalar(1), Ztmp.LockedBuffer(), Ztmp.LDim(),
@@ -634,6 +641,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressMidcompute
                                 MemZero( USqr.Buffer(0,j), k );
                         }
                         
+                        Pinv.Init();
                         blas::Gemm
                         ( 'N', 'N', OmegaT.Height(), k, k,
                          Scalar(1), OmegaT.LockedBuffer(), OmegaT.LDim(),
@@ -644,6 +652,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressMidcompute
                         ( Pinv.Height(), Pinv.Width(), 
                           Pinv.Buffer(), Pinv.LDim(), epsilon );
    
+                        BR.Init();
                         blas::Gemm
                         ( 'N', 'C', k, Pinv.Height(), k,
                          Scalar(1), USqr.LockedBuffer(), USqr.LDim(),
@@ -1011,6 +1020,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressPostcompute
                         Dense<Scalar>& BL = C.BLMap_.Get( key );      
                         Dense<Scalar>& colU = C.colXMap_.Get( key );
                         Dense<Scalar> Ztmp(colU.Height(), BL.Width());
+                        Ztmp.Init();
                         blas::Gemm
                         ('N', 'N', colU.Height(), BL.Width(), colU.Width(), 
                          Scalar(1), colU.LockedBuffer(), colU.LDim(),
@@ -1023,6 +1033,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressPostcompute
                         Dense<Scalar>& BR = C.BRMap_.Get( key );      
                         Dense<Scalar>& rowU = C.rowXMap_.Get( key );
                         Dense<Scalar> Ztmp(rowU.Height(), BR.Width());
+                        Ztmp.Init();
                         blas::Gemm
                         ('N', 'N', rowU.Height(), BR.Width(), rowU.Width(), 
                          Scalar(1), rowU.LockedBuffer(), rowU.LDim(),

@@ -102,7 +102,7 @@ DistHMat2d<Scalar>::AdjointCopy( const DistHMat2d<Scalar>& B )
     case DIST_LOW_RANK_GHOST:
     {
         A.block_.data.DFG = new DistLowRankGhost;
-        A.block_.data.DFG->rank = -1;
+        A.block_.data.DFG->rank = B.block_.data.DFG->rank;
         break;
     }
     case SPLIT_LOW_RANK:
@@ -118,7 +118,7 @@ DistHMat2d<Scalar>::AdjointCopy( const DistHMat2d<Scalar>& B )
     case SPLIT_LOW_RANK_GHOST:
     {
         A.block_.data.SFG = new SplitLowRankGhost;
-        A.block_.data.SFG->rank = -1;
+        A.block_.data.SFG->rank = B.block_.data.SFG->rank;
         break;
     }
     case LOW_RANK:
@@ -130,7 +130,7 @@ DistHMat2d<Scalar>::AdjointCopy( const DistHMat2d<Scalar>& B )
     case LOW_RANK_GHOST:
     {
         A.block_.data.FG = new LowRankGhost;
-        A.block_.data.FG->rank = -1;
+        A.block_.data.FG->rank = B.block_.data.FG->rank;
         break;
     }
     case SPLIT_DENSE:
@@ -336,6 +336,7 @@ DistHMat2d<Scalar>::AdjointPassDataUnpack
         {
             SplitDense& SD = *A.block_.data.SD;
             SD.D.Resize(A.Height(), A.Width());
+            SD.D.Init();
             const int m = A.Width();
             const int n = A.Height();
             const int LDim = A.Width();

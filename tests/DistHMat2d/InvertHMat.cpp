@@ -279,7 +279,7 @@ main( int argc, char* argv[] )
         }
         mpi::Barrier( mpi::COMM_WORLD );
         double SchulzInvertStartTime = mpi::Time();
-        A.SchulzInvert(30);
+        A.SchulzInvert(20);
         mpi::Barrier( mpi::COMM_WORLD );
         double SchulzInvertStopTime = mpi::Time();
         if( commRank == 0 )

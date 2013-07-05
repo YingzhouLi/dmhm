@@ -19,6 +19,7 @@ DistHMat2d<Scalar>::Multiply
     CallStackEntry entry("DistHMat2d::Multiply");
 #endif
     YLocal.Resize( LocalHeight(), XLocal.Width() );
+    YLocal.Init();
     Multiply( alpha, XLocal, Scalar(0), YLocal );
 }
 
@@ -32,6 +33,7 @@ DistHMat2d<Scalar>::TransposeMultiply
     CallStackEntry entry("DistHMat2d::TransposeMultiply");
 #endif
     YLocal.Resize( LocalWidth(), XLocal.Width() );
+    YLocal.Init();
     TransposeMultiply( alpha, XLocal, Scalar(0), YLocal );
 }
 
@@ -45,6 +47,7 @@ DistHMat2d<Scalar>::AdjointMultiply
     CallStackEntry entry("DistHMat2d::AdjointMultiply");
 #endif
     YLocal.Resize( LocalWidth(), XLocal.Width() );
+    YLocal.Init();
     AdjointMultiply( alpha, XLocal, Scalar(0), YLocal );
 }
 
@@ -384,6 +387,7 @@ DistHMat2d<Scalar>::MultiplyDensePrecompute
         const DistLowRank& DF = *block_.data.DF;
         Dense<Scalar>& Z = *context.block.data.Z;
         Z.Resize( DF.rank, numRhs );
+        Z.Init();
         const char option = 'T';
         blas::Gemm
         ( option, 'N', DF.rank, numRhs, DF.VLocal.Height(), 
@@ -604,6 +608,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePrecompute
         const DistLowRank& DF = *block_.data.DF;
         Dense<Scalar>& Z = *context.block.data.Z;
         Z.Resize( DF.rank, numRhs );
+        Z.Init();
         blas::Gemm
         ( 'T', 'N', DF.rank, numRhs, DF.ULocal.Height(),
           alpha,     DF.ULocal.LockedBuffer(), DF.ULocal.LDim(), 
@@ -821,6 +826,7 @@ DistHMat2d<Scalar>::AdjointMultiplyDensePrecompute
         const DistLowRank& DF = *block_.data.DF;
         Dense<Scalar>& Z = *context.block.data.Z;
         Z.Resize( DF.rank, numRhs );
+        Z.Init();
         blas::Gemm
         ( 'C', 'N', DF.rank, numRhs, DF.ULocal.Height(), 
           alpha,     DF.ULocal.LockedBuffer(), DF.ULocal.LDim(), 
@@ -1475,6 +1481,7 @@ DistHMat2d<Scalar>::MultiplyDensePassDataUnpack
             {
                 Dense<Scalar>& Z = *context.block.data.Z;
                 Z.Resize( DF.rank, numRhs, DF.rank );
+                Z.Init();
                 MemCopy
                 ( Z.Buffer(), &buffer[offsets[sourceRoot_]], DF.rank*numRhs );
                 offsets[sourceRoot_] += DF.rank*numRhs;
@@ -1489,6 +1496,7 @@ DistHMat2d<Scalar>::MultiplyDensePassDataUnpack
         {
             Dense<Scalar>& Z = *context.block.data.Z;
             Z.Resize( SF.rank, numRhs, SF.rank );
+            Z.Init();
             MemCopy
             ( Z.Buffer(), &buffer[offsets[sourceRoot_]], SF.rank*numRhs );
             offsets[sourceRoot_] += SF.rank*numRhs;
@@ -1501,6 +1509,7 @@ DistHMat2d<Scalar>::MultiplyDensePassDataUnpack
         {
             Dense<Scalar>& Z = *context.block.data.Z;
             Z.Resize( Height(), numRhs, Height() );
+            Z.Init();
             MemCopy
             ( Z.Buffer(), &buffer[offsets[sourceRoot_]], Z.Height()*numRhs );
             offsets[sourceRoot_] += Z.Height()*numRhs;
@@ -1830,6 +1839,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePassDataUnpack
             {
                 Dense<Scalar>& Z = *context.block.data.Z;
                 Z.Resize( DF.rank, numRhs, DF.rank );
+                Z.Init();
                 MemCopy
                 ( Z.Buffer(), &buffer[offsets[targetRoot_]], DF.rank*numRhs );
                 offsets[targetRoot_] += DF.rank*numRhs;
@@ -1844,6 +1854,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePassDataUnpack
         {
             Dense<Scalar>& Z = *context.block.data.Z;
             Z.Resize( SF.rank, numRhs, SF.rank );
+            Z.Init();
             MemCopy
             ( Z.Buffer(), &buffer[offsets[targetRoot_]], SF.rank*numRhs );
             offsets[targetRoot_] += SF.rank*numRhs;
@@ -1857,6 +1868,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePassDataUnpack
         {
             Dense<Scalar>& Z = *context.block.data.Z;
             Z.Resize( height, numRhs, height );
+            Z.Init();
             MemCopy
             ( Z.Buffer(), &buffer[offsets[targetRoot_]], height*numRhs );
             offsets[targetRoot_] += height*numRhs;
@@ -2144,6 +2156,7 @@ DistHMat2d<Scalar>::MultiplyDenseBroadcastsUnpack
         if( DF.rank != 0 )
         {
             Z.Resize( DF.rank, numRhs, DF.rank );
+            Z.Init();
             MemCopy( Z.Buffer(), &buffer[offsets[level_]], DF.rank*numRhs );
             offsets[level_] += DF.rank*numRhs;
         }
@@ -2187,6 +2200,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDenseBroadcastsUnpack
         if( DF.rank != 0 )
         {
             Z.Resize( DF.rank, numRhs, DF.rank );
+            Z.Init();
             MemCopy( Z.Buffer(), &buffer[offsets[level_]], DF.rank*numRhs );
             offsets[level_] += DF.rank*numRhs;
         }

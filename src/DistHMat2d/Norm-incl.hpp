@@ -26,7 +26,7 @@ DistHMat2d<Scalar>::ParallelEstimateTwoNorm( Real theta, Real confidence )
 #ifndef RELEASE
     {
         const int teamRank = mpi::CommRank( team );
-        if( teamRank ==0 )
+        if( teamRank == 0 )
         {
             std::cerr << "Going to use A^" << k  
                       << " in order to estimate "
@@ -65,7 +65,7 @@ DistHMat2d<Scalar>::ParallelEstimateTwoNorm( Real theta, Real confidence )
 #ifndef RELEASE
     {
         const int teamRank = mpi::CommRank( team );
-        if( teamRank ==0 )
+        if( teamRank == 0 )
             std::cerr << "Estimated ||A||_2 as " << estimate << std::endl;
     }
 #endif

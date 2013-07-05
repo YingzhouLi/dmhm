@@ -619,14 +619,18 @@ DistHMat2d<Scalar>::BuildTree()
             block_.data.DF = new DistLowRank;
             block_.data.DF->rank = 0;
             block_.data.DF->ULocal.Resize( LocalHeight(), 0 );
+            block_.data.DF->ULocal.Init();
             block_.data.DF->VLocal.Resize( LocalWidth(),  0 );
+            block_.data.DF->VLocal.Init();
         }
         else if( sourceRoot_ == targetRoot_ )
         {
             block_.type = LOW_RANK;
             block_.data.F = new LowRank<Scalar>;
             block_.data.F->U.Resize( Height(), 0 );
+            block_.data.F->U.Init();
             block_.data.F->V.Resize( Width(),  0 );
+            block_.data.F->V.Init();
         }
         else
         {
@@ -634,9 +638,15 @@ DistHMat2d<Scalar>::BuildTree()
             block_.data.SF = new SplitLowRank;
             block_.data.SF->rank = 0;
             if( inTargetTeam_ )
+            {
                 block_.data.SF->D.Resize( Height(), 0 );
+                block_.data.SF->D.Init();
+            }
             else
+            {
                 block_.data.SF->D.Resize( Width(), 0 );
+                block_.data.SF->D.Init();
+            }
         }
     }
     else if( numLevels_ > 1 ) // recurse
@@ -873,7 +883,10 @@ DistHMat2d<Scalar>::BuildTree()
             block_.type = SPLIT_DENSE;
             block_.data.SD = new SplitDense;
             if( inSourceTeam_ )
+            {
                 block_.data.SD->D.Resize( Height(), Width() );
+                block_.data.SD->D.Init();
+            }
         }
     }
 }

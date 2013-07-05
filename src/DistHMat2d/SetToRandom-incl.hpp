@@ -34,7 +34,9 @@ DistHMat2d<Scalar>::SetToRandom()
 
         DF.rank = maxRank;
         DF.ULocal.Resize( localHeight, maxRank );
+        DF.ULocal.Init();
         DF.VLocal.Resize( localWidth, maxRank );
+        DF.VLocal.Init();
         ParallelGaussianRandomVectors( DF.ULocal );
         ParallelGaussianRandomVectors( DF.VLocal );
         break;
@@ -46,6 +48,7 @@ DistHMat2d<Scalar>::SetToRandom()
 
         SF.rank = maxRank;
         SF.D.Resize( length, maxRank );
+        SF.D.Init();
         ParallelGaussianRandomVectors( SF.D );
         break;
     }
@@ -56,7 +59,9 @@ DistHMat2d<Scalar>::SetToRandom()
         const int width = F.V.Height();
 
         F.U.Resize( height, maxRank );
+        F.U.Init();
         F.V.Resize( width, maxRank );
+        F.V.Init();
         ParallelGaussianRandomVectors( F.U );
         ParallelGaussianRandomVectors( F.V );
         break;

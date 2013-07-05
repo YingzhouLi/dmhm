@@ -158,6 +158,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
             Dense<Scalar> ULocalCopy;
             hmat_tools::Copy( DF.ULocal, ULocalCopy );
             DF.ULocal.Resize( localHeight, rank, localHeight );
+            DF.ULocal.Init();
             MemCopy
             ( DF.ULocal.Buffer(0,rank-oldRank), ULocalCopy.LockedBuffer(), 
               localHeight*oldRank );
@@ -170,6 +171,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
             Dense<Scalar> VLocalCopy;
             hmat_tools::Copy( DF.VLocal, VLocalCopy );
             DF.VLocal.Resize( localWidth, rank, localWidth );
+            DF.VLocal.Init();
             MemCopy
             ( DF.VLocal.Buffer(0,rank-oldRank), VLocalCopy.LockedBuffer(),
               localWidth*oldRank );
@@ -225,6 +227,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
             Dense<Scalar> UCopy;
             hmat_tools::Copy( SF.D, UCopy );
             SF.D.Resize( height, rank, height );
+            SF.D.Init();
             SF.rank = rank;
             MemCopy
             ( SF.D.Buffer(0,rank-oldRank), UCopy.LockedBuffer(), 
@@ -238,6 +241,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
             Dense<Scalar> VCopy;
             hmat_tools::Copy( SF.D, VCopy );
             SF.D.Resize( width, rank, width );
+            SF.D.Init();
             SF.rank = rank;
             MemCopy
             ( SF.D.Buffer(0,rank-oldRank), VCopy.LockedBuffer(),
@@ -276,6 +280,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
             Dense<Scalar> UCopy;
             hmat_tools::Copy( F.U, UCopy );
             F.U.Resize( height, rank, height );
+            F.U.Init();
             MemCopy
             ( F.U.Buffer(0,rank-oldRank), UCopy.LockedBuffer(), 
               height*oldRank );
@@ -283,6 +288,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
             Dense<Scalar> VCopy;
             hmat_tools::Copy( F.V, VCopy );
             F.V.Resize( width, rank, width );
+            F.V.Init();
             MemCopy
             ( F.V.Buffer(0,rank-oldRank), VCopy.LockedBuffer(), width*oldRank );
         }
@@ -312,6 +318,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
                 hmat_tools::Copy( firstU, firstUCopy );
 
                 firstU.Resize( m, rank, m );
+                firstU.Init();
                 // Push the original first update into the back
                 int rOffset = rank;
                 {
@@ -358,6 +365,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
                 hmat_tools::Copy( firstV, firstVCopy );
 
                 firstV.Resize( n, rank, n );
+                firstV.Init();
                 // Push the original first update into the back
                 int rOffset = rank;
                 {
@@ -939,8 +947,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
         if( inTargetTeam_ && totalrank > 0 && LH > 0 )
         {
             USqr_.Resize( totalrank, totalrank, totalrank );
+            USqr_.Init();
             USqrEig_.resize( totalrank );
             Utmp_.Resize( LH, totalrank, LH );
+            Utmp_.Init();
             
             MemCopy
             ( Utmp_.Buffer(0,offset), DF.ULocal.LockedBuffer(),
@@ -982,8 +992,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
         if( inSourceTeam_ && totalrank > 0 && LW > 0 )
         {
             VSqr_.Resize( totalrank, totalrank, totalrank );
+            VSqr_.Init();
             VSqrEig_.resize( totalrank );
             Vtmp_.Resize( LW, totalrank, LW );
+            Vtmp_.Init();
             
             MemCopy
             ( Vtmp_.Buffer(0,offset), DF.VLocal.LockedBuffer(),
@@ -1039,8 +1051,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
             if( inTargetTeam_ && totalrank > 0 && LH > 0 )                        
             {
                 USqr_.Resize( totalrank, totalrank, totalrank );
+                USqr_.Init();
                 USqrEig_.resize( totalrank );
                 Utmp_.Resize( LH, totalrank, LH );
+                Utmp_.Init();
                 
                 MemCopy
                 ( Utmp_.Buffer(0,offset), SF.D.LockedBuffer(), LH*SF.D.Width() );
@@ -1080,8 +1094,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
             if( inSourceTeam_ && totalrank > 0 && LW > 0 )
             {
                 VSqr_.Resize( totalrank, totalrank, totalrank );
+                VSqr_.Init();
                 VSqrEig_.resize( totalrank );
                 Vtmp_.Resize( LW, totalrank, LW );
+                Vtmp_.Init();
                 
                 MemCopy
                 ( Vtmp_.Buffer(0,offset), SF.D.LockedBuffer(), LW*SF.D.Width() );
@@ -1136,8 +1152,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
             if( totalrank > MaxRank() && LH > 0 )                               
             {
                 USqr_.Resize( totalrank, totalrank, totalrank );
+                USqr_.Init();
                 USqrEig_.resize( totalrank );
                 Utmp_.Resize( LH, totalrank, LH );
+                Utmp_.Init();
                 
                 MemCopy
                 ( Utmp_.Buffer(0,offset), F.U.LockedBuffer(), LH*F.U.Width() );
@@ -1156,8 +1174,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
             if( totalrank > MaxRank() && LW > 0 )
             {
                 VSqr_.Resize( totalrank, totalrank, totalrank );
+                VSqr_.Init();
                 VSqrEig_.resize( totalrank );
                 Vtmp_.Resize( LW, totalrank, LW );
+                Vtmp_.Init();
                 
                 MemCopy
                 ( Vtmp_.Buffer(0,offset), F.V.LockedBuffer(), LW*F.V.Width() );
@@ -1779,6 +1799,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrixUnpack
         if( teamRank ==0 && USqr_.Height() > 0 && inTargetTeam_ )
         {
             VSqr_.Resize( USqr_.Height(), USqr_.Width(), USqr_.LDim() );
+            VSqr_.Init();
             MemCopy
             ( VSqr_.Buffer(), &buffer[offsets[sourceRoot_]],
               VSqr_.Height()*VSqr_.Width() );
@@ -1804,6 +1825,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrixUnpack
             if( inSourceTeam_ )
                 break;
             VSqr_.Resize( USqr_.Height(), USqr_.Width(), USqr_.LDim() );
+            VSqr_.Init();
             MemCopy
             ( VSqr_.Buffer(), &buffer[offsets[sourceRoot_]],
               VSqr_.Height()*VSqr_.Width() );
@@ -1814,6 +1836,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrixUnpack
             if( inSourceTeam_ )
             {
                 SFD_.Resize( LH, totalrank );
+                SFD_.Init();
                 MemCopy                                                
                 ( SFD_.Buffer(), &buffer[offsets[targetRoot_]],
                   SFD_.Height()*SFD_.Width() );
@@ -1822,6 +1845,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrixUnpack
             else
             {
                 SFD_.Resize( LW, totalrank );
+                SFD_.Init();
                 MemCopy                                                
                 ( SFD_.Buffer(), &buffer[offsets[sourceRoot_]],
                   SFD_.Height()*SFD_.Width() );
@@ -2171,6 +2195,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
             const int k = USqr_.Height();
 
             BSqr_.Resize( k, k );
+            BSqr_.Init();
             blas::Gemm
             ( 'T', 'N', k, k, k,
               Scalar(1), USqr_.LockedBuffer(), USqr_.LDim(),
@@ -2192,7 +2217,9 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
 
             const int minDim = std::min( m, n );
             BSqrU_.Resize( m, minDim );
+            BSqrU_.Init();
             BSqrVH_.Resize( minDim, n );
+            BSqrVH_.Init();
             BSigma_.resize( minDim );
 
             const int lwork = lapack::SVDWorkSize(m,n);
@@ -2233,6 +2260,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
                 const int k = USqr_.Height();
                                                                                   
                 BSqr_.Resize( k, k );
+                BSqr_.Init();
                 blas::Gemm
                 ( 'T', 'N', k, k, k,
                   Scalar(1), USqr_.LockedBuffer(), USqr_.LDim(),
@@ -2254,7 +2282,9 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
                                                                                   
                 const int minDim = std::min( m, n );
                 BSqrU_.Resize( m, minDim );
+                BSqrU_.Init();
                 BSqrVH_.Resize( minDim, n );
+                BSqrVH_.Init();
                 BSigma_.resize( minDim );
                                                                                   
                 const int lwork = lapack::SVDWorkSize(m,n);
@@ -2275,6 +2305,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
         else
         {
             BSqr_.Resize( LH, LW );
+            BSqr_.Init();
             if( inSourceTeam_ )
             {
                 blas::Gemm
@@ -2294,7 +2325,9 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
 
             const int minDim = std::min( LH, LW );
             BSqrU_.Resize( LH, minDim );
+            BSqrU_.Init();
             BSqrVH_.Resize( minDim, LW );
+            BSqrVH_.Init();
             BSigma_.resize( minDim );
 
             const int lwork = lapack::SVDWorkSize(LH,LW);
@@ -2334,6 +2367,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
             const int k = USqr_.Height();
 
             BSqr_.Resize( k, k );
+            BSqr_.Init();
             blas::Gemm
             ( 'T', 'N', k, k, k,
               Scalar(1), USqr_.LockedBuffer(), USqr_.LDim(),
@@ -2355,7 +2389,9 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
 
             const int minDim = std::min( m, n );
             BSqrU_.Resize( m, minDim );
+            BSqrU_.Init();
             BSqrVH_.Resize( minDim, n );
+            BSqrVH_.Init();
             BSigma_.resize( minDim );
 
             const int lwork = lapack::SVDWorkSize(m,n);
@@ -2375,6 +2411,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
         else
         {
             BSqr_.Resize( LH, LW );
+            BSqr_.Init();
             blas::Gemm
             ( 'N', 'T', LH, LW, totalrank,
               Scalar(1), F.U.LockedBuffer(), F.U.LDim(),
@@ -2383,7 +2420,9 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
 
             const int minDim = std::min( LH, LW );
             BSqrU_.Resize( LH, minDim );
+            BSqrU_.Init();
             BSqrVH_.Resize( minDim, LW );
+            BSqrVH_.Init();
             BSigma_.resize( minDim );
 
             const int lwork = lapack::SVDWorkSize(LH,LW);
@@ -2664,6 +2703,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackNumUnpack
             BSqrVH_.Resize
             ( buffer[offsets[targetRoot_]], VSqr_.Height(), 
               buffer[offsets[targetRoot_]] );
+            BSqrVH_.Init();
             offsets[targetRoot_] ++;
         }
         break;
@@ -2687,6 +2727,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackNumUnpack
             BSqrVH_.Resize
             ( buffer[offsets[targetRoot_]], VSqr_.Height(), 
               buffer[offsets[targetRoot_]] );
+            BSqrVH_.Init();
             offsets[targetRoot_] ++;
         }
         break;
@@ -3072,12 +3113,14 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackDataUnpack
             {
                 int size = n*SF.rank;
                 SFD_.Resize(n, SF.rank, n);
+                SFD_.Init();
                 MemCopy
                 ( SFD_.Buffer(), &buffer[offsets[sourceRoot_]], size );
                 offsets[sourceRoot_] += size;
             
                 size = n*m;
                 D_.Resize(m, n, m);
+                D_.Init();
                 MemCopy
                 ( D_.Buffer(), &buffer[offsets[sourceRoot_]], size );
                 offsets[sourceRoot_] += size;
@@ -3086,6 +3129,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackDataUnpack
             {
                 int size = m*SF.rank;
                 SFD_.Resize(m, SF.rank, m);
+                SFD_.Init();
                 MemCopy
                 ( SFD_.Buffer(), &buffer[offsets[targetRoot_]], size );
                 offsets[targetRoot_] += size;
@@ -3104,6 +3148,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackDataUnpack
             VMap_.ResetIterator();
             const Dense<Scalar>& V = *VMap_.CurrentEntry();
             U.Resize(Height(), V.Width(), Height());
+            U.Init();
             int size=U.Height()*U.Width();
             MemCopy
             ( U.Buffer(), &buffer[offsets[targetRoot_]],  size );
@@ -3196,6 +3241,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPostcompute
                         BSqrU_.Set(i,j,BSqrU_.Get(i,j)*BSigma_[j]);
 
                 BL_.Resize( kU, n );
+                BL_.Init();
                 blas::Gemm
                 ( 'N', 'N', kU, n, kU, 
                   Scalar(1), USqr_.LockedBuffer(),  USqr_.LDim(),
@@ -3222,6 +3268,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPostcompute
                 }
 
                 BR_.Resize( kV, BSqrVH_.Height() );
+                BR_.Init();
                 blas::Gemm
                 ( 'N', 'T', kV, BSqrVH_.Height(), kV,
                   Scalar(1), VSqr_.LockedBuffer(),  VSqr_.LDim(),
@@ -3410,6 +3457,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcastsNumUnpack
                 BL_.Resize
                 (Utmp_.Width(), buffer[offsets[level_]],
                  Utmp_.Width());
+                BL_.Init();
                 offsets[level_]++;
             }
             if( Vtmp_.Height()>0 )
@@ -3417,6 +3465,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcastsNumUnpack
                 BR_.Resize
                 (Vtmp_.Width(), buffer[offsets[level_]],
                  Vtmp_.Width());
+                BR_.Init();
                 offsets[level_]++;
             }
         }
@@ -3649,6 +3698,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
             Dense<Scalar> &U = DF.ULocal;
             DF.rank = BL_.Width();
             U.Resize( Utmp_.Height(), BL_.Width() );
+            U.Init();
             blas::Gemm
             ('N', 'N', Utmp_.Height(), BL_.Width(), Utmp_.Width(), 
              Scalar(1), Utmp_.LockedBuffer(), Utmp_.LDim(),
@@ -3657,7 +3707,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
             BL_.Clear();
             Utmp_.Clear();
             if( DF.ULocal.Height()==0 )
+            {
                 DF.ULocal.Resize(LocalHeight(),0);
+                DF.ULocal.Init();
+            }
         }
         if( inSourceTeam_ )
         {                                                      
@@ -3665,6 +3718,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
             Dense<Scalar> &V = DF.VLocal;
             DF.rank = BR_.Width();
             V.Resize( Vtmp_.Height(), BR_.Width() );
+            V.Init();
             blas::Gemm
             ('N', 'N', Vtmp_.Height(), BR_.Width(), Vtmp_.Width(),
              Scalar(1), Vtmp_.LockedBuffer(), Vtmp_.LDim(),
@@ -3673,7 +3727,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
             BR_.Clear();
             Vtmp_.Clear();
             if( DF.VLocal.Height()==0 )
+            {
                 DF.VLocal.Resize(LocalWidth(),0);
+                DF.VLocal.Init();
+            }
         }
         break;
     }
@@ -3694,6 +3751,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
                     Dense<Scalar> &U = SF.D;
                     SF.rank = BL_.Width();
                     U.Resize( Utmp_.Height(), BL_.Width() );
+                    U.Init();
                     blas::Gemm
                     ('N', 'N', Utmp_.Height(), BL_.Width(), Utmp_.Width(),
                      Scalar(1), Utmp_.LockedBuffer(), Utmp_.LDim(),
@@ -3705,6 +3763,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
                     {
                         SF.rank = 0;
                         SF.D.Resize(LH,0);
+                        SF.D.Init();
                     }
                 }
                 if( inSourceTeam_ )
@@ -3712,6 +3771,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
                     Dense<Scalar> &V = SF.D;
                     SF.rank = BR_.Width();
                     V.Resize( Vtmp_.Height(), BR_.Width() );
+                    V.Init();
                     blas::Gemm
                     ('N', 'N', Vtmp_.Height(), BR_.Width(), Vtmp_.Width(),
                      Scalar(1), Vtmp_.LockedBuffer(), Vtmp_.LDim(),
@@ -3723,6 +3783,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
                     {
                         SF.rank = 0;
                         SF.D.Resize(LW,0);
+                        SF.D.Init();
                     }
                 }
             }
@@ -3736,11 +3797,13 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
                     {
                         SF.rank = 0;
                         SF.D.Resize(LH,0);
+                        SF.D.Init();
                     }
                 }
                 if( inSourceTeam_ )
                 {                                                      
                     SF.D.Resize( LW, BSqrVH_.Height() );
+                    SF.D.Init();
                     for( int j=0; j<BSqrVH_.Height(); ++j )
                         for( int i=0; i<LW; ++i )
                             SF.D.Set(i,j,BSqrVH_.Get(j,i)*BSigma_[j]);
@@ -3748,6 +3811,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
                     {
                         SF.rank = 0;
                         SF.D.Resize(LW,0);
+                        SF.D.Init();
                     }
                 }
             
@@ -3790,7 +3854,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
                     if( m == minDim )
                     {
                         SF.D.Resize( m, m, m );
-                        hmat_tools::Scale( Scalar(0), SF.D );
+                        SF.D.Init();
                         for( int i=0; i<m; i++)
                             SF.D.Set(i,i,Scalar(1));
                     }
@@ -3805,7 +3869,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
                     else
                     {
                         SF.D.Resize( n, n, n);
-                        hmat_tools::Scale( Scalar(0), SF.D );
+                        SF.D.Init();
                         for( int i=0; i<n; i++)
                             SF.D.Set(i,i,Scalar(1));
                     }
@@ -3825,6 +3889,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
                       &work[0], work.size(), &realwork[0] );
 
                     SF.D.Resize( m, maxRank );
+                    SF.D.Init();
                     for( int j=0; j<maxRank; j++ )
                         for( int i=0; i<m; i++)
                             SF.D.Set(i,j,D_.Get(i,j)*sigma[j]);
@@ -3837,6 +3902,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
                       &work[0], work.size(), &realwork[0] );
 
                     SF.D.Resize( n, maxRank );
+                    SF.D.Init();
                     for( int j=0; j<maxRank; j++ )
                         for( int i=0; i<n; i++)
                             SF.D.Set(i,j,D_.Get(j,i));
@@ -3867,6 +3933,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
                     LowRank<Scalar> &F = *block_.data.F;
                     Dense<Scalar> &U = F.U;
                     U.Resize( Utmp_.Height(), BL_.Width() );
+                    U.Init();
                     blas::Gemm
                     ('N', 'N', Utmp_.Height(), BL_.Width(), Utmp_.Width(),
                      Scalar(1), Utmp_.LockedBuffer(), Utmp_.LDim(),
@@ -3878,6 +3945,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
                     LowRank<Scalar> &F = *block_.data.F;
                     Dense<Scalar> &V = F.V;
                     V.Resize( Vtmp_.Height(), BR_.Width() );
+                    V.Init();
                     blas::Gemm
                     ('N', 'N', Vtmp_.Height(), BR_.Width(), Vtmp_.Width(),
                      Scalar(1), Vtmp_.LockedBuffer(), Vtmp_.LDim(),
@@ -3889,6 +3957,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
             {
                 hmat_tools::Copy( BSqrU_, F.U );
                 F.V.Resize( LW, BSqrVH_.Height() );
+                F.V.Init();
                 for( int j=0; j<BSqrVH_.Height(); ++j )
                     for( int i=0; i<LW; ++i )
                         F.V.Set(i,j,BSqrVH_.Get(j,i)*BSigma_[j]);
@@ -3916,7 +3985,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
                 {
                     // Make U := I and V := D_^[T/H]
                     F.U.Resize( minDim, minDim );
-                    hmat_tools::Scale( Scalar(0), F.U );
+                    F.U.Init();
                     for( int j=0; j<minDim; ++j )
                         F.U.Set(j,j,Scalar(1));
                     hmat_tools::Transpose( D_, F.V );
@@ -3926,7 +3995,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
                     // Make U := D_ and V := I
                     hmat_tools::Copy( D_, F.U );
                     F.V.Resize( minDim, minDim );
-                    hmat_tools::Scale( Scalar(0), F.V );
+                    F.V.Init();
                     for( int j=0; j<minDim; ++j )
                         F.V.Set(j,j,Scalar(1));
                 }
@@ -3948,12 +4017,14 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
                 // Form U with the truncated left singular vectors scaled
                 // by the corresponding singular values
                 F.U.Resize( m, maxRank );
+                F.U.Init();
                 for( int j=0; j<maxRank; ++j )
                     for( int i=0; i<m; ++i )
                         F.U.Set(i,j,sigma[j]*D_.Get(i,j));
 
                 // Form V with the truncated right singular vectors
                 F.V.Resize( n, maxRank );
+                F.V.Init();
                 for( int j=0; j<maxRank; ++j )
                     for( int i=0; i<n; ++i )
                         F.V.Set(i,j,VH.Get(j,i));

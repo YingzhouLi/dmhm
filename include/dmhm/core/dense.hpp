@@ -82,6 +82,7 @@ public:
     void LockedView( const Dense<Scalar>& A );
     void LockedView
     ( const Dense<Scalar>& A, int i, int j, int height, int width );
+    void Init( );
 };
 
 //----------------------------------------------------------------------------//
@@ -348,7 +349,7 @@ Dense<Scalar>::Erase( int colfirst, int collast, int rowfirst, int rowlast )
 template<typename Scalar>
 inline bool
 Dense<Scalar>::IsEmpty() const
-{ return height_==0 && width_==0; }
+{ return height_==0 || width_==0; }
 
 template<typename Scalar>
 inline void
@@ -557,6 +558,18 @@ Dense<Scalar>::LockedView
     lockedView_ = true;
     lockedBuffer_ = A.LockedBuffer(i,j);
     type_ = A.Type();
+}
+
+template<typename Scalar>
+inline void
+Dense<Scalar>::Init()
+{
+#ifndef RELEASE
+    CallStackEntry entry("Dense::Init");
+    if( ldim_ < 0 || width_ < 0 )
+        throw std::logic_error("Invalid dense matrix");
+#endif
+    std::memset( &memory_[0], 0, ldim_*width_*sizeof(Scalar) );        
 }
 
 } // namespace dmhm

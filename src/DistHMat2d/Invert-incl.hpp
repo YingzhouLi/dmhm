@@ -43,7 +43,7 @@ DistHMat2d<Scalar>::SchulzInvert
         {
             mpi::Comm team = teams_->Team(0);
             const int teamRank = mpi::CommRank( team );
-            if( teamRank ==0 )
+            if( teamRank == 0 )
                 std::cerr << "Iteration: " << k << std::endl;
         }
 #endif
