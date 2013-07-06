@@ -43,7 +43,7 @@ DistHMat3d<Scalar>::SchulzInvert
         {
             mpi::Comm team = teams_->Team(0);
             const int teamRank = mpi::CommRank( team );
-            if( teamRank ==0 )
+            if( teamRank == 0 )
                 std::cerr << "Iteration: " << k << std::endl;
         }
 #endif
@@ -51,7 +51,6 @@ DistHMat3d<Scalar>::SchulzInvert
         DistHMat3d<Scalar> Z;
         X.Multiply( Scalar(-1), *this, Z, 2 );
         Z.AddConstantToDiagonal( Scalar(2) );
-
         // Form X_k+1 := Z X_k = (2I - X_k A) X_k
         DistHMat3d<Scalar> XCopy;
         XCopy.CopyFrom( X );

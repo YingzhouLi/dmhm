@@ -60,7 +60,9 @@ DistHMat3d<Scalar>::MultiplyHMatMainSetUp
                 DistLowRank& DF = *C.block_.data.DF;
                 DF.rank = 0;
                 DF.ULocal.Resize( C.LocalHeight(), 0 );
+                DF.ULocal.Init();
                 DF.VLocal.Resize( C.LocalWidth(), 0 );
+                DF.VLocal.Init();
             }
             else
             {
@@ -80,7 +82,9 @@ DistHMat3d<Scalar>::MultiplyHMatMainSetUp
                     C.block_.data.F = new LowRank<Scalar>;
                     LowRank<Scalar>& F = *C.block_.data.F;
                     F.U.Resize( C.Height(), 0 );
+                    F.U.Init();
                     F.V.Resize( C.Width(), 0 );
+                    F.V.Init();
                 }
                 else
                 {
@@ -99,9 +103,15 @@ DistHMat3d<Scalar>::MultiplyHMatMainSetUp
                     SplitLowRank& SF = *C.block_.data.SF;
                     SF.rank = 0;
                     if( C.inTargetTeam_ )
+                    {
                         SF.D.Resize( C.Height(), 0 );
+                        SF.D.Init();
+                    }
                     else
+                    {
                         SF.D.Resize( C.Width(), 0 );
+                        SF.D.Init();
+                    }
                 }
                 else
                 {
@@ -188,7 +198,8 @@ DistHMat3d<Scalar>::MultiplyHMatMainSetUp
             {
                 C.block_.type = DENSE;
                 C.block_.data.D = new Dense<Scalar>( A.Height(), B.Width() );
-                hmat_tools::Scale( Scalar(0), *C.block_.data.D );
+                Dense<Scalar>& D = *C.block_.data.D;
+                D.Init();
             }
             else
                 C.block_.type = DENSE_GHOST;
@@ -202,7 +213,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainSetUp
                 if( C.inSourceTeam_ )
                 {
                     C.block_.data.SD->D.Resize( A.Height(), B.Width() );
-                    hmat_tools::Scale( Scalar(0), C.block_.data.SD->D );
+                    C.block_.data.SD->D.Init();
                 }
             }
             else
@@ -300,10 +311,11 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
                 case NODE_GHOST:
                 {
                     A.rowOmega_.Resize( A.LocalHeight(), sampleRank );
+                    A.rowOmega_.Init();
                     ParallelGaussianRandomVectors( A.rowOmega_ );
 
                     A.rowT_.Resize( A.LocalWidth(), sampleRank );
-                    hmat_tools::Scale( Scalar(0), A.rowT_ );
+                    A.rowT_.Init();
 
                     A.AdjointMultiplyDenseInitialize
                     ( A.rowContext_, sampleRank );
@@ -340,10 +352,11 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
                 case NODE:
                 {
                     B.colOmega_.Resize( B.LocalWidth(), sampleRank ); 
+                    B.colOmega_.Init();
                     ParallelGaussianRandomVectors( B.colOmega_ );
 
                     B.colT_.Resize( B.LocalHeight(), sampleRank );
-                    hmat_tools::Scale( Scalar(0), B.colT_ );
+                    B.colT_.Init();
 
                     B.MultiplyDenseInitialize( B.colContext_, sampleRank );
                     B.MultiplyDensePrecompute
@@ -383,7 +396,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
             C.mainContextMap_.Set( key, new MultiplyDenseContext );
             MultiplyDenseContext& context = C.mainContextMap_.Get(key);
 
-            hmat_tools::Scale( Scalar(0), C.UMap_.Get(key) );
+            C.UMap_.Get(key).Init();
             A.MultiplyDenseInitialize( context, DFB.rank );
             A.MultiplyDensePrecompute
             ( context, alpha, DFB.ULocal, C.UMap_.Get(key) );
@@ -515,7 +528,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
             C.mainContextMap_.Set( key, new MultiplyDenseContext );
             MultiplyDenseContext& context = C.mainContextMap_.Get( key );
 
-            hmat_tools::Scale( Scalar(0), C.UMap_.Get( key ) );
+            C.UMap_.Get(key).Init();
             A.MultiplyDenseInitialize( context, SFB.rank );
             A.MultiplyDensePrecompute
             ( context, alpha, SFB.D, C.UMap_.Get( key ) );
@@ -530,7 +543,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
             C.mainContextMap_.Set( key, new MultiplyDenseContext );
             MultiplyDenseContext& context = C.mainContextMap_.Get( key );
 
-            hmat_tools::Scale( Scalar(0), C.UMap_.Get( key ) );
+            C.UMap_.Get(key).Init();
             A.MultiplyDenseInitialize( context, FB.Rank() );
             A.MultiplyDensePrecompute
             ( context, alpha, FB.U, C.UMap_.Get( key ) );
@@ -564,7 +577,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
         {
             // Start H/F += F H
             C.VMap_.Set( key, new Dense<Scalar>( C.LocalWidth(), DFA.rank ) );
-            hmat_tools::Scale( Scalar(0), C.VMap_.Get( key ) );
+            C.VMap_.Get( key ).Init();
             C.mainContextMap_.Set( key, new MultiplyDenseContext );
             MultiplyDenseContext& context = C.mainContextMap_.Get( key );
             B.TransposeMultiplyDenseInitialize( context, DFA.rank );
@@ -583,6 +596,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
                 {
                     C.ZMap_.Set( key, new Dense<Scalar>( DFA.rank, DFB.rank ) );
                     Dense<Scalar>& ZC = C.ZMap_.Get( key );
+                    ZC.Init();
                     const char option = 'T';
                     blas::Gemm
                     ( option, 'N', DFA.rank, DFB.rank, kLocal,
@@ -673,7 +687,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
             C.VMap_.Set( key, new Dense<Scalar>( B.Width(), SFA.rank ) );
             Dense<Scalar>& CV = C.VMap_.Get( key );
                 
-            hmat_tools::Scale( Scalar(0), CV );
+            CV.Init();
             C.mainContextMap_.Set( key, new MultiplyDenseContext );
             MultiplyDenseContext& context = C.mainContextMap_.Get( key );
             B.TransposeMultiplyDenseInitialize( context, SFA.rank );
@@ -691,6 +705,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
                 {
                     C.ZMap_.Set( key, new Dense<Scalar>( SFA.rank, SFB.rank ) );
                     Dense<Scalar>& ZC = C.ZMap_.Get( key );
+                    ZC.Init();
                     const char option = 'T';
                     blas::Gemm
                     ( option, 'N', SFA.rank, SFB.rank, k,
@@ -710,6 +725,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
             {
                 C.ZMap_.Set( key, new Dense<Scalar>( SFA.rank, FB.Rank() ) );
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
+                ZC.Init();
                 const char option = 'T';
                 blas::Gemm
                 ( option, 'N', SFA.rank, FB.Rank(), k,
@@ -727,6 +743,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
             C.VMap_.Set( key, new Dense<Scalar>( n, SFA.rank ) );
             const Dense<Scalar>& DB = *B.block_.data.D;
             Dense<Scalar>& VC = C.VMap_.Get( key );
+            VC.Init();
             const char option = 'T';
             blas::Gemm
             ( option, 'N', n, SFA.rank, k,
@@ -810,7 +827,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
         {
             // We must own all of A, B, and C
             C.VMap_.Set( key, new Dense<Scalar>( B.Width(), FA.Rank() ) );
-            hmat_tools::Scale( Scalar(0), C.VMap_.Get( key ) );
+            C.VMap_.Get( key ).Init();
             C.mainContextMap_.Set( key, new MultiplyDenseContext );
             MultiplyDenseContext& context = C.mainContextMap_.Get( key );
             B.TransposeMultiplyDenseInitialize( context, FA.Rank() );
@@ -827,6 +844,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
             {
                 C.ZMap_.Set( key, new Dense<Scalar>( FA.Rank(), SFB.rank ) );
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
+                ZC.Init();
                 const char option = 'T';
                 blas::Gemm
                 ( option, 'N', FA.Rank(), SFB.rank, k,
@@ -845,6 +863,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
             {
                 C.ZMap_.Set( key, new Dense<Scalar>( FA.Rank(), FB.Rank() ) );
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
+                ZC.Init();
                 const char option = 'T';
                 blas::Gemm
                 ( option, 'N', FA.Rank(), FB.Rank(), k,
@@ -866,6 +885,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
             C.VMap_.Set( key, new Dense<Scalar>( n, FA.Rank() ) );
             const Dense<Scalar>& DB = *B.block_.data.D;
             Dense<Scalar>& VC = C.VMap_.Get( key );
+            VC.Init();
             const char option = 'T';
             blas::Gemm
             ( option, 'N', n, FA.Rank(), k,
@@ -937,6 +957,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
                 {
                     C.ZMap_.Set( key, new Dense<Scalar>( m, SFB.rank ) );
                     Dense<Scalar>& ZC = C.ZMap_.Get( key );
+                    ZC.Init();
                     blas::Gemm
                     ( 'N', 'N', m, SFB.rank, k,
                       alpha,     SDA.D.LockedBuffer(), SDA.D.LDim(),
@@ -955,6 +976,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
             {
                 C.ZMap_.Set( key, new Dense<Scalar>( m, FB.Rank() ) );
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
+                ZC.Init();
                 blas::Gemm
                 ( 'N', 'N', m, FB.Rank(), k,
                   alpha,     SDA.D.LockedBuffer(), SDA.D.LDim(),
@@ -1031,6 +1053,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
             const int k = A.Width();
             C.UMap_.Set( key, new Dense<Scalar>( m, SFB.rank ) );
             Dense<Scalar>& UC = C.UMap_.Get( key );
+            UC.Init();
             blas::Gemm
             ( 'N', 'N', m, SFB.rank, k,
               alpha,     DA.LockedBuffer(),    DA.LDim(),
@@ -4296,7 +4319,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
             const DistLowRankGhost& DFGB = *B.block_.data.DFG; 
             Dense<Scalar> dummy( 0, DFGB.rank );
             C.UMap_.Set( key, new Dense<Scalar>(LocalHeight(), DFGB.rank ) );
-            hmat_tools::Scale( Scalar(0), C.UMap_.Get( key ) );
+            C.UMap_.Get( key ).Init();
             A.MultiplyDensePostcompute
             ( C.mainContextMap_.Get( key ), alpha, dummy, C.UMap_.Get( key ) );
             C.mainContextMap_.Get( key ).Clear();
@@ -4362,7 +4385,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
             if( C.inTargetTeam_ )
             {
                 C.UMap_.Set( key, new Dense<Scalar>( C.Height(), SFB.rank ) );
-                hmat_tools::Scale( Scalar(0), C.UMap_.Get( key ) );
+                C.UMap_.Get( key ).Init();
                 Dense<Scalar> dummy( 0, SFB.rank );
                 A.MultiplyDensePostcompute
                 ( C.mainContextMap_.Get( key ), 
@@ -4380,7 +4403,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
             // We are the left process
             const SplitLowRankGhost& SFGB = *B.block_.data.SFG;
             C.UMap_.Set( key, new Dense<Scalar>( C.Height(), SFGB.rank ) );
-            hmat_tools::Scale( Scalar(0), C.UMap_.Get( key ) );
+            C.UMap_.Get( key ).Init();
             Dense<Scalar> dummy( 0, SFGB.rank );
             A.MultiplyDensePostcompute
             ( C.mainContextMap_.Get( key ), alpha, dummy, C.UMap_.Get( key ) );
@@ -4401,7 +4424,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
             // We are the left process
             const LowRankGhost& FGB = *B.block_.data.FG;
             C.UMap_.Set( key, new Dense<Scalar>( C.Height(), FGB.rank ) );
-            hmat_tools::Scale( Scalar(0), C.UMap_.Get( key ) );
+            C.UMap_.Get( key ).Init();
             Dense<Scalar> dummy( 0, FGB.rank );
             A.MultiplyDensePostcompute
             ( C.mainContextMap_.Get( key ), alpha, dummy, C.UMap_.Get( key ) );
@@ -4517,6 +4540,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
             if( A.inTargetTeam_ && DFA.rank != 0 && DFB.rank != 0 )
             {
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
+                UC.Init();
                 blas::Gemm
                 ( 'N', 'N', A.LocalHeight(), DFB.rank, DFA.rank,
                   alpha,     DFA.ULocal.LockedBuffer(), DFA.ULocal.LDim(),
@@ -4526,7 +4550,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
                 C.ZMap_.Erase( key );
             }
             else
-                hmat_tools::Scale( Scalar(0), UC );
+                UC.Init();
             hmat_tools::Copy( DFB.VLocal, VC );
             break;
         }
@@ -4539,6 +4563,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
             if( DFA.rank != 0 && DFGB.rank != 0 )
             {
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
+                UC.Init();
                 blas::Gemm
                 ( 'N', 'N', A.LocalHeight(), DFGB.rank, DFA.rank,
                   alpha,     DFA.ULocal.LockedBuffer(), DFA.ULocal.LDim(),
@@ -4548,7 +4573,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
                 C.ZMap_.Erase( key );
             }
             else
-                hmat_tools::Scale( Scalar(0), UC );
+                UC.Init();
             break;
         }
         default:
@@ -4576,7 +4601,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
             MultiplyDenseContext& context = C.mainContextMap_.Get( key );
             Dense<Scalar> dummy( 0, DFGA.rank );
             C.VMap_.Set( key, new Dense<Scalar>(C.LocalWidth(),DFGA.rank) );
-            hmat_tools::Scale( Scalar(0), C.VMap_.Get( key ) );
+            C.VMap_.Get( key ).Init();
             B.TransposeMultiplyDensePostcompute
             ( context, alpha, dummy, C.VMap_.Get( key ) );
             context.Clear();
@@ -4620,7 +4645,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
                 hmat_tools::Copy( SFA.D, C.UMap_.Get( key ) );
                 Dense<Scalar> dummy( 0, SFA.rank );
                 C.VMap_.Set( key, new Dense<Scalar>(C.LocalWidth(),SFA.rank) );
-                hmat_tools::Scale( Scalar(0), C.VMap_.Get( key ) );
+                C.VMap_.Get( key ).Init();
                 B.TransposeMultiplyDensePostcompute
                 ( context, alpha, dummy, C.VMap_.Get( key ) );
                 context.Clear();
@@ -4652,6 +4677,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
                 if( SFA.rank != 0 && SFB.rank != 0 )
                 {
                     Dense<Scalar>& ZC = C.ZMap_.Get( key );
+                    UC.Init();
                     blas::Gemm
                     ( 'N', 'N', A.Height(), SFB.rank, SFA.rank,
                       alpha,     SFA.D.LockedBuffer(), SFA.D.LDim(),
@@ -4661,7 +4687,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
                     C.ZMap_.Erase( key );
                 }
                 else
-                    hmat_tools::Scale( Scalar(0), UC );
+                    UC.Init();
 
                 C.VMap_.Set( key, new Dense<Scalar> );
                 hmat_tools::Copy( SFB.D, C.VMap_.Get( key ) );
@@ -4676,6 +4702,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
             if( SFA.rank != 0 && SFGB.rank != 0 )
             {
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
+                UC.Init();
                 blas::Gemm
                 ( 'N', 'N', A.Height(), SFGB.rank, SFA.rank,
                   alpha,     SFA.D.LockedBuffer(), SFA.D.LDim(),
@@ -4685,7 +4712,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
                 C.ZMap_.Erase( key );
             }
             else
-                hmat_tools::Scale( Scalar(0), UC );
+                UC.Init();
             break;
         }
         case LOW_RANK:
@@ -4705,6 +4732,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
             if( SFA.rank != 0 && FGB.rank != 0 )
             {
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
+                UC.Init();
                 blas::Gemm
                 ( 'N', 'N', A.Height(), FGB.rank, SFA.rank,
                   alpha,     SFA.D.LockedBuffer(), SFA.D.LDim(),
@@ -4714,7 +4742,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
                 C.ZMap_.Erase( key );
             }
             else
-                hmat_tools::Scale( Scalar(0), UC );
+                UC.Init();
             break;
         }
         case SPLIT_DENSE:
@@ -4730,6 +4758,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
                 if( SFA.rank != 0 && B.Height() != 0 )
                 {
                     Dense<Scalar>& ZC = C.ZMap_.Get( key );
+                    VC.Init();
                     blas::Gemm
                     ( 'T', 'N', C.Width(), SFA.rank, B.Height(),
                       alpha,     SDB.D.LockedBuffer(), SDB.D.LDim(),
@@ -4739,7 +4768,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
                     C.ZMap_.Erase( key );
                 }
                 else
-                    hmat_tools::Scale( Scalar(0), VC );
+                    VC.Init();
             }
             break;
         case SPLIT_DENSE_GHOST:
@@ -4781,7 +4810,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
             MultiplyDenseContext& context = C.mainContextMap_.Get( key );
             Dense<Scalar> dummy( 0, SFGA.rank );
             C.VMap_.Set( key, new Dense<Scalar>(C.LocalWidth(),SFGA.rank) );
-            hmat_tools::Scale( Scalar(0), C.VMap_.Get( key ) );
+            C.VMap_.Get( key ).Init();
             B.TransposeMultiplyDensePostcompute
             ( context, alpha, dummy, C.VMap_.Get( key ) );
             context.Clear();
@@ -4803,6 +4832,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
             if( SFGA.rank != 0 && B.Height() != 0 )
             {
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
+                VC.Init();
                 blas::Gemm
                 ( 'T', 'N', C.Width(), SFGA.rank, B.Height(),
                   alpha,     SDB.D.LockedBuffer(), SDB.D.LDim(),
@@ -4812,7 +4842,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
                 C.ZMap_.Erase( key );
             }
             else
-                hmat_tools::Scale( Scalar(0), VC );
+                VC.Init();
             break;
         }
         default:
@@ -4856,6 +4886,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
             if( SFB.rank != 0 && k != 0 )
             {
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
+                UC.Init();
                 blas::Gemm
                 ( 'N', 'N', m, SFB.rank, k,
                   alpha,     FA.U.LockedBuffer(), FA.U.LDim(),
@@ -4863,7 +4894,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
                   Scalar(0), UC.Buffer(),         UC.LDim() );
             }
             else
-                hmat_tools::Scale( Scalar(0), UC );
+                UC.Init();
             break;
         }
         case LOW_RANK:
@@ -4880,6 +4911,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
             if( FB.Rank() != 0 && k != 0 )
             {
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
+                UC.Init();
                 blas::Gemm
                 ( 'N', 'N', m, FB.Rank(), k,
                   alpha,     FA.U.LockedBuffer(), FA.U.LDim(),
@@ -4887,7 +4919,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
                   Scalar(0), UC.Buffer(),         UC.LDim() );
             }
             else
-                hmat_tools::Scale( Scalar(0), UC );
+                UC.Init();
             hmat_tools::Copy( FB.V, VC );
             break;
         }
@@ -4931,7 +4963,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
             MultiplyDenseContext& context = C.mainContextMap_.Get( key );
             Dense<Scalar> dummy( 0, FGA.rank );
             C.VMap_.Set( key, new Dense<Scalar>(C.LocalWidth(),FGA.rank) );
-            hmat_tools::Scale( Scalar(0), C.VMap_.Get( key ) );
+            C.VMap_.Get( key ).Init();
             B.TransposeMultiplyDensePostcompute
             ( context, alpha, dummy, C.VMap_.Get( key ) );
             context.Clear();
@@ -4953,6 +4985,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
             if( FGA.rank != 0 && B.Height() != 0 )
             {
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
+                VC.Init();
                 blas::Gemm
                 ( 'T', 'N', C.Width(), FGA.rank, B.Height(),
                   alpha,     SDB.D.LockedBuffer(), SDB.D.LDim(),
@@ -4962,7 +4995,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
                 C.ZMap_.Erase( key );
             }
             else
-                hmat_tools::Scale( Scalar(0), VC );
+                VC.Init();
             break;
         }
         default:
@@ -4997,7 +5030,10 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
                 if( A.Height() != 0 && SFB.rank != 0 )
                     hmat_tools::Copy( C.ZMap_.Get( key ), UC );
                 else
-                    UC.Resize( A.Height(), SFB.rank ); 
+                {
+                    UC.Resize( A.Height(), SFB.rank );
+                    UC.Init();
+                }
 
                 C.VMap_.Set( key, new Dense<Scalar> );
                 hmat_tools::Copy( SFB.D, C.VMap_.Get( key ) );
@@ -5012,7 +5048,10 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
             if( A.Height() != 0 && SFGB.rank != 0 )
                 hmat_tools::Copy( C.ZMap_.Get( key ), UC );
             else
+            {
                 UC.Resize( A.Height(), SFGB.rank );
+                UC.Init();
+            }
             break;
         }
         case LOW_RANK:
@@ -5034,7 +5073,10 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
             if( A.Height() != 0 && FGB.rank != 0 )
                 hmat_tools::Copy( C.ZMap_.Get( key ), UC );
             else
+            {
                 UC.Resize( A.Height(), FGB.rank );
+                UC.Init();
+            }
             break;
         }
         case SPLIT_DENSE:
@@ -5066,6 +5108,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
                         if( m != 0 && k != 0 )
                         {
                             Dense<Scalar>& ZC = C.ZMap_.Get( key );
+                            C.D_.Init();
                             blas::Gemm
                             ( 'N', 'N', m, n, k,
                               alpha,     ZC.LockedBuffer(),    ZC.LDim(),
@@ -5075,7 +5118,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
                             C.ZMap_.Erase( key );
                         }
                         else
-                            hmat_tools::Scale( Scalar(0), C.D_ );
+                            C.D_.Init();
                         C.storedDenseUpdate_ = true;
                     }
                 }
@@ -5157,6 +5200,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
                     if( m != 0 && k != 0 )
                     {
                         Dense<Scalar>& ZC = C.ZMap_.Get( key );
+                        C.D_.Init();
                         blas::Gemm
                         ( 'N', 'N', m, n, k,
                           alpha,     ZC.LockedBuffer(),    ZC.LDim(),
@@ -5166,7 +5210,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
                         C.ZMap_.Erase( key );
                     }
                     else
-                        hmat_tools::Scale( Scalar(0), C.D_ );
+                        C.D_.Init();
                     C.storedDenseUpdate_ = true;
                 }
             }
@@ -5241,6 +5285,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
                     if( m != 0 && k != 0 )
                     {
                         Dense<Scalar>& ZC = C.ZMap_.Get( key );
+                        C.D_.Init();
                         blas::Gemm
                         ( 'N', 'N', m, n, k,
                           alpha,     ZC.LockedBuffer(),    ZC.LDim(),
@@ -5250,7 +5295,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
                         C.ZMap_.Erase( key );
                     }
                     else
-                        hmat_tools::Scale( Scalar(0), C.D_ );
+                        C.D_.Init();
                     C.storedDenseUpdate_ = true;
                 }
             }

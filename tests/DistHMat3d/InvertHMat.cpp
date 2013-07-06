@@ -176,7 +176,7 @@ main( int argc, char* argv[] )
         }
         mpi::Barrier( mpi::COMM_WORLD );
         double invertStartTime = mpi::Time();
-        ASerial.DirectInvert();
+        //ASerial.DirectInvert();
         mpi::Barrier( mpi::COMM_WORLD );
         double invertStopTime = mpi::Time();
         if( commRank == 0 )

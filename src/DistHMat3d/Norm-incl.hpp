@@ -26,7 +26,7 @@ DistHMat3d<Scalar>::ParallelEstimateTwoNorm( Real theta, Real confidence )
 #ifndef RELEASE
     {
         const int teamRank = mpi::CommRank( team );
-        if( teamRank ==0 )
+        if( teamRank == 0 )
         {
             std::cerr << "Going to use A^" << k  
                       << " in order to estimate "
@@ -47,6 +47,7 @@ DistHMat3d<Scalar>::ParallelEstimateTwoNorm( Real theta, Real confidence )
         hmat_tools::Scale( ((Scalar)1)/twoNorm, x );
     }
 
+
     Real estimate = theta; 
     const Real root = ((Real)1) / ((Real)k);
     Vector<Scalar> y;
@@ -64,7 +65,7 @@ DistHMat3d<Scalar>::ParallelEstimateTwoNorm( Real theta, Real confidence )
 #ifndef RELEASE
     {
         const int teamRank = mpi::CommRank( team );
-        if( teamRank ==0 )
+        if( teamRank == 0 )
             std::cerr << "Estimated ||A||_2 as " << estimate << std::endl;
     }
 #endif

@@ -43,7 +43,7 @@ DistHMat3d<Scalar>::SVDTrunc
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::EVDTrunc");
 #endif
-    const int m = U.Height();
+    const int m = U.Width();
     const int n = VH.Height();
     const int k = s.size();
     if( k == 0 )
@@ -57,8 +57,8 @@ DistHMat3d<Scalar>::SVDTrunc
             break;
     if( cutoff < 0 )
         cutoff = 0;
-    s.resize( cutoff+1 );
-    U.Resize( m, cutoff+1 );
+    s.erase( s.begin()+cutoff+1, s.begin()+k );
+    U.EraseCols( cutoff+1, m-1 );
     VH.EraseRows( cutoff+1, n-1 );
 }
 

@@ -34,11 +34,13 @@ DistHMat3d<Scalar>::Scale( Scalar alpha )
             {
                 Dense<Scalar>& ULocal = block_.data.DF->ULocal;
                 ULocal.Resize( ULocal.Height(), 0, ULocal.Height() );
+                ULocal.Init();
             }
             if( inSourceTeam_ )
             {
                 Dense<Scalar>& VLocal = block_.data.DF->VLocal;
                 VLocal.Resize( VLocal.Height(), 0, VLocal.Height() );
+                VLocal.Init();
             }
         }
         else if( inTargetTeam_ )
@@ -50,6 +52,7 @@ DistHMat3d<Scalar>::Scale( Scalar alpha )
             block_.data.SF->rank = 0;
             Dense<Scalar>& D = block_.data.SF->D;
             D.Resize( D.Height(), 0, D.Height() );
+            D.Init();
         }
         else if( inTargetTeam_ )
             hmat_tools::Scale( alpha, block_.data.SF->D );

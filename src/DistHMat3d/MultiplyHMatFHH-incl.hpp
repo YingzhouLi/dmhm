@@ -58,7 +58,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHPrecompute
                     C.colXMap_.Set
                     ( key, new Dense<Scalar>( A.LocalHeight(), sampleRank ) );
                     Dense<Scalar>& colX = C.colXMap_.Get( key );
-                    hmat_tools::Scale( Scalar(0), colX );
+                    colX.Init();
                     A.MultiplyDenseInitialize( colContext, sampleRank );
                     A.MultiplyDensePrecompute
                     ( colContext, alpha, B.colT_, colX );
@@ -70,7 +70,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHPrecompute
                     C.rowXMap_.Set
                     ( key, new Dense<Scalar>( B.LocalWidth(), sampleRank ) );
                     Dense<Scalar>& rowX = C.rowXMap_.Get( key );
-                    hmat_tools::Scale( Scalar(0), rowX );
+                    rowX.Init();
                     B.AdjointMultiplyDenseInitialize( rowContext, sampleRank );
                     B.AdjointMultiplyDensePrecompute
                     ( rowContext, Conj(alpha), A.rowT_, rowX );
@@ -1108,7 +1108,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalize
                 // Form the identity matrix in the top r x r submatrix
                 // of a zeros (sLast+tLast) x r matrix.
                 Z.Resize( sLast+tLast, r );
-                hmat_tools::Scale( Scalar(0), Z );
+                Z.Init();
                 for( int j=0; j<std::min(sLast+tLast,r); ++j )
                     Z.Set(j,j,Scalar(1) );
 
@@ -1125,6 +1125,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalize
                     const int sCurr = halfHeightsPiece[commStage*2];
                     const int tCurr = halfHeightsPiece[commStage*2+1];
                     Z.Resize( sCurr+tCurr, r );
+                    Z.Init();
 
                     const bool rootOfPrevStage = 
                         !(teamRank & (1u<<(commStage+1)));
@@ -1158,7 +1159,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalize
                 const int m = X.Height();
                 Dense<Scalar> Y;
                 hmat_tools::Copy( X, Y );
-                hmat_tools::Scale( Scalar(0), X );
+                X.Init();
                 const bool rootOfPrevStage = !(teamRank & 0x1);
                 if( rootOfPrevStage )
                 {
@@ -1187,7 +1188,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalize
                 const int m = X.Height();
                 Dense<Scalar> Y; 
                 hmat_tools::Copy( X, Y );
-                hmat_tools::Scale( Scalar(0), X );
+                X.Init();
                 for( int j=0; j<std::min(m,r); ++j )
                     X.Set(j,j,Scalar(1));
                 // Backtransform the last stage
@@ -1630,6 +1631,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalizeFormLowRank
                         Dense<Scalar> Q1;
                         hmat_tools::Copy( X, Q1 );
                         X.Resize( X.Height(), rank );
+                        X.Init();
 
                         // Form 
                         // X := Q1 pinv(Q1' Omega2)' (Omega2' alpha A B Omega1)
@@ -1659,6 +1661,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalizeFormLowRank
                         Dense<Scalar> Q2;
                         hmat_tools::Copy( X, Q2 );
                         X.Resize( X.Height(), rank );
+                        X.Init();
 
                         blas::Gemm
                         ( 'N', 'N', Q2.Height(), rank, Q2.Width(),

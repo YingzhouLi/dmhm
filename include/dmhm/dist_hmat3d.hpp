@@ -1110,9 +1110,9 @@ private:
       int startLevel, int endLevel,
       int startUpdate, int endUpdate, int update ) const;
 
-    void EVDTrunc( Dense<Scalar>& Q, std::vector<Real>& w, Real error );
+    void EVDTrunc( Dense<Scalar>& Q, std::vector<Real>& w, Real epsilon );
     void SVDTrunc
-    ( Dense<Scalar>& U, std::vector<Real>& w, Dense<Scalar>& VH, Real error );
+    ( Dense<Scalar>& U, std::vector<Real>& w, Dense<Scalar>& VH, Real epsilon );
 
     void MultiplyHMatCompress( int startLevel, int endLevel );
     void MultiplyHMatCompressLowRankCountAndResize( int rank );
@@ -1144,7 +1144,7 @@ private:
       int startLevel, int endLevel ) const;
     void MultiplyHMatCompressFPassMatrixPack
     ( std::vector<Scalar>& buffer, std::map<int,int>& offsets,
-      int startLevel, int endLevel );
+      int startLevel, int endLevel ) const;
     void MultiplyHMatCompressFPassMatrixUnpack
     ( const std::vector<Scalar>& buffer, std::map<int,int>& offsets,
       int startLevel, int endLevel );
@@ -1160,7 +1160,7 @@ private:
     ( const std::vector<Real>& buffer, std::map<int,int>& offsets,
       int startLevel, int endLevel );
     void MultiplyHMatCompressFMidcompute
-    ( Real error, int startLevel, int endLevel );
+    ( Real epsilon, int startLevel, int endLevel );
     void MultiplyHMatCompressFPassbackNum
     ( int startLevel, int endLevel );
     void MultiplyHMatCompressFPassbackNumCount
@@ -1184,7 +1184,7 @@ private:
     ( const std::vector<Scalar>& buffer, std::map<int,int>& offsets,
       int startLevel, int endLevel );
     void MultiplyHMatCompressFPostcompute
-    ( Real error, int startLevel, int endLevel );
+    ( Real epsilon, int startLevel, int endLevel );
     void MultiplyHMatCompressFBroadcastsNum
     ( int startLevel, int endLevel );
     void MultiplyHMatCompressFBroadcastsNumCount
@@ -1315,11 +1315,8 @@ private:
     // rowSqrEigMap_ stores the eigenvalues of rowSqrMap_
     MemoryMap<int,std::vector<Real> > colSqrEigMap_, rowSqrEigMap_;
     // Tmp space for F compression
-    Dense<Scalar> Utmp_, Vtmp_;
     Dense<Scalar> USqr_, VSqr_;
     std::vector<Real> USqrEig_, VSqrEig_;
-    Dense<Scalar> BSqr_;
-    std::vector<Real> BSqrEig_;
     Dense<Scalar> BSqrU_, BSqrVH_;
     std::vector<Real> BSigma_;
     Dense<Scalar> BL_, BR_;

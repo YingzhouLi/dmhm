@@ -1304,11 +1304,8 @@ private:
     // rowSqrEigMap_ stores the eigenvalues of rowSqrMap_
     MemoryMap<int,std::vector<Real> > colSqrEigMap_, rowSqrEigMap_;
     // Tmp space for F compression
-    Dense<Scalar> Utmp_, Vtmp_;
     Dense<Scalar> USqr_, VSqr_;
     std::vector<Real> USqrEig_, VSqrEig_;
-    Dense<Scalar> BSqr_;
-    std::vector<Real> BSqrEig_;
     Dense<Scalar> BSqrU_, BSqrVH_;
     std::vector<Real> BSigma_;
     Dense<Scalar> BL_, BR_;

@@ -1391,6 +1391,7 @@ DistHMat3d<Scalar>::UnpackRecursion( const byte*& head )
             const int localWidth = LocalWidth();
             DF.VLocal.SetType( GENERAL );
             DF.VLocal.Resize( localWidth, DF.rank );
+            DF.VLocal.Init();
             for( int j=0; j<DF.rank; ++j )
                 Read( DF.VLocal.Buffer(0,j), head, localWidth );
         }
@@ -1400,6 +1401,7 @@ DistHMat3d<Scalar>::UnpackRecursion( const byte*& head )
             const int localHeight = LocalHeight();
             DF.ULocal.SetType( GENERAL );
             DF.ULocal.Resize( localHeight, DF.rank );
+            DF.ULocal.Init();
             for( int j=0; j<DF.rank; ++j )
                 Read( DF.ULocal.Buffer(0,j), head, localHeight );
         }
@@ -1417,6 +1419,7 @@ DistHMat3d<Scalar>::UnpackRecursion( const byte*& head )
         {
             // Read in V
             SF.D.Resize( n, SF.rank );
+            SF.D.Init();
             for( int j=0; j<SF.rank; ++j )
                 Read( SF.D.Buffer(0,j), head, n );
         }
@@ -1424,6 +1427,7 @@ DistHMat3d<Scalar>::UnpackRecursion( const byte*& head )
         {
             // Read in U
             SF.D.Resize( m, SF.rank );
+            SF.D.Init();
             for( int j=0; j<SF.rank; ++j )
                 Read( SF.D.Buffer(0,j), head, m );
         }
@@ -1439,6 +1443,7 @@ DistHMat3d<Scalar>::UnpackRecursion( const byte*& head )
             const MatrixType type = Read<MatrixType>( head );
             SD.D.SetType( type );
             SD.D.Resize( m, n );
+            SD.D.Init();
             if( type == GENERAL )
                 for( int j=0; j<n; ++j )
                     Read( SD.D.Buffer(0,j), head, m );
@@ -1457,12 +1462,16 @@ DistHMat3d<Scalar>::UnpackRecursion( const byte*& head )
         const int r = Read<int>( head );
 
         // Read in U
-        F.U.SetType( GENERAL ); F.U.Resize( m, r );
+        F.U.SetType( GENERAL ); 
+        F.U.Resize( m, r );
+        F.U.Init();
         for( int j=0; j<r; ++j )
             Read( F.U.Buffer(0,j), head, m );
 
         // Read in V
-        F.V.SetType( GENERAL ); F.V.Resize( n, r );
+        F.V.SetType( GENERAL ); 
+        F.V.Resize( n, r );
+        F.V.Init();
         for( int j=0; j<r; ++j )
             Read( F.V.Buffer(0,j), head, n );
         break;
@@ -1476,6 +1485,7 @@ DistHMat3d<Scalar>::UnpackRecursion( const byte*& head )
 
         D.SetType( type );
         D.Resize( m, n );
+        D.Init();
         if( type == GENERAL )
             for( int j=0; j<n; ++j )
                 Read( D.Buffer(0,j), head, m );

@@ -19,6 +19,7 @@ DistHMat3d<Scalar>::Multiply
     CallStackEntry entry("DistHMat3d::Multiply");
 #endif
     YLocal.Resize( LocalHeight(), XLocal.Width() );
+    YLocal.Init();
     Multiply( alpha, XLocal, Scalar(0), YLocal );
 }
 
@@ -32,6 +33,7 @@ DistHMat3d<Scalar>::TransposeMultiply
     CallStackEntry entry("DistHMat3d::TransposeMultiply");
 #endif
     YLocal.Resize( LocalWidth(), XLocal.Width() );
+    YLocal.Init();
     TransposeMultiply( alpha, XLocal, Scalar(0), YLocal );
 }
 
@@ -45,6 +47,7 @@ DistHMat3d<Scalar>::AdjointMultiply
     CallStackEntry entry("DistHMat3d::AdjointMultiply");
 #endif
     YLocal.Resize( LocalWidth(), XLocal.Width() );
+    YLocal.Init();
     AdjointMultiply( alpha, XLocal, Scalar(0), YLocal );
 }
 
@@ -348,6 +351,7 @@ DistHMat3d<Scalar>::MultiplyDensePrecompute
         const DistLowRank& DF = *block_.data.DF;
         Dense<Scalar>& Z = *context.block.data.Z;
         Z.Resize( DF.rank, numRhs );
+        Z.Init();
         const char option = 'T';
         blas::Gemm
         ( option, 'N', DF.rank, numRhs, DF.VLocal.Height(), 
@@ -715,6 +719,7 @@ DistHMat3d<Scalar>::AdjointMultiplyDensePrecompute
         const DistLowRank& DF = *block_.data.DF;
         Dense<Scalar>& Z = *context.block.data.Z;
         Z.Resize( DF.rank, numRhs );
+        Z.Init();
         blas::Gemm
         ( 'C', 'N', DF.rank, numRhs, DF.ULocal.Height(), 
           alpha,     DF.ULocal.LockedBuffer(), DF.ULocal.LDim(), 
@@ -1719,6 +1724,7 @@ DistHMat3d<Scalar>::TransposeMultiplyDensePassDataUnpack
             {
                 Dense<Scalar>& Z = *context.block.data.Z;
                 Z.Resize( DF.rank, numRhs, DF.rank );
+                Z.Init();
                 MemCopy
                 ( Z.Buffer(), &buffer[offsets[targetRoot_]], DF.rank*numRhs );
                 offsets[targetRoot_] += DF.rank*numRhs;
@@ -1733,6 +1739,7 @@ DistHMat3d<Scalar>::TransposeMultiplyDensePassDataUnpack
         {
             Dense<Scalar>& Z = *context.block.data.Z;
             Z.Resize( SF.rank, numRhs, SF.rank );
+            Z.Init();
             MemCopy
             ( Z.Buffer(), &buffer[offsets[targetRoot_]], SF.rank*numRhs );
             offsets[targetRoot_] += SF.rank*numRhs;
@@ -1746,6 +1753,7 @@ DistHMat3d<Scalar>::TransposeMultiplyDensePassDataUnpack
         {
             Dense<Scalar>& Z = *context.block.data.Z;
             Z.Resize( height, numRhs, height );
+            Z.Init();
             MemCopy
             ( Z.Buffer(), &buffer[offsets[targetRoot_]], height*numRhs );
             offsets[targetRoot_] += height*numRhs;
