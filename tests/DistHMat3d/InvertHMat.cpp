@@ -23,7 +23,7 @@ FormRow
 
     // Set up the diagonal entry
     colIndices.push_back( rowIdx );
-    row.push_back( (Scalar)8 );
+    row.push_back( (Scalar)8.01 );
 
     // Front connection to (x-1,y,z)
     if( x != 0 )
@@ -88,8 +88,9 @@ main( int argc, char* argv[] )
         const int maxRank = Input("--maxRank","maximum rank of block",5);
         const int multType = Input("--multType","multiply type",2);
         const bool print = Input("--print","print matrices?",false);
-        const bool structure = Input("--structure","print structure?",true);
+        const bool structure = Input("--structure","print structure?",false);
         const bool multI = Input("--multI","multiply by identity?",false);
+        const int schuN = Input("--schuN","iteration number of schultz invert",15);
         const int oversample = Input("--oversample","num extra basis vecs",4);
         const double midcomputeTol = 
             Input("--midcomputeTol","tolerance for midcompute stage",1e-16);
@@ -297,7 +298,7 @@ main( int argc, char* argv[] )
         }
         mpi::Barrier( mpi::COMM_WORLD );
         double SchulzInvertStartTime = mpi::Time();
-        A.SchulzInvert(30);
+        A.SchulzInvert(schuN);
         mpi::Barrier( mpi::COMM_WORLD );
         double SchulzInvertStopTime = mpi::Time();
         if( commRank == 0 )

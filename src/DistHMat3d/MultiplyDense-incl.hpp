@@ -1949,7 +1949,7 @@ DistHMat3d<Scalar>::MultiplyDenseBroadcastsPack
             const DistLowRank& DF = *block_.data.DF;
             const Dense<Scalar>& Z = *context.block.data.Z;
 #ifndef RELEASE
-            if( Z.LDim() != DF.rank )
+            if( Z.LDim() != DF.rank && DF.rank != 0 )
                 throw std::logic_error("Z's height did not match its ldim");
 #endif
             MemCopy

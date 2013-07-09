@@ -88,7 +88,7 @@ main( int argc, char* argv[] )
         const int maxRank = Input("--maxRank","maximum rank of block",5);
         const int multType = Input("--multType","multiply type",2);
         const bool print = Input("--print","print matrices?",false);
-        const bool structure = Input("--structure","print structure?",true);
+        const bool structure = Input("--structure","print structure?",false);
         const bool multI = Input("--multI","multiply by identity?",false);
         const int oversample = Input("--oversample","num extra basis vecs",4);
         const double midcomputeTol = 
