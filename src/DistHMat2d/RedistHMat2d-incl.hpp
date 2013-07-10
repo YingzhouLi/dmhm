@@ -673,7 +673,6 @@ DistHMat2d<Scalar>::ComputeLocalDimensionRecursion
         const int yBottomSize = ySize/2;
         const int yTopSize = ySize - yBottomSize;
 
-        xSize = xSize;
         ySize = ( subteam ? yTopSize : yBottomSize );
         ComputeLocalDimensionRecursion
         ( localDim, xSize, ySize, p/2, subteamRank );

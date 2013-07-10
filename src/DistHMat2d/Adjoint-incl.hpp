@@ -69,11 +69,8 @@ DistHMat2d<Scalar>::AdjointCopy( const DistHMat2d<Scalar>& B )
     switch( B.block_.type )
     {
     case DIST_NODE:
-    case DIST_NODE_GHOST:
     case NODE:
-    case NODE_GHOST:
     case SPLIT_NODE:
-    case SPLIT_NODE_GHOST:
     {
         A.block_.data.N = A.NewNode();
         Node& nodeA = *A.block_.data.N;
@@ -99,12 +96,6 @@ DistHMat2d<Scalar>::AdjointCopy( const DistHMat2d<Scalar>& B )
             hmat_tools::Conjugate( DFB.VLocal, DFA.ULocal );
         break;
     }
-    case DIST_LOW_RANK_GHOST:
-    {
-        A.block_.data.DFG = new DistLowRankGhost;
-        A.block_.data.DFG->rank = B.block_.data.DFG->rank;
-        break;
-    }
     case SPLIT_LOW_RANK:
     {
         A.block_.data.SF = new SplitLowRank;
@@ -115,22 +106,10 @@ DistHMat2d<Scalar>::AdjointCopy( const DistHMat2d<Scalar>& B )
         hmat_tools::Conjugate( SFB.D, SFA.D );
         break;
     }
-    case SPLIT_LOW_RANK_GHOST:
-    {
-        A.block_.data.SFG = new SplitLowRankGhost;
-        A.block_.data.SFG->rank = B.block_.data.SFG->rank;
-        break;
-    }
     case LOW_RANK:
     {
         A.block_.data.F = new LowRank<Scalar>;
         hmat_tools::Adjoint( *B.block_.data.F, *A.block_.data.F );
-        break;
-    }
-    case LOW_RANK_GHOST:
-    {
-        A.block_.data.FG = new LowRankGhost;
-        A.block_.data.FG->rank = B.block_.data.FG->rank;
         break;
     }
     case SPLIT_DENSE:
@@ -145,7 +124,6 @@ DistHMat2d<Scalar>::AdjointCopy( const DistHMat2d<Scalar>& B )
         break;
     }
     default:
-        // Ghost nodes. TODO: Copy rank
         break;
     }
 }
