@@ -519,8 +519,13 @@ DistHMat3d<Scalar>::Admissible
   int zSource, int zTarget ) const
 {
     if( stronglyAdmissible_ )
-        return std::max(std::max(std::abs(xSource-xTarget),
-            std::abs(ySource-yTarget)), std::abs(zSource-zTarget))>1;
+    {
+        //The first one is too large for memory
+        //return std::max(std::max(std::abs(xSource-xTarget),
+        //    std::abs(ySource-yTarget)), std::abs(zSource-zTarget))>1;
+        return std::abs(xSource-xTarget) + std::abs(ySource-yTarget)
+            + std::abs(zSource-zTarget) > 1;
+    }
     else
         return xSource != xTarget || ySource != yTarget || zSource != zTarget;
 }
@@ -1120,6 +1125,304 @@ DistHMat3d<Scalar>::MScriptLocalStructureRecursion( std::ofstream& file ) const
     case EMPTY:
         break;
     }
+}
+
+template<typename Scalar>
+void
+DistHMat3d<Scalar>::MemoryInfo
+( double& numBasic, double& numNode, double& numNodeTmp,
+  double& numLowRank, double& numLowRankTmp,
+  double& numDense, double& numDenseTmp )const
+{
+    numBasic += sizeof( numLevels_ );
+    numBasic += sizeof( maxRank_ );
+    numBasic += sizeof( targetOffset_ );
+    numBasic += sizeof( sourceOffset_ );
+    numBasic += sizeof( stronglyAdmissible_ );
+    numBasic += sizeof( xSizeTarget_ );
+    numBasic += sizeof( ySizeTarget_ );
+	numBasic += sizeof( zSizeTarget_ );
+    numBasic += sizeof( xSizeSource_ );
+    numBasic += sizeof( ySizeSource_ );
+	numBasic += sizeof( zSizeSource_ );
+    numBasic += sizeof( xTarget_ );
+    numBasic += sizeof( yTarget_ );
+	numBasic += sizeof( zTarget_ );
+    numBasic += sizeof( xSource_ );
+    numBasic += sizeof( ySource_ );
+	numBasic += sizeof( zSource_ );
+    numBasic += sizeof( teams_ );
+    numBasic += sizeof( level_ );
+    numBasic += sizeof( inTargetTeam_ );
+    numBasic += sizeof( inSourceTeam_ );
+    numBasic += sizeof( targetRoot_ );
+    numBasic += sizeof( sourceRoot_ );
+    numBasic += sizeof( block_.type );
+    numBasic += sizeof( haveDenseUpdate_ );
+    numBasic += sizeof( storedDenseUpdate_ );
+    numBasic += sizeof( beganRowSpaceComp_ );
+    numBasic += sizeof( finishedRowSpaceComp_ );
+    numBasic += sizeof( beganColSpaceComp_ );
+    numBasic += sizeof( finishedColSpaceComp_ );
+    
+    switch( block_.type )
+    {
+    case DIST_NODE:
+    case SPLIT_NODE:
+    case NODE:
+    {
+        double& num = numNodeTmp;
+        num += UMap_.EntrySize()*sizeof(Scalar);
+        num += VMap_.EntrySize()*sizeof(Scalar);
+        num += ZMap_.EntrySize()*sizeof(Scalar);
+        num += colXMap_.EntrySize()*sizeof(Scalar);
+        num += rowXMap_.EntrySize()*sizeof(Scalar);
+        num += HUMap_.EntrySize()*sizeof(Scalar);
+        num += HVMap_.EntrySize()*sizeof(Scalar);
+        num += HZMap_.EntrySize()*sizeof(Scalar);
+        num += colSqrMap_.EntrySize()*sizeof(Scalar);
+        num += rowSqrMap_.EntrySize()*sizeof(Scalar);
+        num += colSqrEigMap_.EntrySize()*sizeof(Real);
+        num += rowSqrEigMap_.EntrySize()*sizeof(Real);
+        num += USqr_.Size()*sizeof(Scalar);
+        num += VSqr_.Size()*sizeof(Scalar);
+        num += USqrEig_.size()*sizeof(Real);
+        num += VSqrEig_.size()*sizeof(Real);
+        num += BSqrU_.Size()*sizeof(Scalar);
+        num += BSqrVH_.Size()*sizeof(Scalar);
+        num += BSigma_.size()*sizeof(Real);
+        num += BL_.Size()*sizeof(Scalar);
+        num += BR_.Size()*sizeof(Scalar);
+        num += D_.Size()*sizeof(Scalar);
+        num += SFD_.Size()*sizeof(Scalar);
+        num += colPinvMap_.EntrySize()*sizeof(Scalar);
+        num += rowPinvMap_.EntrySize()*sizeof(Scalar);
+        num += BLMap_.EntrySize()*sizeof(Scalar);
+        num += BRMap_.EntrySize()*sizeof(Scalar);
+
+        Node& node = *block_.data.N;
+        for( int t=0; t<8; ++t )
+            for( int s=0; s<8; ++s )
+                node.Child(t,s).MemoryInfo
+                ( numBasic, numNode, numNodeTmp,
+                  numLowRank, numLowRankTmp, 
+                  numDense, numDenseTmp );
+        break;
+    }
+    case DIST_LOW_RANK:
+    {
+        DistLowRank& DF = *block_.data.DF;
+        numLowRank += DF.ULocal.Size()*sizeof(Scalar);
+        numLowRank += DF.VLocal.Size()*sizeof(Scalar);
+
+        double& num = numLowRankTmp;
+        num += UMap_.EntrySize()*sizeof(Scalar);
+        num += VMap_.EntrySize()*sizeof(Scalar);
+        num += ZMap_.EntrySize()*sizeof(Scalar);
+        num += colXMap_.EntrySize()*sizeof(Scalar);
+        num += rowXMap_.EntrySize()*sizeof(Scalar);
+        num += HUMap_.EntrySize()*sizeof(Scalar);
+        num += HVMap_.EntrySize()*sizeof(Scalar);
+        num += HZMap_.EntrySize()*sizeof(Scalar);
+        num += colSqrMap_.EntrySize()*sizeof(Scalar);
+        num += rowSqrMap_.EntrySize()*sizeof(Scalar);
+        num += colSqrEigMap_.EntrySize()*sizeof(Real);
+        num += rowSqrEigMap_.EntrySize()*sizeof(Real);
+        num += USqr_.Size()*sizeof(Scalar);
+        num += VSqr_.Size()*sizeof(Scalar);
+        num += USqrEig_.size()*sizeof(Real);
+        num += VSqrEig_.size()*sizeof(Real);
+        num += BSqrU_.Size()*sizeof(Scalar);
+        num += BSqrVH_.Size()*sizeof(Scalar);
+        num += BSigma_.size()*sizeof(Real);
+        num += BL_.Size()*sizeof(Scalar);
+        num += BR_.Size()*sizeof(Scalar);
+        num += D_.Size()*sizeof(Scalar);
+        num += SFD_.Size()*sizeof(Scalar);
+        num += colPinvMap_.EntrySize()*sizeof(Scalar);
+        num += rowPinvMap_.EntrySize()*sizeof(Scalar);
+        num += BLMap_.EntrySize()*sizeof(Scalar);
+        num += BRMap_.EntrySize()*sizeof(Scalar);
+        break;
+    }
+    case SPLIT_LOW_RANK:
+    {
+        SplitLowRank& SF = *block_.data.SF;
+        numLowRank += SF.D.Size()*sizeof(Scalar);
+
+        double& num = numLowRankTmp;
+        num += UMap_.EntrySize()*sizeof(Scalar);
+        num += VMap_.EntrySize()*sizeof(Scalar);
+        num += ZMap_.EntrySize()*sizeof(Scalar);
+        num += colXMap_.EntrySize()*sizeof(Scalar);
+        num += rowXMap_.EntrySize()*sizeof(Scalar);
+        num += HUMap_.EntrySize()*sizeof(Scalar);
+        num += HVMap_.EntrySize()*sizeof(Scalar);
+        num += HZMap_.EntrySize()*sizeof(Scalar);
+        num += colSqrMap_.EntrySize()*sizeof(Scalar);
+        num += rowSqrMap_.EntrySize()*sizeof(Scalar);
+        num += colSqrEigMap_.EntrySize()*sizeof(Real);
+        num += rowSqrEigMap_.EntrySize()*sizeof(Real);
+        num += USqr_.Size()*sizeof(Scalar);
+        num += VSqr_.Size()*sizeof(Scalar);
+        num += USqrEig_.size()*sizeof(Real);
+        num += VSqrEig_.size()*sizeof(Real);
+        num += BSqrU_.Size()*sizeof(Scalar);
+        num += BSqrVH_.Size()*sizeof(Scalar);
+        num += BSigma_.size()*sizeof(Real);
+        num += BL_.Size()*sizeof(Scalar);
+        num += BR_.Size()*sizeof(Scalar);
+        num += D_.Size()*sizeof(Scalar);
+        num += SFD_.Size()*sizeof(Scalar);
+        num += colPinvMap_.EntrySize()*sizeof(Scalar);
+        num += rowPinvMap_.EntrySize()*sizeof(Scalar);
+        num += BLMap_.EntrySize()*sizeof(Scalar);
+        num += BRMap_.EntrySize()*sizeof(Scalar);
+
+        break;
+    }
+    case LOW_RANK:
+    {
+        LowRank<Scalar> &F = *block_.data.F;
+        numLowRank += F.U.Size()*sizeof(Scalar);
+        numLowRank += F.V.Size()*sizeof(Scalar);
+
+        double& num = numLowRankTmp;
+        num += UMap_.EntrySize()*sizeof(Scalar);
+        num += VMap_.EntrySize()*sizeof(Scalar);
+        num += ZMap_.EntrySize()*sizeof(Scalar);
+        num += colXMap_.EntrySize()*sizeof(Scalar);
+        num += rowXMap_.EntrySize()*sizeof(Scalar);
+        num += HUMap_.EntrySize()*sizeof(Scalar);
+        num += HVMap_.EntrySize()*sizeof(Scalar);
+        num += HZMap_.EntrySize()*sizeof(Scalar);
+        num += colSqrMap_.EntrySize()*sizeof(Scalar);
+        num += rowSqrMap_.EntrySize()*sizeof(Scalar);
+        num += colSqrEigMap_.EntrySize()*sizeof(Real);
+        num += rowSqrEigMap_.EntrySize()*sizeof(Real);
+        num += USqr_.Size()*sizeof(Scalar);
+        num += VSqr_.Size()*sizeof(Scalar);
+        num += USqrEig_.size()*sizeof(Real);
+        num += VSqrEig_.size()*sizeof(Real);
+        num += BSqrU_.Size()*sizeof(Scalar);
+        num += BSqrVH_.Size()*sizeof(Scalar);
+        num += BSigma_.size()*sizeof(Real);
+        num += BL_.Size()*sizeof(Scalar);
+        num += BR_.Size()*sizeof(Scalar);
+        num += D_.Size()*sizeof(Scalar);
+        num += SFD_.Size()*sizeof(Scalar);
+        num += colPinvMap_.EntrySize()*sizeof(Scalar);
+        num += rowPinvMap_.EntrySize()*sizeof(Scalar);
+        num += BLMap_.EntrySize()*sizeof(Scalar);
+        num += BRMap_.EntrySize()*sizeof(Scalar);
+
+        break;
+    }
+    case SPLIT_DENSE:
+    {
+        SplitDense& SD = *block_.data.SD;
+        numDense += SD.D.Size()*sizeof(Scalar);
+
+        double& num = numDenseTmp;
+        num += UMap_.EntrySize()*sizeof(Scalar);
+        num += VMap_.EntrySize()*sizeof(Scalar);
+        num += ZMap_.EntrySize()*sizeof(Scalar);
+        num += colXMap_.EntrySize()*sizeof(Scalar);
+        num += rowXMap_.EntrySize()*sizeof(Scalar);
+        num += HUMap_.EntrySize()*sizeof(Scalar);
+        num += HVMap_.EntrySize()*sizeof(Scalar);
+        num += HZMap_.EntrySize()*sizeof(Scalar);
+        num += colSqrMap_.EntrySize()*sizeof(Scalar);
+        num += rowSqrMap_.EntrySize()*sizeof(Scalar);
+        num += colSqrEigMap_.EntrySize()*sizeof(Real);
+        num += rowSqrEigMap_.EntrySize()*sizeof(Real);
+        num += USqr_.Size()*sizeof(Scalar);
+        num += VSqr_.Size()*sizeof(Scalar);
+        num += USqrEig_.size()*sizeof(Real);
+        num += VSqrEig_.size()*sizeof(Real);
+        num += BSqrU_.Size()*sizeof(Scalar);
+        num += BSqrVH_.Size()*sizeof(Scalar);
+        num += BSigma_.size()*sizeof(Real);
+        num += BL_.Size()*sizeof(Scalar);
+        num += BR_.Size()*sizeof(Scalar);
+        num += D_.Size()*sizeof(Scalar);
+        num += SFD_.Size()*sizeof(Scalar);
+        num += colPinvMap_.EntrySize()*sizeof(Scalar);
+        num += rowPinvMap_.EntrySize()*sizeof(Scalar);
+        num += BLMap_.EntrySize()*sizeof(Scalar);
+        num += BRMap_.EntrySize()*sizeof(Scalar);
+
+        break;
+    }
+    case DENSE:
+    {
+        Dense<Scalar>& D = *block_.data.D;
+        numDense += D.Size()*sizeof(Scalar);
+
+        double& num = numDenseTmp;
+        num += UMap_.EntrySize()*sizeof(Scalar);
+        num += VMap_.EntrySize()*sizeof(Scalar);
+        num += ZMap_.EntrySize()*sizeof(Scalar);
+        num += colXMap_.EntrySize()*sizeof(Scalar);
+        num += rowXMap_.EntrySize()*sizeof(Scalar);
+        num += HUMap_.EntrySize()*sizeof(Scalar);
+        num += HVMap_.EntrySize()*sizeof(Scalar);
+        num += HZMap_.EntrySize()*sizeof(Scalar);
+        num += colSqrMap_.EntrySize()*sizeof(Scalar);
+        num += rowSqrMap_.EntrySize()*sizeof(Scalar);
+        num += colSqrEigMap_.EntrySize()*sizeof(Real);
+        num += rowSqrEigMap_.EntrySize()*sizeof(Real);
+        num += USqr_.Size()*sizeof(Scalar);
+        num += VSqr_.Size()*sizeof(Scalar);
+        num += USqrEig_.size()*sizeof(Real);
+        num += VSqrEig_.size()*sizeof(Real);
+        num += BSqrU_.Size()*sizeof(Scalar);
+        num += BSqrVH_.Size()*sizeof(Scalar);
+        num += BSigma_.size()*sizeof(Real);
+        num += BL_.Size()*sizeof(Scalar);
+        num += BR_.Size()*sizeof(Scalar);
+        num += D_.Size()*sizeof(Scalar);
+        num += SFD_.Size()*sizeof(Scalar);
+        num += colPinvMap_.EntrySize()*sizeof(Scalar);
+        num += rowPinvMap_.EntrySize()*sizeof(Scalar);
+        num += BLMap_.EntrySize()*sizeof(Scalar);
+        num += BRMap_.EntrySize()*sizeof(Scalar);
+
+        break;
+    }
+    default:
+        break;
+    }
+
+}
+
+template<typename Scalar>
+void
+DistHMat3d<Scalar>::PrintMemoryInfo
+( const std::string tag, std::ostream& os ) const
+{
+    double numBasic = 0.0, numNode = 0.0, numNodeTmp = 0.0,
+           numLowRank = 0.0, numLowRankTmp = 0.0, 
+           numDense = 0.0, numDenseTmp = 0.0;
+    MemoryInfo
+    ( numBasic, numNode, numNodeTmp, numLowRank, numLowRankTmp,
+      numDense, numDenseTmp );
+    mpi::Comm team = teams_->Team(0);
+    const int teamRank = mpi::CommRank( team );
+    os << "Process " << teamRank << ": " << tag << "\n";
+    os << "Basic      Memory Usage: " << numBasic << "\n";
+    os << "Node       Memory Usage: " << numNode << "\n";
+    os << "NodeTmp    Memory Usage: " << numNodeTmp << "\n";
+    os << "LowRank    Memory Usage: " << numLowRank << "\n";
+    os << "LowRankTmp Memory Usage: " << numLowRankTmp << "\n";
+    os << "Dense      Memory Usage: " << numDense << "\n";
+    os << "DenseTmp   Memory Usage: " << numDenseTmp << "\n";
+    os << "Matrix     Memory Usage: " << numBasic+numNode+numLowRank+numDense << "\n";
+    os << "Temporary  Memory Usage: " << numNodeTmp+numLowRankTmp+numDenseTmp << "\n";
+    os << "Total      Memory Usage: " << numBasic+numNode+numLowRank+numDense
+                                        +numNodeTmp+numLowRankTmp+numDenseTmp << "\n";
+    os << "\n";
+    os.flush();
 }
 
 template class DistHMat3d<float>;

@@ -135,6 +135,18 @@ public:
         return width;
     }
 
+    const int EntrySize() const
+    {
+#ifndef RELEASE
+        CallStackEntry entry("MemoryMap::EntrySize");
+#endif
+        int entSize=0.0;
+        typename std::map<T1,T2*>::iterator it = baseMap_.begin();
+        for( unsigned int i=0; i<baseMap_.size(); ++i,++it)
+            entSize += it->second->size();
+        return entSize;
+    }
+
     const int FirstWidth() const
     {
 #ifndef RELEASE

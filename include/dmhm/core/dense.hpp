@@ -59,6 +59,8 @@ public:
 
     int Height() const;
     int Width() const;
+    int Size() const;
+    int size() const;
     int LDim() const;
     void Resize( int height, int width );
     void Resize( int height, int width, int ldim );
@@ -224,6 +226,16 @@ template<typename Scalar>
 inline int
 Dense<Scalar>::Width() const
 { return width_; }
+
+template<typename Scalar>
+inline int
+Dense<Scalar>::Size() const
+{ return memory_.size(); }
+
+template<typename Scalar>
+inline int
+Dense<Scalar>::size() const
+{ return memory_.size(); }
 
 template<typename Scalar>
 inline int

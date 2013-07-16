@@ -154,7 +154,15 @@ public:
     // This can be visualized with util/PlotHStructure.m and Octave/Matlab
     void MScriptLocalStructure( const std::string basename ) const;
 
-    // Unpack this process's portion of the DistHMat3d
+    void MemoryInfo
+    ( double& numBasic, double& numNode, double& numNodeTmp,
+      double& numLowRank, double& numLowRankTmp,
+      double& numDense, double& numDenseTmp ) const;
+
+    void PrintMemoryInfo
+    ( const std::string tag = "", std::ostream& os = std::cout ) const;
+
+    // Unpack this process's portion of the DistHMat2d
     std::size_t Unpack
     ( const byte* packedDistHMat, const Teams& teams );
 
