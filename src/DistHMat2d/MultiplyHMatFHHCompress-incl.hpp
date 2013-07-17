@@ -19,7 +19,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompress
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MultiplyHMatFHHCompress");
-    PrintMemoryInfo( "MemoryInfo before FHH Compression" );
+    C.PrintMemoryInfo( "MemoryInfo before FHH Compression" );
 #endif
     
     MultiplyHMatFHHCompressPrecompute
@@ -1093,7 +1093,6 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressCleanup
                     node.Child(t,s).MultiplyHMatFHHCompressCleanup
                     ( startLevel, endLevel );
         }
-        break;
     }
     case DIST_LOW_RANK:
     case DIST_LOW_RANK_GHOST:
@@ -1101,6 +1100,10 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressCleanup
     case SPLIT_LOW_RANK_GHOST:
     case LOW_RANK:
     case LOW_RANK_GHOST:
+    case SPLIT_DENSE:
+    case SPLIT_DENSE_GHOST:
+    case DENSE:
+    case DENSE_GHOST:
     {
         if( level_ < startLevel )
             break;
@@ -1110,6 +1113,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressCleanup
         rowUSqrMap_.Clear();
         BLMap_.Clear();
         BRMap_.Clear();
+        break;
     }
     default:
         break;

@@ -340,7 +340,7 @@ DistHMat3d<Scalar>::MultiplyHMatSingleLevelAccumulate
 #ifdef TIME_MULTIPLY
         timer.Start( 13 );
 #endif
-        C.MultiplyHMatCompress( startLevel, endLevel);
+        C.MultiplyHMatCompress( 0, A.NumLevels());
 #ifdef TIME_MULTIPLY
         mpi::Barrier( mpi::COMM_WORLD );
         timer.Stop( 13 );
@@ -510,7 +510,7 @@ DistHMat3d<Scalar>::MultiplyHMatSingleUpdateAccumulate
 #ifdef TIME_MULTIPLY
             timer.Start( 13 );
 #endif
-            C.MultiplyHMatCompress( startLevel, endLevel );
+            C.MultiplyHMatCompress( 0, A.NumLevels() );
 #ifdef TIME_MULTIPLY
             mpi::Barrier( mpi::COMM_WORLD );
             timer.Stop( 13 );

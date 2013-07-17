@@ -309,7 +309,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
                 rank += UMap_.CurrentEntry()->Width();
 
             if( numLowRankUpdates == 0 )
-                UMap_.Set( 0, new Dense<Scalar>( m, rank ) );
+                UMap_.Set( -1, new Dense<Scalar>( m, rank ) );
             else
             {
                 UMap_.ResetIterator();
@@ -356,7 +356,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
                 rank += VMap_.CurrentEntry()->Width();
 
             if( numLowRankUpdates == 0 )
-                VMap_.Set( 0, new Dense<Scalar>( n, rank ) );
+                VMap_.Set( -1, new Dense<Scalar>( n, rank ) );
             else
             {
                 VMap_.ResetIterator();
@@ -419,8 +419,8 @@ DistHMat3d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
         }
 
         // Create space for storing the parent updates
-        UMap_.Set( 0, new Dense<Scalar>(m,rank) );
-        VMap_.Set( 0, new Dense<Scalar>(n,rank) );
+        UMap_.Set( -1, new Dense<Scalar>(m,rank) );
+        VMap_.Set( -1, new Dense<Scalar>(n,rank) );
         break;
     }
     default:
@@ -4033,7 +4033,6 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFCleanup
                     node.Child(t,s).MultiplyHMatCompressFCleanup
                     ( startLevel, endLevel );
         }
-        break;
     }
     case DIST_LOW_RANK:
     case DIST_LOW_RANK_GHOST:
@@ -4041,6 +4040,10 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFCleanup
     case SPLIT_LOW_RANK_GHOST:
     case LOW_RANK:
     case LOW_RANK_GHOST:
+    case SPLIT_DENSE:
+    case SPLIT_DENSE_GHOST:
+    case DENSE:
+    case DENSE_GHOST:
     {
         if( level_ < startLevel )
             break;
@@ -4058,6 +4061,12 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFCleanup
         ZMap_.Clear();
         colXMap_.Clear();
         rowXMap_.Clear();
+        D_.Clear();
+        SFD_.Clear();
+        mainContextMap_.Clear();
+        colFHHContextMap_.Clear();
+        rowFHHContextMap_.Clear();
+        break;
     }
     default:
         break;

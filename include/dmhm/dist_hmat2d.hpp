@@ -1304,13 +1304,6 @@ private:
     MemoryMap<int,MultiplyDenseContext> 
         mainContextMap_, colFHHContextMap_, rowFHHContextMap_;
     MemoryMap<int,Dense<Scalar> > UMap_, VMap_, ZMap_, colXMap_, rowXMap_;
-    MemoryMap<int,Dense<Scalar> > HUMap_, HVMap_, HZMap_;
-    // colSqrMap_ stores (HHR)'(HHR), rowSqrMap_ stores (L'HH)(L'HH)'
-    // Also they will be used to store low-rank square matrix.
-    MemoryMap<int,Dense<Scalar> > colSqrMap_, rowSqrMap_;
-    // colSqrEigMap_ stores the eigenvalues of colSqrMap_
-    // rowSqrEigMap_ stores the eigenvalues of rowSqrMap_
-    MemoryMap<int,std::vector<Real> > colSqrEigMap_, rowSqrEigMap_;
     // Tmp space for F compression
     Dense<Scalar> USqr_, VSqr_;
     std::vector<Real> USqrEig_, VSqrEig_;
