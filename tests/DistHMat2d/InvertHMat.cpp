@@ -139,12 +139,13 @@ main( int argc, char* argv[] )
         DistHMat::Teams teams( mpi::COMM_WORLD );
         if( commRank == 0 )
         {
-            std::cout << "Constructing H-matrices in serial...";
+            std::cout << "Constructing H-matrices in dist...";
             std::cout.flush();
         }
         mpi::Barrier( mpi::COMM_WORLD );
         double constructStartTime = mpi::Time();
         DistHMat A( S, numLevels, maxRank, strong, xSize, ySize, teams );
+        DistHMat B( S, numLevels, maxRank, strong, xSize, ySize, teams );
         mpi::Barrier( mpi::COMM_WORLD );
         double constructStopTime = mpi::Time();
         if( commRank == 0 )
