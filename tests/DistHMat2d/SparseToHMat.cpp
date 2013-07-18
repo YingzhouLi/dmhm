@@ -12,59 +12,45 @@ using namespace dmhm;
 template<typename Real>
 void
 FormRow
-( int x, int y, int z, int xSize, int ySize, int zSize, 
+( int x, int y, int xSize, int ySize, 
   std::vector<std::complex<Real> >& row, std::vector<int>& colIndices )
 {
     typedef std::complex<Real> Scalar;
-    const int rowIdx = x + xSize*y + xSize*ySize*z;
+    const int rowIdx = x + xSize*y;
 
     row.resize( 0 );
     colIndices.resize( 0 );
 
     // Set up the diagonal entry
     colIndices.push_back( rowIdx );
-    row.push_back( (Scalar)8 );
+    row.push_back( Scalar(8) );
 
-    // Front connection to (x-1,y,z)
+    // Front connection to (x-1,y)
     if( x != 0 )
     {
-        colIndices.push_back( (x-1) + xSize*y + xSize*ySize*z );
-        row.push_back( (Scalar)-1 );
+        colIndices.push_back( (x-1) + xSize*y );
+        row.push_back( Scalar(-1) );
     }
 
-    // Back connection to (x+1,y,z)
+    // Back connection to (x+1,y)
     if( x != xSize-1 )
     {
-        colIndices.push_back( (x+1) + xSize*y + xSize*ySize*z );
-        row.push_back( (Scalar)-1 );
+        colIndices.push_back( (x+1) + xSize*y );
+        row.push_back( Scalar(-1) );
     }
 
-    // Left connection to (x,y-1,z)
+    // Left connection to (x,y-1)
     if( y != 0 )
     {
-        colIndices.push_back( x + xSize*(y-1) + xSize*ySize*z );
-        row.push_back( (Scalar)-1 );
+        colIndices.push_back( x + xSize*(y-1) );
+        row.push_back( Scalar(-1) );
     }
 
-    // Right connection to (x,y+1,z)
+    // Right connection to (x,y+1)
     if( y != ySize-1 )
     {
-        colIndices.push_back( x + xSize*(y+1) + xSize*ySize*z );
-        row.push_back( (Scalar)-1 );
-    }
-
-    // Top connection to (x,y,z-1)
-    if( z != 0 )
-    {
-        colIndices.push_back( x + xSize*y + xSize*ySize*(z-1) );
-        row.push_back( (Scalar)-1 );
-    }
-
-    // Bottom connection to (x,y,z+1)
-    if( z != zSize-1 )
-    {
-        colIndices.push_back( x + xSize*y + xSize*ySize*(z+1) );
-        row.push_back( (Scalar)-1 );
+        colIndices.push_back( x + xSize*(y+1) );
+        row.push_back( Scalar(-1) );
     }
 }
 
@@ -73,23 +59,20 @@ main( int argc, char* argv[] )
 {
     Initialize( argc, argv );
     const int commRank = mpi::CommRank( mpi::COMM_WORLD );
+    const int commSize = mpi::CommSize( mpi::COMM_WORLD );
     typedef std::complex<double> Scalar;
-    typedef HMat3d<Scalar> HMat;
-    typedef DistHMat3d<Scalar> DistHMat;
+    typedef HMat2d<Scalar> HMat;
+    typedef DistHMat2d<Scalar> DistHMat;
 
     try
     {
-        const int xSize = Input("--xSize","size of x dimension",15);
-        const int ySize = Input("--ySize","size of y dimension",15);
-        const int zSize = Input("--zSize","size of z dimension",15);
+        const int xSize = Input("--xSize","size of x dimension",20);
+        const int ySize = Input("--ySize","size of y dimension",20);
         const int numLevels = Input("--numLevels","depth of H-matrix tree",4);
         const bool strong = Input("--strong","strongly admissible?",false);
         const int maxRank = Input("--maxRank","maximum rank of block",5);
-        const int multType = Input("--multType","multiply type",2);
         const bool print = Input("--print","print matrices?",false);
-        const bool structure = Input("--structure","print structure?",false);
         const bool multI = Input("--multI","multiply by identity?",false);
-        const int schuN = Input("--schuN","iteration number of schultz invert",15);
         const int oversample = Input("--oversample","num extra basis vecs",4);
         const double midcomputeTol = 
             Input("--midcomputeTol","tolerance for midcompute stage",1e-16);
@@ -102,8 +85,8 @@ main( int argc, char* argv[] )
         SetMidcomputeTolerance<double>( midcomputeTol );
         SetCompressionTolerance<double>( compressionTol );
 
-        const int m = xSize*ySize*zSize;
-        const int n = xSize*ySize*zSize;
+        const int m = xSize*ySize;
+        const int n = xSize*ySize;
 
         Sparse<Scalar> S;
         S.height = m;
@@ -111,8 +94,7 @@ main( int argc, char* argv[] )
         S.symmetric = false;
 
         std::vector<int> map;
-        HMat::BuildNaturalToHierarchicalMap
-        ( map, xSize, ySize, zSize, numLevels );
+        HMat::BuildNaturalToHierarchicalMap( map, xSize, ySize, numLevels );
 
         std::vector<int> inverseMap( m );
         for( int i=0; i<m; ++i )
@@ -133,9 +115,8 @@ main( int argc, char* argv[] )
             const int iNatural = inverseMap[i];
             const int x = iNatural % xSize;
             const int y = (iNatural/xSize) % ySize;
-            const int z = iNatural/(xSize*ySize);
 
-            FormRow( x, y, z, xSize, ySize, zSize, row, colIndices );
+            FormRow( x, y, xSize, ySize, row, colIndices );
 
             for( unsigned j=0; j<row.size(); ++j )
             {
@@ -155,54 +136,114 @@ main( int argc, char* argv[] )
         // Convert to H-matrix form
         if( commRank == 0 )
         {
-            std::cout << "Constructing H-matrices in dist...";
+            std::cout << "Constructing H-matrices in serial...";
             std::cout.flush();
         }
         mpi::Barrier( mpi::COMM_WORLD );
-        DistHMat::Teams teams( mpi::COMM_WORLD );
         double constructStartTime = mpi::Time();
-        DistHMat A( S, numLevels, maxRank, strong, xSize, ySize, zSize, teams );
-        DistHMat B( S, numLevels, maxRank, strong, xSize, ySize, zSize, teams );
+        HMat ASerial( S, numLevels, maxRank, strong, xSize, ySize );
         mpi::Barrier( mpi::COMM_WORLD );
         double constructStopTime = mpi::Time();
         if( commRank == 0 )
             std::cout << "done: " << constructStopTime-constructStartTime 
                       << " seconds." << std::endl;
 
-        if( structure )
-        {
-#ifdef HAVE_QT5
-            std::ostringstream os;
-            os << "A on " << commRank;
-            A.DisplayLocal( os.str() );
-#endif
-            A.LatexLocalStructure("A_structure");
-            A.MScriptLocalStructure("A_structure");
-        }
 
-        const int localHeight = A.LocalHeight();
-        const int localWidth = A.LocalWidth();
-        if( localHeight != localWidth )
-            throw std::logic_error("A was not locally square");
+        // Set up our subcommunicators and compute the packed sizes
+        DistHMat::Teams teams( mpi::COMM_WORLD );
+        std::vector<std::size_t> packedSizes;
+        DistHMat::PackedSizes( packedSizes, ASerial, teams ); 
+        const std::size_t myMaxSize = 
+            *(std::max_element( packedSizes.begin(), packedSizes.end() ));
 
-
-        // SchulzInvert
+        // Pack for a DistHMat2d
         if( commRank == 0 )
         {
-            std::cout << "SchulzInvert...";
+            std::cout << "Packing H-matrix for distribution...";
             std::cout.flush();
         }
         mpi::Barrier( mpi::COMM_WORLD );
-        double SchulzInvertStartTime = mpi::Time();
-        A.SchulzInvert(schuN);
+        double packStartTime = mpi::Time();
+        std::vector<byte> sendBuffer( commSize*myMaxSize );
+        std::vector<byte*> packedPieces( commSize );
+        for( int i=0; i<commSize; ++i )
+            packedPieces[i] = &sendBuffer[i*myMaxSize];
+        DistHMat::Pack( packedPieces, ASerial, teams );
         mpi::Barrier( mpi::COMM_WORLD );
-        double SchulzInvertStopTime = mpi::Time();
+        double packStopTime = mpi::Time();
+        if( commRank == 0 )
+            std::cout << "done: " << packStopTime-packStartTime << " seconds."
+                      << std::endl;
+
+        // Compute the maximum package size
+        int myIntMaxSize, intMaxSize;
+        {
+            myIntMaxSize = myMaxSize;
+            mpi::AllReduce
+            ( &myIntMaxSize, &intMaxSize, 1, mpi::MAX, mpi::COMM_WORLD );
+        }
         if( commRank == 0 )
         {
-            std::cout << "done: " << SchulzInvertStopTime-SchulzInvertStartTime
+            std::cout << "Maximum per-process message size: " 
+                      << ((double)intMaxSize)/(1024.*1024.) << " MB." 
+                      << std::endl;
+        }
+ 
+        // AllToAll
+        if( commRank == 0 )
+        {
+            std::cout << "AllToAll redistribution...";
+            std::cout.flush();
+        }
+        mpi::Barrier( mpi::COMM_WORLD );
+        double allToAllStartTime = mpi::Time();
+        std::vector<byte> recvBuffer( commSize*intMaxSize );
+        mpi::AllToAll
+        ( &sendBuffer[0], myIntMaxSize, &recvBuffer[0], intMaxSize,
+          mpi::COMM_WORLD );
+        mpi::Barrier( mpi::COMM_WORLD );
+        double allToAllStopTime = mpi::Time();
+        if( commRank == 0 )
+        {
+            std::cout << "done: " << allToAllStopTime-allToAllStartTime
                       << " seconds." << std::endl;
         }
 
+        // Unpack our part of the matrix defined by process 0 twice
+        if( commRank == 0 )
+        {
+            std::cout << "Unpacking...";
+            std::cout.flush();
+        }
+        mpi::Barrier( mpi::COMM_WORLD );
+        double unpackStartTime = mpi::Time();
+        DistHMat A( &recvBuffer[0], teams );
+        mpi::Barrier( mpi::COMM_WORLD );
+        double unpackStopTime = mpi::Time();
+        if( commRank == 0 )
+        {
+            std::cout << "done: " << unpackStopTime-unpackStartTime
+                      << " seconds." << std::endl;
+        }
+
+        // Generate DistHMat from Sparse matrix
+        if( commRank == 0 )
+        {
+            std::cout << "Generate from Sparse matrix...";
+            std::cout.flush();
+        }
+        mpi::Barrier( mpi::COMM_WORLD );
+        double sparseStartTime = mpi::Time();
+        DistHMat B( S, numLevels, maxRank, strong, xSize, ySize, teams );
+        mpi::Barrier( mpi::COMM_WORLD );
+        double sparseStopTime = mpi::Time();
+        if( commRank == 0 )
+        {
+            std::cout << "done: " << sparseStopTime-sparseStartTime
+                      << " seconds." << std::endl;
+        }
+
+        const int localHeight = A.LocalHeight();
         Dense<Scalar> XLocal;
         if( multI )
         {
@@ -221,64 +262,13 @@ main( int argc, char* argv[] )
         
         Dense<Scalar> YLocal, ZLocal;
         // Y := AZ := ABX
+        A.Multiply( Scalar(1), XLocal, YLocal );
         B.Multiply( Scalar(1), XLocal, ZLocal );
-        if( print )
-        {
-            std::ostringstream sE;
-            sE << "BLocal_" << commRank << ".m";
-            std::ofstream EFile( sE.str().c_str() );
-
-            EFile << "BLocal{" << commRank+1 << "}=[\n";
-            ZLocal.Print( "", EFile );
-            EFile << "];\n";
-        }
-        A.Multiply( Scalar(1), XLocal, ZLocal );
-        if( print )
-        {
-            std::ostringstream sE;
-            sE << "ALocal_" << commRank << ".m";
-            std::ofstream EFile( sE.str().c_str() );
-
-            EFile << "ALocal{" << commRank+1 << "}=[\n";
-            ZLocal.Print( "", EFile );
-            EFile << "];\n";
-        }
-        // Attempt to multiply the two matrices
-        if( commRank == 0 )
-        {
-            std::cout << "Multiplying distributed H-matrices...";
-            std::cout.flush();
-        }
-        mpi::Barrier( mpi::COMM_WORLD );
-        double multStartTime = mpi::Time();
-        DistHMat C( teams );
-        A.Multiply( Scalar(1), B, C, multType );
-        mpi::Barrier( mpi::COMM_WORLD );
-        double multStopTime = mpi::Time();
-        if( commRank == 0 )
-        {
-            std::cout << "done: " << multStopTime-multStartTime
-                      << " seconds." << std::endl;
-        }
-        if( structure )
-        {
-#ifdef HAVE_QT5
-            std::ostringstream os;
-            os << "C on " << commRank;
-            C.DisplayLocal( os.str() );
-#endif
-            C.LatexLocalStructure("C_ghosted_structure");
-            C.MScriptLocalStructure("C_ghosted_structure");
-        }
-
-        // Check that CX = ABX for an arbitrary X
+        
+        // Check that AX = BX for an arbitrary X
         if( commRank == 0 )
             std::cout << "Checking consistency: " << std::endl;
         mpi::Barrier( mpi::COMM_WORLD );
-        B.Multiply( Scalar(1), XLocal, ZLocal );
-        A.Multiply( Scalar(1), ZLocal, YLocal );
-        // Z := CX
-        C.Multiply( Scalar(1), XLocal, ZLocal );
 
         if( print )
         {
@@ -334,12 +324,12 @@ main( int argc, char* argv[] )
         ( &myL2SquaredError, &L2SquaredError, 1, mpi::SUM, 0, mpi::COMM_WORLD );
         if( commRank == 0 )
         {
-            std::cout << "||ABX||_oo    = " << infTruth << "\n"
-                      << "||ABX||_1     = " << L1Truth << "\n"
-                      << "||ABX||_2     = " << sqrt(L2SquaredTruth) << "\n"
-                      << "||CX-ABX||_oo = " << infError << "\n"
-                      << "||CX-ABX||_1  = " << L1Error << "\n"
-                      << "||CX-ABX||_2  = " << sqrt(L2SquaredError) 
+            std::cout << "||AX||_oo    = " << infTruth << "\n"
+                      << "||AX||_1     = " << L1Truth << "\n"
+                      << "||AX||_2     = " << sqrt(L2SquaredTruth) << "\n"
+                      << "||AX-BX||_oo = " << infError << "\n"
+                      << "||AX-BX||_1  = " << L1Error << "\n"
+                      << "||AX-BX||_2  = " << sqrt(L2SquaredError) 
                       << std::endl;
         }
 

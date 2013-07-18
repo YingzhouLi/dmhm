@@ -101,6 +101,12 @@ public:
       int xSizeSource, int xSizeTarget, 
       int ySizeSource, int ySizeTarget, const Teams& teams );
 
+    // Generate an H-matrix from sparse matrix.
+    DistHMat2d
+    ( const Sparse<Scalar>& S,
+      int numLevels, int maxRank, bool stronglyAdmissible, 
+      int xSize, int ySize, const Teams& teams );
+
     // Unpack our portion of a distributed H-matrix. The buffer should have been
     // generated from the above 'Pack' routine.
     DistHMat2d( const byte* packedPiece, const Teams& teams );
@@ -536,8 +542,23 @@ private:
       bool inSourceTeam, bool inTargetTeam, 
       int sourceRoot, int targetRoot );
 
+    // This only constructs one level of the H-matrix from Sparse matrix
+    DistHMat2d
+    ( const Sparse<Scalar>& S,
+      int numLevels, int maxRank, bool stronglyAdmissible, 
+      int sourceOffset, int targetOffset,
+      int xSizeSource, int xSizeTarget, int ySizeSource, int ySizeTarget,
+      int xSource, int xTarget, int ySource, int yTarget,
+      const Teams& teams, int level, 
+      bool inSourceTeam, bool inTargetTeam, 
+      int sourceRoot, int targetRoot );
+
     // Continue to fill the H-matrix tree
     void BuildTree(); 
+
+    // Import Sparse matrix into H-matrix
+    void ImportSparse
+    ( const Sparse<Scalar>& S, int iOffset=0, int jOffset=0 );
 
     bool Admissible() const;
     bool Admissible( int xSource, int xTarget, int ySource, int yTarget ) const;

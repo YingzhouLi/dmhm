@@ -103,6 +103,32 @@ DistHMat2d<Scalar>::DistHMat2d
         throw std::logic_error("Too many processes for this H-matrix depth");
     BuildTree();
 }
+
+template<typename Scalar>
+DistHMat2d<Scalar>::DistHMat2d
+( const Sparse<Scalar>& S,
+  int numLevels, int maxRank, bool stronglyAdmissible,
+  int xSize, int ySize, const Teams& teams )
+: numLevels_(numLevels), maxRank_(maxRank),
+  sourceOffset_(0), targetOffset_(0),
+  stronglyAdmissible_(stronglyAdmissible),
+  xSizeSource_(xSize), xSizeTarget_(xSize),
+  ySizeSource_(ySize), ySizeTarget_(ySize),
+  xSource_(0), xTarget_(0),
+  ySource_(0), yTarget_(0),
+  teams_(&teams), level_(0),
+  inSourceTeam_(true), inTargetTeam_(true), 
+  sourceRoot_(0), targetRoot_(0),
+  haveDenseUpdate_(false), storedDenseUpdate_(false),
+  beganRowSpaceComp_(false), finishedRowSpaceComp_(false),
+  beganColSpaceComp_(false), finishedColSpaceComp_(false)
+{
+#ifndef RELEASE
+    CallStackEntry entry("DistHMat2d::DistHMat2d");
+#endif
+    ImportSparse( S );
+}
+
     
 template<typename Scalar>
 DistHMat2d<Scalar>::~DistHMat2d()
@@ -600,6 +626,38 @@ DistHMat2d<Scalar>::DistHMat2d
 }
 
 template<typename Scalar>
+DistHMat2d<Scalar>::DistHMat2d
+( const Sparse<Scalar>& S,
+  int numLevels, int maxRank, bool stronglyAdmissible,
+  int sourceOffset, int targetOffset,
+  int xSizeSource, int xSizeTarget, 
+  int ySizeSource, int ySizeTarget,
+  int xSource, int xTarget, 
+  int ySource, int yTarget,
+  const Teams& teams, int level, 
+  bool inSourceTeam, bool inTargetTeam, 
+  int sourceRoot, int targetRoot )
+: numLevels_(numLevels), maxRank_(maxRank), 
+  sourceOffset_(sourceOffset), targetOffset_(targetOffset), 
+  stronglyAdmissible_(stronglyAdmissible), 
+  xSizeSource_(xSizeSource), xSizeTarget_(xSizeTarget),
+  ySizeSource_(ySizeSource), ySizeTarget_(ySizeTarget), 
+  xSource_(xSource), xTarget_(xTarget),
+  ySource_(ySource), yTarget_(yTarget), 
+  teams_(&teams), level_(level),
+  inSourceTeam_(inSourceTeam), inTargetTeam_(inTargetTeam),
+  sourceRoot_(sourceRoot), targetRoot_(targetRoot),
+  haveDenseUpdate_(false), storedDenseUpdate_(false),
+  beganRowSpaceComp_(false), finishedRowSpaceComp_(false),
+  beganColSpaceComp_(false), finishedColSpaceComp_(false)
+{
+#ifndef RELEASE
+    CallStackEntry entry("DistHMat2d::DistHMat2d");
+#endif
+    ImportSparse( S, targetOffset, sourceOffset );
+}
+
+template<typename Scalar>
 void
 DistHMat2d<Scalar>::BuildTree()
 {
@@ -890,6 +948,325 @@ DistHMat2d<Scalar>::BuildTree()
         }
     }
 }
+
+template<typename Scalar>
+void
+DistHMat2d<Scalar>::ImportSparse
+( const Sparse<Scalar>& S, int iOffset, int jOffset )
+{
+#ifndef RELEASE
+    CallStackEntry entry("DistHMat2d::ImportSparse");
+#endif
+    mpi::Comm team = teams_->Team(level_);
+    const int teamSize = mpi::CommSize( team );
+    const int teamRank = mpi::CommRank( team );
+    if( !inSourceTeam_ && !inTargetTeam_ )
+        block_.type = EMPTY;
+    else if( Admissible() ) // low rank
+    {
+        if( teamSize > 1 )
+        {
+            LowRank<Scalar> Ftmp;
+            hmat_tools::ConvertSubmatrix
+            ( Ftmp, S, iOffset, jOffset, Height(), Width() );
+
+            block_.type = DIST_LOW_RANK;
+            block_.data.DF = new DistLowRank;
+            block_.data.DF->rank = Ftmp.U.Width();
+            DistLowRank& DF = *block_.data.DF;
+
+            if( inSourceTeam_ )
+            {
+                const int firstLocalCol = FirstLocalCol();
+                const int LW = LocalWidth();
+                DF.VLocal.SetType( GENERAL );
+                DF.VLocal.Resize( LW, DF.rank );
+                DF.VLocal.Init();
+                for( int j=0; j<DF.rank; ++j )
+                    MemCopy
+                    ( DF.VLocal.Buffer(0,j), 
+                      Ftmp.V.LockedBuffer(firstLocalCol,j), LW );
+            }
+        
+            if( inTargetTeam_ )
+            {
+                const int firstLocalRow = FirstLocalRow();
+                const int LH = LocalHeight();
+                DF.ULocal.SetType( GENERAL );
+                DF.ULocal.Resize( LH, DF.rank );
+                DF.ULocal.Init();
+                for( int j=0; j<DF.rank; ++j )
+                    MemCopy
+                    ( DF.ULocal.Buffer(0,j), 
+                      Ftmp.U.LockedBuffer(firstLocalRow,j), LH );
+            }
+        }
+        else if( sourceRoot_ == targetRoot_ )
+        {
+            block_.type = LOW_RANK;
+            block_.data.F = new LowRank<Scalar>;
+            hmat_tools::ConvertSubmatrix
+            ( *block_.data.F, S, iOffset, jOffset, Height(), Width() );
+        }
+        else
+        {
+            LowRank<Scalar> Ftmp;
+            hmat_tools::ConvertSubmatrix
+            ( Ftmp, S, iOffset, jOffset, Height(), Width() );
+
+            block_.type = SPLIT_LOW_RANK;
+            block_.data.SF = new SplitLowRank;
+            block_.data.SF->rank = Ftmp.U.Width();
+            if( inTargetTeam_ )
+                hmat_tools::Copy( Ftmp.U, block_.data.SF->D );
+            else
+                hmat_tools::Copy( Ftmp.V, block_.data.SF->D );
+        }
+    }
+    else if( numLevels_ > 1 ) // recurse
+    {
+        block_.data.N = NewNode();
+        Node& node = *block_.data.N;        
+
+        if( teamSize >= 4 )
+        {
+            block_.type = DIST_NODE;
+
+            const int subteam = teamRank/(teamSize/4);
+            // Top-left block
+            for( int t=0,tOffset=0; t<2; tOffset+=node.targetSizes[t],++t )
+            {
+                const int targetRoot = targetRoot_ + t*(teamSize/4);
+                for( int s=0,sOffset=0; s<2; sOffset+=node.sourceSizes[s],++s )
+                {
+                    const int sourceRoot = sourceRoot_ + s*(teamSize/4);
+
+                    node.children[s+4*t] =
+                        new DistHMat2d<Scalar>
+                        ( S,
+                          numLevels_-1, maxRank_, stronglyAdmissible_,
+                          sourceOffset_+sOffset, targetOffset_+tOffset,
+                          node.xSourceSizes[s&1], node.xTargetSizes[t&1],
+                          node.ySourceSizes[0], node.yTargetSizes[0],
+                          2*xSource_+(s&1), 2*xTarget_+(t&1),
+                          2*ySource_, 2*yTarget_,
+                          *teams_, level_+1,
+                          inSourceTeam_ && (s==subteam),
+                          inTargetTeam_ && (t==subteam),
+                          sourceRoot, targetRoot );
+                }
+            }
+            // Top-right block
+            for( int t=0,tOffset=0; t<2; tOffset+=node.targetSizes[t],++t )
+            {
+                const int targetRoot = targetRoot_ + t*(teamSize/4);
+                for( int s=2,sOffset=node.sourceSizes[0]+node.sourceSizes[1];
+                     s<4; sOffset+=node.sourceSizes[s],++s )
+                {
+                    const int sourceRoot = sourceRoot_ + s*(teamSize/4);
+
+                    node.children[s+4*t] =
+                        new DistHMat2d<Scalar>
+                        ( S,
+                          numLevels_-1, maxRank_, stronglyAdmissible_,
+                          sourceOffset_+sOffset, targetOffset_+tOffset,
+                          node.xSourceSizes[s&1], node.xTargetSizes[t&1],
+                          node.ySourceSizes[1], node.yTargetSizes[0],
+                          2*xSource_+(s&1), 2*xTarget_+(t&1),
+                          2*ySource_+1, 2*yTarget_,
+                          *teams_, level_+1,
+                          inSourceTeam_ && (s==subteam),
+                          inTargetTeam_ && (t==subteam),
+                          sourceRoot, targetRoot );
+                }
+            }
+            // Bottom-left block
+            for( int t=2,tOffset=node.targetSizes[0]+node.targetSizes[1];
+                 t<4; tOffset+=node.targetSizes[t],++t )
+            {
+                const int targetRoot = targetRoot_ + t*(teamSize/4);
+                for( int s=0,sOffset=0; s<2; sOffset+=node.sourceSizes[s],++s )
+                {
+                    const int sourceRoot = sourceRoot_ + s*(teamSize/4);
+
+                    node.children[s+4*t] =
+                        new DistHMat2d<Scalar>
+                        ( S,
+                          numLevels_-1, maxRank_, stronglyAdmissible_,
+                          sourceOffset_+sOffset, targetOffset_+tOffset,
+                          node.xSourceSizes[s&1], node.xTargetSizes[t&1],
+                          node.ySourceSizes[0], node.yTargetSizes[1],
+                          2*xSource_+(s&1), 2*xTarget_+(t&1),
+                          2*ySource_, 2*yTarget_+1,
+                          *teams_, level_+1,
+                          inSourceTeam_ && (s==subteam),
+                          inTargetTeam_ && (t==subteam),
+                          sourceRoot, targetRoot );
+                }
+            }
+            // Bottom-right block
+            for( int t=2,tOffset=node.targetSizes[0]+node.targetSizes[1];
+                t<4; tOffset+=node.targetSizes[t],++t )
+            {
+                const int targetRoot = targetRoot_ + t*(teamSize/4);
+                for( int s=2,sOffset=node.sourceSizes[0]+node.sourceSizes[1];
+                     s<4; sOffset+=node.sourceSizes[s],++s )
+                {
+                    const int sourceRoot = sourceRoot_ + s*(teamSize/4);
+
+                    node.children[s+4*t] =
+                        new DistHMat2d<Scalar>
+                        ( S,
+                          numLevels_-1, maxRank_, stronglyAdmissible_,
+                          sourceOffset_+sOffset, targetOffset_+tOffset,
+                          node.xSourceSizes[s&1], node.xTargetSizes[t&1],
+                          node.ySourceSizes[1], node.yTargetSizes[1],
+                          2*xSource_+(s&1), 2*xTarget_+(t&1),
+                          2*ySource_+1, 2*yTarget_+1,
+                          *teams_, level_+1,
+                          inSourceTeam_ && (s==subteam),
+                          inTargetTeam_ && (t==subteam),
+                          sourceRoot, targetRoot );
+                }
+            }
+        }
+        else if( teamSize == 2 )
+        {
+            block_.type = DIST_NODE;
+
+            const bool inUpperTeam = ( teamRank == 1 );
+            const bool inLeftSourceTeam = ( !inUpperTeam && inSourceTeam_ );
+            const bool inRightSourceTeam = ( inUpperTeam && inSourceTeam_ );
+            const bool inTopTargetTeam = ( !inUpperTeam && inTargetTeam_ );
+            const bool inBottomTargetTeam = ( inUpperTeam && inTargetTeam_ );
+
+            // Top-left block
+            for( int t=0,tOffset=0; t<2; tOffset+=node.targetSizes[t],++t )
+            {
+                for( int s=0,sOffset=0; s<2; sOffset+=node.sourceSizes[s],++s )
+                {
+                    node.children[s+4*t] =
+                        new DistHMat2d<Scalar>
+                        ( S,
+                          numLevels_-1, maxRank_, stronglyAdmissible_,
+                          sourceOffset_+sOffset, targetOffset_+tOffset,
+                          node.xSourceSizes[s&1], node.xTargetSizes[t&1],
+                          node.ySourceSizes[0], node.yTargetSizes[0],
+                          2*xSource_+(s&1), 2*xTarget_+(t&1),
+                          2*ySource_, 2*yTarget_,
+                          *teams_, level_+1,
+                          inLeftSourceTeam, inTopTargetTeam,
+                          sourceRoot_, targetRoot_ );
+                }
+            }
+            // Top-right block
+            for( int t=0,tOffset=0; t<2; tOffset+=node.targetSizes[t],++t )
+            {
+                for( int s=2,sOffset=node.sourceSizes[0]+node.sourceSizes[1];
+                     s<4; sOffset+=node.sourceSizes[s],++s )
+                {
+                    node.children[s+4*t] =
+                        new DistHMat2d<Scalar>
+                        ( S,
+                          numLevels_-1, maxRank_, stronglyAdmissible_,
+                          sourceOffset_+sOffset, targetOffset_+tOffset,
+                          node.xSourceSizes[s&1], node.xTargetSizes[t&1],
+                          node.ySourceSizes[1], node.yTargetSizes[0],
+                          2*xSource_+(s&1), 2*xTarget_+(t&1),
+                          2*ySource_+1, 2*yTarget_,
+                          *teams_, level_+1,
+                          inRightSourceTeam, inTopTargetTeam,
+                          sourceRoot_+1, targetRoot_ );
+                }
+            }
+            // Bottom-left block
+            for( int t=2,tOffset=node.targetSizes[0]+node.targetSizes[1];
+                 t<4; tOffset+=node.targetSizes[t],++t )
+            {
+                for( int s=0,sOffset=0; s<2; sOffset+=node.sourceSizes[s],++s )
+                {
+                    node.children[s+4*t] =
+                        new DistHMat2d<Scalar>
+                        ( S,
+                          numLevels_-1, maxRank_, stronglyAdmissible_,
+                          sourceOffset_+sOffset, targetOffset_+tOffset,
+                          node.xSourceSizes[s&1], node.xTargetSizes[t&1],
+                          node.ySourceSizes[0], node.yTargetSizes[1],
+                          2*xSource_+(s&1), 2*xTarget_+(t&1),
+                          2*ySource_, 2*yTarget_+1,
+                          *teams_, level_+1,
+                          inLeftSourceTeam, inBottomTargetTeam,
+                          sourceRoot_, targetRoot_+1 );
+                }
+            }
+            // Bottom-right block
+            for( int t=2,tOffset=node.targetSizes[0]+node.targetSizes[1];
+                 t<4; tOffset+=node.targetSizes[t],++t )
+            {
+                for( int s=2,sOffset=node.sourceSizes[0]+node.sourceSizes[1];
+                     s<4; sOffset+=node.sourceSizes[s],++s )
+                {
+                    node.children[s+4*t] =
+                        new DistHMat2d<Scalar>
+                        ( S,
+                          numLevels_-1, maxRank_, stronglyAdmissible_,
+                          sourceOffset_+sOffset, targetOffset_+tOffset,
+                          node.xSourceSizes[s&1], node.xTargetSizes[t&1],
+                          node.ySourceSizes[1], node.yTargetSizes[1],
+                          2*xSource_+(s&1), 2*xTarget_+(t&1),
+                          2*ySource_+1, 2*yTarget_+1,
+                          *teams_, level_+1,
+                          inRightSourceTeam, inBottomTargetTeam,
+                          sourceRoot_+1, targetRoot_+1 );
+                }
+            }
+        }
+        else // teamSize == 1 
+        {
+            block_.type = ( sourceRoot_==targetRoot_ ? NODE : SPLIT_NODE );
+
+            for( int t=0,tOffset=0; t<4; tOffset+=node.targetSizes[t],++t )
+            {
+                for( int s=0,sOffset=0; s<4; sOffset+=node.sourceSizes[s],++s )
+                {
+                    node.children[s+4*t] =
+                        new DistHMat2d<Scalar>
+                        ( S,
+                          numLevels_-1, maxRank_, stronglyAdmissible_,
+                          sourceOffset_+sOffset, targetOffset_+tOffset,
+                          node.xSourceSizes[s&1], node.xTargetSizes[t&1],
+                          node.ySourceSizes[s/2], node.yTargetSizes[t/2],
+                          2*xSource_+(s&1), 2*xTarget_+(t&1),
+                          2*ySource_+(s/2), 2*yTarget_+(t/2),
+                          *teams_, level_+1,
+                          inSourceTeam_, inTargetTeam_,
+                          sourceRoot_, targetRoot_ );
+                }
+            }
+        }
+    }
+    else // dense
+    {
+        if( sourceRoot_ == targetRoot_ )
+        {
+            block_.type = DENSE;
+            block_.data.D = new Dense<Scalar>;
+            hmat_tools::ConvertSubmatrix
+            ( *block_.data.D, S, iOffset, jOffset, Height(), Width() );
+        }
+        else
+        {
+            block_.type = SPLIT_DENSE;
+            block_.data.SD = new SplitDense;
+            if( inSourceTeam_ )
+            {
+                hmat_tools::ConvertSubmatrix
+                ( block_.data.SD->D, S, iOffset, jOffset, Height(), Width() );
+            }
+        }
+    }
+}
+
 
 namespace {
 

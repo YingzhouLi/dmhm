@@ -221,11 +221,11 @@ if(BUILD_TESTS)
   set(HMat2d_TESTS Invert LowRankConstructor MultiplyHMat Pack)
   set(DistHMat2d_TESTS Ghost ImportSparse MultiplyHMat Pack 
                             RandomMultiplyHMat RandomMultiplyVectors
-                            InvertHMat)
+                            InvertHMat SparseToHMat)
   set(HMat3d_TESTS Invert LowRankConstructor MultiplyHMat Pack)
   set(DistHMat3d_TESTS Ghost ImportSparse MultiplyHMat Pack 
                             RandomMultiplyHMat RandomMultiplyVectors
-                            InvertHMat)
+                            InvertHMat SparseToHMat)
   
   foreach(TYPE ${TEST_TYPES})
     set(OUTPUT_DIR "${PROJECT_BINARY_DIR}/bin/${TYPE}")

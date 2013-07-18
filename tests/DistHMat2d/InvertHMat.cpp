@@ -59,7 +59,6 @@ main( int argc, char* argv[] )
 {
     Initialize( argc, argv );
     const int commRank = mpi::CommRank( mpi::COMM_WORLD );
-    const int commSize = mpi::CommSize( mpi::COMM_WORLD );
     typedef std::complex<double> Scalar;
     typedef HMat2d<Scalar> HMat;
     typedef DistHMat2d<Scalar> DistHMat;
@@ -137,6 +136,7 @@ main( int argc, char* argv[] )
         }
 
         // Convert to H-matrix form
+        DistHMat::Teams teams( mpi::COMM_WORLD );
         if( commRank == 0 )
         {
             std::cout << "Constructing H-matrices in serial...";
@@ -144,117 +144,13 @@ main( int argc, char* argv[] )
         }
         mpi::Barrier( mpi::COMM_WORLD );
         double constructStartTime = mpi::Time();
-        HMat ASerial( S, numLevels, maxRank, strong, xSize, ySize );
+        DistHMat A( S, numLevels, maxRank, strong, xSize, ySize, teams );
         mpi::Barrier( mpi::COMM_WORLD );
         double constructStopTime = mpi::Time();
         if( commRank == 0 )
             std::cout << "done: " << constructStopTime-constructStartTime 
                       << " seconds." << std::endl;
 
-        // Invert H-matrix
-        if( commRank == 0 )
-        {
-            std::cout << "Inverting H-matrices in serial...";
-            std::cout.flush();
-        }
-        mpi::Barrier( mpi::COMM_WORLD );
-        double invertStartTime = mpi::Time();
-        //ASerial.DirectInvert();
-        mpi::Barrier( mpi::COMM_WORLD );
-        double invertStopTime = mpi::Time();
-        if( commRank == 0 )
-        {
-            std::cout << "done: " << invertStopTime-invertStartTime 
-                      << " seconds." << std::endl;
-//            if( print )
-//                ASerial.Print("ASerial");
-            if( structure )
-            {
-#ifdef HAVE_QT5
-                ASerial.Display("ASerial");
-#endif
-                ASerial.LatexStructure("ASerial_structure");
-                ASerial.MScriptStructure("ASerial_structure");
-            }
-        }
-
-        // Set up our subcommunicators and compute the packed sizes
-        DistHMat::Teams teams( mpi::COMM_WORLD );
-        std::vector<std::size_t> packedSizes;
-        DistHMat::PackedSizes( packedSizes, ASerial, teams ); 
-        const std::size_t myMaxSize = 
-            *(std::max_element( packedSizes.begin(), packedSizes.end() ));
-
-        // Pack for a DistHMat2d
-        if( commRank == 0 )
-        {
-            std::cout << "Packing H-matrix for distribution...";
-            std::cout.flush();
-        }
-        mpi::Barrier( mpi::COMM_WORLD );
-        double packStartTime = mpi::Time();
-        std::vector<byte> sendBuffer( commSize*myMaxSize );
-        std::vector<byte*> packedPieces( commSize );
-        for( int i=0; i<commSize; ++i )
-            packedPieces[i] = &sendBuffer[i*myMaxSize];
-        DistHMat::Pack( packedPieces, ASerial, teams );
-        mpi::Barrier( mpi::COMM_WORLD );
-        double packStopTime = mpi::Time();
-        if( commRank == 0 )
-            std::cout << "done: " << packStopTime-packStartTime << " seconds."
-                      << std::endl;
-
-        // Compute the maximum package size
-        int myIntMaxSize, intMaxSize;
-        {
-            myIntMaxSize = myMaxSize;
-            mpi::AllReduce
-            ( &myIntMaxSize, &intMaxSize, 1, mpi::MAX, mpi::COMM_WORLD );
-        }
-        if( commRank == 0 )
-        {
-            std::cout << "Maximum per-process message size: " 
-                      << ((double)intMaxSize)/(1024.*1024.) << " MB." 
-                      << std::endl;
-        }
- 
-        // AllToAll
-        if( commRank == 0 )
-        {
-            std::cout << "AllToAll redistribution...";
-            std::cout.flush();
-        }
-        mpi::Barrier( mpi::COMM_WORLD );
-        double allToAllStartTime = mpi::Time();
-        std::vector<byte> recvBuffer( commSize*intMaxSize );
-        mpi::AllToAll
-        ( &sendBuffer[0], myIntMaxSize, &recvBuffer[0], intMaxSize,
-          mpi::COMM_WORLD );
-        mpi::Barrier( mpi::COMM_WORLD );
-        double allToAllStopTime = mpi::Time();
-        if( commRank == 0 )
-        {
-            std::cout << "done: " << allToAllStopTime-allToAllStartTime
-                      << " seconds." << std::endl;
-        }
-
-        // Unpack our part of the matrix defined by process 0 twice
-        if( commRank == 0 )
-        {
-            std::cout << "Unpacking...";
-            std::cout.flush();
-        }
-        mpi::Barrier( mpi::COMM_WORLD );
-        double unpackStartTime = mpi::Time();
-        DistHMat A( &recvBuffer[0], teams );
-        DistHMat B( &recvBuffer[0], teams );
-        mpi::Barrier( mpi::COMM_WORLD );
-        double unpackStopTime = mpi::Time();
-        if( commRank == 0 )
-        {
-            std::cout << "done: " << unpackStopTime-unpackStartTime
-                      << " seconds." << std::endl;
-        }
         if( structure )
         {
 #ifdef HAVE_QT5
@@ -361,51 +257,6 @@ main( int argc, char* argv[] )
         if( commRank == 0 )
             std::cout << "Checking consistency: " << std::endl;
         mpi::Barrier( mpi::COMM_WORLD );
-/*        const int localHeight = A.LocalHeight();
-        const int localWidth = A.LocalWidth();
-        if( localHeight != localWidth )
-            throw std::logic_error("A was not locally square");
-        Dense<Scalar> XLocal;
-        if( multI )
-        {
-            const int firstLocalRow = A.FirstLocalRow();
-            XLocal.Resize( localHeight, n );
-            hmat_tools::Scale( Scalar(0), XLocal );
-            for( int j=firstLocalRow; j<firstLocalRow+localHeight; ++j )
-                XLocal.Set( j-firstLocalRow, j, Scalar(1) );
-        }
-        else
-        {
-            const int numRhs = 30;
-            XLocal.Resize( localHeight, numRhs );
-            ParallelGaussianRandomVectors( XLocal );
-        }
-        
-        Dense<Scalar> YLocal, ZLocal;
-        // Y := AZ := ABX
-        B.Multiply( Scalar(1), XLocal, ZLocal );
-        if( print )
-        {
-            std::ostringstream sE;
-            sE << "BLocal_" << commRank << ".m";
-            std::ofstream EFile( sE.str().c_str() );
-
-            EFile << "BLocal{" << commRank+1 << "}=[\n";
-            ZLocal.Print( "", EFile );
-            EFile << "];\n";
-        }
-        A.Multiply( Scalar(1), XLocal, ZLocal );
-        if( print )
-        {
-            std::ostringstream sE;
-            sE << "ALocal_" << commRank << ".m";
-            std::ofstream EFile( sE.str().c_str() );
-
-            EFile << "ALocal{" << commRank+1 << "}=[\n";
-            ZLocal.Print( "", EFile );
-            EFile << "];\n";
-        }
-        */
         B.Multiply( Scalar(1), XLocal, ZLocal );
         A.Multiply( Scalar(1), ZLocal, YLocal );
         // Z := CX
