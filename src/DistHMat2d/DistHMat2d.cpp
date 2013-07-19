@@ -464,7 +464,10 @@ DistHMat2d<Scalar>::Admissible
 ( int xSource, int xTarget, int ySource, int yTarget ) const
 {
     if( stronglyAdmissible_ )
-        return std::max(std::abs(xSource-xTarget),std::abs(ySource-yTarget))>1;
+    {
+        //return std::max(std::abs(xSource-xTarget),std::abs(ySource-yTarget))>1;
+        return std::abs(xSource-xTarget)+std::abs(ySource-yTarget)>1;
+    }
     else
         return xSource != xTarget || ySource != yTarget;
 }

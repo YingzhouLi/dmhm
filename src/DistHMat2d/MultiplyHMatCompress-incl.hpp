@@ -29,12 +29,12 @@ DistHMat2d<Scalar>::MultiplyHMatCompress( int startLevel, int endLevel )
     // Everything about V are same in VSqr_ and VSqrEig_.
     
 //    MultiplyHMatCompressFCompressless( startLevel, endLevel );
-#ifndef RELEASE
-    PrintMemoryInfo( "MemoryInfo before Compression" );
-#endif
     MultiplyHMatCompressLowRankCountAndResize(0);
     MultiplyHMatCompressLowRankImport(0);
     MultiplyHMatCompressFPrecompute( startLevel, endLevel);
+#ifndef RELEASE
+    PrintMemoryInfo( "MemoryInfo before Compression Reduce" );
+#endif
     MultiplyHMatCompressFReduces( startLevel, endLevel );
 
     evdCount=0;
@@ -51,6 +51,9 @@ DistHMat2d<Scalar>::MultiplyHMatCompress( int startLevel, int endLevel )
     //
     const Real midcomputeTol = MidcomputeTolerance<Real>();
     MultiplyHMatCompressFMidcompute( midcomputeTol, startLevel, endLevel );
+#ifndef RELEASE
+    PrintMemoryInfo( "MemoryInfo Compression after Midcompute" );
+#endif
     MultiplyHMatCompressFPassbackNum( startLevel, endLevel );
     MultiplyHMatCompressFPassbackData( startLevel, endLevel );
 
@@ -71,9 +74,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompress( int startLevel, int endLevel )
     // Clean up all the space used in this file
     // Also, clean up the colXMap_, rowXMap_, UMap_, VMap_, ZMap_
     MultiplyHMatCompressFCleanup( startLevel, endLevel );
-#ifndef RELEASE
-    PrintMemoryInfo( "MemoryInfo after Compression" );
-#endif
 }
 
 template<typename Scalar>

@@ -107,6 +107,10 @@ void SetMidcomputeTolerance<float>( float tolerance );
 template<>
 void SetMidcomputeTolerance<double>( double tolerance );
 
+void AddToMemoryCount( double size );
+double MemoryUsage();
+double PeakMemoryUsage();
+
 typedef unsigned char byte;
 
 template<typename T>

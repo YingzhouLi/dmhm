@@ -19,7 +19,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompress
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MultiplyHMatFHHCompress");
-    C.PrintMemoryInfo( "MemoryInfo before FHH Compression" );
+    //C.PrintMemoryInfo( "MemoryInfo before FHH Compression" );
 #endif
     
     MultiplyHMatFHHCompressPrecompute

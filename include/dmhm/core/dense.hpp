@@ -115,6 +115,7 @@ Dense<Scalar>::Dense
         throw std::logic_error("Height and width must be non-negative");
     if( type == SYMMETRIC && height != width )
         throw std::logic_error("Symmetric matrices must be square");
+    AddToMemoryCount( ldim_*width_*sizeof(Scalar) );
 #endif
 }
 
@@ -135,6 +136,7 @@ Dense<Scalar>::Dense
         throw std::logic_error("Symmetric matrices must be square");
     if( ldim <= 0 )
         throw std::logic_error("Leading dimensions must be positive");
+    AddToMemoryCount( ldim_*width_*sizeof(Scalar) );
 #endif
 }
 
@@ -181,7 +183,7 @@ Dense<Scalar>::Dense
 template<typename Scalar>
 inline 
 Dense<Scalar>::~Dense()
-{ }
+{ Clear(); }
 
 template<typename Scalar>
 inline void
@@ -254,6 +256,7 @@ Dense<Scalar>::Resize( int height, int width )
         throw std::logic_error("Height and width must be non-negative");
     if( type_ == SYMMETRIC && height != width )
         throw std::logic_error("Destroyed symmetry of symmetric matrix");
+    AddToMemoryCount( -ldim_*width_*sizeof(Scalar) );
 #endif
     if( height > ldim_ )
     {
@@ -263,6 +266,9 @@ Dense<Scalar>::Resize( int height, int width )
     height_ = height;
     width_ = width;
     memory_.resize( ldim_*width );
+#ifndef RELEASE
+    AddToMemoryCount( ldim_*width_*sizeof(Scalar) );
+#endif
     buffer_ = &memory_[0];
 }
 
@@ -280,11 +286,15 @@ Dense<Scalar>::Resize( int height, int width, int ldim )
         throw std::logic_error("LDim must be positive and >= the height");
     if( type_ == SYMMETRIC && height != width )
         throw std::logic_error("Destroyed symmetry of symmetric matrix");
+    AddToMemoryCount( -ldim_*width_*sizeof(Scalar) );
 #endif
     height_ = height;
     width_ = width;
     ldim_ = ldim;
     memory_.resize( ldim*width );
+#ifndef RELEASE
+    AddToMemoryCount( ldim_*width_*sizeof(Scalar) );
+#endif
     buffer_ = &memory_[0];
 }
 
@@ -306,6 +316,9 @@ Dense<Scalar>::EraseCols( int first, int last )
         width_ = width_-last+first-1;
         memory_.erase
         ( memory_.begin()+first*ldim_, memory_.begin()+(last+1)*ldim_ );
+#ifndef RELEASE
+        AddToMemoryCount( -ldim_*(last-first+1)*sizeof(Scalar) );
+#endif
         buffer_ = &memory_[0];
     }
 }
@@ -327,8 +340,13 @@ Dense<Scalar>::EraseRows( int first, int last )
     {
         height_ = height_-last+first-1;  
         for( int i=width_-1; i>=0; --i )
+        {
             memory_.erase
             ( memory_.begin()+i*ldim_+first, memory_.begin()+i*ldim_+last+1 );
+#ifndef RELEASE
+            AddToMemoryCount( -(last-first+1)*sizeof(Scalar) );
+#endif
+        }
         buffer_ = &memory_[0];
         ldim_ = std::max( ldim_-last+first-1, 1 );
     }
@@ -377,6 +395,9 @@ Dense<Scalar>::Clear()
     lockedView_ = false;
 
     std::vector<Scalar>().swap(memory_);
+#ifndef RELEASE
+    AddToMemoryCount( -memory_.size()*sizeof(Scalar) );
+#endif
     buffer_ = 0;
     lockedBuffer_ = 0;
     type_ = GENERAL;

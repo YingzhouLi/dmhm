@@ -105,6 +105,7 @@ main( int argc, char* argv[] )
         if( commRank == 0 )
         {
             std::cout << "Filling sparse matrices...";
+            std::cout << sizeof(Scalar);
             std::cout.flush();
         }
         mpi::Barrier( mpi::COMM_WORLD );
@@ -145,6 +146,11 @@ main( int argc, char* argv[] )
         mpi::Barrier( mpi::COMM_WORLD );
         double constructStartTime = mpi::Time();
         DistHMat A( S, numLevels, maxRank, strong, xSize, ySize, teams );
+        A.PrintMemoryInfo("Memory in Invert");
+        std::cout << "Memory of Dense block now: " 
+                  << MemoryUsage()/1024/1024 << "MB" << std::endl;
+        std::cout << "Peak memory of Dense block: "
+                  << PeakMemoryUsage()/1024/1024 << "MB" << std::endl;
         DistHMat B( S, numLevels, maxRank, strong, xSize, ySize, teams );
         mpi::Barrier( mpi::COMM_WORLD );
         double constructStopTime = mpi::Time();

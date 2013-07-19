@@ -33,6 +33,8 @@ float compressionTolFloat=1e-5;
 double midcomputeTolDouble=1e-16;
 double compressionTolDouble=1e-16;
 
+double memoryusage=0;
+double peakmemoryusage=0;
 }
 
 namespace dmhm {
@@ -116,8 +118,7 @@ void Finalize()
         delete ::coreApp;
     }
 #endif
-}
-
+} 
 MpiArgs& GetArgs()
 {
     if( args == 0 )
@@ -195,5 +196,17 @@ void SetMidcomputeTolerance<float>( float tolerance )
 template<>
 void SetMidcomputeTolerance<double>( double tolerance )
 { ::midcomputeTolDouble = tolerance; }
+
+void AddToMemoryCount( double size )
+{   ::memoryusage += size;
+    if( ::memoryusage > ::peakmemoryusage )
+        ::peakmemoryusage = ::memoryusage;
+}
+
+double MemoryUsage()
+{ return ::memoryusage; }
+
+double PeakMemoryUsage()
+{ return ::peakmemoryusage; }
 
 } // namespace dhmhm
