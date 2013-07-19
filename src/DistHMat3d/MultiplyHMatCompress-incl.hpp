@@ -29,12 +29,12 @@ DistHMat3d<Scalar>::MultiplyHMatCompress( int startLevel, int endLevel )
     // Everything about V are same in VSqr_ and VSqrEig_.
     
 //    MultiplyHMatCompressFCompressless( startLevel, endLevel );
-#ifndef RELEASE
-    PrintMemoryInfo( "MemoryInfo before Compression" );
-#endif
     MultiplyHMatCompressLowRankCountAndResize(0);
     MultiplyHMatCompressLowRankImport(0);
     MultiplyHMatCompressFPrecompute( startLevel, endLevel);
+#ifndef RELEASE
+    PrintMemoryInfo( "MemoryInfo before Compression Reduce" );
+#endif
     MultiplyHMatCompressFReduces( startLevel, endLevel );
 
     evdCount=0;
@@ -51,6 +51,9 @@ DistHMat3d<Scalar>::MultiplyHMatCompress( int startLevel, int endLevel )
     //
     const Real midcomputeTol = MidcomputeTolerance<Real>();
     MultiplyHMatCompressFMidcompute( midcomputeTol, startLevel, endLevel );
+#ifndef RELEASE
+    PrintMemoryInfo( "MemoryInfo Compression after Midcompute" );
+#endif
     MultiplyHMatCompressFPassbackNum( startLevel, endLevel );
     MultiplyHMatCompressFPassbackData( startLevel, endLevel );
 

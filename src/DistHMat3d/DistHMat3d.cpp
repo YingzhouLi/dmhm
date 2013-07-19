@@ -1468,6 +1468,14 @@ DistHMat3d<Scalar>::MemoryInfo
         num += BRMap_.EntrySize()*sizeof(Scalar);
 
         Node& node = *block_.data.N;
+        numNode += sizeof(node.xSourceSizes);
+        numNode += sizeof(node.ySourceSizes);
+		numNode += sizeof(node.zSourceSizes);
+        numNode += sizeof(node.sourceSizes);
+        numNode += sizeof(node.xTargetSizes);
+        numNode += sizeof(node.yTargetSizes);
+		numNode += sizeof(node.zTargetSizes);
+        numNode += sizeof(node.targetSizes);
         for( int t=0; t<8; ++t )
             for( int s=0; s<8; ++s )
                 node.Child(t,s).MemoryInfo
