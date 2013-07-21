@@ -153,15 +153,22 @@ main( int argc, char* argv[] )
         }
 
         // Convert to H-matrix form
+        DistHMat::Teams teams( mpi::COMM_WORLD );
         if( commRank == 0 )
         {
             std::cout << "Constructing H-matrices in dist...";
             std::cout.flush();
         }
         mpi::Barrier( mpi::COMM_WORLD );
-        DistHMat::Teams teams( mpi::COMM_WORLD );
         double constructStartTime = mpi::Time();
         DistHMat A( S, numLevels, maxRank, strong, xSize, ySize, zSize, teams );
+#ifdef MEMORY_INFO
+        A.PrintMemoryInfo("Memory in Invert");
+        std::cout << "Memory of Dense block now: " 
+                  << MemoryUsage()/1024./1024. << "MB" << std::endl;
+        std::cout << "Peak memory of Dense block: "
+                  << PeakMemoryUsage()/1024./1024. << "MB" << std::endl;
+#endif
         DistHMat B( S, numLevels, maxRank, strong, xSize, ySize, zSize, teams );
         mpi::Barrier( mpi::COMM_WORLD );
         double constructStopTime = mpi::Time();

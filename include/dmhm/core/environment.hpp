@@ -107,9 +107,11 @@ void SetMidcomputeTolerance<float>( float tolerance );
 template<>
 void SetMidcomputeTolerance<double>( double tolerance );
 
+#ifdef MEMORY_INFO
 void AddToMemoryCount( double size );
 double MemoryUsage();
 double PeakMemoryUsage();
+#endif
 
 typedef unsigned char byte;
 

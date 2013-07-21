@@ -19,6 +19,9 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompress
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatFHHCompress");
+#endif
+
+#ifdef MEMORY_INFO
     //C.PrintMemoryInfo( "MemoryInfo before FHH Compression" );
 #endif
     

@@ -32,7 +32,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompress( int startLevel, int endLevel )
     MultiplyHMatCompressLowRankCountAndResize(0);
     MultiplyHMatCompressLowRankImport(0);
     MultiplyHMatCompressFPrecompute( startLevel, endLevel);
-#ifndef RELEASE
+#ifdef MEMORY_INFO
     PrintMemoryInfo( "MemoryInfo before Compression Reduce" );
 #endif
     MultiplyHMatCompressFReduces( startLevel, endLevel );
@@ -51,7 +51,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompress( int startLevel, int endLevel )
     //
     const Real midcomputeTol = MidcomputeTolerance<Real>();
     MultiplyHMatCompressFMidcompute( midcomputeTol, startLevel, endLevel );
-#ifndef RELEASE
+#ifdef MEMORY_INFO 
     PrintMemoryInfo( "MemoryInfo Compression after Midcompute" );
 #endif
     MultiplyHMatCompressFPassbackNum( startLevel, endLevel );

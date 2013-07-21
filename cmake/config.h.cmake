@@ -14,6 +14,7 @@
 #define DMHM_VERSION_MINOR @DMHM_VERSION_MINOR@
 #cmakedefine RELEASE
 #cmakedefine TIME_MULTIPLY
+#cmakedefine MEMORY_INFO
 #cmakedefine BLAS_POST
 #cmakedefine LAPACK_POST
 #cmakedefine HAVE_QT5

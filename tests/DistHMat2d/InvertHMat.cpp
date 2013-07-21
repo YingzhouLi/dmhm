@@ -23,7 +23,7 @@ FormRow
 
     // Set up the diagonal entry
     colIndices.push_back( rowIdx );
-    row.push_back( Scalar(8) );
+    row.push_back( Scalar(4) );
 
     // Front connection to (x-1,y)
     if( x != 0 )
@@ -105,7 +105,6 @@ main( int argc, char* argv[] )
         if( commRank == 0 )
         {
             std::cout << "Filling sparse matrices...";
-            std::cout << sizeof(Scalar);
             std::cout.flush();
         }
         mpi::Barrier( mpi::COMM_WORLD );
@@ -146,11 +145,13 @@ main( int argc, char* argv[] )
         mpi::Barrier( mpi::COMM_WORLD );
         double constructStartTime = mpi::Time();
         DistHMat A( S, numLevels, maxRank, strong, xSize, ySize, teams );
+#ifdef MEMORY_INFO
         A.PrintMemoryInfo("Memory in Invert");
         std::cout << "Memory of Dense block now: " 
-                  << MemoryUsage()/1024/1024 << "MB" << std::endl;
+                  << MemoryUsage()/1024./1024. << "MB" << std::endl;
         std::cout << "Peak memory of Dense block: "
-                  << PeakMemoryUsage()/1024/1024 << "MB" << std::endl;
+                  << PeakMemoryUsage()/1024./1024. << "MB" << std::endl;
+#endif
         DistHMat B( S, numLevels, maxRank, strong, xSize, ySize, teams );
         mpi::Barrier( mpi::COMM_WORLD );
         double constructStopTime = mpi::Time();

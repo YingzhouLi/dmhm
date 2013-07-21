@@ -33,8 +33,10 @@ float compressionTolFloat=1e-5;
 double midcomputeTolDouble=1e-16;
 double compressionTolDouble=1e-16;
 
+#ifdef MEMORY_INFO
 double memoryusage=0;
 double peakmemoryusage=0;
+#endif
 }
 
 namespace dmhm {
@@ -197,6 +199,7 @@ template<>
 void SetMidcomputeTolerance<double>( double tolerance )
 { ::midcomputeTolDouble = tolerance; }
 
+#ifdef MEMORY_INFO
 void AddToMemoryCount( double size )
 {   ::memoryusage += size;
     if( ::memoryusage > ::peakmemoryusage )
@@ -208,5 +211,6 @@ double MemoryUsage()
 
 double PeakMemoryUsage()
 { return ::peakmemoryusage; }
+#endif
 
 } // namespace dhmhm

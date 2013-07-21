@@ -16,6 +16,8 @@ option(TIME_MULTIPLY "Instrument H-matrix multiply with timers." OFF)
 
 option(BUILD_TESTS "Build the test drivers" ON)
 option(AVOID_COMPLEX_MPI "Avoid complex MPI routines for robustness" ON)
+
+option(MEMORY_INFO "Collect memory infomation during the code." OFF)
 mark_as_advanced(AVOID_COMPLEX_MPI)
 
 # Whether or not to use Qt5 for visualization if it is found (experimental)
