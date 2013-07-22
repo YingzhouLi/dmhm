@@ -34,8 +34,8 @@ double midcomputeTolDouble=1e-16;
 double compressionTolDouble=1e-16;
 
 #ifdef MEMORY_INFO
-double memoryusage=0;
-double peakmemoryusage=0;
+double memoryUsage=0;
+double peakMemoryUsage=0;
 #endif
 }
 
@@ -201,16 +201,16 @@ void SetMidcomputeTolerance<double>( double tolerance )
 
 #ifdef MEMORY_INFO
 void AddToMemoryCount( double size )
-{   ::memoryusage += size;
-    if( ::memoryusage > ::peakmemoryusage )
-        ::peakmemoryusage = ::memoryusage;
+{   ::memoryUsage += size;
+    if( ::memoryUsage > ::peakMemoryUsage )
+        ::peakMemoryUsage = ::memoryUsage;
 }
 
 double MemoryUsage()
-{ return ::memoryusage; }
+{ return ::memoryUsage; }
 
 double PeakMemoryUsage()
-{ return ::peakmemoryusage; }
+{ return ::peakMemoryUsage; }
 #endif
 
 } // namespace dhmhm

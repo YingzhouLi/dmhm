@@ -371,9 +371,8 @@ DistHMat2d<Scalar>::MultiplyVectorPrecompute
         const DistLowRank& DF = *block_.data.DF;
         Vector<Scalar>& z = *context.block.data.z;
         z.Resize( DF.rank );
-        const char option = 'T';
         blas::Gemv
-        ( option, DF.VLocal.Height(), DF.rank, 
+        ( 'T', DF.VLocal.Height(), DF.rank, 
           alpha,     DF.VLocal.LockedBuffer(), DF.VLocal.LDim(), 
                      xLocal.LockedBuffer(),    1,
           Scalar(0), z.Buffer(),               1 );

@@ -117,9 +117,8 @@ void Multiply
           0, W.Buffer(),         W.LDim() );
     }
     // C := alpha W B.V^[T,H] + beta C
-    const char option = 'T';
     blas::Gemm
-    ( 'N', option, C.Height(), C.Width(), B.Rank(),
+    ( 'N', 'T', C.Height(), C.Width(), B.Rank(),
       alpha, W.LockedBuffer(),   W.LDim(), 
              B.V.LockedBuffer(), B.V.LDim(), 
       beta,  C.Buffer(),         C.LDim() );
@@ -225,10 +224,9 @@ void Multiply
     if( C.Height() != A.Height() || C.Width() != B.Width() )
         throw std::logic_error("C does not conform with AB");
 #endif
-    const char option = 'T';
     Dense<Scalar> W( A.Rank(), B.Rank() );
     blas::Gemm
-    ( option, 'N', A.Rank(), B.Rank(), A.Width(),
+    ( 'T', 'N', A.Rank(), B.Rank(), A.Width(),
       1, A.V.LockedBuffer(), A.V.LDim(), B.U.LockedBuffer(), B.U.LDim(),
       0, W.Buffer(), W.LDim() );
     Dense<Scalar> X( A.Height(), B.Rank() );
@@ -237,7 +235,7 @@ void Multiply
       1, A.U.LockedBuffer(), A.U.LDim(), W.LockedBuffer(), W.LDim(),
       0, X.Buffer(), X.LDim() );
     blas::Gemm
-    ( 'N', option, C.Height(), C.Width(), B.Rank(),
+    ( 'N', 'T', C.Height(), C.Width(), B.Rank(),
       alpha, X.LockedBuffer(), X.LDim(), B.V.LockedBuffer(), B.V.LDim(),
       beta,  C.Buffer(), C.LDim() );
 }

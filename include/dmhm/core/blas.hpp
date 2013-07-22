@@ -586,6 +586,13 @@ inline void Symv
 // General matrix-matrix multiplication                                       //
 //----------------------------------------------------------------------------//
 
+inline void PrintGemmDimensions
+( int m, int n, int k, int lda, int ldb, int ldc, std::ostream& os=std::cout )
+{
+    os << "(m,n,k)=" << m << "," << n << "," << k << ", (lda,ldb,ldc)="
+       << lda << "," << ldb << "," << ldc << std::endl;
+}
+
 inline void Gemm
 ( char transa, char transb, int m, int n, int k, 
   float alpha, const float* A, int lda, 
@@ -601,15 +608,30 @@ inline void Gemm
     if( ldc == 0 )
         throw std::logic_error("ldc was 0");
     if( transa == 'N' && lda < m )
+    {
+        PrintGemmDimensions( m, n, k, lda, ldb, ldc );
         throw std::logic_error("Invalid lda for non-transposed A");
+    }
     else if( (transa =='C' || transa=='T') && lda < k )
+    {
+        PrintGemmDimensions( m, n, k, lda, ldb, ldc );
         throw std::logic_error("Invalid lda for transposed A");
+    }
     if( transb == 'N' && ldb < k )
+    {
+        PrintGemmDimensions( m, n, k, lda, ldb, ldc );
         throw std::logic_error("Invalid ldb for non-transposed B");
+    }
     else if( (transb == 'C' || transb == 'T') && ldb < n )
+    {
+        PrintGemmDimensions( m, n, k, lda, ldb, ldc );
         throw std::logic_error("Invalid ldb for transposed B");
+    }
     if( ldc < m )
+    {
+        PrintGemmDimensions( m, n, k, lda, ldb, ldc );
         throw std::logic_error("Invalid ldc for C");
+    }
 #endif
     if( k != 0 )
         BLAS(sgemm)
@@ -642,15 +664,30 @@ inline void Gemm
     if( ldc == 0 )
         throw std::logic_error("ldc was 0");
     if( transa == 'N' && lda < m )
+    {
+        PrintGemmDimensions( m, n, k, lda, ldb, ldc );
         throw std::logic_error("Invalid lda for non-transposed A");
+    }
     else if( (transa =='C' || transa=='T') && lda < k )
+    {
+        PrintGemmDimensions( m, n, k, lda, ldb, ldc );
         throw std::logic_error("Invalid lda for transposed A");
+    }
     if( transb == 'N' && ldb < k )
+    {
+        PrintGemmDimensions( m, n, k, lda, ldb, ldc );
         throw std::logic_error("Invalid ldb for non-transposed B");
+    }
     else if( (transb == 'C' || transb == 'T') && ldb < n )
+    {
+        PrintGemmDimensions( m, n, k, lda, ldb, ldc );
         throw std::logic_error("Invalid ldb for transposed B");
+    }
     if( ldc < m )
+    {
+        PrintGemmDimensions( m, n, k, lda, ldb, ldc );
         throw std::logic_error("Invalid ldc for C");
+    }
 #endif
     if( k != 0 )
         BLAS(dgemm)
@@ -683,15 +720,30 @@ inline void Gemm
     if( ldc == 0 )
         throw std::logic_error("ldc was 0");
     if( transa == 'N' && lda < m )
+    {
+        PrintGemmDimensions( m, n, k, lda, ldb, ldc );
         throw std::logic_error("Invalid lda for non-transposed A");
+    }
     else if( (transa =='C' || transa=='T') && lda < k )
+    {
+        PrintGemmDimensions( m, n, k, lda, ldb, ldc );
         throw std::logic_error("Invalid lda for transposed A");
+    }
     if( transb == 'N' && ldb < k )
+    {
+        PrintGemmDimensions( m, n, k, lda, ldb, ldc );
         throw std::logic_error("Invalid ldb for non-transposed B");
+    }
     else if( (transb == 'C' || transb == 'T') && ldb < n )
+    {
+        PrintGemmDimensions( m, n, k, lda, ldb, ldc );
         throw std::logic_error("Invalid ldb for transposed B");
+    }
     if( ldc < m )
+    {
+        PrintGemmDimensions( m, n, k, lda, ldb, ldc );
         throw std::logic_error("Invalid ldc for C");
+    }
 #endif
     if( k != 0 )
         BLAS(cgemm)
@@ -724,15 +776,30 @@ inline void Gemm
     if( ldc == 0 )
         throw std::logic_error("ldc was 0");
     if( transa == 'N' && lda < m )
+    {
+        PrintGemmDimensions( m, n, k, lda, ldb, ldc );
         throw std::logic_error("Invalid lda for non-transposed A");
+    }
     else if( (transa =='C' || transa=='T') && lda < k )
+    {
+        PrintGemmDimensions( m, n, k, lda, ldb, ldc );
         throw std::logic_error("Invalid lda for transposed A");
+    }
     if( transb == 'N' && ldb < k )
+    {
+        PrintGemmDimensions( m, n, k, lda, ldb, ldc );
         throw std::logic_error("Invalid ldb for non-transposed B");
+    }
     else if( (transb == 'C' || transb == 'T') && ldb < n )
+    {
+        PrintGemmDimensions( m, n, k, lda, ldb, ldc );
         throw std::logic_error("Invalid ldb for transposed B");
+    }
     if( ldc < m )
+    {
+        PrintGemmDimensions( m, n, k, lda, ldb, ldc );
         throw std::logic_error("Invalid ldc for C");
+    }
 #endif
     if( k != 0 )
         BLAS(zgemm)
