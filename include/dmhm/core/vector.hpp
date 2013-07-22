@@ -19,94 +19,94 @@ namespace dmhm {
 // A vector implementation that allows O(1) creation of subvectors. 
 // The tradeoff versus std::vector is that introducing (locked) views makes 
 // operator[] usage impractical, so we instead require Set() and Get().
-template<typename Scalar>
+template<typename T>
 class Vector
 {
     int height_;
     bool viewing_;
     bool lockedView_;
-    std::vector<Scalar> memory_;
-    Scalar* buffer_;
-    const Scalar* lockedBuffer_;
+    std::vector<T> memory_;
+    T* buffer_;
+    const T* lockedBuffer_;
 
 public:
     Vector();
     Vector( int height );
-    Vector( int height, Scalar* buffer );
-    Vector( int height, const Scalar* lockedBuffer );
-    Vector( const Vector<Scalar>& x );
+    Vector( int height, T* buffer );
+    Vector( int height, const T* lockedBuffer );
+    Vector( const Vector<T>& x );
     ~Vector();
 
     int Height() const;
     void Resize( int height );
     void Clear();
 
-    void Set( int i, Scalar value );
-    Scalar Get( int i ) const;
+    void Set( int i, T value );
+    T Get( int i ) const;
     void Print( const std::string tag, std::ostream& os=std::cout ) const;
 
-    Scalar* Buffer( int i=0 );
-    const Scalar* LockedBuffer( int i=0 ) const;
+    T* Buffer( int i=0 );
+    const T* LockedBuffer( int i=0 ) const;
 
-    void View( Vector<Scalar>& x );
-    void View( Vector<Scalar>& x, int i, int height );
+    void View( Vector<T>& x );
+    void View( Vector<T>& x, int i, int height );
 
-    void LockedView( const Vector<Scalar>& x );
-    void LockedView( const Vector<Scalar>& x, int i, int height );
+    void LockedView( const Vector<T>& x );
+    void LockedView( const Vector<T>& x, int i, int height );
 };
 
 //----------------------------------------------------------------------------//
 // Implementation begins here                                                 //
 //----------------------------------------------------------------------------//
 
-template<typename Scalar>
+template<typename T>
 inline
-Vector<Scalar>::Vector()
+Vector<T>::Vector()
 : height_(0), viewing_(false), lockedView_(false),
   memory_(), buffer_(0), lockedBuffer_(0)
 { }
 
-template<typename Scalar>
+template<typename T>
 inline
-Vector<Scalar>::Vector( int height )
+Vector<T>::Vector( int height )
 : height_(height), viewing_(false), lockedView_(false),
   memory_(height), buffer_(&memory_[0]), lockedBuffer_(0)
 { }
 
-template<typename Scalar>
+template<typename T>
 inline
-Vector<Scalar>::Vector( int height, Scalar* buffer )
+Vector<T>::Vector( int height, T* buffer )
 : height_(height), viewing_(true), lockedView_(false),
   memory_(), buffer_(buffer), lockedBuffer_(0)
 { }
 
-template<typename Scalar>
+template<typename T>
 inline
-Vector<Scalar>::Vector( int height, const Scalar* lockedBuffer )
+Vector<T>::Vector( int height, const T* lockedBuffer )
 : height_(height), viewing_(true), lockedView_(true),
   memory_(), buffer_(0), lockedBuffer_(lockedBuffer)
 { }
 
-template<typename Scalar>
+template<typename T>
 inline
-Vector<Scalar>::Vector( const Vector<Scalar>& x )
+Vector<T>::Vector( const Vector<T>& x )
 : height_(x.Height()), viewing_(false), lockedView_(false),
   memory_(x.Height()), buffer_(&memory_[0]), lockedBuffer_(0)
 { MemCopy( buffer_, x.LockedBuffer(), x.Height() ); }
 
-template<typename Scalar>
+template<typename T>
 inline
-Vector<Scalar>::~Vector()
+Vector<T>::~Vector()
 { }
 
-template<typename Scalar>
+template<typename T>
 inline int
-Vector<Scalar>::Height() const
+Vector<T>::Height() const
 { return height_; }
 
-template<typename Scalar>
+template<typename T>
 inline void
-Vector<Scalar>::Resize( int height )
+Vector<T>::Resize( int height )
 {
 #ifndef RELEASE
     CallStackEntry entry("Vector::Resize");
@@ -118,9 +118,9 @@ Vector<Scalar>::Resize( int height )
     buffer_ = &memory_[0];
 }
 
-template<typename Scalar>
+template<typename T>
 inline void
-Vector<Scalar>::Clear()
+Vector<T>::Clear()
 {
 #ifndef RELEASE
     CallStackEntry entry("Vector::Clear");
@@ -129,14 +129,14 @@ Vector<Scalar>::Clear()
     viewing_ = false;
     lockedView_ = false;
 
-    std::vector<Scalar>().swap(memory_);
+    std::vector<T>().swap(memory_);
     buffer_ = 0;
     lockedBuffer_ = 0;
 }
 
-template<typename Scalar>
+template<typename T>
 inline void
-Vector<Scalar>::Set( int i, Scalar value )
+Vector<T>::Set( int i, T value )
 {
 #ifndef RELEASE
     CallStackEntry entry("Vector::Set");
@@ -150,9 +150,9 @@ Vector<Scalar>::Set( int i, Scalar value )
     buffer_[i] = value;
 }
 
-template<typename Scalar>
-inline Scalar
-Vector<Scalar>::Get( int i ) const
+template<typename T>
+inline T
+Vector<T>::Get( int i ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("Vector::Get");
@@ -167,9 +167,9 @@ Vector<Scalar>::Get( int i ) const
         return buffer_[i];
 }
 
-template<typename Scalar>
+template<typename T>
 inline void
-Vector<Scalar>::Print( const std::string tag, std::ostream& os ) const
+Vector<T>::Print( const std::string tag, std::ostream& os ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("Vector::Print");
@@ -178,19 +178,19 @@ Vector<Scalar>::Print( const std::string tag, std::ostream& os ) const
     if( lockedView_ )
     {
         for( int i=0; i<height_; ++i )
-            os << WrapScalar(lockedBuffer_[i]) << "\n";
+            os << WrapT(lockedBuffer_[i]) << "\n";
     }
     else
     {
         for( int i=0; i<height_; ++i )
-            os << WrapScalar(buffer_[i]) << "\n";
+            os << WrapT(buffer_[i]) << "\n";
     }
     os << std::endl;
 }
 
-template<typename Scalar>
-inline Scalar*
-Vector<Scalar>::Buffer( int i )
+template<typename T>
+inline T*
+Vector<T>::Buffer( int i )
 {
 #ifndef RELEASE
     CallStackEntry entry("Vector::Buffer");
@@ -204,9 +204,9 @@ Vector<Scalar>::Buffer( int i )
     return &buffer_[i];
 }
 
-template<typename Scalar>
-inline const Scalar*
-Vector<Scalar>::LockedBuffer( int i ) const
+template<typename T>
+inline const T*
+Vector<T>::LockedBuffer( int i ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("Vector::LockedBuffer");
@@ -221,9 +221,9 @@ Vector<Scalar>::LockedBuffer( int i ) const
         return &buffer_[i];
 }
 
-template<typename Scalar>
+template<typename T>
 inline void
-Vector<Scalar>::View( Vector<Scalar>& x )
+Vector<T>::View( Vector<T>& x )
 {
 #ifndef RELEASE
     CallStackEntry entry("Vector::View");
@@ -234,9 +234,9 @@ Vector<Scalar>::View( Vector<Scalar>& x )
     height_ = x.Height();
 }
 
-template<typename Scalar>
+template<typename T>
 inline void
-Vector<Scalar>::View( Vector<Scalar>& x, int i, int height )
+Vector<T>::View( Vector<T>& x, int i, int height )
 {
 #ifndef RELEASE
     CallStackEntry entry("Vector::View");
@@ -251,9 +251,9 @@ Vector<Scalar>::View( Vector<Scalar>& x, int i, int height )
     height_ = height;
 }
 
-template<typename Scalar>
+template<typename T>
 inline void
-Vector<Scalar>::LockedView( const Vector<Scalar>& x )
+Vector<T>::LockedView( const Vector<T>& x )
 {
 #ifndef RELEASE
     CallStackEntry entry("Vector::LockedView");
@@ -264,9 +264,9 @@ Vector<Scalar>::LockedView( const Vector<Scalar>& x )
     height_ = x.Height();
 }
 
-template<typename Scalar>
+template<typename T>
 inline void
-Vector<Scalar>::LockedView( const Vector<Scalar>& x, int i, int height )
+Vector<T>::LockedView( const Vector<T>& x, int i, int height )
 {
 #ifndef RELEASE
     CallStackEntry entry("Vector::LockedView");
