@@ -3958,23 +3958,23 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
     {
         if( level_ < startLevel )
             break;
-            Dense<Scalar>& D = *block_.data.D;
-            const int m = D.Height();
-            const int n = D.Width();
+        Dense<Scalar>& D = *block_.data.D;
+        const int m = D.Height();
+        const int n = D.Width();
 
-            UMap_.ResetIterator();
-            VMap_.ResetIterator();
-            const Dense<Scalar>& U = *UMap_.CurrentEntry();
-            const Dense<Scalar>& V = *VMap_.CurrentEntry();
+        UMap_.ResetIterator();
+        VMap_.ResetIterator();
+        const Dense<Scalar>& U = *UMap_.CurrentEntry();
+        const Dense<Scalar>& V = *VMap_.CurrentEntry();
 
-            blas::Gemm
-            ('N', 'T', m, n, U.Width(),
-             Scalar(1), U.LockedBuffer(), U.LDim(),
-                        V.LockedBuffer(), V.LDim(),
-             Scalar(1), D.Buffer(), D.LDim() );
+        blas::Gemm
+        ('N', 'T', m, n, U.Width(),
+         Scalar(1), U.LockedBuffer(), U.LDim(),
+                    V.LockedBuffer(), V.LDim(),
+         Scalar(1), D.Buffer(), D.LDim() );
 
-            UMap_.Clear();
-            VMap_.Clear();
+        UMap_.Clear();
+        VMap_.Clear();
         break;
     }
     default:

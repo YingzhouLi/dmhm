@@ -350,14 +350,7 @@ DistHMat3d<Scalar>::MultiplyDensePrecompute
         // Form Z := alpha VLocal^[T/H] XLocal
         const DistLowRank& DF = *block_.data.DF;
         Dense<Scalar>& Z = *context.block.data.Z;
-        Z.Resize( DF.rank, numRhs );
-        Z.Init();
-        const char option = 'T';
-        blas::Gemm
-        ( option, 'N', DF.rank, numRhs, DF.VLocal.Height(), 
-          alpha,     DF.VLocal.LockedBuffer(), DF.VLocal.LDim(), 
-                     XLocal.LockedBuffer(),    XLocal.LDim(),
-          Scalar(0), Z.Buffer(),               Z.LDim() );
+        hmat_tools::TransposeMultiply( alpha, DF.VLocal, XLocal, Z );
         break;
     }
     case SPLIT_LOW_RANK:
@@ -536,12 +529,7 @@ DistHMat3d<Scalar>::TransposeMultiplyDensePrecompute
         // Form Z := alpha ULocal^T XLocal
         const DistLowRank& DF = *block_.data.DF;
         Dense<Scalar>& Z = *context.block.data.Z;
-        Z.Resize( DF.rank, numRhs );
-        blas::Gemm
-        ( 'T', 'N', DF.rank, numRhs, DF.ULocal.Height(),
-          alpha,     DF.ULocal.LockedBuffer(), DF.ULocal.LDim(), 
-                     XLocal.LockedBuffer(),    XLocal.LDim(),
-          Scalar(0), Z.Buffer(),               Z.LDim() );
+        hmat_tools::TransposeMultiply( alpha, DF.ULocal, XLocal, Z );
         break;
     }
     case SPLIT_LOW_RANK:
@@ -718,13 +706,7 @@ DistHMat3d<Scalar>::AdjointMultiplyDensePrecompute
         // Form Z := alpha ULocal^H XLocal
         const DistLowRank& DF = *block_.data.DF;
         Dense<Scalar>& Z = *context.block.data.Z;
-        Z.Resize( DF.rank, numRhs );
-        Z.Init();
-        blas::Gemm
-        ( 'C', 'N', DF.rank, numRhs, DF.ULocal.Height(), 
-          alpha,     DF.ULocal.LockedBuffer(), DF.ULocal.LDim(), 
-                     XLocal.LockedBuffer(),    XLocal.LDim(),
-          Scalar(0), Z.Buffer(),               Z.LDim() );
+        hmat_tools::AdjointMultiply( alpha, DF.ULocal, XLocal, Z );
         break;
     }
     case SPLIT_LOW_RANK:
@@ -1374,6 +1356,7 @@ DistHMat3d<Scalar>::MultiplyDensePassDataUnpack
             {
                 Dense<Scalar>& Z = *context.block.data.Z;
                 Z.Resize( DF.rank, numRhs, DF.rank );
+                Z.Init();
                 MemCopy
                 ( Z.Buffer(), &buffer[offsets[sourceRoot_]], DF.rank*numRhs );
                 offsets[sourceRoot_] += DF.rank*numRhs;
@@ -1388,6 +1371,7 @@ DistHMat3d<Scalar>::MultiplyDensePassDataUnpack
         {
             Dense<Scalar>& Z = *context.block.data.Z;
             Z.Resize( SF.rank, numRhs, SF.rank );
+            Z.Init();
             MemCopy
             ( Z.Buffer(), &buffer[offsets[sourceRoot_]], SF.rank*numRhs );
             offsets[sourceRoot_] += SF.rank*numRhs;
@@ -1400,6 +1384,7 @@ DistHMat3d<Scalar>::MultiplyDensePassDataUnpack
         {
             Dense<Scalar>& Z = *context.block.data.Z;
             Z.Resize( Height(), numRhs, Height() );
+            Z.Init();
             MemCopy
             ( Z.Buffer(), &buffer[offsets[sourceRoot_]], Z.Height()*numRhs );
             offsets[sourceRoot_] += Z.Height()*numRhs;
@@ -2041,6 +2026,7 @@ DistHMat3d<Scalar>::MultiplyDenseBroadcastsUnpack
         if( DF.rank != 0 )
         {
             Z.Resize( DF.rank, numRhs, DF.rank );
+            Z.Init();
             MemCopy( Z.Buffer(), &buffer[offsets[level_]], DF.rank*numRhs );
             offsets[level_] += DF.rank*numRhs;
         }
@@ -2084,6 +2070,7 @@ DistHMat3d<Scalar>::TransposeMultiplyDenseBroadcastsUnpack
         if( DF.rank != 0 )
         {
             Z.Resize( DF.rank, numRhs, DF.rank );
+            Z.Init();
             MemCopy( Z.Buffer(), &buffer[offsets[level_]], DF.rank*numRhs );
             offsets[level_] += DF.rank*numRhs;
         }
@@ -2218,11 +2205,7 @@ DistHMat3d<Scalar>::MultiplyDensePostcompute
         if( DF.rank != 0 )
         {
             const Dense<Scalar>& Z = *context.block.data.Z;
-            blas::Gemm
-            ( 'N', 'N', DF.ULocal.Height(), numRhs, DF.rank,
-              Scalar(1), DF.ULocal.LockedBuffer(), DF.ULocal.LDim(),
-                         Z.LockedBuffer(),         Z.LDim(),
-              Scalar(1), YLocal.Buffer(),          YLocal.LDim() );
+            hmat_tools::Multiply( Scalar(1), DF.ULocal, Z, Scalar(1), YLocal );
         }
         break;
     }
@@ -2380,12 +2363,7 @@ DistHMat3d<Scalar>::TransposeMultiplyDensePostcompute
         if( DF.rank != 0 )
         {
             Dense<Scalar>& Z = *context.block.data.Z;
-            // YLocal += VLocal Z
-            blas::Gemm
-            ( 'N', 'N', DF.VLocal.Height(), numRhs, DF.rank,
-              Scalar(1), DF.VLocal.LockedBuffer(), DF.VLocal.LDim(),
-                         Z.LockedBuffer(),         Z.LDim(),
-              Scalar(1), YLocal.Buffer(),          YLocal.LDim() );
+            hmat_tools::Multiply( Scalar(1), DF.VLocal, Z, Scalar(1), YLocal );
         }
         break;
     }
@@ -2541,11 +2519,7 @@ DistHMat3d<Scalar>::AdjointMultiplyDensePostcompute
             // YLocal += conj(VLocal) Z
             hmat_tools::Conjugate( Z );
             hmat_tools::Conjugate( YLocal );
-            blas::Gemm
-            ( 'N', 'N', DF.VLocal.Height(), numRhs, DF.rank,
-              Scalar(1), DF.VLocal.LockedBuffer(), DF.VLocal.LDim(),
-                         Z.LockedBuffer(),         Z.LDim(),
-              Scalar(1), YLocal.Buffer(),          YLocal.LDim() );
+            hmat_tools::Multiply( Scalar(1), DF.VLocal, Z, Scalar(1), YLocal );
             hmat_tools::Conjugate( YLocal );
         }
         break;

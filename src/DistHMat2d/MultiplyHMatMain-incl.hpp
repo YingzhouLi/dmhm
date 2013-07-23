@@ -3782,6 +3782,7 @@ DistHMat2d<Scalar>::MultiplyHMatMainBroadcastsCountC
             break;
         }
         case DIST_LOW_RANK:
+        case DIST_LOW_RANK_GHOST:
         {
             if( A.level_ >= startLevel && A.level_ < endLevel &&
                 update >= startUpdate && update < endUpdate )
@@ -3837,6 +3838,36 @@ DistHMat2d<Scalar>::MultiplyHMatMainBroadcastsCountC
             break;
         }
         break;
+    case DIST_LOW_RANK_GHOST:
+        switch( B.block_.type )
+        {
+        case DIST_NODE:
+        {
+            if( A.level_ >= startLevel && A.level_ < endLevel &&
+                update >= startUpdate && update < endUpdate )
+            {
+                const DistLowRank& DFA = *A.block_.data.DF;
+                B.TransposeMultiplyDenseBroadcastsCount( sizes, DFA.rank );
+            }
+            break;
+        }
+        case DIST_LOW_RANK:
+        {
+            if( A.level_ >= startLevel && A.level_ < endLevel &&
+                update >= startUpdate && update < endUpdate &&
+                A.inTargetTeam_ )
+            {
+                const DistLowRank& DFA = *A.block_.data.DF;
+                const DistLowRank& DFB = *B.block_.data.DF;
+                const unsigned teamLevel = A.teams_->TeamLevel(A.level_);
+                sizes[teamLevel] += DFA.rank*DFB.rank;
+            }
+            break;
+        }
+        default:
+            break;
+        }
+        break;
     default:
         break;
     }
@@ -3884,6 +3915,7 @@ DistHMat2d<Scalar>::MultiplyHMatMainBroadcastsPackC
             break;
         }
         case DIST_LOW_RANK:
+        case DIST_LOW_RANK_GHOST:
             if( A.level_ >= startLevel && A.level_ < endLevel &&
                 update >= startUpdate && update < endUpdate )
                 A.MultiplyDenseBroadcastsPack
@@ -3947,6 +3979,40 @@ DistHMat2d<Scalar>::MultiplyHMatMainBroadcastsPackC
             break;
         }
         break;
+    case DIST_LOW_RANK_GHOST:
+        switch( B.block_.type )
+        {
+        case DIST_NODE:
+            if( A.level_ >= startLevel && A.level_ < endLevel &&
+                update >= startUpdate && update < endUpdate )
+                B.TransposeMultiplyDenseBroadcastsPack
+                ( C.mainContextMap_.Get( key ), buffer, offsets );
+            break;
+        case DIST_LOW_RANK:
+        {
+            if( A.level_ >= startLevel && A.level_ < endLevel &&
+                update >= startUpdate && update < endUpdate &&
+                A.inTargetTeam_ )
+            {
+                const DistLowRank& DFA = *A.block_.data.DF;
+                const DistLowRank& DFB = *B.block_.data.DF;
+                mpi::Comm team = teams_->Team( level_ );
+                const int teamRank = mpi::CommRank( team );
+                if( teamRank == 0 && DFA.rank != 0 && DFB.rank != 0 )
+                {
+                    const unsigned teamLevel = A.teams_->TeamLevel(A.level_);
+                    MemCopy
+                    ( &buffer[offsets[teamLevel]], 
+                      C.ZMap_.Get( key ).LockedBuffer(), DFA.rank*DFB.rank );
+                    offsets[teamLevel] += DFA.rank*DFB.rank;
+                }
+            }
+            break;
+        }
+        default:
+            break;
+        }
+        break;
     default:
         break;
     }
@@ -3992,6 +4058,7 @@ DistHMat2d<Scalar>::MultiplyHMatMainBroadcastsUnpackC
             }
             break;
         case DIST_LOW_RANK:
+        case DIST_LOW_RANK_GHOST:
             if( A.level_ >= startLevel && A.level_ < endLevel &&
                 update >= startUpdate && update < endUpdate )
                 A.MultiplyDenseBroadcastsUnpack
@@ -4043,6 +4110,38 @@ DistHMat2d<Scalar>::MultiplyHMatMainBroadcastsUnpackC
                     ( C.ZMap_.Get( key ).Buffer(), &buffer[offsets[teamLevel]],
                       DFA.rank*DFGB.rank );
                     offsets[teamLevel] += DFA.rank*DFGB.rank;
+                }
+            }
+            break;
+        }
+        default:
+            break;
+        }
+        break;
+    case DIST_LOW_RANK_GHOST:
+        switch( B.block_.type )
+        {
+        case DIST_NODE:
+            if( A.level_ >= startLevel && A.level_ < endLevel &&
+                update >= startUpdate && update < endUpdate )
+                B.TransposeMultiplyDenseBroadcastsUnpack
+                ( C.mainContextMap_.Get( key ), buffer, offsets );
+            break;
+        case DIST_LOW_RANK:
+        {
+            if( A.level_ >= startLevel && A.level_ < endLevel &&
+                update >= startUpdate && update < endUpdate &&
+                A.inTargetTeam_ )
+            {
+                const DistLowRank& DFA = *A.block_.data.DF;
+                const DistLowRank& DFB = *B.block_.data.DF;
+                if( DFA.rank != 0 && DFB.rank != 0 )
+                {
+                    const unsigned teamLevel = A.teams_->TeamLevel(A.level_);
+                    MemCopy
+                    ( C.ZMap_.Get( key ).Buffer(), &buffer[offsets[teamLevel]],
+                      DFA.rank*DFB.rank );
+                    offsets[teamLevel] += DFA.rank*DFB.rank;
                 }
             }
             break;

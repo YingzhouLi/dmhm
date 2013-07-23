@@ -178,12 +178,12 @@ Vector<T>::Print( const std::string tag, std::ostream& os ) const
     if( lockedView_ )
     {
         for( int i=0; i<height_; ++i )
-            os << WrapT(lockedBuffer_[i]) << "\n";
+            os << WrapScalar(lockedBuffer_[i]) << "\n";
     }
     else
     {
         for( int i=0; i<height_; ++i )
-            os << WrapT(buffer_[i]) << "\n";
+            os << WrapScalar(buffer_[i]) << "\n";
     }
     os << std::endl;
 }

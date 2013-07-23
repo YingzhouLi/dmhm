@@ -591,18 +591,12 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
             if( A.inSourceTeam_ )
             {
                 const DistLowRank& DFB = *B.block_.data.DF;
-                const int kLocal = A.LocalWidth();
                 if( DFA.rank != 0 && DFB.rank != 0 )
                 {
                     C.ZMap_.Set( key, new Dense<Scalar>( DFA.rank, DFB.rank ) );
                     Dense<Scalar>& ZC = C.ZMap_.Get( key );
-                    ZC.Init();
-                    const char option = 'T';
-                    blas::Gemm
-                    ( option, 'N', DFA.rank, DFB.rank, kLocal,
-                      Scalar(1), DFA.VLocal.LockedBuffer(), DFA.VLocal.LDim(),
-                                 DFB.ULocal.LockedBuffer(), DFB.ULocal.LDim(),
-                      Scalar(0), ZC.Buffer(),               ZC.LDim() );
+                    hmat_tools::TransposeMultiply
+                    ( Scalar(1), DFA.VLocal, DFB.ULocal, ZC );
                 }
             }
             break;
@@ -700,18 +694,12 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
             if( A.inSourceTeam_ )
             {
                 const SplitLowRank& SFB = *B.block_.data.SF;
-                const int k = A.Width();
                 if( SFA.rank != 0 && SFB.rank != 0 )
                 {
                     C.ZMap_.Set( key, new Dense<Scalar>( SFA.rank, SFB.rank ) );
                     Dense<Scalar>& ZC = C.ZMap_.Get( key );
-                    ZC.Init();
-                    const char option = 'T';
-                    blas::Gemm
-                    ( option, 'N', SFA.rank, SFB.rank, k,
-                      Scalar(1), SFA.D.LockedBuffer(), SFA.D.LDim(),
-                                 SFB.D.LockedBuffer(), SFB.D.LDim(),
-                      Scalar(0), ZC.Buffer(),          ZC.LDim() );
+                    hmat_tools::TransposeMultiply
+                    ( Scalar(1), SFA.D, SFB.D, ZC );
                 }
             }
             break;
@@ -720,36 +708,22 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
         {
             // We must be the middle and right process
             const LowRank<Scalar>& FB = *B.block_.data.F;
-            const int k = A.Width();
             if( SFA.rank != 0 && FB.Rank() != 0 )
             {
                 C.ZMap_.Set( key, new Dense<Scalar>( SFA.rank, FB.Rank() ) );
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
-                ZC.Init();
-                const char option = 'T';
-                blas::Gemm
-                ( option, 'N', SFA.rank, FB.Rank(), k,
-                  Scalar(1), SFA.D.LockedBuffer(), SFA.D.LDim(),
-                             FB.U.LockedBuffer(),  FB.U.LDim(),
-                  Scalar(0), ZC.Buffer(),          ZC.LDim() );
+                hmat_tools::TransposeMultiply( Scalar(1), SFA.D, FB.U, ZC );
             }
             break;
         }
         case DENSE:
         {
             // We must be both the middle and right process
-            const int k = B.Height();
             const int n = B.Width();
             C.VMap_.Set( key, new Dense<Scalar>( n, SFA.rank ) );
             const Dense<Scalar>& DB = *B.block_.data.D;
             Dense<Scalar>& VC = C.VMap_.Get( key );
-            VC.Init();
-            const char option = 'T';
-            blas::Gemm
-            ( option, 'N', n, SFA.rank, k,
-              alpha,     DB.LockedBuffer(),    DB.LDim(),
-                         SFA.D.LockedBuffer(), SFA.D.LDim(),
-              Scalar(0), VC.Buffer(),          VC.LDim() );
+            hmat_tools::TransposeMultiply( alpha, DB, SFA.D, VC );
             break;
         }
         case SPLIT_NODE_GHOST:
@@ -839,18 +813,11 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
         {
             // We must be the left and middle process
             const SplitLowRank& SFB = *B.block_.data.SF;
-            const int k = B.Height();
             if( FA.Rank() != 0 && SFB.rank != 0 )
             {
                 C.ZMap_.Set( key, new Dense<Scalar>( FA.Rank(), SFB.rank ) );
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
-                ZC.Init();
-                const char option = 'T';
-                blas::Gemm
-                ( option, 'N', FA.Rank(), SFB.rank, k,
-                  Scalar(1), FA.V.LockedBuffer(),  FA.V.LDim(),
-                             SFB.D.LockedBuffer(), SFB.D.LDim(),
-                  Scalar(0), ZC.Buffer(),          ZC.LDim() );
+                hmat_tools::TransposeMultiply( Scalar(1), FA.V, SFB.D, ZC );
             }
             break;
         }
@@ -858,18 +825,11 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
         {
             // We must own all of A, B, and C
             const LowRank<Scalar>& FB = *B.block_.data.F;
-            const int k = B.Height();
             if( FA.Rank() != 0 && FB.Rank() != 0 )
             {
                 C.ZMap_.Set( key, new Dense<Scalar>( FA.Rank(), FB.Rank() ) );
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
-                ZC.Init();
-                const char option = 'T';
-                blas::Gemm
-                ( option, 'N', FA.Rank(), FB.Rank(), k,
-                  Scalar(1), FA.V.LockedBuffer(), FA.V.LDim(),
-                             FB.U.LockedBuffer(), FB.U.LDim(),
-                  Scalar(0), ZC.Buffer(),         ZC.LDim() );
+                hmat_tools::TransposeMultiply( Scalar(1), FA.V, FB.U, ZC );
             }
             break;
         }
@@ -880,18 +840,11 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
         case DENSE:
         {
             // We must own all of A, B, and C
-            const int k = B.Height();
             const int n = B.Width();
             C.VMap_.Set( key, new Dense<Scalar>( n, FA.Rank() ) );
             const Dense<Scalar>& DB = *B.block_.data.D;
             Dense<Scalar>& VC = C.VMap_.Get( key );
-            VC.Init();
-            const char option = 'T';
-            blas::Gemm
-            ( option, 'N', n, FA.Rank(), k,
-              alpha,     DB.LockedBuffer(),   DB.LDim(),
-                         FA.V.LockedBuffer(), FA.V.LDim(),
-              Scalar(0), VC.Buffer(),         VC.LDim() );
+            hmat_tools::TransposeMultiply( alpha, DB, FA.V, VC );
             break;
         }
         default:
@@ -952,17 +905,11 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
             {
                 const SplitLowRank& SFB = *B.block_.data.SF;
                 const int m = A.Height();
-                const int k = A.Width();
                 if( m != 0 && SFB.rank != 0 )
                 {
                     C.ZMap_.Set( key, new Dense<Scalar>( m, SFB.rank ) );
                     Dense<Scalar>& ZC = C.ZMap_.Get( key );
-                    ZC.Init();
-                    blas::Gemm
-                    ( 'N', 'N', m, SFB.rank, k,
-                      alpha,     SDA.D.LockedBuffer(), SDA.D.LDim(),
-                                 SFB.D.LockedBuffer(), SFB.D.LDim(),
-                      Scalar(0), ZC.Buffer(),          ZC.LDim() );
+                    hmat_tools::Multiply( alpha, SDA.D, SFB.D, ZC );
                 }
             }
             break;
@@ -971,17 +918,11 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
         {
             const LowRank<Scalar>& FB = *B.block_.data.F;
             const int m = A.Height();
-            const int k = A.Width();
             if( m != 0 && FB.Rank() != 0 )
             {
                 C.ZMap_.Set( key, new Dense<Scalar>( m, FB.Rank() ) );
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
-                ZC.Init();
-                blas::Gemm
-                ( 'N', 'N', m, FB.Rank(), k,
-                  alpha,     SDA.D.LockedBuffer(), SDA.D.LDim(),
-                             FB.U.LockedBuffer(),  FB.U.LDim(),
-                  Scalar(0), ZC.Buffer(),          ZC.LDim() );
+                hmat_tools::Multiply( alpha, SDA.D, FB.U, ZC );
             }
             break;
         }
@@ -1050,15 +991,9 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
             // We are the left and middle process
             const SplitLowRank& SFB = *B.block_.data.SF;
             const int m = A.Height();
-            const int k = A.Width();
             C.UMap_.Set( key, new Dense<Scalar>( m, SFB.rank ) );
             Dense<Scalar>& UC = C.UMap_.Get( key );
-            UC.Init();
-            blas::Gemm
-            ( 'N', 'N', m, SFB.rank, k,
-              alpha,     DA.LockedBuffer(),    DA.LDim(),
-                         SFB.D.LockedBuffer(), SFB.D.LDim(),
-              Scalar(0), UC.Buffer(),          UC.LDim() );
+            hmat_tools::Multiply( alpha, DA, SFB.D, UC );
             break;
         }
         case LOW_RANK:
@@ -3851,6 +3786,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainBroadcastsCountC
             break;
         }
         case DIST_LOW_RANK:
+        case DIST_LOW_RANK_GHOST:
         {
             if( A.level_ >= startLevel && A.level_ < endLevel &&
                 update >= startUpdate && update < endUpdate )
@@ -3906,6 +3842,36 @@ DistHMat3d<Scalar>::MultiplyHMatMainBroadcastsCountC
             break;
         }
         break;
+    case DIST_LOW_RANK_GHOST:
+        switch( B.block_.type )
+        {
+        case DIST_NODE:
+        {
+            if( A.level_ >= startLevel && A.level_ < endLevel &&
+                update >= startUpdate && update < endUpdate )
+            {
+                const DistLowRank& DFA = *A.block_.data.DF;
+                B.TransposeMultiplyDenseBroadcastsCount( sizes, DFA.rank );
+            }
+            break;
+        }
+        case DIST_LOW_RANK:
+        {
+            if( A.level_ >= startLevel && A.level_ < endLevel &&
+                update >= startUpdate && update < endUpdate &&
+                A.inTargetTeam_ )
+            {
+                const DistLowRank& DFA = *A.block_.data.DF;
+                const DistLowRank& DFB = *B.block_.data.DF;
+                const unsigned teamLevel = A.teams_->TeamLevel(A.level_);
+                sizes[teamLevel] += DFA.rank*DFB.rank;
+            }
+            break;
+        }
+        default:
+            break;
+        }
+        break;
     default:
         break;
     }
@@ -3953,6 +3919,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainBroadcastsPackC
             break;
         }
         case DIST_LOW_RANK:
+        case DIST_LOW_RANK_GHOST:
             if( A.level_ >= startLevel && A.level_ < endLevel &&
                 update >= startUpdate && update < endUpdate )
                 A.MultiplyDenseBroadcastsPack
@@ -4016,6 +3983,40 @@ DistHMat3d<Scalar>::MultiplyHMatMainBroadcastsPackC
             break;
         }
         break;
+    case DIST_LOW_RANK_GHOST:
+        switch( B.block_.type )
+        {
+        case DIST_NODE:
+            if( A.level_ >= startLevel && A.level_ < endLevel &&
+                update >= startUpdate && update < endUpdate )
+                B.TransposeMultiplyDenseBroadcastsPack
+                ( C.mainContextMap_.Get( key ), buffer, offsets );
+            break;
+        case DIST_LOW_RANK:
+        {
+            if( A.level_ >= startLevel && A.level_ < endLevel &&
+                update >= startUpdate && update < endUpdate &&
+                A.inTargetTeam_ )
+            {
+                const DistLowRank& DFA = *A.block_.data.DF;
+                const DistLowRank& DFB = *B.block_.data.DF;
+                mpi::Comm team = teams_->Team( level_ );
+                const int teamRank = mpi::CommRank( team );
+                if( teamRank == 0 && DFA.rank != 0 && DFB.rank != 0 )
+                {
+                    const unsigned teamLevel = A.teams_->TeamLevel(A.level_);
+                    MemCopy
+                    ( &buffer[offsets[teamLevel]], 
+                      C.ZMap_.Get( key ).LockedBuffer(), DFA.rank*DFB.rank );
+                    offsets[teamLevel] += DFA.rank*DFB.rank;
+                }
+            }
+            break;
+        }
+        default:
+            break;
+        }
+        break;
     default:
         break;
     }
@@ -4061,6 +4062,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainBroadcastsUnpackC
             }
             break;
         case DIST_LOW_RANK:
+        case DIST_LOW_RANK_GHOST:
             if( A.level_ >= startLevel && A.level_ < endLevel &&
                 update >= startUpdate && update < endUpdate )
                 A.MultiplyDenseBroadcastsUnpack
@@ -4112,6 +4114,38 @@ DistHMat3d<Scalar>::MultiplyHMatMainBroadcastsUnpackC
                     ( C.ZMap_.Get( key ).Buffer(), &buffer[offsets[teamLevel]],
                       DFA.rank*DFGB.rank );
                     offsets[teamLevel] += DFA.rank*DFGB.rank;
+                }
+            }
+            break;
+        }
+        default:
+            break;
+        }
+        break;
+    case DIST_LOW_RANK_GHOST:
+        switch( B.block_.type )
+        {
+        case DIST_NODE:
+            if( A.level_ >= startLevel && A.level_ < endLevel &&
+                update >= startUpdate && update < endUpdate )
+                B.TransposeMultiplyDenseBroadcastsUnpack
+                ( C.mainContextMap_.Get( key ), buffer, offsets );
+            break;
+        case DIST_LOW_RANK:
+        {
+            if( A.level_ >= startLevel && A.level_ < endLevel &&
+                update >= startUpdate && update < endUpdate &&
+                A.inTargetTeam_ )
+            {
+                const DistLowRank& DFA = *A.block_.data.DF;
+                const DistLowRank& DFB = *B.block_.data.DF;
+                if( DFA.rank != 0 && DFB.rank != 0 )
+                {
+                    const unsigned teamLevel = A.teams_->TeamLevel(A.level_);
+                    MemCopy
+                    ( C.ZMap_.Get( key ).Buffer(), &buffer[offsets[teamLevel]],
+                      DFA.rank*DFB.rank );
+                    offsets[teamLevel] += DFA.rank*DFB.rank;
                 }
             }
             break;
@@ -4540,12 +4574,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
             if( A.inTargetTeam_ && DFA.rank != 0 && DFB.rank != 0 )
             {
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
-                UC.Init();
-                blas::Gemm
-                ( 'N', 'N', A.LocalHeight(), DFB.rank, DFA.rank,
-                  alpha,     DFA.ULocal.LockedBuffer(), DFA.ULocal.LDim(),
-                             ZC.LockedBuffer(),         ZC.LDim(),
-                  Scalar(0), UC.Buffer(),               UC.LDim() );
+                hmat_tools::Multiply( alpha, DFA.ULocal, ZC, UC );
                 ZC.Clear();
                 C.ZMap_.Erase( key );
             }
@@ -4563,12 +4592,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
             if( DFA.rank != 0 && DFGB.rank != 0 )
             {
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
-                UC.Init();
-                blas::Gemm
-                ( 'N', 'N', A.LocalHeight(), DFGB.rank, DFA.rank,
-                  alpha,     DFA.ULocal.LockedBuffer(), DFA.ULocal.LDim(),
-                             ZC.LockedBuffer(),         ZC.LDim(),
-                  Scalar(0), UC.Buffer(),               UC.LDim() );
+                hmat_tools::Multiply( alpha, DFA.ULocal, ZC, UC );
                 ZC.Clear();
                 C.ZMap_.Erase( key );
             }
@@ -4677,12 +4701,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
                 if( SFA.rank != 0 && SFB.rank != 0 )
                 {
                     Dense<Scalar>& ZC = C.ZMap_.Get( key );
-                    UC.Init();
-                    blas::Gemm
-                    ( 'N', 'N', A.Height(), SFB.rank, SFA.rank,
-                      alpha,     SFA.D.LockedBuffer(), SFA.D.LDim(),
-                                 ZC.LockedBuffer(),    ZC.LDim(),
-                      Scalar(0), UC.Buffer(),          UC.LDim() );
+                    hmat_tools::Multiply( alpha, SFA.D, ZC, UC );
                     ZC.Clear();
                     C.ZMap_.Erase( key );
                 }
@@ -4702,12 +4721,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
             if( SFA.rank != 0 && SFGB.rank != 0 )
             {
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
-                UC.Init();
-                blas::Gemm
-                ( 'N', 'N', A.Height(), SFGB.rank, SFA.rank,
-                  alpha,     SFA.D.LockedBuffer(), SFA.D.LDim(),
-                             ZC.LockedBuffer(),    ZC.LDim(),
-                  Scalar(0), UC.Buffer(),          UC.LDim() );
+                hmat_tools::Multiply( alpha, SFA.D, ZC, UC );
                 ZC.Clear();
                 C.ZMap_.Erase( key );
             }
@@ -4732,12 +4746,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
             if( SFA.rank != 0 && FGB.rank != 0 )
             {
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
-                UC.Init();
-                blas::Gemm
-                ( 'N', 'N', A.Height(), FGB.rank, SFA.rank,
-                  alpha,     SFA.D.LockedBuffer(), SFA.D.LDim(),
-                             ZC.LockedBuffer(),    ZC.LDim(),
-                  Scalar(0), UC.Buffer(),          UC.LDim() );
+                hmat_tools::Multiply( alpha, SFA.D, ZC, UC );
                 ZC.Clear();
                 C.ZMap_.Erase( key );
             }
@@ -4758,12 +4767,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
                 if( SFA.rank != 0 && B.Height() != 0 )
                 {
                     Dense<Scalar>& ZC = C.ZMap_.Get( key );
-                    VC.Init();
-                    blas::Gemm
-                    ( 'T', 'N', C.Width(), SFA.rank, B.Height(),
-                      alpha,     SDB.D.LockedBuffer(), SDB.D.LDim(),
-                                 ZC.LockedBuffer(),    ZC.LDim(),
-                      Scalar(0), VC.Buffer(),          VC.LDim() );
+                    hmat_tools::TransposeMultiply( alpha, SDB.D, ZC, VC );
                     ZC.Clear();
                     C.ZMap_.Erase( key );
                 }
@@ -4832,12 +4836,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
             if( SFGA.rank != 0 && B.Height() != 0 )
             {
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
-                VC.Init();
-                blas::Gemm
-                ( 'T', 'N', C.Width(), SFGA.rank, B.Height(),
-                  alpha,     SDB.D.LockedBuffer(), SDB.D.LDim(),
-                             ZC.LockedBuffer(),    ZC.LDim(),
-                  Scalar(0), VC.Buffer(),          VC.LDim() );
+                hmat_tools::TransposeMultiply( alpha, SDB.D, ZC, VC );
                 ZC.Clear();
                 C.ZMap_.Erase( key );
             }
@@ -4886,12 +4885,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
             if( SFB.rank != 0 && k != 0 )
             {
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
-                UC.Init();
-                blas::Gemm
-                ( 'N', 'N', m, SFB.rank, k,
-                  alpha,     FA.U.LockedBuffer(), FA.U.LDim(),
-                             ZC.LockedBuffer(),   ZC.LDim(),
-                  Scalar(0), UC.Buffer(),         UC.LDim() );
+                hmat_tools::Multiply( alpha, FA.U, ZC, UC );
             }
             else
                 UC.Init();
@@ -4911,12 +4905,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
             if( FB.Rank() != 0 && k != 0 )
             {
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
-                UC.Init();
-                blas::Gemm
-                ( 'N', 'N', m, FB.Rank(), k,
-                  alpha,     FA.U.LockedBuffer(), FA.U.LDim(),
-                             ZC.LockedBuffer(),   ZC.LDim(),
-                  Scalar(0), UC.Buffer(),         UC.LDim() );
+                hmat_tools::Multiply( alpha, FA.U, ZC, UC );
             }
             else
                 UC.Init();
@@ -4985,12 +4974,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
             if( FGA.rank != 0 && B.Height() != 0 )
             {
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
-                VC.Init();
-                blas::Gemm
-                ( 'T', 'N', C.Width(), FGA.rank, B.Height(),
-                  alpha,     SDB.D.LockedBuffer(), SDB.D.LDim(),
-                             ZC.LockedBuffer(),    ZC.LDim(),
-                  Scalar(0), VC.Buffer(),          VC.LDim() );
+                hmat_tools::TransposeMultiply( alpha, SDB.D, ZC, VC );
                 ZC.Clear();
                 C.ZMap_.Erase( key );
             }
@@ -5093,11 +5077,8 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
                         if( m != 0 && k != 0 )
                         {
                             Dense<Scalar>& ZC = C.ZMap_.Get( key );
-                            blas::Gemm
-                            ( 'N', 'N', m, n, k,
-                              alpha,     ZC.LockedBuffer(),    ZC.LDim(),
-                                         SDB.D.LockedBuffer(), SDB.D.LDim(),
-                              Scalar(1), C.D_.Buffer(),        C.D_.LDim() );
+                            hmat_tools::Multiply
+                            ( alpha, ZC, SDB.D, Scalar(1), C.D_ );
                             ZC.Clear();
                             C.ZMap_.Erase( key );
                         }
@@ -5108,12 +5089,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
                         if( m != 0 && k != 0 )
                         {
                             Dense<Scalar>& ZC = C.ZMap_.Get( key );
-                            C.D_.Init();
-                            blas::Gemm
-                            ( 'N', 'N', m, n, k,
-                              alpha,     ZC.LockedBuffer(),    ZC.LDim(),
-                                         SDB.D.LockedBuffer(), SDB.D.LDim(),
-                              Scalar(0), C.D_.Buffer(),        C.D_.LDim() );
+                            hmat_tools::Multiply( alpha, ZC, SDB.D, C.D_ );
                             ZC.Clear();
                             C.ZMap_.Erase( key );
                         }
@@ -5126,11 +5102,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
                 {
                     Dense<Scalar>& ZC = C.ZMap_.Get( key );
                     Dense<Scalar>& D = *C.block_.data.D;
-                    blas::Gemm
-                    ( 'N', 'N', m, n, k,
-                      alpha,     ZC.LockedBuffer(),    ZC.LDim(),
-                                 SDB.D.LockedBuffer(), SDB.D.LDim(),
-                      Scalar(1), D.Buffer(),           D.LDim() );
+                    hmat_tools::Multiply( alpha, ZC, SDB.D, Scalar(1), D );
                     ZC.Clear();
                     C.ZMap_.Erase( key );
                 }
@@ -5185,11 +5157,8 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
                     if( m != 0 && k != 0 )
                     {
                         Dense<Scalar>& ZC = C.ZMap_.Get( key );
-                        blas::Gemm
-                        ( 'N', 'N', m, n, k,
-                          alpha,     ZC.LockedBuffer(),    ZC.LDim(),
-                                     SDB.D.LockedBuffer(), SDB.D.LDim(),
-                          Scalar(1), C.D_.Buffer(),        C.D_.LDim() );
+                        hmat_tools::Multiply
+                        ( alpha, ZC, SDB.D, Scalar(1), C.D_ );
                         ZC.Clear();
                         C.ZMap_.Erase( key );
                     }
@@ -5200,12 +5169,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
                     if( m != 0 && k != 0 )
                     {
                         Dense<Scalar>& ZC = C.ZMap_.Get( key );
-                        C.D_.Init();
-                        blas::Gemm
-                        ( 'N', 'N', m, n, k,
-                          alpha,     ZC.LockedBuffer(),    ZC.LDim(),
-                                     SDB.D.LockedBuffer(), SDB.D.LDim(),
-                          Scalar(0), C.D_.Buffer(),        C.D_.LDim() );
+                        hmat_tools::Multiply( alpha, ZC, SDB.D, C.D_ );
                         ZC.Clear();
                         C.ZMap_.Erase( key );
                     }
@@ -5218,11 +5182,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
             {
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
                 Dense<Scalar>& D = *C.block_.data.D;
-                blas::Gemm
-                ( 'N', 'N', m, n, k,
-                  alpha,     ZC.LockedBuffer(),    ZC.LDim(),
-                             SDB.D.LockedBuffer(), SDB.D.LDim(),
-                  Scalar(1), D.Buffer(),           D.LDim() );
+                hmat_tools::Multiply( alpha, ZC, SDB.D, Scalar(1), D );
                 ZC.Clear();
                 C.ZMap_.Erase( key );
             }
@@ -5270,11 +5230,8 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
                     if( m != 0 && k != 0 )
                     {
                         Dense<Scalar>& ZC = C.ZMap_.Get( key );
-                        blas::Gemm
-                        ( 'N', 'N', m, n, k,
-                          alpha,     ZC.LockedBuffer(),    ZC.LDim(),
-                                     SDB.D.LockedBuffer(), SDB.D.LDim(),
-                          Scalar(1), C.D_.Buffer(),        C.D_.LDim() );
+                        hmat_tools::Multiply
+                        ( alpha, ZC, SDB.D, Scalar(1), C.D_ );
                         ZC.Clear();
                         C.ZMap_.Erase( key );
                     }
@@ -5285,12 +5242,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
                     if( m != 0 && k != 0 )
                     {
                         Dense<Scalar>& ZC = C.ZMap_.Get( key );
-                        C.D_.Init();
-                        blas::Gemm
-                        ( 'N', 'N', m, n, k,
-                          alpha,     ZC.LockedBuffer(),    ZC.LDim(),
-                                     SDB.D.LockedBuffer(), SDB.D.LDim(),
-                          Scalar(0), C.D_.Buffer(),        C.D_.LDim() );
+                        hmat_tools::Multiply( alpha, ZC, SDB.D, C.D_ );
                         ZC.Clear();
                         C.ZMap_.Erase( key );
                     }
@@ -5303,11 +5255,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
             {
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
                 Dense<Scalar>& D = *C.block_.data.D;
-                blas::Gemm
-                ( 'N', 'N', m, n, k,
-                  alpha,     ZC.LockedBuffer(),    ZC.LDim(),
-                             SDB.D.LockedBuffer(), SDB.D.LDim(),
-                  Scalar(1), D.Buffer(),           D.LDim() );
+                hmat_tools::Multiply( alpha, ZC, SDB.D, Scalar(1), D );
                 ZC.Clear();
                 C.ZMap_.Erase( key );
             }
