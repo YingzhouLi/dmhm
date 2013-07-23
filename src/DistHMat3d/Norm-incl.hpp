@@ -28,7 +28,7 @@ DistHMat3d<Scalar>::ParallelEstimateTwoNorm( Real theta, Real confidence )
         const int teamRank = mpi::CommRank( team );
         if( teamRank == 0 )
         {
-            std::cerr << "Going to use A^" << k  
+            std::cout << "Going to use A^" << k  
                       << " in order to estimate "
                       << "||A||_2 within " << (theta-1.0)*100 
                       << "% with probability "
@@ -66,7 +66,7 @@ DistHMat3d<Scalar>::ParallelEstimateTwoNorm( Real theta, Real confidence )
     {
         const int teamRank = mpi::CommRank( team );
         if( teamRank == 0 )
-            std::cerr << "Estimated ||A||_2 as " << estimate << std::endl;
+            std::cout << "Estimated ||A||_2 as " << estimate << std::endl;
     }
 #endif
     return estimate;
