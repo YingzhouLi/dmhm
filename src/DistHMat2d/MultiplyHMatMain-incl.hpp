@@ -3759,28 +3759,63 @@ DistHMat2d<Scalar>::MultiplyHMatMainBroadcastsCountC
         A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
         return;
 
+    // Handle all H H recursion here
     const bool admissibleC = C.Admissible();
+    if( !admissibleC )
+    {
+        switch( A.block_.type )
+        {
+        case DIST_NODE:
+        case DIST_NODE_GHOST:
+        case SPLIT_NODE:
+        case SPLIT_NODE_GHOST:
+        case NODE:
+        case NODE_GHOST:
+            switch( B.block_.type )
+            {
+            case DIST_NODE:
+            case DIST_NODE_GHOST:
+            case SPLIT_NODE:
+            case SPLIT_NODE_GHOST:
+            case NODE:
+            case NODE_GHOST:
+            {
+                if( A.level_+1 < endLevel )
+                {
+                    const Node& nodeA = *A.block_.data.N;
+                    const Node& nodeB = *B.block_.data.N;
+                    Node& nodeC = *C.block_.data.N;
+                    for( int t=0; t<4; ++t )
+                        for( int s=0; s<4; ++s )
+                            for( int r=0; r<4; ++r )
+                                nodeA.Child(t,r).MultiplyHMatMainBroadcastsCountC
+                                ( nodeB.Child(r,s), nodeC.Child(t,s), 
+                                  sizes, startLevel, endLevel,
+                                  startUpdate, endUpdate, r );
+                }
+                return;
+                break;
+            }
+            default:
+                break;
+            }
+            break;
+        default:
+            break;
+        }
+    }
+
+    if( A.level_ < startLevel || A.level_ >= endLevel ||
+        update < startUpdate || update >= endUpdate )
+        return;
+
     switch( A.block_.type )
     {
     case DIST_NODE:
         switch( B.block_.type )
         {
         case DIST_NODE:
-        {
-            if( !admissibleC && A.level_+1 < endLevel )
-            {
-                const Node& nodeA = *A.block_.data.N;
-                const Node& nodeB = *B.block_.data.N;
-                const Node& nodeC = *C.block_.data.N;
-                for( int t=0; t<4; ++t )
-                    for( int s=0; s<4; ++s )
-                        for( int r=0; r<4; ++r )
-                            nodeA.Child(t,r).MultiplyHMatMainBroadcastsCountC
-                            ( nodeB.Child(r,s), nodeC.Child(t,s), sizes,
-                              startLevel, endLevel, startUpdate, endUpdate, r );
-            }
             break;
-        }
         case DIST_LOW_RANK:
         case DIST_LOW_RANK_GHOST:
         {
@@ -3890,30 +3925,64 @@ DistHMat2d<Scalar>::MultiplyHMatMainBroadcastsPackC
         A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
         return;
 
+    // Handle all H H recursion here
     const int key = A.sourceOffset_;
     const bool admissibleC = C.Admissible();
+    if( !admissibleC )
+    {
+        switch( A.block_.type )
+        {
+        case DIST_NODE:
+        case DIST_NODE_GHOST:
+        case SPLIT_NODE:
+        case SPLIT_NODE_GHOST:
+        case NODE:
+        case NODE_GHOST:
+            switch( B.block_.type )
+            {
+            case DIST_NODE:
+            case DIST_NODE_GHOST:
+            case SPLIT_NODE:
+            case SPLIT_NODE_GHOST:
+            case NODE:
+            case NODE_GHOST:
+            {
+                if( A.level_+1 < endLevel )
+                {
+                    const Node& nodeA = *A.block_.data.N;
+                    const Node& nodeB = *B.block_.data.N;
+                    Node& nodeC = *C.block_.data.N;
+                    for( int t=0; t<4; ++t )
+                        for( int s=0; s<4; ++s )
+                            for( int r=0; r<4; ++r )
+                                nodeA.Child(t,r).MultiplyHMatMainBroadcastsPackC
+                                ( nodeB.Child(r,s), nodeC.Child(t,s), 
+                                  buffer, offsets, startLevel, endLevel,
+                                  startUpdate, endUpdate, r );
+                }
+                return;
+                break;
+            }
+            default:
+                break;
+            }
+            break;
+        default:
+            break;
+        }
+    }
+
+    if( A.level_ < startLevel || A.level_ >= endLevel ||
+        update < startUpdate || update >= endUpdate )
+        return;
+
     switch( A.block_.type )
     {
     case DIST_NODE:
         switch( B.block_.type )
         {
         case DIST_NODE:
-        {
-            if( !admissibleC && A.level_+1 < endLevel )
-            {
-                const Node& nodeA = *A.block_.data.N;
-                const Node& nodeB = *B.block_.data.N;
-                Node& nodeC = *C.block_.data.N;
-                for( int t=0; t<4; ++t )
-                    for( int s=0; s<4; ++s )
-                        for( int r=0; r<4; ++r )
-                            nodeA.Child(t,r).MultiplyHMatMainBroadcastsPackC
-                            ( nodeB.Child(r,s), nodeC.Child(t,s), 
-                              buffer, offsets, startLevel, endLevel,
-                              startUpdate, endUpdate, r );
-            }
             break;
-        }
         case DIST_LOW_RANK:
         case DIST_LOW_RANK_GHOST:
             if( A.level_ >= startLevel && A.level_ < endLevel &&
@@ -4035,27 +4104,63 @@ DistHMat2d<Scalar>::MultiplyHMatMainBroadcastsUnpackC
         A.Height() == 0 || A.Width() == 0 || B.Width() == 0 )
         return;
 
+    // Handle all H H recursion here
     const int key = A.sourceOffset_;
     const bool admissibleC = C.Admissible();
+    if( !admissibleC )
+    {
+        switch( A.block_.type )
+        {
+        case DIST_NODE:
+        case DIST_NODE_GHOST:
+        case SPLIT_NODE:
+        case SPLIT_NODE_GHOST:
+        case NODE:
+        case NODE_GHOST:
+            switch( B.block_.type )
+            {
+            case DIST_NODE:
+            case DIST_NODE_GHOST:
+            case SPLIT_NODE:
+            case SPLIT_NODE_GHOST:
+            case NODE:
+            case NODE_GHOST:
+            {
+                if( A.level_+1 < endLevel )
+                {
+                    const Node& nodeA = *A.block_.data.N;
+                    const Node& nodeB = *B.block_.data.N;
+                    Node& nodeC = *C.block_.data.N;
+                    for( int t=0; t<4; ++t )
+                        for( int s=0; s<4; ++s )
+                            for( int r=0; r<4; ++r )
+                                nodeA.Child(t,r).MultiplyHMatMainBroadcastsUnpackC
+                                ( nodeB.Child(r,s), nodeC.Child(t,s), 
+                                  buffer, offsets, startLevel, endLevel,
+                                  startUpdate, endUpdate, r );
+                }
+                return;
+                break;
+            }
+            default:
+                break;
+            }
+            break;
+        default:
+            break;
+        }
+    }
+
+    if( A.level_ < startLevel || A.level_ >= endLevel ||
+        update < startUpdate || update >= endUpdate )
+        return;
+
     switch( A.block_.type )
     {
     case DIST_NODE:
         switch( B.block_.type )
         {
         case DIST_NODE:
-            if( !admissibleC && A.level_+1 < endLevel )
-            {
-                const Node& nodeA = *A.block_.data.N;
-                const Node& nodeB = *B.block_.data.N;
-                Node& nodeC = *C.block_.data.N;
-                for( int t=0; t<4; ++t )
-                    for( int s=0; s<4; ++s )
-                        for( int r=0; r<4; ++r )
-                            nodeA.Child(t,r).MultiplyHMatMainBroadcastsUnpackC
-                            ( nodeB.Child(r,s), nodeC.Child(t,s), 
-                              buffer, offsets, startLevel, endLevel,
-                              startUpdate, endUpdate, r );
-            }
             break;
         case DIST_LOW_RANK:
         case DIST_LOW_RANK_GHOST:
