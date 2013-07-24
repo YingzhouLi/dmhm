@@ -1019,7 +1019,7 @@ DistHMat2d<Scalar>::MultiplyDenseSumsPack
         if( Z.Height() == Z.LDim() )
             MemCopy
             ( &buffer[offsets[level_]], Z.LockedBuffer(), DF.rank*numRhs );
-        else
+        else if( DF.rank > 0 )
             for( int j=0; j<numRhs; ++j )
                 MemCopy
                 ( &buffer[offsets[level_]+j*DF.rank], Z.LockedBuffer(0,j),
@@ -1065,7 +1065,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDenseSumsPack
         if( Z.Height() == Z.LDim() )
             MemCopy
             ( &buffer[offsets[level_]], Z.LockedBuffer(), DF.rank*numRhs );
-        else
+        else if( DF.rank > 0 )
             for( int j=0; j<numRhs; ++j )
                 MemCopy
                 ( &buffer[offsets[level_]+j*DF.rank], Z.LockedBuffer(0,j),
@@ -1116,7 +1116,7 @@ DistHMat2d<Scalar>::MultiplyDenseSumsUnpack
                 MemCopy
                 ( Z.Buffer(), &buffer[offsets[level_]], 
                   DF.rank*numRhs );
-            else
+            else if( DF.rank > 0 )
                 for( int j=0; j<numRhs; ++j )
                     MemCopy
                     ( Z.Buffer(0,j), &buffer[offsets[level_]+j*DF.rank],
@@ -1166,7 +1166,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDenseSumsUnpack
         {
             if( Z.Height() == Z.LDim() )
                 MemCopy( Z.Buffer(), &buffer[offsets[level_]], DF.rank );
-            else
+            else if( DF.rank > 0 )
                 for( int j=0; j<numRhs; ++j )
                     MemCopy
                     ( Z.Buffer(0,j), &buffer[offsets[level_]+j*DF.rank],
