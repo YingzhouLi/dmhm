@@ -228,7 +228,7 @@ Vector<T>::operator[]( int i )
     CallStackEntry entry("Vector::operator[]");
     if( i < 0 )
         throw std::logic_error("Negative buffer offsets are nonsensical");
-    if( i >= height_ && height_ > 0 )
+    if( i > height_ && height_ > 0 )
         throw std::logic_error("Vector::operator[] is out of bounds");
     if( lockedView_ )
         throw std::logic_error("Vector::operator[] the memory is locked");
@@ -244,7 +244,7 @@ Vector<T>::operator[]( int i ) const
     CallStackEntry entry("Vector::operator[]");
     if( i < 0 )
         throw std::logic_error("Negative buffer offsets are nonsensical");
-    if( i >= height_ && height_ > 0 )
+    if( i > height_ && height_ > 0 )
         throw std::logic_error("Vector::operator[] is out of bounds");
 #endif
     if( lockedView_ )
