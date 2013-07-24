@@ -93,7 +93,7 @@ Vector<T>::Vector( int height )
   memory_(height), buffer_(&memory_[0]), lockedBuffer_(0)
 {
 #ifdef MEMORY_INFO
-    AddToMemoryCount( height*sizeof(T) );
+    AddToMemoryCount( memory_.size()*sizeof(T) );
 #endif
 }
 
@@ -106,7 +106,7 @@ Vector<T>::Vector( int height, const T x )
     for( int i=0; i<height; ++i )
         memory_[i]=x;
 #ifdef MEMORY_INFO
-    AddToMemoryCount( height*sizeof(T) );
+    AddToMemoryCount( memory_.size()*sizeof(T) );
 #endif
 }
 
@@ -158,13 +158,13 @@ Vector<T>::Resize( int height )
         throw std::logic_error("Cannot resize a Vector that is a view.");
 #endif
 #ifdef MEMORY_INFO
-    AddToMemoryCount( -height_*sizeof(T) );
+    AddToMemoryCount( -(double)memory_.size()*sizeof(T) );
 #endif
     height_ = height;
     memory_.resize( height );
     buffer_ = &memory_[0];
 #ifdef MEMORY_INFO
-    AddToMemoryCount( height_*sizeof(T) );
+    AddToMemoryCount( memory_.size()*sizeof(T) );
 #endif
 }
 
@@ -176,7 +176,7 @@ Vector<T>::Clear()
     CallStackEntry entry("Vector::Clear");
 #endif
 #ifdef MEMORY_INFO
-    AddToMemoryCount( -height_*sizeof(T) );
+    AddToMemoryCount( -(double)memory_.size()*sizeof(T) );
 #endif
     height_ = 0;
     viewing_ = false;
@@ -261,11 +261,14 @@ Vector<T>::Erase( const iterator bp, const iterator ep )
     CallStackEntry entry("Vector::Erase");
 #endif
 #ifdef MEMORY_INFO
-    AddToMemoryCount( -(ep-bp)*sizeof(T) );
+    AddToMemoryCount( -(double)memory_.size()*sizeof(T) );
 #endif
     memory_.erase(bp,ep);
     height_ -= (ep-bp);
     buffer_=&memory_[0];
+#ifdef MEMORY_INFO
+    AddToMemoryCount( (double)memory_.size()*sizeof(T) );
+#endif
 }
 
 template<typename T>
@@ -276,11 +279,14 @@ Vector<T>::Push_back( const T& x )
     CallStackEntry entry("Vector::Push_back");
 #endif
 #ifdef MEMORY_INFO
-    AddToMemoryCount( sizeof(T) );
+    AddToMemoryCount( -(double)memory_.size()*sizeof(T) );
 #endif
     memory_.push_back(x);
     height_++;
     buffer_=&memory_[0];
+#ifdef MEMORY_INFO
+    AddToMemoryCount( (double)memory_.size()*sizeof(T) );
+#endif
 }
 
 template<typename T>
@@ -291,11 +297,14 @@ Vector<T>::Push_back( T& x )
     CallStackEntry entry("Vector::Push_back");
 #endif
 #ifdef MEMORY_INFO
-    AddToMemoryCount( sizeof(T) );
+    AddToMemoryCount( -(double)memory_.size()*sizeof(T) );
 #endif
     memory_.push_back(x);
     height_++;
     buffer_=&memory_[0];
+#ifdef MEMORY_INFO
+    AddToMemoryCount( (double)memory_.size()*sizeof(T) );
+#endif
 } 
 
 template<typename T>
@@ -308,11 +317,14 @@ Vector<T>::Pop_back()
         throw std::logic_error("Pop_back an empty Vector");
 #endif
 #ifdef MEMORY_INFO
-    AddToMemoryCount( -sizeof(T) );
+    AddToMemoryCount( -(double)memory_.size()*sizeof(T) );
 #endif
     memory_.pop_back();
     height_--;
     buffer_=&memory_[0];
+#ifdef MEMORY_INFO
+    AddToMemoryCount( (double)memory_.size()*sizeof(T) );
+#endif
 } 
 
 template<typename T>

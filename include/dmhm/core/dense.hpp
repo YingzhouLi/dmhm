@@ -117,7 +117,7 @@ Dense<Scalar>::Dense
         throw std::logic_error("Symmetric matrices must be square");
 #endif
 #ifdef MEMORY_INFO
-    AddToMemoryCount( ldim_*width_*sizeof(Scalar) );
+    AddToMemoryCount( memory_.size()*sizeof(Scalar) );
 #endif
 }
 
@@ -140,7 +140,7 @@ Dense<Scalar>::Dense
         throw std::logic_error("Leading dimensions must be positive");
 #endif
 #ifdef MEMORY_INFO
-    AddToMemoryCount( ldim_*width_*sizeof(Scalar) );
+    AddToMemoryCount( memory_.size()*sizeof(Scalar) );
 #endif
 }
 
@@ -262,7 +262,7 @@ Dense<Scalar>::Resize( int height, int width )
         throw std::logic_error("Destroyed symmetry of symmetric matrix");
 #endif
 #ifdef MEMORY_INFO
-    AddToMemoryCount( -ldim_*width_*sizeof(Scalar) );
+    AddToMemoryCount( -(double)memory_.size()*sizeof(Scalar) );
 #endif
     if( height > ldim_ )
     {
@@ -273,7 +273,7 @@ Dense<Scalar>::Resize( int height, int width )
     width_ = width;
     memory_.resize( ldim_*width );
 #ifdef MEMORY_INFO
-    AddToMemoryCount( ldim_*width_*sizeof(Scalar) );
+    AddToMemoryCount( memory_.size()*sizeof(Scalar) );
 #endif
     buffer_ = &memory_[0];
 }
@@ -294,14 +294,14 @@ Dense<Scalar>::Resize( int height, int width, int ldim )
         throw std::logic_error("Destroyed symmetry of symmetric matrix");
 #endif
 #ifdef MEMORY_INFO
-    AddToMemoryCount( -ldim_*width_*sizeof(Scalar) );
+    AddToMemoryCount( -(double)memory_.size()*sizeof(Scalar) );
 #endif
     height_ = height;
     width_ = width;
     ldim_ = ldim;
     memory_.resize( ldim*width );
 #ifdef MEMORY_INFO
-    AddToMemoryCount( ldim_*width_*sizeof(Scalar) );
+    AddToMemoryCount( memory_.size()*sizeof(Scalar) );
 #endif
     buffer_ = &memory_[0];
 }
@@ -319,16 +319,19 @@ Dense<Scalar>::EraseCols( int first, int last )
     if( type_ == SYMMETRIC )
         throw std::logic_error("Destroyed symmetry of symmetric matrix");
 #endif
+#ifdef MEMORY_INFO
+        AddToMemoryCount( -(double)memory_.size()*sizeof(Scalar) );
+#endif
     if( first <= last )
     {
         width_ = width_-last+first-1;
         memory_.erase
         ( memory_.begin()+first*ldim_, memory_.begin()+(last+1)*ldim_ );
-#ifdef MEMORY_INFO
-        AddToMemoryCount( -ldim_*(last-first+1)*sizeof(Scalar) );
-#endif
         buffer_ = &memory_[0];
     }
+#ifdef MEMORY_INFO
+        AddToMemoryCount( (double)memory_.size()*sizeof(Scalar) );
+#endif
 }
 
 template<typename Scalar>
@@ -344,6 +347,9 @@ Dense<Scalar>::EraseRows( int first, int last )
     if( type_ == SYMMETRIC )
         throw std::logic_error("Destroyed symmetry of symmetric matrix");
 #endif
+#ifdef MEMORY_INFO
+            AddToMemoryCount( -(double)memory_.size()*sizeof(Scalar) );
+#endif
     if( first <= last )
     {
         height_ = height_-last+first-1;  
@@ -351,13 +357,13 @@ Dense<Scalar>::EraseRows( int first, int last )
         {
             memory_.erase
             ( memory_.begin()+i*ldim_+first, memory_.begin()+i*ldim_+last+1 );
-#ifdef MEMORY_INFO
-            AddToMemoryCount( -(last-first+1)*sizeof(Scalar) );
-#endif
         }
         buffer_ = &memory_[0];
         ldim_ = std::max( ldim_-last+first-1, 1 );
     }
+#ifdef MEMORY_INFO
+            AddToMemoryCount( (double)memory_.size()*sizeof(Scalar) );
+#endif
 }
 
 template<typename Scalar>
@@ -396,16 +402,17 @@ Dense<Scalar>::Clear()
 #ifndef RELEASE
     CallStackEntry entry("Dense::Clear");
 #endif
+#ifdef MEMORY_INFO
+    AddToMemoryCount( -(double)memory_.size()*sizeof(Scalar) );
+#endif
     height_ = 0;
     width_ = 0;
     ldim_ = 1;
     viewing_ = false;
     lockedView_ = false;
 
+
     std::vector<Scalar>().swap(memory_);
-#ifdef MEMORY_INFO
-    AddToMemoryCount( -memory_.size()*sizeof(Scalar) );
-#endif
     buffer_ = 0;
     lockedBuffer_ = 0;
     type_ = GENERAL;

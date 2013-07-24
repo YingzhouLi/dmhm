@@ -146,7 +146,6 @@ main( int argc, char* argv[] )
         double constructStartTime = mpi::Time();
         DistHMat A( S, numLevels, maxRank, strong, xSize, ySize, teams );
 #ifdef MEMORY_INFO
-        A.PrintMemoryInfo("Memory in Invert");
         std::cout << "Memory of Dense block now: " 
                   << MemoryUsage()/1024./1024. << "MB" << std::endl;
         std::cout << "Peak memory of Dense block: "
@@ -192,6 +191,13 @@ main( int argc, char* argv[] )
             std::cout << "done: " << SchulzInvertStopTime-SchulzInvertStartTime
                       << " seconds." << std::endl;
         }
+
+#ifdef MEMORY_INFO
+        std::cout << "Memory of Dense block now: " 
+                  << MemoryUsage()/1024./1024. << "MB" << std::endl;
+        std::cout << "Peak memory of Dense block: "
+                  << PeakMemoryUsage()/1024./1024. << "MB" << std::endl;
+#endif
 
         Dense<Scalar> XLocal;
         if( multI )
