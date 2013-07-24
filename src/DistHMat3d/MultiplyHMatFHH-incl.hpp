@@ -116,7 +116,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHSums
     // Compute the message sizes for each reduce
     const unsigned numTeamLevels = teams_->NumLevels();
     const unsigned numReduces = numTeamLevels-1;
-    std::vector<int> sizes( numReduces, 0 );
+    Vector<int> sizes( numReduces, 0 );
     A.MultiplyHMatFHHSumsCount
     ( B, C, sizes, startLevel, endLevel, startUpdate, endUpdate, 0 );
 
@@ -124,11 +124,11 @@ DistHMat3d<Scalar>::MultiplyHMatFHHSums
     int totalSize = 0;
     for( unsigned i=0; i<numReduces; ++i )
         totalSize += sizes[i];
-    std::vector<Scalar> buffer( totalSize );
-    std::vector<int> offsets( numReduces );
+    Vector<Scalar> buffer( totalSize );
+    Vector<int> offsets( numReduces );
     for( unsigned i=0,offset=0; i<numReduces; offset+=sizes[i],++i )
         offsets[i] = offset;
-    std::vector<int> offsetsCopy = offsets;
+    Vector<int> offsetsCopy = offsets;
     A.MultiplyHMatFHHSumsPack
     ( B, C, buffer, offsetsCopy, 
       startLevel, endLevel, startUpdate, endUpdate, 0 );
@@ -146,7 +146,7 @@ void
 DistHMat3d<Scalar>::MultiplyHMatFHHSumsCount
 ( const DistHMat3d<Scalar>& B,
         DistHMat3d<Scalar>& C,
-        std::vector<int>& sizes,
+        Vector<int>& sizes,
   int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update ) const
 {
@@ -206,7 +206,7 @@ void
 DistHMat3d<Scalar>::MultiplyHMatFHHSumsPack
 ( DistHMat3d<Scalar>& B,
   DistHMat3d<Scalar>& C,
-  std::vector<Scalar>& buffer, std::vector<int>& offsets,
+  Vector<Scalar>& buffer, Vector<int>& offsets,
   int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update )
 {
@@ -269,7 +269,7 @@ void
 DistHMat3d<Scalar>::MultiplyHMatFHHSumsUnpack
 ( DistHMat3d<Scalar>& B,
   DistHMat3d<Scalar>& C,
-  const std::vector<Scalar>& buffer, std::vector<int>& offsets,
+  const Vector<Scalar>& buffer, Vector<int>& offsets,
   int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update )
 {
@@ -362,7 +362,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHPassData
     }
 
     // Fill the send buffer
-    std::vector<Scalar> sendBuffer(totalSendSize);
+    Vector<Scalar> sendBuffer(totalSendSize);
     std::map<int,int> offsets = sendOffsets;
     A.MultiplyHMatFHHPassDataPack
     ( B, C, sendBuffer, offsets, 
@@ -371,8 +371,8 @@ DistHMat3d<Scalar>::MultiplyHMatFHHPassData
     // Start the non-blocking recvs
     mpi::Comm comm = teams_->Team( 0 );
     const int numRecvs = recvSizes.size();
-    std::vector<mpi::Request> recvRequests( numRecvs );
-    std::vector<Scalar> recvBuffer( totalRecvSize );
+    Vector<mpi::Request> recvRequests( numRecvs );
+    Vector<Scalar> recvBuffer( totalRecvSize );
     int offset = 0;
     for( it=recvSizes.begin(); it!=recvSizes.end(); ++it )
     {
@@ -386,7 +386,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHPassData
 
     // Start the non-blocking sends
     const int numSends = sendSizes.size();
-    std::vector<mpi::Request> sendRequests( numSends );
+    Vector<mpi::Request> sendRequests( numSends );
     offset = 0;
     for( it=sendSizes.begin(); it!=sendSizes.end(); ++it )
     {
@@ -482,7 +482,7 @@ void
 DistHMat3d<Scalar>::MultiplyHMatFHHPassDataPack
 ( DistHMat3d<Scalar>& B,
   DistHMat3d<Scalar>& C,
-  std::vector<Scalar>& sendBuffer, std::map<int,int>& offsets,
+  Vector<Scalar>& sendBuffer, std::map<int,int>& offsets,
   int startLevel, int endLevel, 
   int startUpdate, int endUpdate, int update )
 {
@@ -555,7 +555,7 @@ void
 DistHMat3d<Scalar>::MultiplyHMatFHHPassDataUnpack
 ( DistHMat3d<Scalar>& B,
   DistHMat3d<Scalar>& C,
-  const std::vector<Scalar>& recvBuffer, std::map<int,int>& offsets,
+  const Vector<Scalar>& recvBuffer, std::map<int,int>& offsets,
   int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update )
 {
@@ -638,7 +638,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHBroadcasts
     // Compute the message sizes for each broadcast
     const unsigned numTeamLevels = teams_->NumLevels();
     const unsigned numBroadcasts = numTeamLevels-1;
-    std::vector<int> sizes( numBroadcasts, 0 );
+    Vector<int> sizes( numBroadcasts, 0 );
     A.MultiplyHMatFHHBroadcastsCount
     ( B, C, sizes, startLevel, endLevel, startUpdate, endUpdate, 0 );
 
@@ -647,11 +647,11 @@ DistHMat3d<Scalar>::MultiplyHMatFHHBroadcasts
     int totalSize = 0;
     for( unsigned i=0; i<numBroadcasts; ++i )
         totalSize += sizes[i];
-    std::vector<Scalar> buffer( totalSize );
-    std::vector<int> offsets( numBroadcasts );
+    Vector<Scalar> buffer( totalSize );
+    Vector<int> offsets( numBroadcasts );
     for( unsigned i=0,offset=0; i<numBroadcasts; offset+=sizes[i],++i )
         offsets[i] = offset;
-    std::vector<int> offsetsCopy = offsets;
+    Vector<int> offsetsCopy = offsets;
     A.MultiplyHMatFHHBroadcastsPack
     ( B, C, buffer, offsetsCopy, 
       startLevel, endLevel, startUpdate, endUpdate, 0 );
@@ -669,7 +669,7 @@ void
 DistHMat3d<Scalar>::MultiplyHMatFHHBroadcastsCount
 ( const DistHMat3d<Scalar>& B,
         DistHMat3d<Scalar>& C,
-        std::vector<int>& sizes,
+        Vector<int>& sizes,
   int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update ) const
 {
@@ -730,7 +730,7 @@ void
 DistHMat3d<Scalar>::MultiplyHMatFHHBroadcastsPack
 ( const DistHMat3d<Scalar>& B,
         DistHMat3d<Scalar>& C,
-  std::vector<Scalar>& buffer, std::vector<int>& offsets,
+  Vector<Scalar>& buffer, Vector<int>& offsets,
   int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update ) const
 {
@@ -793,7 +793,7 @@ void
 DistHMat3d<Scalar>::MultiplyHMatFHHBroadcastsUnpack
 ( DistHMat3d<Scalar>& B,
   DistHMat3d<Scalar>& C,
-  const std::vector<Scalar>& buffer, std::vector<int>& offsets,
+  const Vector<Scalar>& buffer, Vector<int>& offsets,
   int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update )
 {
@@ -996,7 +996,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalize
 
     const int r = SampleRank( C.MaxRank() );
     const unsigned numTeamLevels = C.teams_->NumLevels();
-    std::vector<int> numQRs(numTeamLevels,0), 
+    Vector<int> numQRs(numTeamLevels,0), 
                      numTargetFHH(numTeamLevels,0), 
                      numSourceFHH(numTeamLevels,0);
     C.MultiplyHMatFHHFinalizeCounts
@@ -1004,7 +1004,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalize
 
     // Set up the space for the packed 2r x r matrices and taus.
     int numTotalQRs=0, numQRSteps=0, qrTotalSize=0, tauTotalSize=0;
-    std::vector<int> XOffsets(numTeamLevels), halfHeightOffsets(numTeamLevels),
+    Vector<int> XOffsets(numTeamLevels), halfHeightOffsets(numTeamLevels),
                      qrOffsets(numTeamLevels), tauOffsets(numTeamLevels);
     for( unsigned teamLevel=0; teamLevel<numTeamLevels; ++teamLevel )
     {
@@ -1023,16 +1023,16 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalize
         tauTotalSize += numQRs[teamLevel]*(log2TeamSize+1)*r;
     }
 
-    std::vector<Dense<Scalar>*> Xs( numTotalQRs );
-    std::vector<int> halfHeights( 2*numQRSteps );
-    std::vector<Scalar> qrBuffer( qrTotalSize ), tauBuffer( tauTotalSize ),
+    Vector<Dense<Scalar>*> Xs( numTotalQRs );
+    Vector<int> halfHeights( 2*numQRSteps );
+    Vector<Scalar> qrBuffer( qrTotalSize ), tauBuffer( tauTotalSize ),
                         qrWork( lapack::QRWorkSize( r ) );
 
     // Form our contributions to Omega2' (alpha A B Omega1) updates here, 
     // before we overwrite the colXMap_ and rowXMap_ results.
     // The distributed summations will not occur until after the parallel
     // QR factorizations.
-    std::vector<int> leftOffsets(numTeamLevels), middleOffsets(numTeamLevels), 
+    Vector<int> leftOffsets(numTeamLevels), middleOffsets(numTeamLevels), 
                      rightOffsets(numTeamLevels);
     int totalAllReduceSize = 0;
     for( unsigned teamLevel=0; teamLevel<numTeamLevels; ++teamLevel )
@@ -1049,9 +1049,9 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalize
 
     // Compute the local contributions to the middle updates, 
     // Omega2' (alpha A B Omega1)
-    std::vector<Scalar> allReduceBuffer( totalAllReduceSize );
+    Vector<Scalar> allReduceBuffer( totalAllReduceSize );
     {
-        std::vector<int> middleOffsetsCopy = middleOffsets;
+        Vector<int> middleOffsetsCopy = middleOffsets;
 
         A.MultiplyHMatFHHFinalizeMiddleUpdates
         ( B, C, allReduceBuffer, middleOffsetsCopy, 
@@ -1060,7 +1060,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalize
 
     // Perform the large local QR's and pack into the QR buffer as appropriate
     {
-        std::vector<int> XOffsetsCopy, tauOffsetsCopy;
+        Vector<int> XOffsetsCopy, tauOffsetsCopy;
         XOffsetsCopy = XOffsets;
         tauOffsetsCopy = tauOffsets;
 
@@ -1113,7 +1113,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalize
                     Z.Set(j,j,Scalar(1) );
 
                 // Backtransform the last stage
-                qrWork.resize( r );
+                qrWork.Resize( r );
                 hmat_tools::ApplyPackedQFromLeft
                 ( r, sLast, tLast, lastQRStage, lastTauStage, Z, &qrWork[0] );
 
@@ -1176,11 +1176,11 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalize
                         MemCopy
                         ( X.Buffer(0,j), Z.LockedBuffer(sPrev,j), tPrev );
                 }
-                qrWork.resize( lapack::ApplyQWorkSize('L',m,r) );
+                qrWork.Resize( lapack::ApplyQWorkSize('L',m,r) );
                 lapack::ApplyQ
                 ( 'L', 'N', m, r, std::min(m,r),
                   Y.LockedBuffer(), Y.LDim(), &tauPiece[0],
-                  X.Buffer(),       X.LDim(), &qrWork[0], qrWork.size() );
+                  X.Buffer(),       X.LDim(), &qrWork[0], qrWork.Size() );
             }
             else // this team only contains one process
             {
@@ -1192,23 +1192,23 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalize
                 for( int j=0; j<std::min(m,r); ++j )
                     X.Set(j,j,Scalar(1));
                 // Backtransform the last stage
-                qrWork.resize( lapack::ApplyQWorkSize('L',m,r) );
+                qrWork.Resize( lapack::ApplyQWorkSize('L',m,r) );
                 lapack::ApplyQ
                 ( 'L', 'N', m, r, std::min(m,r),
                   Y.LockedBuffer(), Y.LDim(), &tauPiece[0],
-                  X.Buffer(),       X.LDim(), &qrWork[0], qrWork.size() );
+                  X.Buffer(),       X.LDim(), &qrWork[0], qrWork.Size() );
             }
         }
     }
-    XOffsets.clear();
-    qrOffsets.clear(); qrBuffer.clear();
-    tauOffsets.clear(); tauBuffer.clear();
-    qrWork.clear();
+    XOffsets.Clear();
+    qrOffsets.Clear(); qrBuffer.Clear();
+    tauOffsets.Clear(); tauBuffer.Clear();
+    qrWork.Clear();
     Z.Clear();
 
     // Form our local contributions to Q1' Omega2 and Q2' Omega1
     {
-        std::vector<int> leftOffsetsCopy, rightOffsetsCopy;
+        Vector<int> leftOffsetsCopy, rightOffsetsCopy;
         leftOffsetsCopy = leftOffsets;
         rightOffsetsCopy = rightOffsets;
 
@@ -1222,7 +1222,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalize
     {
         // Generate offsets and sizes for each entire level
         const unsigned numAllReduces = numTeamLevels-1;
-        std::vector<int> sizes(numAllReduces);
+        Vector<int> sizes(numAllReduces);
         for( unsigned teamLevel=0; teamLevel<numAllReduces; ++teamLevel )
             sizes[teamLevel] = (2*numTargetFHH[teamLevel]+
                                   numSourceFHH[teamLevel])*r*r;
@@ -1231,9 +1231,9 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalize
     }
 
     // Finish forming the low-rank approximation
-    std::vector<Scalar> U( r*r ), VH( r*r ),
+    Vector<Scalar> U( r*r ), VH( r*r ),
                         svdWork( lapack::SVDWorkSize(r,r) );
-    std::vector<Real> singularValues( r ), 
+    Vector<Real> singularValues( r ), 
                       svdRealWork( lapack::SVDRealWorkSize(r,r) ); 
     A.MultiplyHMatFHHFinalizeFormLowRank
     ( B, C, allReduceBuffer, leftOffsets, middleOffsets, rightOffsets,
@@ -1244,8 +1244,8 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalize
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatFHHFinalizeCounts
-( std::vector<int>& numQRs, 
-  std::vector<int>& numTargetFHH, std::vector<int>& numSourceFHH,
+( Vector<int>& numQRs, 
+  Vector<int>& numTargetFHH, Vector<int>& numSourceFHH,
   int startLevel, int endLevel )
 {
 #ifndef RELEASE
@@ -1303,8 +1303,8 @@ void
 DistHMat3d<Scalar>::MultiplyHMatFHHFinalizeMiddleUpdates
 ( const DistHMat3d<Scalar>& B,
         DistHMat3d<Scalar>& C,
-        std::vector<Scalar>& allReduceBuffer,
-        std::vector<int>& middleOffsets,
+        Vector<Scalar>& allReduceBuffer,
+        Vector<int>& middleOffsets,
   int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update ) const
 {
@@ -1380,9 +1380,9 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalizeMiddleUpdates
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatFHHFinalizeLocalQR
-( std::vector<Dense<Scalar>*>& Xs, std::vector<int>& XOffsets,
-  std::vector<Scalar>& tauBuffer, std::vector<int>& tauOffsets,
-  std::vector<Scalar>& qrWork,
+( Vector<Dense<Scalar>*>& Xs, Vector<int>& XOffsets,
+  Vector<Scalar>& tauBuffer, Vector<int>& tauOffsets,
+  Vector<Scalar>& qrWork,
   int startLevel, int endLevel )
 {
 #ifndef RELEASE
@@ -1431,7 +1431,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalizeLocalQR
                     lapack::QR
                     ( X.Height(), X.Width(), X.Buffer(), X.LDim(), 
                       &tauBuffer[tauOffsets[teamLevel]], 
-                      &qrWork[0], qrWork.size() );
+                      &qrWork[0], qrWork.Size() );
                     tauOffsets[teamLevel] += (log2TeamSize+1)*r;
                 }
             }
@@ -1447,7 +1447,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalizeLocalQR
                     lapack::QR
                     ( X.Height(), X.Width(), X.Buffer(), X.LDim(), 
                       &tauBuffer[tauOffsets[teamLevel]], 
-                      &qrWork[0], qrWork.size() );
+                      &qrWork[0], qrWork.Size() );
                     tauOffsets[teamLevel] += (log2TeamSize+1)*r;
                 }
             }
@@ -1464,9 +1464,9 @@ void
 DistHMat3d<Scalar>::MultiplyHMatFHHFinalizeOuterUpdates
 ( const DistHMat3d<Scalar>& B,
         DistHMat3d<Scalar>& C,
-        std::vector<Scalar>& allReduceBuffer,
-        std::vector<int>& leftOffsets,
-        std::vector<int>& rightOffsets,
+        Vector<Scalar>& allReduceBuffer,
+        Vector<int>& leftOffsets,
+        Vector<int>& rightOffsets,
   int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update ) const
 {
@@ -1561,15 +1561,15 @@ void
 DistHMat3d<Scalar>::MultiplyHMatFHHFinalizeFormLowRank
 ( const DistHMat3d<Scalar>& B,
         DistHMat3d<Scalar>& C,
-        std::vector<Scalar>& allReduceBuffer,
-        std::vector<int>& leftOffsets,
-        std::vector<int>& middleOffsets,
-        std::vector<int>& rightOffsets,
-        std::vector<Real>& singularValues,
-        std::vector<Scalar>& U,
-        std::vector<Scalar>& VH,
-        std::vector<Scalar>& svdWork,
-        std::vector<Real>& svdRealWork,
+        Vector<Scalar>& allReduceBuffer,
+        Vector<int>& leftOffsets,
+        Vector<int>& middleOffsets,
+        Vector<int>& rightOffsets,
+        Vector<Real>& singularValues,
+        Vector<Scalar>& U,
+        Vector<Scalar>& VH,
+        Vector<Scalar>& svdWork,
+        Vector<Real>& svdRealWork,
   int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update ) const
 {
@@ -1617,7 +1617,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalizeFormLowRank
                         lapack::AdjointPseudoInverse
                         ( X.Width(), rank, leftUpdate, rank, &singularValues[0],
                           &U[0], rank, &VH[0], rank, &svdWork[0], 
-                          svdWork.size(), &svdRealWork[0] );
+                          svdWork.Size(), &svdRealWork[0] );
 
                         // We can use the VH space to hold the product 
                         // pinv(Q1' Omega2)' (Omega2' alpha A B Omega1)
@@ -1655,7 +1655,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalizeFormLowRank
                         ( X.Width(), rank, rightUpdate, rank, 
                           &singularValues[0],
                           &U[0], rank, &VH[0], rank, 
-                          &svdWork[0], svdWork.size(), &svdRealWork[0] );
+                          &svdWork[0], svdWork.Size(), &svdRealWork[0] );
 
                         // Q2 := X
                         Dense<Scalar> Q2;

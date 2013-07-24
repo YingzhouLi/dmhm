@@ -13,58 +13,58 @@ template<typename Real>
 void
 FormCol
 ( int x, int y, int z, int xSize, int ySize, int zSize, 
-  std::vector<std::complex<Real> >& col, std::vector<int>& rowIndices )
+  Vector<std::complex<Real> >& col, Vector<int>& rowIndices )
 {
     typedef std::complex<Real> Scalar;
     const int colIdx = x + xSize*y + xSize*ySize*z;
 
-    col.resize( 0 );
-    rowIndices.resize( 0 );
+    col.Resize( 0 );
+    rowIndices.Resize( 0 );
 
     // Set up the diagonal entry
-    rowIndices.push_back( colIdx );
-    col.push_back( (Scalar)8 );
+    rowIndices.Push_back( colIdx );
+    col.Push_back( (Scalar)8 );
 
     // Front connection to (x-1,y,z)
     if( x != 0 )
     {
-        rowIndices.push_back( (x-1) + xSize*y + xSize*ySize*z );
-        col.push_back( (Scalar)-1 );
+        rowIndices.Push_back( (x-1) + xSize*y + xSize*ySize*z );
+        col.Push_back( (Scalar)-1 );
     }
 
     // Back connection to (x+1,y,z)
     if( x != xSize-1 )
     {
-        rowIndices.push_back( (x+1) + xSize*y + xSize*ySize*z );
-        col.push_back( (Scalar)-1 );
+        rowIndices.Push_back( (x+1) + xSize*y + xSize*ySize*z );
+        col.Push_back( (Scalar)-1 );
     }
 
     // Left connection to (x,y-1,z)
     if( y != 0 )
     {
-        rowIndices.push_back( x + xSize*(y-1) + xSize*ySize*z );
-        col.push_back( (Scalar)-1 );
+        rowIndices.Push_back( x + xSize*(y-1) + xSize*ySize*z );
+        col.Push_back( (Scalar)-1 );
     }
 
     // Right connection to (x,y+1,z)
     if( y != ySize-1 )
     {
-        rowIndices.push_back( x + xSize*(y+1) + xSize*ySize*z );
-        col.push_back( (Scalar)-1 );
+        rowIndices.Push_back( x + xSize*(y+1) + xSize*ySize*z );
+        col.Push_back( (Scalar)-1 );
     }
 
     // Top connection to (x,y,z-1)
     if( z != 0 )
     {
-        rowIndices.push_back( x + xSize*y + xSize*ySize*(z-1) );
-        col.push_back( (Scalar)-1 );
+        rowIndices.Push_back( x + xSize*y + xSize*ySize*(z-1) );
+        col.Push_back( (Scalar)-1 );
     }
 
     // Bottom connection to (x,y,z+1)
     if( z != zSize-1 )
     {
-        rowIndices.push_back( x + xSize*y + xSize*ySize*(z+1) );
-        col.push_back( (Scalar)-1 );
+        rowIndices.Push_back( x + xSize*y + xSize*ySize*(z+1) );
+        col.Push_back( (Scalar)-1 );
     }
 }
 

@@ -336,9 +336,8 @@ DistHMat3d<Scalar>::MultiplyVectorPrecompute
         const DistLowRank& DF = *block_.data.DF;
         Vector<Scalar>& z = *context.block.data.z;
         z.Resize( DF.rank );
-        const char option = 'T';
         blas::Gemv
-        ( option, DF.VLocal.Height(), DF.rank, 
+        ( 'T', DF.VLocal.Height(), DF.rank, 
           alpha,     DF.VLocal.LockedBuffer(), DF.VLocal.LDim(), 
                      xLocal.LockedBuffer(),    1,
           Scalar(0), z.Buffer(),               1 );
@@ -736,18 +735,18 @@ DistHMat3d<Scalar>::MultiplyVectorSums
     // Compute the message sizes for each reduce 
     const int numLevels = teams_->NumLevels();
     const int numReduces = numLevels-1;
-    std::vector<int> sizes( numReduces, 0 );
+    Vector<int> sizes( numReduces, 0 );
     MultiplyVectorSumsCount( sizes );
 
     // Pack all of the data to be reduced into a single buffer
     int totalSize = 0;
     for( int i=0; i<numReduces; ++i )
         totalSize += sizes[i];
-    std::vector<Scalar> buffer( totalSize );
-    std::vector<int> offsets( numReduces );
+    Vector<Scalar> buffer( totalSize );
+    Vector<int> offsets( numReduces );
     for( int i=0,offset=0; i<numReduces; offset+=sizes[i],++i )
         offsets[i] = offset;
-    std::vector<int> offsetsCopy = offsets;
+    Vector<int> offsetsCopy = offsets;
     MultiplyVectorSumsPack( context, buffer, offsetsCopy );
 
     // Perform the reduces with log2(p) messages
@@ -768,18 +767,18 @@ DistHMat3d<Scalar>::TransposeMultiplyVectorSums
     // Compute the message sizes for each reduce 
     const int numLevels = teams_->NumLevels();
     const int numReduces = numLevels-1;
-    std::vector<int> sizes( numReduces, 0 );
+    Vector<int> sizes( numReduces, 0 );
     TransposeMultiplyVectorSumsCount( sizes );
 
     // Pack all of the data to be reduced into a single buffer
     int totalSize = 0;
     for( int i=0; i<numReduces; ++i )
         totalSize += sizes[i];
-    std::vector<Scalar> buffer( totalSize );
-    std::vector<int> offsets( numReduces );
+    Vector<Scalar> buffer( totalSize );
+    Vector<int> offsets( numReduces );
     for( int i=0,offset=0; i<numReduces; offset+=sizes[i],++i )
         offsets[i] = offset;
-    std::vector<int> offsetsCopy = offsets;
+    Vector<int> offsetsCopy = offsets;
     TransposeMultiplyVectorSumsPack( context, buffer, offsetsCopy );
 
     // Perform the reduces with log2(p) messages
@@ -804,7 +803,7 @@ DistHMat3d<Scalar>::AdjointMultiplyVectorSums
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyVectorSumsCount
-( std::vector<int>& sizes ) const
+( Vector<int>& sizes ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyVectorSumsCount");
@@ -833,7 +832,7 @@ DistHMat3d<Scalar>::MultiplyVectorSumsCount
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::TransposeMultiplyVectorSumsCount
-( std::vector<int>& sizes ) const
+( Vector<int>& sizes ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::TransposeMultiplyVectorSumsCount");
@@ -863,7 +862,7 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyVectorSumsPack
 ( const MultiplyVectorContext& context, 
-  std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
+  Vector<Scalar>& buffer, Vector<int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyVectorSumsPack");
@@ -901,7 +900,7 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::TransposeMultiplyVectorSumsPack
 ( const MultiplyVectorContext& context,
-  std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
+  Vector<Scalar>& buffer, Vector<int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::TransposeMultiplyVectorSumsPack");
@@ -939,7 +938,7 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyVectorSumsUnpack
 ( MultiplyVectorContext& context,
-  const std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
+  const Vector<Scalar>& buffer, Vector<int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyVectorSumsUnpack");
@@ -982,7 +981,7 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::TransposeMultiplyVectorSumsUnpack
 ( MultiplyVectorContext& context,
-  const std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
+  const Vector<Scalar>& buffer, Vector<int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::TransposeMultiplyVectorSumsUnpack");
@@ -1049,15 +1048,15 @@ DistHMat3d<Scalar>::MultiplyVectorPassData
     }
 
     // Fill the send buffer
-    std::vector<Scalar> sendBuffer( totalSendSize );
+    Vector<Scalar> sendBuffer( totalSendSize );
     std::map<int,int> offsets = sendOffsets;
     MultiplyVectorPassDataPack( context, sendBuffer, offsets );
 
     // Start the non-blocking recvs
     mpi::Comm comm = teams_->Team( 0 );
     const int numRecvs = recvSizes.size();
-    std::vector<mpi::Request> recvRequests( numRecvs );
-    std::vector<Scalar> recvBuffer( totalRecvSize );
+    Vector<mpi::Request> recvRequests( numRecvs );
+    Vector<Scalar> recvBuffer( totalRecvSize );
     int offset = 0;
     for( it=recvSizes.begin(); it!=recvSizes.end(); ++it )
     {
@@ -1071,7 +1070,7 @@ DistHMat3d<Scalar>::MultiplyVectorPassData
 
     // Start the non-blocking sends
     const int numSends = sendSizes.size();
-    std::vector<mpi::Request> sendRequests( numSends );
+    Vector<mpi::Request> sendRequests( numSends );
     offset = 0;
     for( it=sendSizes.begin(); it!=sendSizes.end(); ++it )
     {
@@ -1151,7 +1150,7 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyVectorPassDataPack
 ( MultiplyVectorContext& context,
-  std::vector<Scalar>& buffer, std::map<int,int>& offsets ) const
+  Vector<Scalar>& buffer, std::map<int,int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyVectorPassDataPack");
@@ -1236,7 +1235,7 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyVectorPassDataUnpack
 ( MultiplyVectorContext& context,
-  const std::vector<Scalar>& buffer, std::map<int,int>& offsets ) const
+  const Vector<Scalar>& buffer, std::map<int,int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyVectorPassDataUnpack");
@@ -1344,14 +1343,14 @@ DistHMat3d<Scalar>::TransposeMultiplyVectorPassData
     }
 
     // Fill the send buffer
-    std::vector<Scalar> sendBuffer( totalSendSize );
+    Vector<Scalar> sendBuffer( totalSendSize );
     std::map<int,int> offsets = sendOffsets;
     TransposeMultiplyVectorPassDataPack( context, xLocal, sendBuffer, offsets );
 
     // Start the non-blocking sends
     mpi::Comm comm = teams_->Team( 0 );
     const int numSends = sendSizes.size();
-    std::vector<mpi::Request> sendRequests( numSends );
+    Vector<mpi::Request> sendRequests( numSends );
     int offset = 0;
     for( it=sendSizes.begin(); it!=sendSizes.end(); ++it )
     {
@@ -1363,8 +1362,8 @@ DistHMat3d<Scalar>::TransposeMultiplyVectorPassData
 
     // Start the non-blocking recvs
     const int numRecvs = recvSizes.size();
-    std::vector<mpi::Request> recvRequests( numRecvs );
-    std::vector<Scalar> recvBuffer( totalRecvSize );
+    Vector<mpi::Request> recvRequests( numRecvs );
+    Vector<Scalar> recvBuffer( totalRecvSize );
       offset = 0;
     for( it=recvSizes.begin(); it!=recvSizes.end(); ++it )
     {
@@ -1444,7 +1443,7 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::TransposeMultiplyVectorPassDataPack
 ( MultiplyVectorContext& context, const Vector<Scalar>& xLocal,
-  std::vector<Scalar>& buffer, std::map<int,int>& offsets ) const
+  Vector<Scalar>& buffer, std::map<int,int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::TransposeMultiplyVectorPassDataPack");
@@ -1569,7 +1568,7 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::TransposeMultiplyVectorPassDataUnpack
 ( MultiplyVectorContext& context,
-  const std::vector<Scalar>& buffer, std::map<int,int>& offsets ) const
+  const Vector<Scalar>& buffer, std::map<int,int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::TransposeMultiplyVectorPassDataUnpack");
@@ -1672,7 +1671,7 @@ DistHMat3d<Scalar>::MultiplyVectorBroadcasts
     // Compute the message sizes for each broadcast
     const int numLevels = teams_->NumLevels();
     const int numBroadcasts = numLevels-1;
-    std::vector<int> sizes( numBroadcasts, 0 );
+    Vector<int> sizes( numBroadcasts, 0 );
     MultiplyVectorBroadcastsCount( sizes );
 
     // Pack all of the data to be broadcasted into a single buffer
@@ -1680,11 +1679,11 @@ DistHMat3d<Scalar>::MultiplyVectorBroadcasts
     int totalSize = 0;
     for( int i=0; i<numBroadcasts; ++i )
         totalSize += sizes[i];
-    std::vector<Scalar> buffer( totalSize );
-    std::vector<int> offsets( numBroadcasts );
+    Vector<Scalar> buffer( totalSize );
+    Vector<int> offsets( numBroadcasts );
     for( int i=0,offset=0; i<numBroadcasts; offset+=sizes[i],++i )
         offsets[i] = offset;
-    std::vector<int> offsetsCopy = offsets;
+    Vector<int> offsetsCopy = offsets;
     MultiplyVectorBroadcastsPack( context, buffer, offsetsCopy );
 
     // Perform the broadcasts with log2(p) messages
@@ -1705,7 +1704,7 @@ DistHMat3d<Scalar>::TransposeMultiplyVectorBroadcasts
     // Compute the message sizes for each broadcast
     const int numLevels = teams_->NumLevels();
     const int numBroadcasts = numLevels-1;
-    std::vector<int> sizes( numBroadcasts, 0 );
+    Vector<int> sizes( numBroadcasts, 0 );
     TransposeMultiplyVectorBroadcastsCount( sizes );
 
     // Pack all of the data to be broadcasted into a single buffer
@@ -1713,11 +1712,11 @@ DistHMat3d<Scalar>::TransposeMultiplyVectorBroadcasts
     int totalSize = 0;
     for( int i=0; i<numBroadcasts; ++i )
         totalSize += sizes[i];
-    std::vector<Scalar> buffer( totalSize );
-    std::vector<int> offsets( numBroadcasts );
+    Vector<Scalar> buffer( totalSize );
+    Vector<int> offsets( numBroadcasts );
     for( int i=0,offset=0; i<numBroadcasts; offset+=sizes[i],++i )
         offsets[i] = offset;
-    std::vector<int> offsetsCopy = offsets;
+    Vector<int> offsetsCopy = offsets;
     TransposeMultiplyVectorBroadcastsPack( context, buffer, offsetsCopy );
 
     // Perform the broadcasts with log2(p) messages
@@ -1742,7 +1741,7 @@ DistHMat3d<Scalar>::AdjointMultiplyVectorBroadcasts
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyVectorBroadcastsCount
-( std::vector<int>& sizes ) const
+( Vector<int>& sizes ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyVectorBroadcastsCount");
@@ -1771,7 +1770,7 @@ DistHMat3d<Scalar>::MultiplyVectorBroadcastsCount
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::TransposeMultiplyVectorBroadcastsCount
-( std::vector<int>& sizes ) const
+( Vector<int>& sizes ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::TransposeMultiplyVectorBroadcastsCount");
@@ -1802,7 +1801,7 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyVectorBroadcastsPack
 ( const MultiplyVectorContext& context,
-  std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
+  Vector<Scalar>& buffer, Vector<int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyVectorBroadcastsPack");
@@ -1845,7 +1844,7 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::TransposeMultiplyVectorBroadcastsPack
 ( const MultiplyVectorContext& context,
-  std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
+  Vector<Scalar>& buffer, Vector<int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::TransposeMultiplyVectorBroadcastsPack");
@@ -1888,7 +1887,7 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyVectorBroadcastsUnpack
 ( MultiplyVectorContext& context,
-  const std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
+  const Vector<Scalar>& buffer, Vector<int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyVectorBroadcastsPack");
@@ -1927,7 +1926,7 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::TransposeMultiplyVectorBroadcastsUnpack
 ( MultiplyVectorContext& context,
-  const std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
+  const Vector<Scalar>& buffer, Vector<int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::TransposeMultiplyVectorBroadcastsPack");

@@ -16,7 +16,7 @@ namespace dmhm {
 template<typename Scalar>
 std::size_t
 DistHMat3d<Scalar>::PackedSizes
-( std::vector<std::size_t>& packedSizes, 
+( Vector<std::size_t>& packedSizes, 
   const HMat3d<Scalar>& H, const Teams& teams )
 {
 #ifndef RELEASE
@@ -30,9 +30,9 @@ DistHMat3d<Scalar>::PackedSizes
         throw std::logic_error("More than 8^(numLevels-1) processes.");
 
     // Initialize for the recursion
-    packedSizes.resize( p );
+    packedSizes.Resize( p );
     MemZero( &packedSizes[0], p );
-    std::vector<int> localSizes( p );
+    Vector<int> localSizes( p );
     ComputeLocalSizes( localSizes, H );
 
     // Count the top-level header data
@@ -51,7 +51,7 @@ DistHMat3d<Scalar>::PackedSizes
 template<typename Scalar>
 std::size_t
 DistHMat3d<Scalar>::Pack
-( std::vector<byte*>& packedSubs, 
+( Vector<byte*>& packedSubs, 
   const HMat3d<Scalar>& H, const Teams& teams )
 {
 #ifndef RELEASE
@@ -59,8 +59,8 @@ DistHMat3d<Scalar>::Pack
 #endif
     mpi::Comm comm = teams.Team(0);
     const int p = mpi::CommSize( comm );
-    std::vector<byte*> heads = packedSubs;
-    std::vector<byte**> headPointers(p); 
+    Vector<byte*> heads = packedSubs;
+    Vector<byte**> headPointers(p); 
     for( int i=0; i<p; ++i )
         headPointers[i] = &heads[i];
 
@@ -89,7 +89,7 @@ DistHMat3d<Scalar>::Pack
         Write( h, H.zTarget_ );
     }
 
-    std::vector<int> localSizes( p );
+    Vector<int> localSizes( p );
     ComputeLocalSizes( localSizes, H );
     PackRecursion( headPointers, localSizes, 0, 0, p, H );
 
@@ -170,11 +170,11 @@ DistHMat3d<Scalar>::ComputeFirstLocalCol
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::ComputeLocalSizes
-( std::vector<int>& localSizes, const HMat3d<Scalar>& H )
+( Vector<int>& localSizes, const HMat3d<Scalar>& H )
 {
 #ifndef RELEASE    
     CallStackEntry entry("DistHMat3d::ComputeLocalSizes");
-    const int p = localSizes.size();
+    const int p = localSizes.Size();
     if( !(p && !(p & (p-1))) )
         throw std::logic_error("Must use a power of two number of processes");
     if( (H.xSizeSource_ != H.xSizeTarget_) || 
@@ -183,7 +183,7 @@ DistHMat3d<Scalar>::ComputeLocalSizes
         throw std::logic_error("Routine meant for square nodes");
 #endif
     ComputeLocalSizesRecursion
-    ( &localSizes[0], localSizes.size(), H.xSizeSource_, H.ySizeSource_, H.zSizeSource_ );
+    ( &localSizes[0], localSizes.Size(), H.xSizeSource_, H.ySizeSource_, H.zSizeSource_ );
 }
 
 //----------------------------------------------------------------------------//
@@ -193,8 +193,8 @@ DistHMat3d<Scalar>::ComputeLocalSizes
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::PackedSizesRecursion
-( std::vector<std::size_t>& packedSizes, 
-  const std::vector<int>& localSizes,
+( Vector<std::size_t>& packedSizes, 
+  const Vector<int>& localSizes,
   int sourceRankOffset, int targetRankOffset, int teamSize,
   const HMat3d<Scalar>& H )
 {
@@ -370,8 +370,8 @@ DistHMat3d<Scalar>::PackedSizesRecursion
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::PackRecursion
-( std::vector<byte**>& headPointers,
-  const std::vector<int>& localSizes,
+( Vector<byte**>& headPointers,
+  const Vector<int>& localSizes,
   int sourceRankOffset, int targetRankOffset, int teamSize,
   const HMat3d<Scalar>& H )
 {

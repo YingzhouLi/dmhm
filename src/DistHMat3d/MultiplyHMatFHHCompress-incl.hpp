@@ -194,18 +194,18 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompressReduces
 
     const int numLevels = C.teams_->NumLevels();
     const int numReduces = numLevels-1;
-    std::vector<int> sizes( numReduces, 0 );
+    Vector<int> sizes( numReduces, 0 );
     MultiplyHMatFHHCompressReducesCount
     ( B, C, sizes, startLevel, endLevel, startUpdate, endUpdate, update );
 
     int totalsize = 0;
     for(int i=0; i<numReduces; ++i)
         totalsize += sizes[i];
-    std::vector<Scalar> buffer( totalsize );
-    std::vector<int> offsets( numReduces );
+    Vector<Scalar> buffer( totalsize );
+    Vector<int> offsets( numReduces );
     for( int i=0, offset=0; i<numReduces; offset+=sizes[i], ++i )
         offsets[i] = offset;
-    std::vector<int> offsetscopy = offsets;
+    Vector<int> offsetscopy = offsets;
     MultiplyHMatFHHCompressReducesPack
     ( B, C, buffer, offsetscopy, 
       startLevel, endLevel, startUpdate, endUpdate, update );
@@ -222,7 +222,7 @@ void
 DistHMat3d<Scalar>::MultiplyHMatFHHCompressReducesCount
 ( const DistHMat3d<Scalar>& B,
         DistHMat3d<Scalar>& C,
-        std::vector<int>& sizes,
+        Vector<int>& sizes,
   int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update ) const
 {
@@ -301,7 +301,7 @@ void
 DistHMat3d<Scalar>::MultiplyHMatFHHCompressReducesPack
 ( const DistHMat3d<Scalar>& B,
         DistHMat3d<Scalar>& C,
-  std::vector<Scalar>& buffer, std::vector<int>& offsets,
+  Vector<Scalar>& buffer, Vector<int>& offsets,
   int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update ) const
 {
@@ -399,7 +399,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompressReducesPack
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatFHHCompressTreeReduces
-( std::vector<Scalar>& buffer, std::vector<int>& sizes ) const
+( Vector<Scalar>& buffer, Vector<int>& sizes ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatFHHCompressTreeReduces");
@@ -412,7 +412,7 @@ void
 DistHMat3d<Scalar>::MultiplyHMatFHHCompressReducesUnpack
 ( const DistHMat3d<Scalar>& B,
         DistHMat3d<Scalar>& C,
-  const std::vector<Scalar>& buffer, std::vector<int>& offsets,
+  const Vector<Scalar>& buffer, Vector<int>& offsets,
   int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update )
 {
@@ -558,7 +558,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompressMidcompute
                         Dense<Scalar>& BL = C.BLMap_.Get( key );
                         
                         const int k = USqr.Height();
-                        std::vector<Real> USqrEig( k );
+                        Vector<Real> USqrEig( k );
                         lapack::EVD  
                         ( 'V', 'U', k, 
                           USqr.Buffer(), USqr.LDim(), &USqrEig[0] );
@@ -618,7 +618,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompressMidcompute
                         Dense<Scalar>& BR = C.BRMap_.Get( key );
    
                         const int k = USqr.Height();
-                        std::vector<Real> USqrEig( k );
+                        Vector<Real> USqrEig( k );
                         lapack::EVD  
                         ( 'V', 'U', k, 
                           USqr.Buffer(), USqr.LDim(), &USqrEig[0] );
@@ -702,18 +702,18 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompressBroadcasts
 #endif
     const int numLevels = teams_->NumLevels();
     const int numBroadcasts = numLevels-1;
-    std::vector<int> sizes( numBroadcasts, 0 );
+    Vector<int> sizes( numBroadcasts, 0 );
     MultiplyHMatFHHCompressBroadcastsCount
     ( B, C, sizes, startLevel, endLevel, startUpdate, endUpdate, update );
 
     int totalsize = 0;
     for(int i=0; i<numBroadcasts; ++i)
         totalsize += sizes[i];
-    std::vector<Scalar> buffer( totalsize );
-    std::vector<int> offsets( numBroadcasts );
+    Vector<Scalar> buffer( totalsize );
+    Vector<int> offsets( numBroadcasts );
     for( int i=0, offset=0; i<numBroadcasts; offset+=sizes[i], ++i )
         offsets[i] = offset;
-    std::vector<int> offsetscopy = offsets;
+    Vector<int> offsetscopy = offsets;
     MultiplyHMatFHHCompressBroadcastsPack
     ( B, C, buffer, offsetscopy, 
       startLevel, endLevel, startUpdate, endUpdate, update );
@@ -730,7 +730,7 @@ void
 DistHMat3d<Scalar>::MultiplyHMatFHHCompressBroadcastsCount
 ( const DistHMat3d<Scalar>& B,
         DistHMat3d<Scalar>& C,
-        std::vector<int>& sizes,
+        Vector<int>& sizes,
   int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update ) const
 {
@@ -805,7 +805,7 @@ void
 DistHMat3d<Scalar>::MultiplyHMatFHHCompressBroadcastsPack
 ( const DistHMat3d<Scalar>& B,
         DistHMat3d<Scalar>& C,
-        std::vector<Scalar>& buffer, std::vector<int>& offsets,
+        Vector<Scalar>& buffer, Vector<int>& offsets,
   int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update ) const
 {
@@ -891,7 +891,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompressBroadcastsPack
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatFHHCompressTreeBroadcasts
-( std::vector<Scalar>& buffer, std::vector<int>& sizes ) const
+( Vector<Scalar>& buffer, Vector<int>& sizes ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatFHHCompressTreeBroadcasts");
@@ -904,7 +904,7 @@ void
 DistHMat3d<Scalar>::MultiplyHMatFHHCompressBroadcastsUnpack
 ( const DistHMat3d<Scalar>& B,
         DistHMat3d<Scalar>& C,
-  const std::vector<Scalar>& buffer, std::vector<int>& offsets,
+  const Vector<Scalar>& buffer, Vector<int>& offsets,
   int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update )
 {

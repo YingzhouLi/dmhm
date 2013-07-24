@@ -33,7 +33,7 @@ public:
     { return approxRank + Oversample(); }
 
     static void BuildNaturalToHierarchicalMap
-    ( std::vector<int>& map, int xSize, int ySize, int numLevels );
+    ( Vector<int>& map, int xSize, int ySize, int numLevels );
 
     /*
      * Public non-static member functions
@@ -86,7 +86,7 @@ public:
       int sourceOffset, int targetOffset );
 
     // Reconstruct an H-matrix from its packed form
-    HMat2d( const std::vector<byte>& packedHMat );
+    HMat2d( const Vector<byte>& packedHMat );
 
     virtual ~HMat2d();
     void Clear();
@@ -107,9 +107,9 @@ public:
     // a contiguous buffer.
     std::size_t PackedSize() const;
     std::size_t Pack( byte* packedHMat ) const;
-    std::size_t Pack( std::vector<byte>& packedHMat ) const;
+    std::size_t Pack( Vector<byte>& packedHMat ) const;
     std::size_t Unpack( const byte* packedHMat );
-    std::size_t Unpack( const std::vector<byte>& packedHMat );
+    std::size_t Unpack( const Vector<byte>& packedHMat );
 
     int XSizeSource() const { return xSizeSource_; }
     int XSizeTarget() const { return xSizeTarget_; }
@@ -286,7 +286,7 @@ private:
      */
     struct Node
     {
-        std::vector<HMat2d*> children;
+        Vector<HMat2d*> children;
         int xSourceSizes[2];
         int ySourceSizes[2];
         int sourceSizes[4];
@@ -304,7 +304,7 @@ private:
 
     struct NodeSymmetric
     {
-        std::vector<HMat2d*> children;
+        Vector<HMat2d*> children;
         int xSizes[2];
         int ySizes[2];
         int sizes[4];
@@ -467,9 +467,9 @@ template<typename Scalar>
 inline
 HMat2d<Scalar>::Node::~Node()
 {
-    for( unsigned i=0; i<children.size(); ++i )
+    for( unsigned i=0; i<children.Size(); ++i )
         delete children[i];
-    children.clear();
+    children.Clear();
 }
 
 template<typename Scalar>
@@ -482,7 +482,7 @@ HMat2d<Scalar>::Node::Child( int i, int j )
         throw std::logic_error("Indices must be non-negative");
     if( i > 3 || j > 3 )
         throw std::logic_error("Indices out of bounds");
-    if( children.size() != 16 )
+    if( children.Size() != 16 )
         throw std::logic_error("children array not yet set up");
 #endif
     return *children[j+4*i]; 
@@ -498,7 +498,7 @@ HMat2d<Scalar>::Node::Child( int i, int j ) const
         throw std::logic_error("Indices must be non-negative");
     if( i > 3 || j > 3 )
         throw std::logic_error("Indices out of bounds");
-    if( children.size() != 16 )
+    if( children.Size() != 16 )
         throw std::logic_error("children array not yet set up");
 #endif
     return *children[j+4*i]; 
@@ -533,9 +533,9 @@ template<typename Scalar>
 inline
 HMat2d<Scalar>::NodeSymmetric::~NodeSymmetric()
 {
-    for( unsigned i=0; i<children.size(); ++i )
+    for( unsigned i=0; i<children.Size(); ++i )
         delete children[i];
-    children.clear();
+    children.Clear();
 }
 
 template<typename Scalar>
@@ -550,7 +550,7 @@ HMat2d<Scalar>::NodeSymmetric::Child( int i, int j )
         throw std::logic_error("Indices out of bounds");
     if( j > i )
         throw std::logic_error("Index outside of lower triangle");
-    if( children.size() != 10 )
+    if( children.Size() != 10 )
         throw std::logic_error("children array not yet set up");
 #endif
     return *children[(i*(i+1))/2 + j]; 
@@ -568,7 +568,7 @@ HMat2d<Scalar>::NodeSymmetric::Child( int i, int j ) const
         throw std::logic_error("Indices out of bounds");
     if( j > i )
         throw std::logic_error("Index outside of lower triangle");
-    if( children.size() != 10 )
+    if( children.Size() != 10 )
         throw std::logic_error("children array not yet set up");
 #endif
     return *children[(i*(i+1))/2 + j];

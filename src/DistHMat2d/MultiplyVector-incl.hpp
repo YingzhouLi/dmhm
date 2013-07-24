@@ -838,18 +838,18 @@ DistHMat2d<Scalar>::MultiplyVectorSums
     // Compute the message sizes for each reduce 
     const int numLevels = teams_->NumLevels();
     const int numReduces = numLevels-1;
-    std::vector<int> sizes( numReduces, 0 );
+    Vector<int> sizes( numReduces, 0 );
     MultiplyVectorSumsCount( sizes );
 
     // Pack all of the data to be reduced into a single buffer
     int totalSize = 0;
     for( int i=0; i<numReduces; ++i )
         totalSize += sizes[i];
-    std::vector<Scalar> buffer( totalSize );
-    std::vector<int> offsets( numReduces );
+    Vector<Scalar> buffer( totalSize );
+    Vector<int> offsets( numReduces );
     for( int i=0,offset=0; i<numReduces; offset+=sizes[i],++i )
         offsets[i] = offset;
-    std::vector<int> offsetsCopy = offsets;
+    Vector<int> offsetsCopy = offsets;
     MultiplyVectorSumsPack( context, buffer, offsetsCopy );
 
     // Perform the reduces with log2(p) messages
@@ -870,18 +870,18 @@ DistHMat2d<Scalar>::TransposeMultiplyVectorSums
     // Compute the message sizes for each reduce 
     const int numLevels = teams_->NumLevels();
     const int numReduces = numLevels-1;
-    std::vector<int> sizes( numReduces, 0 );
+    Vector<int> sizes( numReduces, 0 );
     TransposeMultiplyVectorSumsCount( sizes );
 
     // Pack all of the data to be reduced into a single buffer
     int totalSize = 0;
     for( int i=0; i<numReduces; ++i )
         totalSize += sizes[i];
-    std::vector<Scalar> buffer( totalSize );
-    std::vector<int> offsets( numReduces );
+    Vector<Scalar> buffer( totalSize );
+    Vector<int> offsets( numReduces );
     for( int i=0,offset=0; i<numReduces; offset+=sizes[i],++i )
         offsets[i] = offset;
-    std::vector<int> offsetsCopy = offsets;
+    Vector<int> offsetsCopy = offsets;
     TransposeMultiplyVectorSumsPack( context, buffer, offsetsCopy );
 
     // Perform the reduces with log2(p) messages
@@ -906,7 +906,7 @@ DistHMat2d<Scalar>::AdjointMultiplyVectorSums
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyVectorSumsCount
-( std::vector<int>& sizes ) const
+( Vector<int>& sizes ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MultiplyVectorSumsCount");
@@ -935,7 +935,7 @@ DistHMat2d<Scalar>::MultiplyVectorSumsCount
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::TransposeMultiplyVectorSumsCount
-( std::vector<int>& sizes ) const
+( Vector<int>& sizes ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::TransposeMultiplyVectorSumsCount");
@@ -965,7 +965,7 @@ template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyVectorSumsPack
 ( const MultiplyVectorContext& context, 
-  std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
+  Vector<Scalar>& buffer, Vector<int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MultiplyVectorSumsPack");
@@ -1003,7 +1003,7 @@ template<typename Scalar>
 void
 DistHMat2d<Scalar>::TransposeMultiplyVectorSumsPack
 ( const MultiplyVectorContext& context,
-  std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
+  Vector<Scalar>& buffer, Vector<int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::TransposeMultiplyVectorSumsPack");
@@ -1041,7 +1041,7 @@ template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyVectorSumsUnpack
 ( MultiplyVectorContext& context,
-  const std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
+  const Vector<Scalar>& buffer, Vector<int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MultiplyVectorSumsUnpack");
@@ -1084,7 +1084,7 @@ template<typename Scalar>
 void
 DistHMat2d<Scalar>::TransposeMultiplyVectorSumsUnpack
 ( MultiplyVectorContext& context,
-  const std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
+  const Vector<Scalar>& buffer, Vector<int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::TransposeMultiplyVectorSumsUnpack");
@@ -1151,15 +1151,15 @@ DistHMat2d<Scalar>::MultiplyVectorPassData
     }
 
     // Fill the send buffer
-    std::vector<Scalar> sendBuffer( totalSendSize );
+    Vector<Scalar> sendBuffer( totalSendSize );
     std::map<int,int> offsets = sendOffsets;
     MultiplyVectorPassDataPack( context, sendBuffer, offsets );
 
     // Start the non-blocking recvs
     mpi::Comm comm = teams_->Team( 0 );
     const int numRecvs = recvSizes.size();
-    std::vector<mpi::Request> recvRequests( numRecvs );
-    std::vector<Scalar> recvBuffer( totalRecvSize );
+    Vector<mpi::Request> recvRequests( numRecvs );
+    Vector<Scalar> recvBuffer( totalRecvSize );
     int offset = 0;
     for( it=recvSizes.begin(); it!=recvSizes.end(); ++it )
     {
@@ -1173,7 +1173,7 @@ DistHMat2d<Scalar>::MultiplyVectorPassData
 
     // Start the non-blocking sends
     const int numSends = sendSizes.size();
-    std::vector<mpi::Request> sendRequests( numSends );
+    Vector<mpi::Request> sendRequests( numSends );
     offset = 0;
     for( it=sendSizes.begin(); it!=sendSizes.end(); ++it )
     {
@@ -1253,7 +1253,7 @@ template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyVectorPassDataPack
 ( MultiplyVectorContext& context,
-  std::vector<Scalar>& buffer, std::map<int,int>& offsets ) const
+  Vector<Scalar>& buffer, std::map<int,int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MultiplyVectorPassDataPack");
@@ -1338,7 +1338,7 @@ template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyVectorPassDataUnpack
 ( MultiplyVectorContext& context,
-  const std::vector<Scalar>& buffer, std::map<int,int>& offsets ) const
+  const Vector<Scalar>& buffer, std::map<int,int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MultiplyVectorPassDataUnpack");
@@ -1446,14 +1446,14 @@ DistHMat2d<Scalar>::TransposeMultiplyVectorPassData
     }
 
     // Fill the send buffer
-    std::vector<Scalar> sendBuffer( totalSendSize );
+    Vector<Scalar> sendBuffer( totalSendSize );
     std::map<int,int> offsets = sendOffsets;
     TransposeMultiplyVectorPassDataPack( context, xLocal, sendBuffer, offsets );
 
     // Start the non-blocking sends
     mpi::Comm comm = teams_->Team( 0 );
     const int numSends = sendSizes.size();
-    std::vector<mpi::Request> sendRequests( numSends );
+    Vector<mpi::Request> sendRequests( numSends );
     int offset = 0;
     for( it=sendSizes.begin(); it!=sendSizes.end(); ++it )
     {
@@ -1465,8 +1465,8 @@ DistHMat2d<Scalar>::TransposeMultiplyVectorPassData
 
     // Start the non-blocking recvs
     const int numRecvs = recvSizes.size();
-    std::vector<mpi::Request> recvRequests( numRecvs );
-    std::vector<Scalar> recvBuffer( totalRecvSize );
+    Vector<mpi::Request> recvRequests( numRecvs );
+    Vector<Scalar> recvBuffer( totalRecvSize );
       offset = 0;
     for( it=recvSizes.begin(); it!=recvSizes.end(); ++it )
     {
@@ -1546,7 +1546,7 @@ template<typename Scalar>
 void
 DistHMat2d<Scalar>::TransposeMultiplyVectorPassDataPack
 ( MultiplyVectorContext& context, const Vector<Scalar>& xLocal,
-  std::vector<Scalar>& buffer, std::map<int,int>& offsets ) const
+  Vector<Scalar>& buffer, std::map<int,int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::TransposeMultiplyVectorPassDataPack");
@@ -1676,7 +1676,7 @@ template<typename Scalar>
 void
 DistHMat2d<Scalar>::TransposeMultiplyVectorPassDataUnpack
 ( MultiplyVectorContext& context,
-  const std::vector<Scalar>& buffer, std::map<int,int>& offsets ) const
+  const Vector<Scalar>& buffer, std::map<int,int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::TransposeMultiplyVectorPassDataUnpack");
@@ -1779,7 +1779,7 @@ DistHMat2d<Scalar>::MultiplyVectorBroadcasts
     // Compute the message sizes for each broadcast
     const int numLevels = teams_->NumLevels();
     const int numBroadcasts = numLevels-1;
-    std::vector<int> sizes( numBroadcasts, 0 );
+    Vector<int> sizes( numBroadcasts, 0 );
     MultiplyVectorBroadcastsCount( sizes );
 
     // Pack all of the data to be broadcasted into a single buffer
@@ -1787,11 +1787,11 @@ DistHMat2d<Scalar>::MultiplyVectorBroadcasts
     int totalSize = 0;
     for( int i=0; i<numBroadcasts; ++i )
         totalSize += sizes[i];
-    std::vector<Scalar> buffer( totalSize );
-    std::vector<int> offsets( numBroadcasts );
+    Vector<Scalar> buffer( totalSize );
+    Vector<int> offsets( numBroadcasts );
     for( int i=0,offset=0; i<numBroadcasts; offset+=sizes[i],++i )
         offsets[i] = offset;
-    std::vector<int> offsetsCopy = offsets;
+    Vector<int> offsetsCopy = offsets;
     MultiplyVectorBroadcastsPack( context, buffer, offsetsCopy );
 
     // Perform the broadcasts with log2(p) messages
@@ -1812,7 +1812,7 @@ DistHMat2d<Scalar>::TransposeMultiplyVectorBroadcasts
     // Compute the message sizes for each broadcast
     const int numLevels = teams_->NumLevels();
     const int numBroadcasts = numLevels-1;
-    std::vector<int> sizes( numBroadcasts, 0 );
+    Vector<int> sizes( numBroadcasts, 0 );
     TransposeMultiplyVectorBroadcastsCount( sizes );
 
     // Pack all of the data to be broadcasted into a single buffer
@@ -1820,11 +1820,11 @@ DistHMat2d<Scalar>::TransposeMultiplyVectorBroadcasts
     int totalSize = 0;
     for( int i=0; i<numBroadcasts; ++i )
         totalSize += sizes[i];
-    std::vector<Scalar> buffer( totalSize );
-    std::vector<int> offsets( numBroadcasts );
+    Vector<Scalar> buffer( totalSize );
+    Vector<int> offsets( numBroadcasts );
     for( int i=0,offset=0; i<numBroadcasts; offset+=sizes[i],++i )
         offsets[i] = offset;
-    std::vector<int> offsetsCopy = offsets;
+    Vector<int> offsetsCopy = offsets;
     TransposeMultiplyVectorBroadcastsPack( context, buffer, offsetsCopy );
 
     // Perform the broadcasts with log2(p) messages
@@ -1849,7 +1849,7 @@ DistHMat2d<Scalar>::AdjointMultiplyVectorBroadcasts
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyVectorBroadcastsCount
-( std::vector<int>& sizes ) const
+( Vector<int>& sizes ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MultiplyVectorBroadcastsCount");
@@ -1878,7 +1878,7 @@ DistHMat2d<Scalar>::MultiplyVectorBroadcastsCount
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::TransposeMultiplyVectorBroadcastsCount
-( std::vector<int>& sizes ) const
+( Vector<int>& sizes ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::TransposeMultiplyVectorBroadcastsCount");
@@ -1909,7 +1909,7 @@ template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyVectorBroadcastsPack
 ( const MultiplyVectorContext& context,
-  std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
+  Vector<Scalar>& buffer, Vector<int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MultiplyVectorBroadcastsPack");
@@ -1952,7 +1952,7 @@ template<typename Scalar>
 void
 DistHMat2d<Scalar>::TransposeMultiplyVectorBroadcastsPack
 ( const MultiplyVectorContext& context,
-  std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
+  Vector<Scalar>& buffer, Vector<int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::TransposeMultiplyVectorBroadcastsPack");
@@ -1995,7 +1995,7 @@ template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyVectorBroadcastsUnpack
 ( MultiplyVectorContext& context,
-  const std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
+  const Vector<Scalar>& buffer, Vector<int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MultiplyVectorBroadcastsPack");
@@ -2034,7 +2034,7 @@ template<typename Scalar>
 void
 DistHMat2d<Scalar>::TransposeMultiplyVectorBroadcastsUnpack
 ( MultiplyVectorContext& context,
-  const std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
+  const Vector<Scalar>& buffer, Vector<int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::TransposeMultiplyVectorBroadcastsPack");

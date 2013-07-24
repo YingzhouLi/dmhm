@@ -14,7 +14,7 @@ namespace dmhm {
 //----------------------------------------------------------------------------//
 
 template<typename Scalar>
-HMat2d<Scalar>::HMat2d( const std::vector<byte>& packedHMat )
+HMat2d<Scalar>::HMat2d( const Vector<byte>& packedHMat )
 {
 #ifndef RELEASE
     CallStackEntry entry("HMat2d::HMat2d");
@@ -65,14 +65,14 @@ HMat2d<Scalar>::Pack( byte* packedHMat ) const
 
 template<typename Scalar>
 std::size_t
-HMat2d<Scalar>::Pack( std::vector<byte>& packedHMat ) const
+HMat2d<Scalar>::Pack( Vector<byte>& packedHMat ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("HMat2d::Pack");
 #endif
     // Create the storage and extract the buffer
     const std::size_t packedSize = PackedSize();
-    packedHMat.resize( packedSize );
+    packedHMat.Resize( packedSize );
     byte* head = &packedHMat[0];
 
     // Write the header information
@@ -126,7 +126,7 @@ HMat2d<Scalar>::Unpack( const byte* packedHMat )
 
 template<typename Scalar>
 std::size_t
-HMat2d<Scalar>::Unpack( const std::vector<byte>& packedHMat )
+HMat2d<Scalar>::Unpack( const Vector<byte>& packedHMat )
 {
 #ifndef RELEASE
     CallStackEntry entry("HMat2d::Unpack");

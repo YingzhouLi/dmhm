@@ -156,7 +156,7 @@ DistHMat2d<Scalar>::AdjointPassData( const DistHMat2d<Scalar>& B )
     }
 
     // Fill the send buffer
-    std::vector<Scalar> sendBuffer(totalSendSize);
+    Vector<Scalar> sendBuffer(totalSendSize);
     std::map<int,int> offsets = sendOffsets;
     AdjointPassDataPack
     ( B, sendBuffer, offsets );
@@ -164,8 +164,8 @@ DistHMat2d<Scalar>::AdjointPassData( const DistHMat2d<Scalar>& B )
     // Start the non-blocking recvs
     mpi::Comm comm = teams_->Team( 0 );
     const int numRecvs = recvSizes.size();
-    std::vector<mpi::Request> recvRequests( numRecvs );
-    std::vector<Scalar> recvBuffer( totalRecvSize );
+    Vector<mpi::Request> recvRequests( numRecvs );
+    Vector<Scalar> recvBuffer( totalRecvSize );
     int offset = 0;
     for( it=recvSizes.begin(); it!=recvSizes.end(); ++it )
     {
@@ -179,7 +179,7 @@ DistHMat2d<Scalar>::AdjointPassData( const DistHMat2d<Scalar>& B )
 
     // Start the non-blocking sends
     const int numSends = sendSizes.size();
-    std::vector<mpi::Request> sendRequests( numSends );
+    Vector<mpi::Request> sendRequests( numSends );
     offset = 0;
     for( it=sendSizes.begin(); it!=sendSizes.end(); ++it )
     {
@@ -241,7 +241,7 @@ template<typename Scalar>
 void 
 DistHMat2d<Scalar>::AdjointPassDataPack
 ( const DistHMat2d<Scalar>& B,
-  std::vector<Scalar>& buffer, std::map<int,int>& offsets ) const
+  Vector<Scalar>& buffer, std::map<int,int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::AdjointPassDataPack");
@@ -285,7 +285,7 @@ template<typename Scalar>
 void 
 DistHMat2d<Scalar>::AdjointPassDataUnpack
 ( const DistHMat2d<Scalar>& B,
-  const std::vector<Scalar>& buffer, std::map<int,int>& offsets )
+  const Vector<Scalar>& buffer, std::map<int,int>& offsets )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::AdjointPassDataUnpack");

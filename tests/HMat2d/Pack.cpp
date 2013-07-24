@@ -13,44 +13,44 @@ template<typename Real>
 void
 FormRow
 ( int x, int y, int xSize, int ySize,
-  std::vector<std::complex<Real> >& row, std::vector<int>& colIndices )
+  Vector<std::complex<Real> >& row, Vector<int>& colIndices )
 {
     typedef std::complex<Real> Scalar;
     const int rowIdx = x + xSize*y;
 
-    row.resize( 0 );
-    colIndices.resize( 0 );
+    row.Resize( 0 );
+    colIndices.Resize( 0 );
 
     // Set up the diagonal entry
-    colIndices.push_back( rowIdx );
-    row.push_back( (Scalar)8 );
+    colIndices.Push_back( rowIdx );
+    row.Push_back( (Scalar)8 );
 
     // Front connection to (x-1,y,z)
     if( x != 0 )
     {
-        colIndices.push_back( (x-1) + xSize*y );
-        row.push_back( (Scalar)-1 );
+        colIndices.Push_back( (x-1) + xSize*y );
+        row.Push_back( (Scalar)-1 );
     }
 
     // Back connection to (x+1,y,z)
     if( x != xSize-1 )
     {
-        colIndices.push_back( (x+1) + xSize*y );
-        row.push_back( (Scalar)-1 );
+        colIndices.Push_back( (x+1) + xSize*y );
+        row.Push_back( (Scalar)-1 );
     }
 
     // Left connection to (x,y-1,z)
     if( y != 0 )
     {
-        colIndices.push_back( x + xSize*(y-1) );
-        row.push_back( (Scalar)-1 );
+        colIndices.Push_back( x + xSize*(y-1) );
+        row.Push_back( (Scalar)-1 );
     }
 
     // Right connection to (x,y+1,z)
     if( y != ySize-1 )
     {
-        colIndices.push_back( x + xSize*(y+1) );
-        row.push_back( (Scalar)-1 );
+        colIndices.Push_back( x + xSize*(y+1) );
+        row.Push_back( (Scalar)-1 );
     }
 }
 
@@ -81,10 +81,10 @@ main( int argc, char* argv[] )
         S.width = n;
         S.symmetric = false;
 
-        std::vector<int> map;
+        Vector<int> map;
         HMat::BuildNaturalToHierarchicalMap( map, xSize, ySize, numLevels );
 
-        std::vector<int> inverseMap( m );
+        Vector<int> inverseMap( m );
         for( int i=0; i<m; ++i )
             inverseMap[map[i]] = i;
 
@@ -94,24 +94,24 @@ main( int argc, char* argv[] )
             std::cout.flush();
         }
         double fillStartTime = mpi::Time();
-        std::vector<Scalar> row;
-        std::vector<int> colIndices;
+        Vector<Scalar> row;
+        Vector<int> colIndices;
         for( int i=0; i<m; ++i )
         {
-            S.rowOffsets.push_back( S.nonzeros.size() );
+            S.rowOffsets.Push_back( S.nonzeros.Size() );
             const int iNatural = inverseMap[i];
             const int x = iNatural % xSize;
             const int y = (iNatural/xSize) % ySize;
 
             FormRow( x, y, xSize, ySize, row, colIndices );
 
-            for( unsigned j=0; j<row.size(); ++j )
+            for( unsigned j=0; j<row.Size(); ++j )
             {
-                S.nonzeros.push_back( row[j] );
-                S.columnIndices.push_back( map[colIndices[j]] );
+                S.nonzeros.Push_back( row[j] );
+                S.columnIndices.Push_back( map[colIndices[j]] );
             }
         }
-        S.rowOffsets.push_back( S.nonzeros.size() );
+        S.rowOffsets.Push_back( S.nonzeros.Size() );
         double fillStopTime = mpi::Time();
         if( rank == 0 )
         {
@@ -162,7 +162,7 @@ main( int argc, char* argv[] )
         }
 
         // Pack the H-matrix
-        std::vector<byte> packedHMat;
+        Vector<byte> packedHMat;
         if( rank == 0 )
         {
             std::cout << "Packing H-matrix...";
@@ -171,7 +171,7 @@ main( int argc, char* argv[] )
         double packStartTime = mpi::Time();
         H.Pack( packedHMat );
         double packStopTime = mpi::Time();
-        double sizeInMB = ((double)packedHMat.size())/(1024.*1024.);
+        double sizeInMB = ((double)packedHMat.Size())/(1024.*1024.);
         if( rank == 0 )
         {
             std::cout << "done: " << packStopTime-packStartTime << " seconds.\n"

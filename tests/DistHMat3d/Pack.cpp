@@ -108,10 +108,10 @@ main( int argc, char* argv[] )
 
         // Set up our subcommunicators and compute the packed sizes
         DistHMat::Teams teams( mpi::COMM_WORLD );
-        std::vector<std::size_t> packedSizes;
+        Vector<std::size_t> packedSizes;
         DistHMat::PackedSizes( packedSizes, H, teams ); 
         const std::size_t myMaxSize = 
-            *(std::max_element( packedSizes.begin(), packedSizes.end() ));
+            *(std::max_element( packedSizes.Begin(), packedSizes.End() ));
 
         // Pack for a DistHMatHMat
         if( rank == 0 )
@@ -121,8 +121,8 @@ main( int argc, char* argv[] )
         }
         mpi::Barrier( mpi::COMM_WORLD );
         double packStartTime = mpi::Time();
-        std::vector<byte> sendBuffer( p*myMaxSize );
-        std::vector<byte*> packedPieces( p );
+        Vector<byte> sendBuffer( p*myMaxSize );
+        Vector<byte*> packedPieces( p );
         for( int i=0; i<p; ++i )
             packedPieces[i] = &sendBuffer[i*myMaxSize];
         DistHMat::Pack( packedPieces, H, teams );
@@ -156,7 +156,7 @@ main( int argc, char* argv[] )
         }
         mpi::Barrier( mpi::COMM_WORLD );
         double allToAllStartTime = mpi::Time();
-        std::vector<byte> recvBuffer( p*intMaxSize );
+        Vector<byte> recvBuffer( p*intMaxSize );
         mpi::AllToAll
         ( &sendBuffer[0], myIntMaxSize, &recvBuffer[0], intMaxSize,
           mpi::COMM_WORLD );

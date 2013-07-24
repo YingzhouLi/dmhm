@@ -39,15 +39,15 @@ DistHMat3d<Scalar>::MultiplyHMatFormGhostRanks
     }
 
     // Fill the send buffer
-    std::vector<int> sendBuffer( totalSendSize );
+    Vector<int> sendBuffer( totalSendSize );
     std::map<int,int> offsets = sendOffsets;
     A.MultiplyHMatFormGhostRanksPack( B, sendBuffer, offsets );
 
     // Start the non-blocking recvs
     mpi::Comm comm = A.teams_->Team( 0 );
     const int numRecvs = recvSizes.size();
-    std::vector<mpi::Request> recvRequests( numRecvs );
-    std::vector<int> recvBuffer( totalRecvSize );
+    Vector<mpi::Request> recvRequests( numRecvs );
+    Vector<int> recvBuffer( totalRecvSize );
     int offset = 0;
     for( it=recvSizes.begin(); it!=recvSizes.end(); ++it )
     {
@@ -71,7 +71,7 @@ DistHMat3d<Scalar>::MultiplyHMatFormGhostRanks
     }
 #endif
     const int numSends = sendSizes.size();
-    std::vector<mpi::Request> sendRequests( numSends );
+    Vector<mpi::Request> sendRequests( numSends );
     offset = 0;
     for( it=sendSizes.begin(); it!=sendSizes.end(); ++it )
     {
@@ -267,7 +267,7 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatFormGhostRanksPack
 ( const DistHMat3d<Scalar>& B,
-  std::vector<int>& sendBuffer, std::map<int,int>& offsets ) const
+  Vector<int>& sendBuffer, std::map<int,int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatFormGhostRanksPack");
@@ -413,7 +413,7 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatFormGhostRanksUnpack
 ( DistHMat3d<Scalar>& B,
-  const std::vector<int>& recvBuffer, std::map<int,int>& offsets )
+  const Vector<int>& recvBuffer, std::map<int,int>& offsets )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatFormGhostRanksUnpack");

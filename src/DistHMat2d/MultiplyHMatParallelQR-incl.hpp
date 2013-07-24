@@ -12,16 +12,16 @@ namespace dmhm {
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyHMatParallelQR
-( const std::vector<int>& numQRs, 
-  const std::vector<Dense<Scalar>*>& Xs,
-  const std::vector<int>& XOffsets,
-        std::vector<int>& halfHeights,
-  const std::vector<int>& halfHeightOffsets,
-        std::vector<Scalar>& qrBuffer,
-  const std::vector<int>& qrOffsets,
-        std::vector<Scalar>& tauBuffer,
-  const std::vector<int>& tauOffsets,
-        std::vector<Scalar>& qrWork ) const
+( const Vector<int>& numQRs, 
+  const Vector<Dense<Scalar>*>& Xs,
+  const Vector<int>& XOffsets,
+        Vector<int>& halfHeights,
+  const Vector<int>& halfHeightOffsets,
+        Vector<Scalar>& qrBuffer,
+  const Vector<int>& qrOffsets,
+        Vector<Scalar>& tauBuffer,
+  const Vector<int>& tauOffsets,
+        Vector<Scalar>& qrWork ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MultiplyHMatParallelQR");
@@ -54,7 +54,7 @@ DistHMat2d<Scalar>::MultiplyHMatParallelQR
                 msgSize += sizeof(int) + (r*r+r)/2*sizeof(Scalar);
             }
         }
-        std::vector<byte> sendBuffer( msgSize ), recvBuffer( msgSize );
+        Vector<byte> sendBuffer( msgSize ), recvBuffer( msgSize );
 
         // Pack the messages for the firstPartner
         byte* sendHead = &sendBuffer[0];

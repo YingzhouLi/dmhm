@@ -18,9 +18,9 @@ struct Sparse
 {
     bool symmetric;
     int height, width;
-    std::vector<Scalar> nonzeros;
-    std::vector<int> columnIndices;
-    std::vector<int> rowOffsets;
+    Vector<Scalar> nonzeros;
+    Vector<int> columnIndices;
+    Vector<int> rowOffsets;
 
     void Print( const std::string tag, std::ostream& os=std::cout ) const;
 };

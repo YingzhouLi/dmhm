@@ -1076,7 +1076,7 @@ DistHMat2d<Scalar>::MultiplyHMatMainSums
     // Compute the message sizes for each reduce
     const unsigned numTeamLevels = teams_->NumLevels();
     const unsigned numReduces = numTeamLevels-1;
-    std::vector<int> sizes( numReduces, 0 );
+    Vector<int> sizes( numReduces, 0 );
     A.MultiplyHMatMainSumsCountA( sizes, startLevel, endLevel );
     B.MultiplyHMatMainSumsCountB( sizes, startLevel, endLevel );
     A.MultiplyHMatMainSumsCountC
@@ -1086,11 +1086,11 @@ DistHMat2d<Scalar>::MultiplyHMatMainSums
     int totalSize = 0;
     for( unsigned i=0; i<numReduces; ++i )
         totalSize += sizes[i];
-    std::vector<Scalar> buffer( totalSize );
-    std::vector<int> offsets( numReduces );
+    Vector<Scalar> buffer( totalSize );
+    Vector<int> offsets( numReduces );
     for( unsigned i=0,offset=0; i<numReduces; offset+=sizes[i],++i )
         offsets[i] = offset;
-    std::vector<int> offsetsCopy = offsets;
+    Vector<int> offsetsCopy = offsets;
     A.MultiplyHMatMainSumsPackA( buffer, offsetsCopy, startLevel, endLevel );
     B.MultiplyHMatMainSumsPackB( buffer, offsetsCopy, startLevel, endLevel );
     A.MultiplyHMatMainSumsPackC
@@ -1110,7 +1110,7 @@ DistHMat2d<Scalar>::MultiplyHMatMainSums
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyHMatMainSumsCountA
-( std::vector<int>& sizes, int startLevel, int endLevel ) const
+( Vector<int>& sizes, int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MultiplyHMatMainSumsCountA");
@@ -1142,7 +1142,7 @@ DistHMat2d<Scalar>::MultiplyHMatMainSumsCountA
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyHMatMainSumsPackA
-( std::vector<Scalar>& buffer, std::vector<int>& offsets, 
+( Vector<Scalar>& buffer, Vector<int>& offsets, 
   int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
@@ -1175,7 +1175,7 @@ DistHMat2d<Scalar>::MultiplyHMatMainSumsPackA
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyHMatMainSumsUnpackA
-( const std::vector<Scalar>& buffer, std::vector<int>& offsets,
+( const Vector<Scalar>& buffer, Vector<int>& offsets,
   int startLevel, int endLevel )
 {
 #ifndef RELEASE
@@ -1208,7 +1208,7 @@ DistHMat2d<Scalar>::MultiplyHMatMainSumsUnpackA
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyHMatMainSumsCountB
-( std::vector<int>& sizes, int startLevel, int endLevel ) const
+( Vector<int>& sizes, int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MultiplyHMatMainSumsCountB");
@@ -1240,7 +1240,7 @@ DistHMat2d<Scalar>::MultiplyHMatMainSumsCountB
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyHMatMainSumsPackB
-( std::vector<Scalar>& buffer, std::vector<int>& offsets,
+( Vector<Scalar>& buffer, Vector<int>& offsets,
   int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
@@ -1273,7 +1273,7 @@ DistHMat2d<Scalar>::MultiplyHMatMainSumsPackB
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyHMatMainSumsUnpackB
-( const std::vector<Scalar>& buffer, std::vector<int>& offsets,
+( const Vector<Scalar>& buffer, Vector<int>& offsets,
   int startLevel, int endLevel )
 {
 #ifndef RELEASE
@@ -1308,7 +1308,7 @@ void
 DistHMat2d<Scalar>::MultiplyHMatMainSumsCountC
 ( const DistHMat2d<Scalar>& B,
   const DistHMat2d<Scalar>& C,
-  std::vector<int>& sizes, 
+  Vector<int>& sizes, 
   int startLevel, int endLevel, 
   int startUpdate, int endUpdate, int update ) const
 {
@@ -1392,7 +1392,7 @@ void
 DistHMat2d<Scalar>::MultiplyHMatMainSumsPackC
 ( const DistHMat2d<Scalar>& B, 
         DistHMat2d<Scalar>& C,
-  std::vector<Scalar>& buffer, std::vector<int>& offsets,
+  Vector<Scalar>& buffer, Vector<int>& offsets,
   int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update ) const
 {
@@ -1480,7 +1480,7 @@ void
 DistHMat2d<Scalar>::MultiplyHMatMainSumsUnpackC
 ( const DistHMat2d<Scalar>& B,
         DistHMat2d<Scalar>& C,
-  const std::vector<Scalar>& buffer, std::vector<int>& offsets,
+  const Vector<Scalar>& buffer, Vector<int>& offsets,
   int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update ) const 
 {
@@ -1612,7 +1612,7 @@ DistHMat2d<Scalar>::MultiplyHMatMainPassData
     }
 
     // Fill the send buffer
-    std::vector<Scalar> sendBuffer( totalSendSize );
+    Vector<Scalar> sendBuffer( totalSendSize );
     std::map<int,int> offsets = sendOffsets;
     A.MultiplyHMatMainPassDataPackA
     ( sendBuffer, offsets, startLevel, endLevel );
@@ -1631,8 +1631,8 @@ DistHMat2d<Scalar>::MultiplyHMatMainPassData
     // Start the non-blocking recvs
     mpi::Comm comm = teams_->Team( 0 );
     const int numRecvs = recvSizes.size();
-    std::vector<mpi::Request> recvRequests( numRecvs );
-    std::vector<Scalar> recvBuffer( totalRecvSize );
+    Vector<mpi::Request> recvRequests( numRecvs );
+    Vector<Scalar> recvBuffer( totalRecvSize );
     int offset = 0;
     for( it=recvSizes.begin(); it!=recvSizes.end(); ++it )
     {
@@ -1655,7 +1655,7 @@ DistHMat2d<Scalar>::MultiplyHMatMainPassData
 
     // Start the non-blocking sends
     const int numSends = sendSizes.size();
-    std::vector<mpi::Request> sendRequests( numSends );
+    Vector<mpi::Request> sendRequests( numSends );
     offset = 0;
     for( it=sendSizes.begin(); it!=sendSizes.end(); ++it )
     {
@@ -1752,7 +1752,7 @@ DistHMat2d<Scalar>::MultiplyHMatMainPassDataCountA
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyHMatMainPassDataPackA
-( std::vector<Scalar>& sendBuffer, std::map<int,int>& offsets,
+( Vector<Scalar>& sendBuffer, std::map<int,int>& offsets,
   int startLevel, int endLevel ) 
 {
 #ifndef RELEASE
@@ -1786,7 +1786,7 @@ DistHMat2d<Scalar>::MultiplyHMatMainPassDataPackA
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyHMatMainPassDataUnpackA
-( const std::vector<Scalar>& recvBuffer, std::map<int,int>& offsets,
+( const Vector<Scalar>& recvBuffer, std::map<int,int>& offsets,
   int startLevel, int endLevel ) 
 {
 #ifndef RELEASE
@@ -1854,7 +1854,7 @@ DistHMat2d<Scalar>::MultiplyHMatMainPassDataCountB
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyHMatMainPassDataPackB
-( std::vector<Scalar>& sendBuffer, std::map<int,int>& offsets,
+( Vector<Scalar>& sendBuffer, std::map<int,int>& offsets,
   int startLevel, int endLevel )
 {
 #ifndef RELEASE
@@ -1887,7 +1887,7 @@ DistHMat2d<Scalar>::MultiplyHMatMainPassDataPackB
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyHMatMainPassDataUnpackB
-( const std::vector<Scalar>& recvBuffer, std::map<int,int>& offsets,
+( const Vector<Scalar>& recvBuffer, std::map<int,int>& offsets,
   int startLevel, int endLevel )
 {
 #ifndef RELEASE
@@ -2493,7 +2493,7 @@ void
 DistHMat2d<Scalar>::MultiplyHMatMainPassDataPackC
 ( const DistHMat2d<Scalar>& B,
         DistHMat2d<Scalar>& C,
-  std::vector<Scalar>& sendBuffer, std::map<int,int>& offsets,
+  Vector<Scalar>& sendBuffer, std::map<int,int>& offsets,
   int startLevel, int endLevel, 
   int startUpdate, int endUpdate, int update ) const
 {
@@ -2948,7 +2948,7 @@ void
 DistHMat2d<Scalar>::MultiplyHMatMainPassDataUnpackC
 ( const DistHMat2d<Scalar>& B,
         DistHMat2d<Scalar>& C,
-  const std::vector<Scalar>& recvBuffer, std::map<int,int>& offsets,
+  const Vector<Scalar>& recvBuffer, std::map<int,int>& offsets,
   int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update ) const
 {
@@ -3508,7 +3508,7 @@ DistHMat2d<Scalar>::MultiplyHMatMainBroadcasts
     // Compute the message sizes for each broadcast
     const unsigned numTeamLevels = teams_->NumLevels();
     const unsigned numBroadcasts = numTeamLevels-1;
-    std::vector<int> sizes( numBroadcasts, 0 );
+    Vector<int> sizes( numBroadcasts, 0 );
     A.MultiplyHMatMainBroadcastsCountA( sizes, startLevel, endLevel );
     B.MultiplyHMatMainBroadcastsCountB( sizes, startLevel, endLevel );
     A.MultiplyHMatMainBroadcastsCountC
@@ -3519,11 +3519,11 @@ DistHMat2d<Scalar>::MultiplyHMatMainBroadcasts
     int totalSize = 0;
     for( unsigned i=0; i<numBroadcasts; ++i )
         totalSize += sizes[i];
-    std::vector<Scalar> buffer( totalSize );
-    std::vector<int> offsets( numBroadcasts );
+    Vector<Scalar> buffer( totalSize );
+    Vector<int> offsets( numBroadcasts );
     for( unsigned i=0,offset=0; i<numBroadcasts; offset+=sizes[i],++i )
         offsets[i] = offset;
-    std::vector<int> offsetsCopy = offsets;
+    Vector<int> offsetsCopy = offsets;
     A.MultiplyHMatMainBroadcastsPackA
     ( buffer, offsetsCopy, startLevel, endLevel );
     B.MultiplyHMatMainBroadcastsPackB
@@ -3547,7 +3547,7 @@ DistHMat2d<Scalar>::MultiplyHMatMainBroadcasts
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyHMatMainBroadcastsCountA
-( std::vector<int>& sizes, int startLevel, int endLevel ) const
+( Vector<int>& sizes, int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MultiplyHMatMainBroadcastsCountA");
@@ -3579,7 +3579,7 @@ DistHMat2d<Scalar>::MultiplyHMatMainBroadcastsCountA
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyHMatMainBroadcastsPackA
-( std::vector<Scalar>& buffer, std::vector<int>& offsets,
+( Vector<Scalar>& buffer, Vector<int>& offsets,
   int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
@@ -3613,7 +3613,7 @@ DistHMat2d<Scalar>::MultiplyHMatMainBroadcastsPackA
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyHMatMainBroadcastsUnpackA
-( const std::vector<Scalar>& buffer, std::vector<int>& offsets,
+( const Vector<Scalar>& buffer, Vector<int>& offsets,
   int startLevel, int endLevel )
 {
 #ifndef RELEASE
@@ -3647,7 +3647,7 @@ DistHMat2d<Scalar>::MultiplyHMatMainBroadcastsUnpackA
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyHMatMainBroadcastsCountB
-( std::vector<int>& sizes, int startLevel, int endLevel ) const
+( Vector<int>& sizes, int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MultiplyHMatMainBroadcastsCountB");
@@ -3679,7 +3679,7 @@ DistHMat2d<Scalar>::MultiplyHMatMainBroadcastsCountB
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyHMatMainBroadcastsPackB
-( std::vector<Scalar>& buffer, std::vector<int>& offsets, 
+( Vector<Scalar>& buffer, Vector<int>& offsets, 
   int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
@@ -3712,7 +3712,7 @@ DistHMat2d<Scalar>::MultiplyHMatMainBroadcastsPackB
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyHMatMainBroadcastsUnpackB
-( const std::vector<Scalar>& buffer, std::vector<int>& offsets,
+( const Vector<Scalar>& buffer, Vector<int>& offsets,
   int startLevel, int endLevel )
 {
 #ifndef RELEASE
@@ -3747,7 +3747,7 @@ void
 DistHMat2d<Scalar>::MultiplyHMatMainBroadcastsCountC
 ( const DistHMat2d<Scalar>& B,
   const DistHMat2d<Scalar>& C, 
-  std::vector<int>& sizes, 
+  Vector<int>& sizes, 
   int startLevel, int endLevel, 
   int startUpdate, int endUpdate, int update ) const
 {
@@ -3913,7 +3913,7 @@ void
 DistHMat2d<Scalar>::MultiplyHMatMainBroadcastsPackC
 ( const DistHMat2d<Scalar>& B, 
         DistHMat2d<Scalar>& C,
-  std::vector<Scalar>& buffer, std::vector<int>& offsets,
+  Vector<Scalar>& buffer, Vector<int>& offsets,
   int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update ) const
 {
@@ -4092,7 +4092,7 @@ void
 DistHMat2d<Scalar>::MultiplyHMatMainBroadcastsUnpackC
 ( const DistHMat2d<Scalar>& B,
         DistHMat2d<Scalar>& C,
-  const std::vector<Scalar>& buffer, std::vector<int>& offsets,
+  const Vector<Scalar>& buffer, Vector<int>& offsets,
   int startLevel, int endLevel, 
   int startUpdate, int endUpdate, int update ) const
 {

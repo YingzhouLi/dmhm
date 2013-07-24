@@ -752,7 +752,7 @@ DistHMat3d<Scalar>::MultiplyDenseSums
     const int numReduces = numLevels-1;
     if( numReduces == 0 )
         return;
-    std::vector<int> sizes( numReduces, 0 );
+    Vector<int> sizes( numReduces, 0 );
     MultiplyDenseSumsCount( sizes, context.numRhs );
 
     // Pack all of the data to be reduced into a single buffer
@@ -761,11 +761,11 @@ DistHMat3d<Scalar>::MultiplyDenseSums
         totalSize += sizes[i];
     if( totalSize == 0 )
         return;
-    std::vector<Scalar> buffer( totalSize );
-    std::vector<int> offsets( numReduces );
+    Vector<Scalar> buffer( totalSize );
+    Vector<int> offsets( numReduces );
     for( int i=0,offset=0; i<numReduces; offset+=sizes[i],++i )
         offsets[i] = offset;
-    std::vector<int> offsetsCopy = offsets;
+    Vector<int> offsetsCopy = offsets;
     MultiplyDenseSumsPack( context, buffer, offsetsCopy );
 
     // Perform the reduces with log2(p) messages
@@ -786,18 +786,18 @@ DistHMat3d<Scalar>::TransposeMultiplyDenseSums
     // Compute the message sizes for each reduce 
     const int numLevels = teams_->NumLevels();
     const int numReduces = numLevels-1;
-    std::vector<int> sizes( numReduces, 0 );
+    Vector<int> sizes( numReduces, 0 );
     TransposeMultiplyDenseSumsCount( sizes, context.numRhs );
 
     // Pack all of the data to be reduced into a single buffer
     int totalSize = 0;
     for( int i=0; i<numReduces; ++i )
         totalSize += sizes[i];
-    std::vector<Scalar> buffer( totalSize );
-    std::vector<int> offsets( numReduces );
+    Vector<Scalar> buffer( totalSize );
+    Vector<int> offsets( numReduces );
     for( int i=0,offset=0; i<numReduces; offset+=sizes[i],++i )
         offsets[i] = offset;
-    std::vector<int> offsetsCopy = offsets;
+    Vector<int> offsetsCopy = offsets;
     TransposeMultiplyDenseSumsPack( context, buffer, offsetsCopy );
 
     // Perform the reduces with log2(p) messages
@@ -822,7 +822,7 @@ DistHMat3d<Scalar>::AdjointMultiplyDenseSums
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyDenseSumsCount
-( std::vector<int>& sizes, int numRhs ) const
+( Vector<int>& sizes, int numRhs ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyDenseSumsCount");
@@ -853,7 +853,7 @@ DistHMat3d<Scalar>::MultiplyDenseSumsCount
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::TransposeMultiplyDenseSumsCount
-( std::vector<int>& sizes, int numRhs ) const
+( Vector<int>& sizes, int numRhs ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::TransposeMultiplyDenseSumsCount");
@@ -884,7 +884,7 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyDenseSumsPack
 ( const MultiplyDenseContext& context, 
-  std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
+  Vector<Scalar>& buffer, Vector<int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyDenseSumsPack");
@@ -930,7 +930,7 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::TransposeMultiplyDenseSumsPack
 ( const MultiplyDenseContext& context,
-  std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
+  Vector<Scalar>& buffer, Vector<int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::TransposeMultiplyDenseSumsPack");
@@ -976,7 +976,7 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyDenseSumsUnpack
 ( MultiplyDenseContext& context, 
-  const std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
+  const Vector<Scalar>& buffer, Vector<int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyDenseSumsUnpack");
@@ -1028,7 +1028,7 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::TransposeMultiplyDenseSumsUnpack
 ( MultiplyDenseContext& context,
-  const std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
+  const Vector<Scalar>& buffer, Vector<int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::TransposeMultiplyDenseSumsUnpack");
@@ -1102,15 +1102,15 @@ DistHMat3d<Scalar>::MultiplyDensePassData
     }
 
     // Fill the send buffer
-    std::vector<Scalar> sendBuffer( totalSendSize );
+    Vector<Scalar> sendBuffer( totalSendSize );
     std::map<int,int> offsets = sendOffsets;
     MultiplyDensePassDataPack( context, sendBuffer, offsets );
 
     // Start the non-blocking recvs
     mpi::Comm comm = teams_->Team( 0 );
     const int numRecvs = recvSizes.size();
-    std::vector<mpi::Request> recvRequests( numRecvs );
-    std::vector<Scalar> recvBuffer( totalRecvSize );
+    Vector<mpi::Request> recvRequests( numRecvs );
+    Vector<Scalar> recvBuffer( totalRecvSize );
     int offset = 0;
     for( it=recvSizes.begin(); it!=recvSizes.end(); ++it )
     {
@@ -1122,7 +1122,7 @@ DistHMat3d<Scalar>::MultiplyDensePassData
 
     // Start the non-blocking sends
     const int numSends = sendSizes.size();
-    std::vector<mpi::Request> sendRequests( numSends );
+    Vector<mpi::Request> sendRequests( numSends );
     offset = 0;
     for( it=sendSizes.begin(); it!=sendSizes.end(); ++it )
     {
@@ -1205,7 +1205,7 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyDensePassDataPack
 ( MultiplyDenseContext& context,
-  std::vector<Scalar>& buffer, std::map<int,int>& offsets ) const
+  Vector<Scalar>& buffer, std::map<int,int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyDensePassDataPack");
@@ -1310,7 +1310,7 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyDensePassDataUnpack
 ( MultiplyDenseContext& context,
-  const std::vector<Scalar>& buffer, std::map<int,int>& offsets ) const
+  const Vector<Scalar>& buffer, std::map<int,int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyDensePassDataUnpack");
@@ -1424,14 +1424,14 @@ DistHMat3d<Scalar>::TransposeMultiplyDensePassData
     }
 
     // Fill the send buffer
-    std::vector<Scalar> sendBuffer( totalSendSize );
+    Vector<Scalar> sendBuffer( totalSendSize );
     std::map<int,int> offsets = sendOffsets;
     TransposeMultiplyDensePassDataPack( context, XLocal, sendBuffer, offsets );
 
     // Start the non-blocking sends
     mpi::Comm comm = teams_->Team( 0 );
     const int numSends = sendSizes.size();
-    std::vector<mpi::Request> sendRequests( numSends );
+    Vector<mpi::Request> sendRequests( numSends );
     int offset = 0;
     for( it=sendSizes.begin(); it!=sendSizes.end(); ++it )
     {
@@ -1443,8 +1443,8 @@ DistHMat3d<Scalar>::TransposeMultiplyDensePassData
 
     // Start the non-blocking recvs
     const int numRecvs = recvSizes.size();
-    std::vector<mpi::Request> recvRequests( numRecvs );
-    std::vector<Scalar> recvBuffer( totalRecvSize );
+    Vector<mpi::Request> recvRequests( numRecvs );
+    Vector<Scalar> recvBuffer( totalRecvSize );
     offset = 0;
     for( it=recvSizes.begin(); it!=recvSizes.end(); ++it )
     {
@@ -1527,7 +1527,7 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::TransposeMultiplyDensePassDataPack
 ( MultiplyDenseContext& context, const Dense<Scalar>& XLocal,
-  std::vector<Scalar>& buffer, std::map<int,int>& offsets ) const
+  Vector<Scalar>& buffer, std::map<int,int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::TransposeMultiplyDensePassDataPack");
@@ -1663,7 +1663,7 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::TransposeMultiplyDensePassDataUnpack
 ( MultiplyDenseContext& context, 
-  const std::vector<Scalar>& buffer, std::map<int,int>& offsets ) const
+  const Vector<Scalar>& buffer, std::map<int,int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::TransposeMultiplyDensePassDataUnpack");
@@ -1773,7 +1773,7 @@ DistHMat3d<Scalar>::MultiplyDenseBroadcasts
     // Compute the message sizes for each broadcast
     const int numLevels = teams_->NumLevels();
     const int numBroadcasts = numLevels-1;
-    std::vector<int> sizes( numBroadcasts, 0 );
+    Vector<int> sizes( numBroadcasts, 0 );
     MultiplyDenseBroadcastsCount( sizes, context.numRhs );
 
     // Pack all of the data to be broadcasted into a single buffer
@@ -1781,11 +1781,11 @@ DistHMat3d<Scalar>::MultiplyDenseBroadcasts
     int totalSize = 0;
     for( int i=0; i<numBroadcasts; ++i )
         totalSize += sizes[i];
-    std::vector<Scalar> buffer( totalSize );
-    std::vector<int> offsets( numBroadcasts );
+    Vector<Scalar> buffer( totalSize );
+    Vector<int> offsets( numBroadcasts );
     for( int i=0,offset=0; i<numBroadcasts; offset+=sizes[i],++i )
         offsets[i] = offset;
-    std::vector<int> offsetsCopy = offsets;
+    Vector<int> offsetsCopy = offsets;
     MultiplyDenseBroadcastsPack( context, buffer, offsetsCopy );
 
     // Perform the broadcasts with log2(p) messages
@@ -1806,7 +1806,7 @@ DistHMat3d<Scalar>::TransposeMultiplyDenseBroadcasts
     // Compute the message sizes for each broadcast
     const int numLevels = teams_->NumLevels();
     const int numBroadcasts = numLevels-1;
-    std::vector<int> sizes( numBroadcasts, 0 );
+    Vector<int> sizes( numBroadcasts, 0 );
     TransposeMultiplyDenseBroadcastsCount( sizes, context.numRhs );
 
     // Pack all of the data to be broadcasted into a single buffer
@@ -1814,11 +1814,11 @@ DistHMat3d<Scalar>::TransposeMultiplyDenseBroadcasts
     int totalSize = 0;
     for( int i=0; i<numBroadcasts; ++i )
         totalSize += sizes[i];
-    std::vector<Scalar> buffer( totalSize );
-    std::vector<int> offsets( numBroadcasts );
+    Vector<Scalar> buffer( totalSize );
+    Vector<int> offsets( numBroadcasts );
     for( int i=0,offset=0; i<numBroadcasts; offset+=sizes[i],++i )
         offsets[i] = offset;
-    std::vector<int> offsetsCopy = offsets;
+    Vector<int> offsetsCopy = offsets;
     TransposeMultiplyDenseBroadcastsPack( context, buffer, offsetsCopy );
 
     // Perform the broadcasts with log2(p) messages
@@ -1843,7 +1843,7 @@ DistHMat3d<Scalar>::AdjointMultiplyDenseBroadcasts
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyDenseBroadcastsCount
-( std::vector<int>& sizes, int numRhs ) const
+( Vector<int>& sizes, int numRhs ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyDenseBroadcastsCount");
@@ -1872,7 +1872,7 @@ DistHMat3d<Scalar>::MultiplyDenseBroadcastsCount
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::TransposeMultiplyDenseBroadcastsCount
-( std::vector<int>& sizes, int numRhs ) const
+( Vector<int>& sizes, int numRhs ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::TransposeMultiplyDenseBroadcastsCount");
@@ -1903,7 +1903,7 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyDenseBroadcastsPack
 ( const MultiplyDenseContext& context,
-  std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
+  Vector<Scalar>& buffer, Vector<int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyDenseBroadcastsPack");
@@ -1952,7 +1952,7 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::TransposeMultiplyDenseBroadcastsPack
 ( const MultiplyDenseContext& context,
-  std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
+  Vector<Scalar>& buffer, Vector<int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::TransposeMultiplyDenseBroadcastsPack");
@@ -1997,7 +1997,7 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyDenseBroadcastsUnpack
 ( MultiplyDenseContext& context,
-  const std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
+  const Vector<Scalar>& buffer, Vector<int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyDenseBroadcastsUnpack");
@@ -2041,7 +2041,7 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::TransposeMultiplyDenseBroadcastsUnpack
 ( MultiplyDenseContext& context,
-  const std::vector<Scalar>& buffer, std::vector<int>& offsets ) const
+  const Vector<Scalar>& buffer, Vector<int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::TransposeMultiplyDenseBroadcastsUnpack");

@@ -18,7 +18,6 @@ namespace dmhm {
 
 // A vector implementation that allows O(1) creation of subvectors. 
 // The tradeoff versus std::vector is that introducing (locked) views makes 
-// operator[] usage impractical, so we instead require Set() and Get().
 template<typename T>
 class Vector
 {
@@ -32,17 +31,38 @@ class Vector
 public:
     Vector();
     Vector( int height );
+    Vector( int height, const T x );
     Vector( int height, T* buffer );
     Vector( int height, const T* lockedBuffer );
     Vector( const Vector<T>& x );
     ~Vector();
 
     int Height() const;
+    int Size() const;
     void Resize( int height );
     void Clear();
 
     void Set( int i, T value );
     T Get( int i ) const;
+    T & operator[]( int i );
+    const T & operator[]( int i ) const;
+    
+    typedef typename std::vector<T>::iterator iterator;
+    iterator Begin()
+    { return memory_.begin(); }
+    const iterator Begin() const
+    { return memory_.begin(); }
+    iterator End()
+    { return memory_.end(); }
+    const iterator End() const
+    { return memory_.edu(); }
+
+    void Erase( const iterator bp, const iterator ep );
+
+    void Push_back( const T& x );
+    void Push_back( T& x );
+    void Pop_back();
+
     void Print( const std::string tag, std::ostream& os=std::cout ) const;
 
     T* Buffer( int i=0 );
@@ -71,7 +91,24 @@ inline
 Vector<T>::Vector( int height )
 : height_(height), viewing_(false), lockedView_(false),
   memory_(height), buffer_(&memory_[0]), lockedBuffer_(0)
-{ }
+{
+#ifdef MEMORY_INFO
+    AddToMemoryCount( height*sizeof(T) );
+#endif
+}
+
+template<typename T>
+inline
+Vector<T>::Vector( int height, const T x )
+: height_(height), viewing_(false), lockedView_(false),
+  memory_(height), buffer_(&memory_[0]), lockedBuffer_(0)
+{
+    for( int i=0; i<height; ++i )
+        memory_[i]=x;
+#ifdef MEMORY_INFO
+    AddToMemoryCount( height*sizeof(T) );
+#endif
+}
 
 template<typename T>
 inline
@@ -97,11 +134,18 @@ Vector<T>::Vector( const Vector<T>& x )
 template<typename T>
 inline
 Vector<T>::~Vector()
-{ }
+{
+    Clear();
+}
 
 template<typename T>
 inline int
 Vector<T>::Height() const
+{ return height_; }
+
+template<typename T>
+inline int
+Vector<T>::Size() const
 { return height_; }
 
 template<typename T>
@@ -113,9 +157,15 @@ Vector<T>::Resize( int height )
     if( viewing_ || lockedView_ )
         throw std::logic_error("Cannot resize a Vector that is a view.");
 #endif
+#ifdef MEMORY_INFO
+    AddToMemoryCount( -height_*sizeof(T) );
+#endif
     height_ = height;
     memory_.resize( height );
     buffer_ = &memory_[0];
+#ifdef MEMORY_INFO
+    AddToMemoryCount( height_*sizeof(T) );
+#endif
 }
 
 template<typename T>
@@ -124,6 +174,9 @@ Vector<T>::Clear()
 {
 #ifndef RELEASE
     CallStackEntry entry("Vector::Clear");
+#endif
+#ifdef MEMORY_INFO
+    AddToMemoryCount( -height_*sizeof(T) );
 #endif
     height_ = 0;
     viewing_ = false;
@@ -166,6 +219,101 @@ Vector<T>::Get( int i ) const
     else
         return buffer_[i];
 }
+
+template<typename T>
+inline T &
+Vector<T>::operator[]( int i )
+{
+#ifndef RELEASE
+    CallStackEntry entry("Vector::operator[]");
+    if( i < 0 )
+        throw std::logic_error("Negative buffer offsets are nonsensical");
+    if( i >= height_ && height_ > 0 )
+        throw std::logic_error("Vector::operator[] is out of bounds");
+    if( lockedView_ )
+        throw std::logic_error("Vector::operator[] the memory is locked");
+#endif
+    return buffer_[i];
+}
+
+template<typename T>
+inline const T &
+Vector<T>::operator[]( int i ) const
+{
+#ifndef RELEASE
+    CallStackEntry entry("Vector::operator[]");
+    if( i < 0 )
+        throw std::logic_error("Negative buffer offsets are nonsensical");
+    if( i >= height_ && height_ > 0 )
+        throw std::logic_error("Vector::operator[] is out of bounds");
+#endif
+    if( lockedView_ )
+        return lockedBuffer_[i];
+    else
+        return buffer_[i];
+}
+
+template<typename T>
+inline void
+Vector<T>::Erase( const iterator bp, const iterator ep )
+{ 
+#ifndef RELEASE
+    CallStackEntry entry("Vector::Erase");
+#endif
+#ifdef MEMORY_INFO
+    AddToMemoryCount( -(ep-bp)*sizeof(T) );
+#endif
+    memory_.erase(bp,ep);
+    height_ -= (ep-bp);
+    buffer_=&memory_[0];
+}
+
+template<typename T>
+inline void
+Vector<T>::Push_back( const T& x )
+{ 
+#ifndef RELEASE
+    CallStackEntry entry("Vector::Push_back");
+#endif
+#ifdef MEMORY_INFO
+    AddToMemoryCount( sizeof(T) );
+#endif
+    memory_.push_back(x);
+    height_++;
+    buffer_=&memory_[0];
+}
+
+template<typename T>
+inline void
+Vector<T>::Push_back( T& x )
+{ 
+#ifndef RELEASE
+    CallStackEntry entry("Vector::Push_back");
+#endif
+#ifdef MEMORY_INFO
+    AddToMemoryCount( sizeof(T) );
+#endif
+    memory_.push_back(x);
+    height_++;
+    buffer_=&memory_[0];
+} 
+
+template<typename T>
+inline void
+Vector<T>::Pop_back()
+{ 
+#ifndef RELEASE
+    CallStackEntry entry("Vector::Pop_back");
+    if( height_ == 0 )
+        throw std::logic_error("Pop_back an empty Vector");
+#endif
+#ifdef MEMORY_INFO
+    AddToMemoryCount( -sizeof(T) );
+#endif
+    memory_.pop_back();
+    height_--;
+    buffer_=&memory_[0];
+} 
 
 template<typename T>
 inline void

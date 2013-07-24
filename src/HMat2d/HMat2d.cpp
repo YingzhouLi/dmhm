@@ -69,12 +69,12 @@ HMat2d<Scalar>::BuildMapOnQuadrant
 template<typename Scalar>
 void
 HMat2d<Scalar>::BuildNaturalToHierarchicalMap
-( std::vector<int>& map, int xSize, int ySize, int numLevels )
+( Vector<int>& map, int xSize, int ySize, int numLevels )
 {
 #ifndef RELEASE
     CallStackEntry entry("HMat2d::BuildNaturalToHierarchicalMap");
 #endif
-    map.resize( xSize*ySize );
+    map.Resize( xSize*ySize );
 
     // Fill the mapping from the 'natural' x-y-z ordering
     int index = 0;
@@ -1206,7 +1206,7 @@ HMat2d<Scalar>::DisplayRecursion
     case NODE_SYMMETRIC:
     {
         const NodeSymmetric& node = *block_.data.NS;
-        for( unsigned child=0; child<node.children.size(); ++child )
+        for( unsigned child=0; child<node.children.Size(); ++child )
             node.children[child]->DisplayRecursion( matrix, mRatio, nRatio );
         break;
     }
@@ -1257,7 +1257,7 @@ HMat2d<Scalar>::LatexStructureRecursion
     case NODE_SYMMETRIC:
     {
         const NodeSymmetric& node = *block_.data.NS;
-        for( unsigned child=0; child<node.children.size(); ++child )
+        for( unsigned child=0; child<node.children.Size(); ++child )
             node.children[child]->LatexStructureRecursion( file, globalHeight );
         break;
     }
@@ -1301,7 +1301,7 @@ HMat2d<Scalar>::MScriptStructureRecursion( std::ofstream& file ) const
              << targetOffset_ << " " << sourceOffset_ << " "
              << Height() << " " << Width() << "\n";
         const NodeSymmetric& node = *block_.data.NS;
-        for( unsigned child=0; child<node.children.size(); ++child )
+        for( unsigned child=0; child<node.children.Size(); ++child )
             node.children[child]->MScriptStructureRecursion( file );
         break;
     }

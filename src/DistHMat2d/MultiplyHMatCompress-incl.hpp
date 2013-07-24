@@ -954,7 +954,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
         {
             USqr_.Resize( totalrank, totalrank );
             USqr_.Init();
-            USqrEig_.resize( totalrank );
+            USqrEig_.Resize( totalrank );
             Dense<Scalar>& U = DF.ULocal; 
 
             // TODO: Replace with Herk
@@ -971,7 +971,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
         {
             VSqr_.Resize( totalrank, totalrank );
             VSqr_.Init();
-            VSqrEig_.resize( totalrank );
+            VSqrEig_.Resize( totalrank );
             Dense<Scalar>& V = DF.VLocal;
             
             // TODO: Replace with Herk
@@ -1001,7 +1001,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
             {
                 USqr_.Resize( totalrank, totalrank );
                 USqr_.Init();
-                USqrEig_.resize( totalrank );
+                USqrEig_.Resize( totalrank );
                 Dense<Scalar>& U = SF.D;
                 
                 // MaxRank greater than zero, so totalrank greater than zero.
@@ -1017,7 +1017,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
             {
                 VSqr_.Resize( totalrank, totalrank );
                 VSqr_.Init();
-                VSqrEig_.resize( totalrank );
+                VSqrEig_.Resize( totalrank );
                 Dense<Scalar>& V = SF.D; 
                                                                                   
                 // MaxRank greater than zero, so totalrank greater than zero.
@@ -1046,7 +1046,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
         {
             USqr_.Resize( totalrank, totalrank, totalrank );
             USqr_.Init();
-            USqrEig_.resize( totalrank );
+            USqrEig_.Resize( totalrank );
 
             // MaxRank greater than zero, so totalrank greater than zero.
             // TODO: Replace with Herk
@@ -1058,7 +1058,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute
                                                                                 
             VSqr_.Resize( totalrank, totalrank, totalrank );
             VSqr_.Init();
-            VSqrEig_.resize( totalrank );
+            VSqrEig_.Resize( totalrank );
                                                                                 
             // MaxRank greater than zero, so totalrank greater than zero.
             // TODO: Replace with Herk
@@ -1086,17 +1086,17 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFReduces
 
     const int numLevels = teams_->NumLevels();
     const int numReduces = numLevels-1;
-    std::vector<int> sizes( numReduces, 0 );
+    Vector<int> sizes( numReduces, 0 );
     MultiplyHMatCompressFReducesCount( sizes, startLevel, endLevel );
 
     int totalsize = 0;
     for(int i=0; i<numReduces; ++i)
         totalsize += sizes[i];
-    std::vector<Scalar> buffer( totalsize );
-    std::vector<int> offsets( numReduces );
+    Vector<Scalar> buffer( totalsize );
+    Vector<int> offsets( numReduces );
     for( int i=0, offset=0; i<numReduces; offset+=sizes[i], ++i )
         offsets[i] = offset;
-    std::vector<int> offsetscopy = offsets;
+    Vector<int> offsetscopy = offsets;
     MultiplyHMatCompressFReducesPack
     ( buffer, offsetscopy, startLevel, endLevel );
     
@@ -1109,7 +1109,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFReduces
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyHMatCompressFReducesCount
-( std::vector<int>& sizes, int startLevel, int endLevel ) const
+( Vector<int>& sizes, int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFReduceCount");
@@ -1154,7 +1154,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFReducesCount
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyHMatCompressFReducesPack
-( std::vector<Scalar>& buffer, std::vector<int>& offsets,
+( Vector<Scalar>& buffer, Vector<int>& offsets,
   int startLevel, int endLevel )
 {
 #ifndef RELEASE
@@ -1214,7 +1214,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFReducesPack
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyHMatCompressFTreeReduces
-( std::vector<Scalar>& buffer, std::vector<int>& sizes ) const
+( Vector<Scalar>& buffer, Vector<int>& sizes ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFTreeReduces");
@@ -1225,7 +1225,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFTreeReduces
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyHMatCompressFReducesUnpack
-( const std::vector<Scalar>& buffer, std::vector<int>& offsets,
+( const Vector<Scalar>& buffer, Vector<int>& offsets,
   int startLevel, int endLevel )
 {
 #ifndef RELEASE
@@ -1429,7 +1429,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrix
     }
 
     // Fill the send buffer
-    std::vector<Scalar> sendBuffer(totalSendsize);
+    Vector<Scalar> sendBuffer(totalSendsize);
     std::map<int,int> offsets = sendOffsets;
     MultiplyHMatCompressFPassMatrixPack
     ( sendBuffer, offsets, startLevel, endLevel );
@@ -1437,8 +1437,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrix
     // Start the non-blocking recvs
     mpi::Comm comm = teams_->Team( 0 );
     const int numRecvs = recvsizes.size();
-    std::vector<mpi::Request> recvRequests( numRecvs );
-    std::vector<Scalar> recvBuffer( totalRecvsize );
+    Vector<mpi::Request> recvRequests( numRecvs );
+    Vector<Scalar> recvBuffer( totalRecvsize );
     int offset = 0;
     for( it=recvsizes.begin(); it!=recvsizes.end(); ++it )
     {
@@ -1452,7 +1452,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrix
 
     // Start the non-blocking sends
     const int numSends = sendsizes.size();
-    std::vector<mpi::Request> sendRequests( numSends );
+    Vector<mpi::Request> sendRequests( numSends );
     offset = 0;
     for( it=sendsizes.begin(); it!=sendsizes.end(); ++it )
     {
@@ -1561,7 +1561,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrixCount
 template<typename Scalar>
 void 
 DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrixPack
-( std::vector<Scalar>& buffer, std::map<int,int>& offsets,
+( Vector<Scalar>& buffer, std::map<int,int>& offsets,
   int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
@@ -1654,7 +1654,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrixPack
 template<typename Scalar>
 void 
 DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrixUnpack
-( const std::vector<Scalar>& buffer, std::map<int,int>& offsets,
+( const Vector<Scalar>& buffer, std::map<int,int>& offsets,
   int startLevel, int endLevel )
 {
 #ifndef RELEASE
@@ -1781,7 +1781,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassVector
     }
 
     // Fill the send buffer
-    std::vector<Real> sendBuffer(totalSendsize);
+    Vector<Real> sendBuffer(totalSendsize);
     std::map<int,int> offsets = sendOffsets;
     MultiplyHMatCompressFPassVectorPack
     ( sendBuffer, offsets, startLevel, endLevel );
@@ -1789,8 +1789,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassVector
     // Start the non-blocking recvs
     mpi::Comm comm = teams_->Team( 0 );
     const int numRecvs = recvsizes.size();
-    std::vector<mpi::Request> recvRequests( numRecvs );
-    std::vector<Real> recvBuffer( totalRecvsize );
+    Vector<mpi::Request> recvRequests( numRecvs );
+    Vector<Real> recvBuffer( totalRecvsize );
     int offset = 0;
     for( it=recvsizes.begin(); it!=recvsizes.end(); ++it )
     {
@@ -1804,7 +1804,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassVector
 
     // Start the non-blocking sends
     const int numSends = sendsizes.size();
-    std::vector<mpi::Request> sendRequests( numSends );
+    Vector<mpi::Request> sendRequests( numSends );
     offset = 0;
     for( it=sendsizes.begin(); it!=sendsizes.end(); ++it )
     {
@@ -1865,9 +1865,9 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassVectorCount
         if( teamRank ==0 )
         {
             if( inSourceTeam_ )
-                AddToMap( sendsizes, targetRoot_, VSqrEig_.size() );
+                AddToMap( sendsizes, targetRoot_, VSqrEig_.Size() );
             else
-                AddToMap( recvsizes, sourceRoot_, USqrEig_.size() );
+                AddToMap( recvsizes, sourceRoot_, USqrEig_.Size() );
         }
         break;
     }
@@ -1886,9 +1886,9 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassVectorCount
         if( LH > totalrank && LW > totalrank && totalrank > MaxRank() )
         {
             if( inSourceTeam_ )
-                AddToMap( sendsizes, targetRoot_, VSqrEig_.size() );
+                AddToMap( sendsizes, targetRoot_, VSqrEig_.Size() );
             else
-                AddToMap( recvsizes, sourceRoot_, USqrEig_.size() );
+                AddToMap( recvsizes, sourceRoot_, USqrEig_.Size() );
         }
         break;
     }
@@ -1900,7 +1900,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassVectorCount
 template<typename Scalar>
 void 
 DistHMat2d<Scalar>::MultiplyHMatCompressFPassVectorPack
-( std::vector<Real>& buffer, std::map<int,int>& offsets,
+( Vector<Real>& buffer, std::map<int,int>& offsets,
   int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
@@ -1939,8 +1939,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassVectorPack
         if( teamRank ==0 )
         {
             MemCopy
-            ( &buffer[offsets[targetRoot_]], &VSqrEig_[0], VSqrEig_.size() );
-            offsets[targetRoot_] += VSqrEig_.size();
+            ( &buffer[offsets[targetRoot_]], &VSqrEig_[0], VSqrEig_.Size() );
+            offsets[targetRoot_] += VSqrEig_.Size();
         }
         break;
     }
@@ -1961,8 +1961,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassVectorPack
         if( LH > totalrank && LW > totalrank && totalrank > MaxRank() )
         {
             MemCopy
-            ( &buffer[offsets[targetRoot_]], &VSqrEig_[0], VSqrEig_.size() );
-            offsets[targetRoot_] += VSqrEig_.size();
+            ( &buffer[offsets[targetRoot_]], &VSqrEig_[0], VSqrEig_.Size() );
+            offsets[targetRoot_] += VSqrEig_.Size();
         }
         break;
     }
@@ -1974,7 +1974,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassVectorPack
 template<typename Scalar>
 void 
 DistHMat2d<Scalar>::MultiplyHMatCompressFPassVectorUnpack
-( const std::vector<Real>& buffer, std::map<int,int>& offsets,
+( const Vector<Real>& buffer, std::map<int,int>& offsets,
   int startLevel, int endLevel )
 {
 #ifndef RELEASE
@@ -2012,10 +2012,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassVectorUnpack
         const int teamRank = mpi::CommRank( team );
         if( teamRank ==0 )
         {
-            VSqrEig_.resize( USqrEig_.size() );
+            VSqrEig_.Resize( USqrEig_.Size() );
             MemCopy
-            ( &VSqrEig_[0], &buffer[offsets[sourceRoot_]], VSqrEig_.size() );
-            offsets[sourceRoot_] += VSqrEig_.size();
+            ( &VSqrEig_[0], &buffer[offsets[sourceRoot_]], VSqrEig_.Size() );
+            offsets[sourceRoot_] += VSqrEig_.Size();
         }
         break;
     }
@@ -2035,10 +2035,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassVectorUnpack
         
         if( LH > totalrank && LW > totalrank && totalrank > MaxRank() )
         {
-            VSqrEig_.resize( USqrEig_.size() );
+            VSqrEig_.Resize( USqrEig_.Size() );
             MemCopy
-            ( &VSqrEig_[0], &buffer[offsets[sourceRoot_]], VSqrEig_.size() );
-            offsets[sourceRoot_] += VSqrEig_.size();
+            ( &VSqrEig_[0], &buffer[offsets[sourceRoot_]], VSqrEig_.Size() );
+            offsets[sourceRoot_] += VSqrEig_.Size();
         }
         break;
     }
@@ -2090,12 +2090,12 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
             Dense<Scalar> BSqr;
             BSqr.Resize( k, k );
             BSqr.Init();
-            std::vector<Real> USqrSigma(k), VSqrSigma(k);
+            Vector<Real> USqrSigma(k), VSqrSigma(k);
             BSqrU_.Resize( k, k );
             BSqrU_.Init();
             BSqrVH_.Resize( k, k );
             BSqrVH_.Init();
-            BSigma_.resize( k );
+            BSigma_.Resize( k );
 
             if( k==0 )
                 break;
@@ -2119,8 +2119,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
 
             const int lwork = lapack::SVDWorkSize(k,k);
             const int lrwork = lapack::SVDRealWorkSize(k,k);
-            std::vector<Scalar> work(lwork);
-            std::vector<Real> rwork(lrwork);
+            Vector<Scalar> work(lwork);
+            Vector<Real> rwork(lrwork);
             lapack::SVD
             ('S', 'S' ,k ,k, 
              BSqr.Buffer(), BSqr.LDim(), &BSigma_[0],
@@ -2150,12 +2150,12 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
                 Dense<Scalar> BSqr;
                 BSqr.Resize( k, k );
                 BSqr.Init();
-                std::vector<Real> USqrSigma(k), VSqrSigma(k);
+                Vector<Real> USqrSigma(k), VSqrSigma(k);
                 BSqrU_.Resize( k, k );
                 BSqrU_.Init();
                 BSqrVH_.Resize( k, k );
                 BSqrVH_.Init();
-                BSigma_.resize( k );
+                BSigma_.Resize( k );
                                                                                 
                 if( k==0 )
                     break;
@@ -2179,8 +2179,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
                                                                                 
                 const int lwork = lapack::SVDWorkSize(k,k);
                 const int lrwork = lapack::SVDRealWorkSize(k,k);
-                std::vector<Scalar> work(lwork);
-                std::vector<Real> rwork(lrwork);
+                Vector<Scalar> work(lwork);
+                Vector<Real> rwork(lrwork);
                 lapack::SVD
                 ('S', 'S' ,k ,k, 
                  BSqr.Buffer(), BSqr.LDim(), &BSigma_[0],
@@ -2218,12 +2218,12 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
             BSqrU_.Init();
             BSqrVH_.Resize( minDim, LW );
             BSqrVH_.Init();
-            BSigma_.resize( minDim );
+            BSigma_.Resize( minDim );
 
             const int lwork = lapack::SVDWorkSize(LH,LW);
             const int lrwork = lapack::SVDRealWorkSize(LH,LW);
-            std::vector<Scalar> work(lwork);
-            std::vector<Real> rwork(lrwork);
+            Vector<Scalar> work(lwork);
+            Vector<Real> rwork(lrwork);
             lapack::SVD
             ('S', 'S' , LH, LW, 
              B.Buffer(), B.LDim(), &BSigma_[0],
@@ -2252,12 +2252,12 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
             Dense<Scalar> BSqr;                                                 
             BSqr.Resize( k, k );                                                
             BSqr.Init();                                                        
-            std::vector<Real> USqrSigma(k), VSqrSigma(k);                       
+            Vector<Real> USqrSigma(k), VSqrSigma(k);                       
             BSqrU_.Resize( k, k );                                              
             BSqrU_.Init();                                                      
             BSqrVH_.Resize( k, k );                                             
             BSqrVH_.Init();                                                     
-            BSigma_.resize( k );                                                
+            BSigma_.Resize( k );                                                
                                                                                 
             if( k==0 )                                                          
                 break;                                                          
@@ -2281,8 +2281,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
                                                                                 
             const int lwork = lapack::SVDWorkSize(k,k);                         
             const int lrwork = lapack::SVDRealWorkSize(k,k);                    
-            std::vector<Scalar> work(lwork);                                    
-            std::vector<Real> rwork(lrwork);                                    
+            Vector<Scalar> work(lwork);                                    
+            Vector<Real> rwork(lrwork);                                    
             lapack::SVD                                                         
             ('S', 'S' ,k ,k,                                                    
              BSqr.Buffer(), BSqr.LDim(), &BSigma_[0],                           
@@ -2308,12 +2308,12 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
             BSqrU_.Init();
             BSqrVH_.Resize( minDim, LW );
             BSqrVH_.Init();
-            BSigma_.resize( minDim );
+            BSigma_.Resize( minDim );
 
             const int lwork = lapack::SVDWorkSize(LH,LW);
             const int lrwork = lapack::SVDRealWorkSize(LH,LW);
-            std::vector<Scalar> work(lwork);
-            std::vector<Real> rwork(lrwork);
+            Vector<Scalar> work(lwork);
+            Vector<Real> rwork(lrwork);
             lapack::SVD
             ('S', 'S' , LH, LW, 
              B.Buffer(), B.LDim(), &BSigma_[0],
@@ -2359,7 +2359,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackNum
     }
 
     // Fill the send buffer
-    std::vector<int> sendBuffer(totalSendsize);
+    Vector<int> sendBuffer(totalSendsize);
     std::map<int,int> offsets = sendOffsets;
     MultiplyHMatCompressFPassbackNumPack
     ( sendBuffer, offsets, startLevel, endLevel );
@@ -2367,8 +2367,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackNum
     // Start the non-blocking recvs
     mpi::Comm comm = teams_->Team( 0 );
     const int numRecvs = recvsizes.size();
-    std::vector<mpi::Request> recvRequests( numRecvs );
-    std::vector<int> recvBuffer( totalRecvsize );
+    Vector<mpi::Request> recvRequests( numRecvs );
+    Vector<int> recvBuffer( totalRecvsize );
     int offset = 0;
     for( it=recvsizes.begin(); it!=recvsizes.end(); ++it )
     {
@@ -2382,7 +2382,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackNum
 
     // Start the non-blocking sends
     const int numSends = sendsizes.size();
-    std::vector<mpi::Request> sendRequests( numSends );
+    Vector<mpi::Request> sendRequests( numSends );
     offset = 0;
     for( it=sendsizes.begin(); it!=sendsizes.end(); ++it )
     {
@@ -2478,7 +2478,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackNumCount
 template<typename Scalar>
 void 
 DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackNumPack
-( std::vector<int>& buffer, std::map<int,int>& offsets,
+( Vector<int>& buffer, std::map<int,int>& offsets,
   int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
@@ -2550,7 +2550,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackNumPack
 template<typename Scalar>
 void 
 DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackNumUnpack
-( const std::vector<int>& buffer, std::map<int,int>& offsets,
+( const Vector<int>& buffer, std::map<int,int>& offsets,
   int startLevel, int endLevel )
 {
 #ifndef RELEASE
@@ -2653,7 +2653,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackData
     }
 
     // Fill the send buffer
-    std::vector<Scalar> sendBuffer(totalSendsize);
+    Vector<Scalar> sendBuffer(totalSendsize);
     std::map<int,int> offsets = sendOffsets;
     MultiplyHMatCompressFPassbackDataPack
     ( sendBuffer, offsets, startLevel, endLevel );
@@ -2661,8 +2661,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackData
     // Start the non-blocking recvs
     mpi::Comm comm = teams_->Team( 0 );
     const int numRecvs = recvsizes.size();
-    std::vector<mpi::Request> recvRequests( numRecvs );
-    std::vector<Scalar> recvBuffer( totalRecvsize );
+    Vector<mpi::Request> recvRequests( numRecvs );
+    Vector<Scalar> recvBuffer( totalRecvsize );
     int offset = 0;
     for( it=recvsizes.begin(); it!=recvsizes.end(); ++it )
     {
@@ -2676,7 +2676,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackData
 
     // Start the non-blocking sends
     const int numSends = sendsizes.size();
-    std::vector<mpi::Request> sendRequests( numSends );
+    Vector<mpi::Request> sendRequests( numSends );
     offset = 0;
     for( it=sendsizes.begin(); it!=sendsizes.end(); ++it )
     {
@@ -2809,7 +2809,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackDataCount
 template<typename Scalar>
 void 
 DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackDataPack
-( std::vector<Scalar>& buffer, std::map<int,int>& offsets,
+( Vector<Scalar>& buffer, std::map<int,int>& offsets,
   int startLevel, int endLevel )
 {
 #ifndef RELEASE
@@ -2931,7 +2931,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackDataPack
 template<typename Scalar>
 void 
 DistHMat2d<Scalar>::MultiplyHMatCompressFPassbackDataUnpack
-( const std::vector<Scalar>& buffer, std::map<int,int>& offsets,
+( const Vector<Scalar>& buffer, std::map<int,int>& offsets,
   int startLevel, int endLevel )
 {
 #ifndef RELEASE
@@ -3117,7 +3117,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPostcompute
                 if( totalrank <= MaxRank() )
                     break;
             }
-            const int kU = USqrEig_.size();
+            const int kU = USqrEig_.Size();
             if( inTargetTeam_ )
             {
                 const Real maxEig = std::max( USqrEig_[kU-1], Real(0) );
@@ -3150,7 +3150,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPostcompute
                 BSqrU_.Clear();
             }
 
-            const int kV = VSqrEig_.size();
+            const int kV = VSqrEig_.Size();
             if( inSourceTeam_ && kV > 0 )
             {
                 const Real maxEig = std::max( VSqrEig_[kV-1], Real(0) );
@@ -3194,17 +3194,17 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcastsNum
 #endif
     const int numLevels = teams_->NumLevels();
     const int numBroadcasts = numLevels-1;
-    std::vector<int> sizes( numBroadcasts, 0 );
+    Vector<int> sizes( numBroadcasts, 0 );
     MultiplyHMatCompressFBroadcastsNumCount( sizes, startLevel, endLevel );
 
     int totalsize = 0;
     for(int i=0; i<numBroadcasts; ++i)
         totalsize += sizes[i];
-    std::vector<int> buffer( totalsize );
-    std::vector<int> offsets( numBroadcasts );
+    Vector<int> buffer( totalsize );
+    Vector<int> offsets( numBroadcasts );
     for( int i=0, offset=0; i<numBroadcasts; offset+=sizes[i], ++i )
         offsets[i] = offset;
-    std::vector<int> offsetscopy = offsets;
+    Vector<int> offsetscopy = offsets;
     MultiplyHMatCompressFBroadcastsNumPack
     ( buffer, offsetscopy, startLevel, endLevel );
 
@@ -3217,7 +3217,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcastsNum
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcastsNumCount
-( std::vector<int>& sizes, int startLevel, int endLevel ) const
+( Vector<int>& sizes, int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFBroadcastsNumCount");
@@ -3261,7 +3261,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcastsNumCount
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcastsNumPack
-( std::vector<int>& buffer, std::vector<int>& offsets,
+( Vector<int>& buffer, Vector<int>& offsets,
   int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
@@ -3317,7 +3317,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcastsNumPack
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyHMatCompressFTreeBroadcastsNum
-( std::vector<int>& buffer, std::vector<int>& sizes ) const
+( Vector<int>& buffer, Vector<int>& sizes ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFTreeBroadcastsNum");
@@ -3328,7 +3328,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFTreeBroadcastsNum
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcastsNumUnpack
-( std::vector<int>& buffer, std::vector<int>& offsets,
+( Vector<int>& buffer, Vector<int>& offsets,
   int startLevel, int endLevel )
 {
 #ifndef RELEASE
@@ -3396,17 +3396,17 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcasts
 #endif
     const int numLevels = teams_->NumLevels();
     const int numBroadcasts = numLevels-1;
-    std::vector<int> sizes( numBroadcasts, 0 );
+    Vector<int> sizes( numBroadcasts, 0 );
     MultiplyHMatCompressFBroadcastsCount( sizes, startLevel, endLevel );
 
     int totalsize = 0;
     for(int i=0; i<numBroadcasts; ++i)
         totalsize += sizes[i];
-    std::vector<Scalar> buffer( totalsize );
-    std::vector<int> offsets( numBroadcasts );
+    Vector<Scalar> buffer( totalsize );
+    Vector<int> offsets( numBroadcasts );
     for( int i=0, offset=0; i<numBroadcasts; offset+=sizes[i], ++i )
         offsets[i] = offset;
-    std::vector<int> offsetscopy = offsets;
+    Vector<int> offsetscopy = offsets;
     MultiplyHMatCompressFBroadcastsPack
     ( buffer, offsetscopy, startLevel, endLevel );
 
@@ -3419,7 +3419,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcasts
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcastsCount
-( std::vector<int>& sizes, int startLevel, int endLevel ) const
+( Vector<int>& sizes, int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFBroadcastsCount");
@@ -3463,7 +3463,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcastsCount
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcastsPack
-( std::vector<Scalar>& buffer, std::vector<int>& offsets,
+( Vector<Scalar>& buffer, Vector<int>& offsets,
   int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
@@ -3521,7 +3521,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcastsPack
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyHMatCompressFTreeBroadcasts
-( std::vector<Scalar>& buffer, std::vector<int>& sizes ) const
+( Vector<Scalar>& buffer, Vector<int>& sizes ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFTreeBroadcasts");
@@ -3532,7 +3532,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFTreeBroadcasts
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcastsUnpack
-( std::vector<Scalar>& buffer, std::vector<int>& offsets,
+( Vector<Scalar>& buffer, Vector<int>& offsets,
   int startLevel, int endLevel )
 {
 #ifndef RELEASE
@@ -3773,15 +3773,15 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
             else
             {
                 SF.rank = maxRank; 
-                std::vector<Real> sigma( minDim );
-                std::vector<Scalar> work( lapack::SVDWorkSize(m,n) );
-                std::vector<Real> realwork( lapack::SVDRealWorkSize(m,n) );
+                Vector<Real> sigma( minDim );
+                Vector<Scalar> work( lapack::SVDWorkSize(m,n) );
+                Vector<Real> realwork( lapack::SVDRealWorkSize(m,n) );
                 if( inTargetTeam_ )
                 {
                     lapack::SVD
                     ( 'O', 'N', m, n, D_.Buffer(), D_.LDim(),
                       &sigma[0], 0, 1, 0, 1,
-                      &work[0], work.size(), &realwork[0] );
+                      &work[0], work.Size(), &realwork[0] );
 
                     SF.D.Resize( m, maxRank );
                     SF.D.Init();
@@ -3794,7 +3794,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
                     lapack::SVD
                     ( 'N', 'O', m, n, D_.Buffer(), D_.LDim(),
                       &sigma[0], 0, 1, 0, 1,
-                      &work[0], work.size(), &realwork[0] );
+                      &work[0], work.Size(), &realwork[0] );
 
                     SF.D.Resize( n, maxRank );
                     SF.D.Init();
@@ -3899,13 +3899,13 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
                 // the left singular vectors and VH with the adjoint of the 
                 // right singular vecs
                 Dense<Scalar> VH( std::min(m,n), n );
-                std::vector<Real> sigma( minDim );
-                std::vector<Scalar> work( lapack::SVDWorkSize(m,n) );
-                std::vector<Real> realWork( lapack::SVDRealWorkSize(m,n) );
+                Vector<Real> sigma( minDim );
+                Vector<Scalar> work( lapack::SVDWorkSize(m,n) );
+                Vector<Real> realWork( lapack::SVDRealWorkSize(m,n) );
                 lapack::SVD
                 ( 'O', 'S', m, n, D_.Buffer(), D_.LDim(), 
                   &sigma[0], 0, 1, VH.Buffer(), VH.LDim(), 
-                  &work[0], work.size(), &realWork[0] );
+                  &work[0], work.Size(), &realWork[0] );
 
                 // Form U with the truncated left singular vectors scaled
                 // by the corresponding singular values
@@ -4023,11 +4023,11 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFCleanup
             break;
         USqr_.Clear();
         VSqr_.Clear();
-        std::vector<Real>().swap(USqrEig_);
-        std::vector<Real>().swap(VSqrEig_);
+        USqrEig_.Clear();
+        VSqrEig_.Clear();
         BSqrU_.Clear();
         BSqrVH_.Clear();
-        std::vector<Real>().swap(BSigma_);
+        BSigma_.Clear();
         BL_.Clear();
         BR_.Clear();
         UMap_.Clear();

@@ -12,6 +12,7 @@
 
 #include "dmhm/core/abstract_hmat.hpp"
 #include "dmhm/hmat_tools.hpp"
+#include "dmhm/graphics.hpp"
 
 namespace dmhm {
 
@@ -31,7 +32,7 @@ public:
     static int SampleRank( int approxRank ) { return approxRank + Oversample(); }
 
     static void BuildNaturalToHierarchicalMap
-    ( std::vector<int>& map, int xSize, int ySize, int zSize, int numLevels );
+    ( Vector<int>& map, int xSize, int ySize, int zSize, int numLevels );
 
     /*
      * Public non-static member functions
@@ -90,7 +91,7 @@ public:
       int sourceOffset, int targetOffset );
 
     // Reconstruct an H-matrix from its packed form
-    HMat3d( const std::vector<byte>& packedHMat );
+    HMat3d( const Vector<byte>& packedHMat );
 
     virtual ~HMat3d();
     void Clear();
@@ -111,9 +112,9 @@ public:
     // a contiguous buffer.
     std::size_t PackedSize() const;
     std::size_t Pack( byte* packedHMat ) const;
-    std::size_t Pack( std::vector<byte>& packedHMat ) const;
+    std::size_t Pack( Vector<byte>& packedHMat ) const;
     std::size_t Unpack( const byte* packedHMat );
-    std::size_t Unpack( const std::vector<byte>& packedHMat );
+    std::size_t Unpack( const Vector<byte>& packedHMat );
 
     int XSizeSource() const { return xSizeSource_; }
     int XSizeTarget() const { return xSizeTarget_; }
@@ -134,10 +135,10 @@ public:
     bool IsLowRank() const { return block_.type == LOW_RANK; }
 
     /* 
-     * Visualize H-matrix structure
+     * Visualize the H-matrix structure
      */
-    // Display structure with Qt
 #ifdef HAVE_QT5
+    // Display structure with Qt
     void Display( std::string title="" ) const;
 #endif
     // Compile this output with pdflatex+TikZ
@@ -295,7 +296,7 @@ private:
      */
     struct Node
     {
-        std::vector<HMat3d*> children;
+        Vector<HMat3d*> children;
         int xSourceSizes[2];
         int ySourceSizes[2];
         int zSourceSizes[2];
@@ -316,7 +317,7 @@ private:
 
     struct NodeSymmetric
     {
-        std::vector<HMat3d*> children;
+        Vector<HMat3d*> children;
         int xSizes[2];
         int ySizes[2];
         int zSizes[2];
@@ -497,9 +498,9 @@ template<typename Scalar>
 inline
 HMat3d<Scalar>::Node::~Node()
 {
-    for( unsigned i=0; i<children.size(); ++i )
+    for( unsigned i=0; i<children.Size(); ++i )
         delete children[i];
-    children.clear();
+    children.Clear();
 }
 
 template<typename Scalar>
@@ -512,7 +513,7 @@ HMat3d<Scalar>::Node::Child( int i, int j )
         throw std::logic_error("Indices must be non-negative");
     if( i > 7 || j > 7 )
         throw std::logic_error("Indices out of bounds");
-    if( children.size() != 64 )
+    if( children.Size() != 64 )
         throw std::logic_error("children array not yet set up");
 #endif
     return *children[j+8*i]; 
@@ -528,7 +529,7 @@ HMat3d<Scalar>::Node::Child( int i, int j ) const
         throw std::logic_error("Indices must be non-negative");
     if( i > 7 || j > 7 )
         throw std::logic_error("Indices out of bounds");
-    if( children.size() != 64 )
+    if( children.Size() != 64 )
         throw std::logic_error("children array not yet set up");
 #endif
     return *children[j+8*i]; 
@@ -571,9 +572,9 @@ template<typename Scalar>
 inline
 HMat3d<Scalar>::NodeSymmetric::~NodeSymmetric()
 {
-    for( unsigned i=0; i<children.size(); ++i )
+    for( unsigned i=0; i<children.Size(); ++i )
         delete children[i];
-    children.clear();
+    children.Clear();
 }
 
 template<typename Scalar>
@@ -588,7 +589,7 @@ HMat3d<Scalar>::NodeSymmetric::Child( int i, int j )
         throw std::logic_error("Indices out of bounds");
     if( j > i )
         throw std::logic_error("Index outside of lower triangle");
-    if( children.size() != 36 )
+    if( children.Size() != 36 )
         throw std::logic_error("children array not yet set up");
 #endif
     return *children[(i*(i+1))/2 + j]; 
@@ -606,7 +607,7 @@ HMat3d<Scalar>::NodeSymmetric::Child( int i, int j ) const
         throw std::logic_error("Indices out of bounds");
     if( j > i )
         throw std::logic_error("Index outside of lower triangle");
-    if( children.size() != 36 )
+    if( children.Size() != 36 )
         throw std::logic_error("children array not yet set up");
 #endif
     return *children[(i*(i+1))/2 + j];

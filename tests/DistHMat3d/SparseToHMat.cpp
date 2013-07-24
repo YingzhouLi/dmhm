@@ -13,58 +13,58 @@ template<typename Real>
 void
 FormRow
 ( int x, int y, int z, int xSize, int ySize, int zSize, 
-  std::vector<std::complex<Real> >& row, std::vector<int>& colIndices )
+  Vector<std::complex<Real> >& row, Vector<int>& colIndices )
 {
     typedef std::complex<Real> Scalar;
     const int rowIdx = x + xSize*y + xSize*ySize*z;
 
-    row.resize( 0 );
-    colIndices.resize( 0 );
+    row.Resize( 0 );
+    colIndices.Resize( 0 );
 
     // Set up the diagonal entry
-    colIndices.push_back( rowIdx );
-    row.push_back( (Scalar)8 );
+    colIndices.Push_back( rowIdx );
+    row.Push_back( (Scalar)8 );
 
     // Front connection to (x-1,y,z)
     if( x != 0 )
     {
-        colIndices.push_back( (x-1) + xSize*y + xSize*ySize*z );
-        row.push_back( (Scalar)-1 );
+        colIndices.Push_back( (x-1) + xSize*y + xSize*ySize*z );
+        row.Push_back( (Scalar)-1 );
     }
 
     // Back connection to (x+1,y,z)
     if( x != xSize-1 )
     {
-        colIndices.push_back( (x+1) + xSize*y + xSize*ySize*z );
-        row.push_back( (Scalar)-1 );
+        colIndices.Push_back( (x+1) + xSize*y + xSize*ySize*z );
+        row.Push_back( (Scalar)-1 );
     }
 
     // Left connection to (x,y-1,z)
     if( y != 0 )
     {
-        colIndices.push_back( x + xSize*(y-1) + xSize*ySize*z );
-        row.push_back( (Scalar)-1 );
+        colIndices.Push_back( x + xSize*(y-1) + xSize*ySize*z );
+        row.Push_back( (Scalar)-1 );
     }
 
     // Right connection to (x,y+1,z)
     if( y != ySize-1 )
     {
-        colIndices.push_back( x + xSize*(y+1) + xSize*ySize*z );
-        row.push_back( (Scalar)-1 );
+        colIndices.Push_back( x + xSize*(y+1) + xSize*ySize*z );
+        row.Push_back( (Scalar)-1 );
     }
 
     // Top connection to (x,y,z-1)
     if( z != 0 )
     {
-        colIndices.push_back( x + xSize*y + xSize*ySize*(z-1) );
-        row.push_back( (Scalar)-1 );
+        colIndices.Push_back( x + xSize*y + xSize*ySize*(z-1) );
+        row.Push_back( (Scalar)-1 );
     }
 
     // Bottom connection to (x,y,z+1)
     if( z != zSize-1 )
     {
-        colIndices.push_back( x + xSize*y + xSize*ySize*(z+1) );
-        row.push_back( (Scalar)-1 );
+        colIndices.Push_back( x + xSize*y + xSize*ySize*(z+1) );
+        row.Push_back( (Scalar)-1 );
     }
 }
 
@@ -108,11 +108,11 @@ main( int argc, char* argv[] )
         S.width = n;
         S.symmetric = false;
 
-        std::vector<int> map;
+        Vector<int> map;
         HMat::BuildNaturalToHierarchicalMap
         ( map, xSize, ySize, zSize, numLevels );
 
-        std::vector<int> inverseMap( m );
+        Vector<int> inverseMap( m );
         for( int i=0; i<m; ++i )
             inverseMap[map[i]] = i;
 
@@ -123,11 +123,11 @@ main( int argc, char* argv[] )
         }
         mpi::Barrier( mpi::COMM_WORLD );
         double fillStartTime = mpi::Time();
-        std::vector<Scalar> row;
-        std::vector<int> colIndices;
+        Vector<Scalar> row;
+        Vector<int> colIndices;
         for( int i=0; i<m; ++i )
         {
-            S.rowOffsets.push_back( S.nonzeros.size() );
+            S.rowOffsets.Push_back( S.nonzeros.Size() );
             const int iNatural = inverseMap[i];
             const int x = iNatural % xSize;
             const int y = (iNatural/xSize) % ySize;
@@ -135,13 +135,13 @@ main( int argc, char* argv[] )
 
             FormRow( x, y, z, xSize, ySize, zSize, row, colIndices );
 
-            for( unsigned j=0; j<row.size(); ++j )
+            for( unsigned j=0; j<row.Size(); ++j )
             {
-                S.nonzeros.push_back( row[j] );
-                S.columnIndices.push_back( map[colIndices[j]] );
+                S.nonzeros.Push_back( row[j] );
+                S.columnIndices.Push_back( map[colIndices[j]] );
             }
         }
-        S.rowOffsets.push_back( S.nonzeros.size() );
+        S.rowOffsets.Push_back( S.nonzeros.Size() );
         mpi::Barrier( mpi::COMM_WORLD );
         double fillStopTime = mpi::Time();
         if( commRank == 0 )
@@ -169,10 +169,10 @@ main( int argc, char* argv[] )
 
         // Set up our subcommunicators and compute the packed sizes
         DistHMat::Teams teams( mpi::COMM_WORLD );
-        std::vector<std::size_t> packedSizes;
+        Vector<std::size_t> packedSizes;
         DistHMat::PackedSizes( packedSizes, ASerial, teams ); 
         const std::size_t myMaxSize = 
-            *(std::max_element( packedSizes.begin(), packedSizes.end() ));
+            *(std::max_element( packedSizes.Begin(), packedSizes.End() ));
 
         // Pack for a DistHMat3d
         if( commRank == 0 )
@@ -182,8 +182,8 @@ main( int argc, char* argv[] )
         }
         mpi::Barrier( mpi::COMM_WORLD );
         double packStartTime = mpi::Time();
-        std::vector<byte> sendBuffer( commSize*myMaxSize );
-        std::vector<byte*> packedPieces( commSize );
+        Vector<byte> sendBuffer( commSize*myMaxSize );
+        Vector<byte*> packedPieces( commSize );
         for( int i=0; i<commSize; ++i )
             packedPieces[i] = &sendBuffer[i*myMaxSize];
         DistHMat::Pack( packedPieces, ASerial, teams );
@@ -215,7 +215,7 @@ main( int argc, char* argv[] )
         }
         mpi::Barrier( mpi::COMM_WORLD );
         double allToAllStartTime = mpi::Time();
-        std::vector<byte> recvBuffer( commSize*intMaxSize );
+        Vector<byte> recvBuffer( commSize*intMaxSize );
         mpi::AllToAll
         ( &sendBuffer[0], myIntMaxSize, &recvBuffer[0], intMaxSize,
           mpi::COMM_WORLD );

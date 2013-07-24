@@ -14,7 +14,7 @@ namespace dmhm {
 //----------------------------------------------------------------------------//
 
 template<typename Scalar>
-HMat3d<Scalar>::HMat3d( const std::vector<byte>& packedHMat )
+HMat3d<Scalar>::HMat3d( const Vector<byte>& packedHMat )
 {
 #ifndef RELEASE
     CallStackEntry entry("HMat3d::HMat3d");
@@ -69,14 +69,14 @@ HMat3d<Scalar>::Pack( byte* packedHMat ) const
 
 template<typename Scalar>
 std::size_t
-HMat3d<Scalar>::Pack( std::vector<byte>& packedHMat ) const
+HMat3d<Scalar>::Pack( Vector<byte>& packedHMat ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("HMat3d::Pack");
 #endif
     // Create the storage and extract the buffer
     const std::size_t packedSize = PackedSize();
-    packedHMat.resize( packedSize );
+    packedHMat.Resize( packedSize );
     byte* head = &packedHMat[0];
 
     // Write the header information
@@ -138,7 +138,7 @@ HMat3d<Scalar>::Unpack( const byte* packedHMat )
 
 template<typename Scalar>
 std::size_t
-HMat3d<Scalar>::Unpack( const std::vector<byte>& packedHMat )
+HMat3d<Scalar>::Unpack( const Vector<byte>& packedHMat )
 {
 #ifndef RELEASE
     CallStackEntry entry("HMat3d::Unpack");

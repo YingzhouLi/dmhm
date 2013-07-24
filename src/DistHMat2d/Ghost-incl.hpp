@@ -20,7 +20,7 @@ DistHMat2d<Scalar>::FormTargetGhostNodes()
 
     // Each level will have a set of target offsets where the structure
     // is known.
-    std::vector<std::set<int> > targetStructure( numLevels_ );
+    Vector<std::set<int> > targetStructure( numLevels_ );
     FillTargetStructureRecursion( targetStructure );
     
     // Fill in the local ghosted structure (but without the ghosts' ranks)
@@ -38,7 +38,7 @@ DistHMat2d<Scalar>::FormSourceGhostNodes()
 
     // Each level will have a set of source offsets where the structure
     // is known.
-    std::vector<std::set<int> > sourceStructure( numLevels_ );
+    Vector<std::set<int> > sourceStructure( numLevels_ );
     FillSourceStructureRecursion( sourceStructure );
     
     // Fill in the local ghosted structure (but without the ghosts' ranks)
@@ -84,7 +84,7 @@ DistHMat2d<Scalar>::PruneGhostNodes()
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::FillTargetStructureRecursion
-( std::vector<std::set<int> >& targetStructure ) const
+( Vector<std::set<int> >& targetStructure ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::FillTargetStructureRecursion");
@@ -169,7 +169,7 @@ DistHMat2d<Scalar>::FillTargetStructureRecursion
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::FillSourceStructureRecursion
-( std::vector<std::set<int> >& sourceStructure ) const
+( Vector<std::set<int> >& sourceStructure ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::FillSourceStructureRecursion");
@@ -254,7 +254,7 @@ DistHMat2d<Scalar>::FillSourceStructureRecursion
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::FindTargetGhostNodesRecursion
-( const std::vector<std::set<int> >& targetStructure,
+( const Vector<std::set<int> >& targetStructure,
   int sourceRoot, int targetRoot )
 {
 #ifndef RELEASE
@@ -397,7 +397,7 @@ DistHMat2d<Scalar>::FindTargetGhostNodesRecursion
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::FindSourceGhostNodesRecursion
-( const std::vector<std::set<int> >& sourceStructure,
+( const Vector<std::set<int> >& sourceStructure,
   int sourceRoot, int targetRoot )
 {
 #ifndef RELEASE

@@ -12,12 +12,12 @@ namespace dmhm {
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::EVDTrunc
-( Dense<Scalar>& Q, std::vector<Real>& w, Real relTol )
+( Dense<Scalar>& Q, Vector<Real>& w, Real relTol )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::EVDTrunc");
 #endif
-    const int k = w.size();
+    const int k = w.Size();
     if( k == 0 )
         return;
 
@@ -30,14 +30,14 @@ DistHMat2d<Scalar>::EVDTrunc
     if( cutoff == k )
         cutoff = k-1;
 
-    w.erase( w.begin(), w.begin()+cutoff );
+    w.Erase( w.Begin(), w.Begin()+cutoff );
     Q.EraseCols( 0, cutoff-1 );
 }
 
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::SVDTrunc
-( Dense<Scalar>& U, std::vector<Real>& s,
+( Dense<Scalar>& U, Vector<Real>& s,
   Dense<Scalar>& VH, Real relTol )
 {
 #ifndef RELEASE
@@ -45,7 +45,7 @@ DistHMat2d<Scalar>::SVDTrunc
 #endif
     const int m = U.Width();
     const int n = VH.Height();
-    const int k = s.size();
+    const int k = s.Size();
     if( k == 0 )
         return;
 
@@ -57,7 +57,7 @@ DistHMat2d<Scalar>::SVDTrunc
             break;
     if( cutoff < 0 )
         cutoff = 0;
-    s.erase( s.begin()+cutoff+1, s.begin()+k );
+    s.Erase( s.Begin()+cutoff+1, s.Begin()+k );
     U.EraseCols( cutoff+1, m-1 );
     VH.EraseRows( cutoff+1, n-1 );
 }

@@ -7,6 +7,9 @@
    directory, or at http://opensource.org/licenses/GPL-3.0
 */
 #include "dmhm.hpp"
+#ifdef HAVE_QT5
+ #include <QApplication>
+#endif
 
 #include "./Invert-incl.hpp"
 #include "./MultiplyDense-incl.hpp"
@@ -14,9 +17,6 @@
 #include "./MultiplyVector-incl.hpp"
 #include "./Pack-incl.hpp"
 #include "./SetToRandom-incl.hpp"
-#ifdef HAVE_QT5
- #include <QApplication>
-#endif
 
 namespace dmhm {
 
@@ -92,12 +92,12 @@ HMat3d<Scalar>::BuildMapOnQuadrant
 template<typename Scalar>
 void
 HMat3d<Scalar>::BuildNaturalToHierarchicalMap
-( std::vector<int>& map, int xSize, int ySize, int zSize, int numLevels )
+( Vector<int>& map, int xSize, int ySize, int zSize, int numLevels )
 {
 #ifndef RELEASE
     CallStackEntry entry("HMat3d::BuildNaturalToHierarchicalMap");
 #endif
-    map.resize( xSize*ySize*zSize );
+    map.Resize( xSize*ySize*zSize );
 
     // Fill the mapping from the 'natural' x-y-z ordering
     int index = 0;
@@ -369,7 +369,7 @@ HMat3d<Scalar>::MScriptStructure( const std::string filebase ) const
 }
 
 /*\
-|*| Computational routines specific to HMat3d
+|*| Computational routines specific to HMat2d
 \*/
 
 // A := B
@@ -1280,7 +1280,7 @@ HMat3d<Scalar>::DisplayRecursion
     case NODE_SYMMETRIC:
     {
         const NodeSymmetric& node = *block_.data.NS;
-        for( unsigned child=0; child<node.children.size(); ++child )
+        for( unsigned child=0; child<node.children.Size(); ++child )
             node.children[child]->DisplayRecursion( matrix, mRatio, nRatio );
         break;
     }
@@ -1331,7 +1331,7 @@ HMat3d<Scalar>::LatexStructureRecursion
     case NODE_SYMMETRIC:
     {
         const NodeSymmetric& node = *block_.data.NS;
-        for( unsigned child=0; child<node.children.size(); ++child )
+        for( unsigned child=0; child<node.children.Size(); ++child )
             node.children[child]->LatexStructureRecursion( file, globalHeight );
         break;
     }
@@ -1375,7 +1375,7 @@ HMat3d<Scalar>::MScriptStructureRecursion( std::ofstream& file ) const
              << targetOffset_ << " " << sourceOffset_ << " "
              << Height() << " " << Width() << "\n";
         const NodeSymmetric& node = *block_.data.NS;
-        for( unsigned child=0; child<node.children.size(); ++child )
+        for( unsigned child=0; child<node.children.Size(); ++child )
             node.children[child]->MScriptStructureRecursion( file );
         break;
     }
