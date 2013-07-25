@@ -20,7 +20,6 @@ DistHMat3d<Scalar>::MultiplyHMatCompress( int startLevel, int endLevel )
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompress");
 #endif
-    //Written By Ryan Li
     // Compress low-rank F matrix into much lower form.
     // Our low-rank matrix is UV', we want to compute eigenvalues and 
     // eigenvectors of U'U and V'V.
@@ -28,12 +27,11 @@ DistHMat3d<Scalar>::MultiplyHMatCompress( int startLevel, int endLevel )
     // vectors of U'U, and USqrEig_ to store the eigenvalues of U'U.
     // Everything about V are same in VSqr_ and VSqrEig_.
     
-//    MultiplyHMatCompressFCompressless( startLevel, endLevel );
     MultiplyHMatCompressLowRankCountAndResize(0);
     MultiplyHMatCompressLowRankImport(0);
     MultiplyHMatCompressFPrecompute( startLevel, endLevel);
 #ifdef MEMORY_INFO
-    PrintMemoryInfo( "MemoryInfo before Compression Reduce" );
+//    PrintMemoryInfo( "MemoryInfo before Compression Reduce" );
 #endif
     MultiplyHMatCompressFReduces( startLevel, endLevel );
 
@@ -52,7 +50,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompress( int startLevel, int endLevel )
     const Real midcomputeTol = MidcomputeTolerance<Real>();
     MultiplyHMatCompressFMidcompute( midcomputeTol, startLevel, endLevel );
 #ifdef MEMORY_INFO 
-    PrintMemoryInfo( "MemoryInfo Compression after Midcompute" );
+//    PrintMemoryInfo( "MemoryInfo Compression after Midcompute" );
 #endif
     MultiplyHMatCompressFPassbackNum( startLevel, endLevel );
     MultiplyHMatCompressFPassbackData( startLevel, endLevel );

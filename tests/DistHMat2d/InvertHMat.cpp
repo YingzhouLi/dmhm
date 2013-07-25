@@ -74,7 +74,7 @@ main( int argc, char* argv[] )
         const bool print = Input("--print","print matrices?",false);
         const bool structure = Input("--structure","print structure?",false);
         const bool multI = Input("--multI","multiply by identity?",false);
-        const int schuN = Input("--schuN","Interation number of Schulz invert",15);
+        const int schuN = Input("--schuN","Iteration number of Schulz invert",15);
         const int oversample = Input("--oversample","num extra basis vecs",4);
         const double midcomputeTol = 
             Input("--midcomputeTol","tolerance for midcompute stage",1e-16);
@@ -145,18 +145,19 @@ main( int argc, char* argv[] )
         mpi::Barrier( mpi::COMM_WORLD );
         double constructStartTime = mpi::Time();
         DistHMat A( S, numLevels, maxRank, strong, xSize, ySize, teams );
-#ifdef MEMORY_INFO
-        std::cout << "Memory of Dense block now: " 
-                  << MemoryUsage()/1024./1024. << "MB" << std::endl;
-        std::cout << "Peak memory of Dense block: "
-                  << PeakMemoryUsage()/1024./1024. << "MB" << std::endl;
-#endif
         DistHMat B( S, numLevels, maxRank, strong, xSize, ySize, teams );
         mpi::Barrier( mpi::COMM_WORLD );
         double constructStopTime = mpi::Time();
         if( commRank == 0 )
             std::cout << "done: " << constructStopTime-constructStartTime 
                       << " seconds." << std::endl;
+        
+        //Clear all sparse part
+        S.Clear();
+        map.Clear();
+        inverseMap.Clear();
+        row.Clear();
+        colIndices.Clear();
 
         if( structure )
         {
@@ -191,13 +192,6 @@ main( int argc, char* argv[] )
             std::cout << "done: " << SchulzInvertStopTime-SchulzInvertStartTime
                       << " seconds." << std::endl;
         }
-
-#ifdef MEMORY_INFO
-        std::cout << "Memory of Dense block now: " 
-                  << MemoryUsage()/1024./1024. << "MB" << std::endl;
-        std::cout << "Peak memory of Dense block: "
-                  << PeakMemoryUsage()/1024./1024. << "MB" << std::endl;
-#endif
 
         Dense<Scalar> XLocal;
         if( multI )
@@ -256,6 +250,13 @@ main( int argc, char* argv[] )
             std::cout << "done: " << multStopTime-multStartTime
                       << " seconds." << std::endl;
         }
+#ifdef MEMORY_INFO
+        C.PrintMemoryInfo("Memory info of C");
+        std::cout << "Memory of block now: " 
+                  << MemoryUsage()/1024./1024. << "MB" << std::endl;
+        std::cout << "Peak memory of block: "
+                  << PeakMemoryUsage()/1024./1024. << "MB" << std::endl;
+#endif
         if( structure )
         {
 #ifdef HAVE_QT5

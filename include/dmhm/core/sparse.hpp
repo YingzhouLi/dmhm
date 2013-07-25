@@ -22,12 +22,29 @@ struct Sparse
     Vector<int> columnIndices;
     Vector<int> rowOffsets;
 
+    void Clear();
+
     void Print( const std::string tag, std::ostream& os=std::cout ) const;
 };
 
 //----------------------------------------------------------------------------//
 // Implementation begins here                                                 //
 //----------------------------------------------------------------------------//
+
+template<typename Scalar>
+inline void
+Sparse<Scalar>::Clear()
+{
+#ifndef RELEASE
+    CallStackEntry entry("Sparse::Clear");
+#endif
+    symmetric = false;
+    height = 0;
+    width = 0;
+    nonzeros.Clear();
+    columnIndices.Clear();
+    rowOffsets.Clear();
+}
 
 template<typename Scalar>
 inline void

@@ -55,7 +55,7 @@ public:
     MatrixType Type() const;
     bool General() const;
     bool Symmetric() const;
-    /* bool Hermitian() const; */
+    //bool Hermitian() const;
 
     int Height() const;
     int Width() const;
@@ -220,7 +220,14 @@ Dense<Scalar>::Symmetric() const
 template<typename Scalar>
 inline bool
 Dense<Scalar>::Hermitian() const
-{ return type_ == HERMITIAN; }
+{ 
+    for( int i=0; i<height_; ++i )
+        for( int j=i+1; j<width_; ++j )
+            if( std::abs(std::abs(Get(i,j))-std::abs(Get(j,i)))>1e-6 )
+                return false;
+    return true;
+    //return type_ == HERMITIAN;
+}
 */
 
 template<typename Scalar>
