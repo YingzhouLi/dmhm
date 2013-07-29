@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -14,8 +14,8 @@ namespace hmat_tools {
 // Dense C := alpha A^H B
 template<typename Scalar>
 void AdjointMultiply
-( Scalar alpha, const Dense<Scalar>& A, 
-                const Dense<Scalar>& B, 
+( Scalar alpha, const Dense<Scalar>& A,
+                const Dense<Scalar>& B,
                       Dense<Scalar>& C )
 {
 #ifndef RELEASE
@@ -29,8 +29,8 @@ void AdjointMultiply
 // Dense C := alpha A^H B + beta C
 template<typename Scalar>
 void AdjointMultiply
-( Scalar alpha, const Dense<Scalar>& A, 
-                const Dense<Scalar>& B, 
+( Scalar alpha, const Dense<Scalar>& A,
+                const Dense<Scalar>& B,
   Scalar beta,        Dense<Scalar>& C )
 {
 #ifndef RELEASE
@@ -55,11 +55,11 @@ void AdjointMultiply
             // AConj := conj(A)
             // C := alpha AConj B + beta C
 
-            Dense<Scalar> AConj(m,m); 
+            Dense<Scalar> AConj(m,m);
             Conjugate( A, AConj );
             blas::Symm
             ( 'L', 'L', C.Height(), C.Width(),
-              alpha, AConj.LockedBuffer(), AConj.LDim(), 
+              alpha, AConj.LockedBuffer(), AConj.LDim(),
                      B.LockedBuffer(), B.LDim(),
               beta,  C.Buffer(), C.LDim() );
         }
@@ -79,7 +79,7 @@ void AdjointMultiply
             Conjugate( C );
             blas::Symm
             ( 'L', 'L', C.Height(), C.Width(),
-              Conj(alpha), A.LockedBuffer(), A.LDim(), 
+              Conj(alpha), A.LockedBuffer(), A.LDim(),
                            BConj.LockedBuffer(), BConj.LDim(),
               Conj(beta),  C.Buffer(), C.LDim() );
             Conjugate( C );
@@ -99,8 +99,8 @@ void AdjointMultiply
 // Form a dense matrix from a dense matrix times a low-rank matrix
 template<typename Scalar>
 void AdjointMultiply
-( Scalar alpha, const Dense<Scalar>& A, 
-                const LowRank<Scalar>& B, 
+( Scalar alpha, const Dense<Scalar>& A,
+                const LowRank<Scalar>& B,
                       Dense<Scalar>& C )
 {
 #ifndef RELEASE
@@ -114,8 +114,8 @@ void AdjointMultiply
 // Form a dense matrix from a dense matrix times a low-rank matrix
 template<typename Scalar>
 void AdjointMultiply
-( Scalar alpha, const Dense<Scalar>& A, 
-                const LowRank<Scalar>& B, 
+( Scalar alpha, const Dense<Scalar>& A,
+                const LowRank<Scalar>& B,
   Scalar beta,        Dense<Scalar>& C )
 {
 #ifndef RELEASE
@@ -145,15 +145,15 @@ void AdjointMultiply
         Dense<Scalar> W( B.Height(), r );
         blas::Symm
         ( 'L', 'L', B.Height(), r,
-          1, A.LockedBuffer(),      A.LDim(), 
-             BUConj.LockedBuffer(), BUConj.LDim(), 
+          1, A.LockedBuffer(),      A.LDim(),
+             BUConj.LockedBuffer(), BUConj.LDim(),
           0, W.Buffer(),            W.LDim() );
         Conjugate( W );
         const char option = 'T';
         blas::Gemm
         ( 'N', option, m, n, r,
-          alpha, W.LockedBuffer(),   W.LDim(), 
-                 B.V.LockedBuffer(), B.V.LDim(), 
+          alpha, W.LockedBuffer(),   W.LDim(),
+                 B.V.LockedBuffer(), B.V.LDim(),
           beta,  C.Buffer(),         C.LDim() );
     }
     else
@@ -165,14 +165,14 @@ void AdjointMultiply
         Dense<Scalar> W( m, r );
         blas::Gemm
         ( 'C', 'N', m, r, B.Height(),
-          1, A.LockedBuffer(),   A.LDim(), 
-             B.U.LockedBuffer(), B.U.LDim(), 
+          1, A.LockedBuffer(),   A.LDim(),
+             B.U.LockedBuffer(), B.U.LDim(),
           0, W.Buffer(),         W.LDim() );
         const char option = 'T';
         blas::Gemm
         ( 'N', option, m, n, r,
-          alpha, W.LockedBuffer(),   W.LDim(), 
-                 B.V.LockedBuffer(), B.V.LDim(), 
+          alpha, W.LockedBuffer(),   W.LDim(),
+                 B.V.LockedBuffer(), B.V.LDim(),
           beta,  C.Buffer(),         C.LDim() );
     }
 }
@@ -180,8 +180,8 @@ void AdjointMultiply
 // Form a dense matrix from a low-rank matrix times a dense matrix
 template<typename Scalar>
 void AdjointMultiply
-( Scalar alpha, const LowRank<Scalar>& A, 
-                const Dense<Scalar>& B, 
+( Scalar alpha, const LowRank<Scalar>& A,
+                const Dense<Scalar>& B,
                       Dense<Scalar>& C )
 {
 #ifndef RELEASE
@@ -195,8 +195,8 @@ void AdjointMultiply
 // Form a dense matrix from a low-rank matrix times a dense matrix
 template<typename Scalar>
 void AdjointMultiply
-( Scalar alpha, const LowRank<Scalar>& A, 
-                const Dense<Scalar>& B, 
+( Scalar alpha, const LowRank<Scalar>& A,
+                const Dense<Scalar>& B,
   Scalar beta,        Dense<Scalar>& C )
 {
 #ifndef RELEASE
@@ -225,15 +225,15 @@ void AdjointMultiply
         Dense<Scalar> W( A.Height(), r );
         blas::Symm
         ( 'L', 'L', A.Height(), r,
-          1, B.LockedBuffer(),      B.LDim(), 
-             AUConj.LockedBuffer(), AUConj.LDim(), 
+          1, B.LockedBuffer(),      B.LDim(),
+             AUConj.LockedBuffer(), AUConj.LDim(),
           0, W.Buffer(),            W.LDim() );
         Dense<Scalar> AVConj;
         Conjugate( A.V, AVConj );
         blas::Gemm
         ( 'N', 'T', m, A.Height(), r,
-          alpha, AVConj.LockedBuffer(), AVConj.LDim(), 
-                 W.LockedBuffer(),      W.LDim(), 
+          alpha, AVConj.LockedBuffer(), AVConj.LDim(),
+                 W.LockedBuffer(),      W.LDim(),
           beta, C.Buffer(),             C.LDim() );
     }
     else
@@ -248,14 +248,14 @@ void AdjointMultiply
         blas::Gemm
         ( 'C', 'N', r, n, A.Height(),
           1, A.U.LockedBuffer(), A.U.LDim(),
-             B.LockedBuffer(),   B.LDim(), 
+             B.LockedBuffer(),   B.LDim(),
           0, W.Buffer(),         W.LDim() );
         Dense<Scalar> AVConj;
         Conjugate( A.V, AVConj );
         blas::Gemm
         ( 'N', 'N', m, n, r,
-          alpha, AVConj.LockedBuffer(), AVConj.LDim(), 
-                 W.LockedBuffer(),      W.LDim(), 
+          alpha, AVConj.LockedBuffer(), AVConj.LDim(),
+                 W.LockedBuffer(),      W.LDim(),
           beta,  C.Buffer(),            C.LDim() );
     }
 }
@@ -305,8 +305,8 @@ void AdjointMultiply
 // Low-rank C := alpha A^H B
 template<typename Scalar>
 void AdjointMultiply
-( Scalar alpha, const LowRank<Scalar>& A, 
-                const LowRank<Scalar>& B, 
+( Scalar alpha, const LowRank<Scalar>& A,
+                const LowRank<Scalar>& B,
                       LowRank<Scalar>& C )
 {
 #ifndef RELEASE
@@ -321,8 +321,8 @@ void AdjointMultiply
     if( Ar <= Br )
     {
         const int r = Ar;
-        C.U.SetType( GENERAL ); C.U.Resize( m, r ); 
-        C.V.SetType( GENERAL ); C.V.Resize( n, r ); 
+        C.U.SetType( GENERAL ); C.U.Resize( m, r );
+        C.V.SetType( GENERAL ); C.V.Resize( n, r );
 
         // C.U C.V^T = alpha (A.U A.V^T)^H (B.U B.V^T)
         //           = alpha conj(A.V) A.U^H B.U B.V^T
@@ -337,20 +337,20 @@ void AdjointMultiply
         Dense<Scalar> W( Ar, Br );
         blas::Gemm
         ( 'C', 'N', Ar, Br, A.Height(),
-          1, A.U.LockedBuffer(), A.U.LDim(), 
-             B.U.LockedBuffer(), B.U.LDim(), 
+          1, A.U.LockedBuffer(), A.U.LDim(),
+             B.U.LockedBuffer(), B.U.LDim(),
           0, W.Buffer(),         W.LDim() );
         blas::Gemm
         ( 'N', 'T', n, Ar, Br,
-          alpha, B.V.LockedBuffer(), B.V.LDim(), 
-                 W.LockedBuffer(),   W.LDim(), 
+          alpha, B.V.LockedBuffer(), B.V.LDim(),
+                 W.LockedBuffer(),   W.LDim(),
           0,     C.V.Buffer(),       C.V.LDim() );
     }
     else // B.r < A.r
     {
         const int r = Br;
-        C.U.SetType( GENERAL ); C.U.Resize( m, r ); 
-        C.V.SetType( GENERAL ); C.V.Resize( n, r ); 
+        C.U.SetType( GENERAL ); C.U.Resize( m, r );
+        C.V.SetType( GENERAL ); C.V.Resize( n, r );
 
         // C.U C.V^T := alpha (A.U A.V^T)^H (B.U B.V^T)
         //            = alpha conj(A.V) A.U^H B.U B.V^T
@@ -366,13 +366,13 @@ void AdjointMultiply
         Dense<Scalar> W( Br, Ar );
         blas::Gemm
         ( 'C', 'N', Br, Ar, B.Height(),
-          1, B.U.LockedBuffer(), B.U.LDim(), 
-             A.U.LockedBuffer(), A.U.LDim(), 
+          1, B.U.LockedBuffer(), B.U.LDim(),
+             A.U.LockedBuffer(), A.U.LDim(),
           0, W.Buffer(),         W.LDim() );
         blas::Gemm
         ( 'N', 'T', A.Width(), Br, Ar,
-          Conj(alpha), A.V.LockedBuffer(), A.V.LDim(), 
-                       W.LockedBuffer(),   W.LDim(), 
+          Conj(alpha), A.V.LockedBuffer(), A.V.LDim(),
+                       W.LockedBuffer(),   W.LDim(),
           0,           C.U.Buffer(),       C.U.LDim() );
         Conjugate( C.U );
         Copy( B.V, C.V );
@@ -382,8 +382,8 @@ void AdjointMultiply
 // Form a low-rank matrix from a dense matrix times a low-rank matrix
 template<typename Scalar>
 void AdjointMultiply
-( Scalar alpha, const Dense<Scalar>& A, 
-                const LowRank<Scalar>& B, 
+( Scalar alpha, const Dense<Scalar>& A,
+                const LowRank<Scalar>& B,
                       LowRank<Scalar>& C )
 {
 #ifndef RELEASE
@@ -412,7 +412,7 @@ void AdjointMultiply
         Conjugate( B.U, BUConj );
         blas::Symm
         ( 'L', 'L', B.Height(), r,
-          Conj(alpha), A.LockedBuffer(),      A.LDim(), 
+          Conj(alpha), A.LockedBuffer(),      A.LDim(),
                        BUConj.LockedBuffer(), BUConj.LDim(),
           0,           C.U.Buffer(),          C.U.LDim() );
         Conjugate( C.U );
@@ -424,8 +424,8 @@ void AdjointMultiply
         //                = (alpha A^H B.U) B.V^[T,H]
         blas::Gemm
         ( 'C', 'N', m, r, A.Height(),
-          alpha, A.LockedBuffer(),   A.LDim(), 
-                 B.U.LockedBuffer(), B.U.LDim(), 
+          alpha, A.LockedBuffer(),   A.LDim(),
+                 B.U.LockedBuffer(), B.U.LDim(),
           0,     C.U.Buffer(),       C.U.LDim() );
         Copy( B.V, C.V );
     }
@@ -434,8 +434,8 @@ void AdjointMultiply
 // Form a low-rank matrix from a low-rank matrix times a dense matrix
 template<typename Scalar>
 void AdjointMultiply
-( Scalar alpha, const LowRank<Scalar>& A, 
-                const Dense<Scalar>& B, 
+( Scalar alpha, const LowRank<Scalar>& A,
+                const Dense<Scalar>& B,
                       LowRank<Scalar>& C )
 {
 #ifndef RELEASE
@@ -463,16 +463,16 @@ void AdjointMultiply
     if( B.Symmetric() )
     {
         blas::Symm
-        ( 'L', 'L', A.Height(), r, 
-          alpha, B.LockedBuffer(),      B.LDim(), 
-                 AUConj.LockedBuffer(), AUConj.LDim(), 
+        ( 'L', 'L', A.Height(), r,
+          alpha, B.LockedBuffer(),      B.LDim(),
+                 AUConj.LockedBuffer(), AUConj.LDim(),
           0,     C.V.Buffer(),          C.V.LDim() );
     }
     else
     {
         blas::Gemm
         ( 'T', 'N', n, r, A.Height(),
-          alpha, B.LockedBuffer(),      B.LDim(), 
+          alpha, B.LockedBuffer(),      B.LDim(),
                  AUConj.LockedBuffer(), AUConj.LDim(),
           0,     C.V.Buffer(),          C.V.LDim() );
     }
@@ -614,8 +614,8 @@ template void AdjointMultiply
 
 // Form a dense matrix from a dense matrix times a low-rank matrix
 template void AdjointMultiply
-( float alpha, const Dense<float>& A, 
-               const LowRank<float>& B, 
+( float alpha, const Dense<float>& A,
+               const LowRank<float>& B,
                      Dense<float>& C );
 template void AdjointMultiply
 ( double alpha, const Dense<double>& A,
@@ -633,8 +633,8 @@ template void AdjointMultiply
 
 // Form a dense matrix from a dense matrix times a low-rank matrix
 template void AdjointMultiply
-( float alpha, const Dense<float>& A, 
-               const LowRank<float>& B, 
+( float alpha, const Dense<float>& A,
+               const LowRank<float>& B,
   float beta,        Dense<float>& C );
 template void AdjointMultiply
 ( double alpha, const Dense<double>& A,
@@ -645,16 +645,16 @@ template void AdjointMultiply
                              const LowRank<std::complex<float> >& B,
   std::complex<float> beta,        Dense<std::complex<float> >& C );
 template void AdjointMultiply
-( std::complex<double> alpha, 
+( std::complex<double> alpha,
   const Dense<std::complex<double> >& A,
   const LowRank<std::complex<double> >& B,
-  std::complex<double> beta, 
+  std::complex<double> beta,
         Dense<std::complex<double> >& C );
 
 // Form a dense matrix from a low-rank matrix times a dense matrix
 template void AdjointMultiply
-( float alpha, const LowRank<float>& A, 
-               const Dense<float>& B, 
+( float alpha, const LowRank<float>& A,
+               const Dense<float>& B,
                      Dense<float>& C );
 template void AdjointMultiply
 ( double alpha, const LowRank<double>& A,
@@ -665,15 +665,15 @@ template void AdjointMultiply
                              const Dense<std::complex<float> >& B,
                                    Dense<std::complex<float> >& C );
 template void AdjointMultiply
-( std::complex<double> alpha, 
+( std::complex<double> alpha,
   const LowRank<std::complex<double> >& A,
   const Dense<std::complex<double> >& B,
         Dense<std::complex<double> >& C );
 
 // Form a dense matrix from a low-rank matrix times a dense matrix
 template void AdjointMultiply
-( float alpha, const LowRank<float>& A, 
-               const Dense<float>& B, 
+( float alpha, const LowRank<float>& A,
+               const Dense<float>& B,
   float beta,        Dense<float>& C );
 template void AdjointMultiply
 ( double alpha, const LowRank<double>& A,
@@ -684,10 +684,10 @@ template void AdjointMultiply
                              const Dense<std::complex<float> >& B,
   std::complex<float> beta,        Dense<std::complex<float> >& C );
 template void AdjointMultiply
-( std::complex<double> alpha, 
+( std::complex<double> alpha,
   const LowRank<std::complex<double> >& A,
   const Dense<std::complex<double> >& B,
-  std::complex<double> beta, 
+  std::complex<double> beta,
         Dense<std::complex<double> >& C );
 
 // Form a dense matrix from the product of two low-rank matrices
@@ -742,52 +742,52 @@ template void AdjointMultiply
                 const LowRank<double>& B,
                       LowRank<double>& C );
 template void AdjointMultiply
-( std::complex<float> alpha, 
+( std::complex<float> alpha,
   const LowRank<std::complex<float> >& A,
   const LowRank<std::complex<float> >& B,
         LowRank<std::complex<float> >& C );
 template void AdjointMultiply
-( std::complex<double> alpha, 
+( std::complex<double> alpha,
   const LowRank<std::complex<double> >& A,
   const LowRank<std::complex<double> >& B,
         LowRank<std::complex<double> >& C );
 
 // Form a low-rank matrix from a dense matrix times a low-rank matrix
 template void AdjointMultiply
-( float alpha, const Dense<float>& A, 
-               const LowRank<float>& B, 
+( float alpha, const Dense<float>& A,
+               const LowRank<float>& B,
                      LowRank<float>& C );
 template void AdjointMultiply
 ( double alpha, const Dense<double>& A,
                 const LowRank<double>& B,
                       LowRank<double>& C );
 template void AdjointMultiply
-( std::complex<float> alpha, 
+( std::complex<float> alpha,
   const Dense<std::complex<float> >& A,
   const LowRank<std::complex<float> >& B,
         LowRank<std::complex<float> >& C );
 template void AdjointMultiply
-( std::complex<double> alpha, 
+( std::complex<double> alpha,
   const Dense<std::complex<double> >& A,
   const LowRank<std::complex<double> >& B,
         LowRank<std::complex<double> >& C );
 
 // Form a low-rank matrix from a low-rank matrix times a dense matrix
 template void AdjointMultiply
-( float alpha, const LowRank<float>& A, 
-               const Dense<float>& B, 
+( float alpha, const LowRank<float>& A,
+               const Dense<float>& B,
                      LowRank<float>& C );
 template void AdjointMultiply
 ( double alpha, const LowRank<double>& A,
                 const Dense<double>& B,
                       LowRank<double>& C );
 template void AdjointMultiply
-( std::complex<float> alpha, 
+( std::complex<float> alpha,
   const LowRank<std::complex<float> >& A,
   const Dense<std::complex<float> >& B,
         LowRank<std::complex<float> >& C );
 template void AdjointMultiply
-( std::complex<double> alpha, 
+( std::complex<double> alpha,
   const LowRank<std::complex<double> >& A,
   const Dense<std::complex<double> >& B,
         LowRank<std::complex<double> >& C );

@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -16,7 +16,7 @@
 
 namespace dmhm {
 
-// A distributed H-matrix class that assumes a 3d box and a power-of-two number 
+// A distributed H-matrix class that assumes a 3d box and a power-of-two number
 // of processes. It does not yet support implicit symmetry.
 template<typename Scalar>
 class DistHMat3d
@@ -63,7 +63,7 @@ public:
       const HMat3d<Scalar>& H, const Teams& teams );
 
     static std::size_t Pack
-    ( Vector<byte*>& packedPieces, 
+    ( Vector<byte*>& packedPieces,
       const HMat3d<Scalar>& H, const Teams& teams );
 
     static int ComputeLocalHeight
@@ -79,7 +79,7 @@ public:
     ( int p, int rank, const HMat3d<Scalar>& H );
 
     static void ComputeLocalSizes
-    ( Vector<int>& localSizes, 
+    ( Vector<int>& localSizes,
       const HMat3d<Scalar>& H );
 
     /*
@@ -91,20 +91,20 @@ public:
 
     // Generate an uninitialized H-matrix tree.
     DistHMat3d
-    ( int numLevels, int maxRank, bool stronglyAdmissible, 
+    ( int numLevels, int maxRank, bool stronglyAdmissible,
       int xSize, int ySize, int zSize, const Teams& teams );
 
     // Generate an uninitialized H-matrix tree.
     DistHMat3d
-    ( int numLevels, int maxRank, bool stronglyAdmissible, 
-      int xSizeSource, int xSizeTarget, 
+    ( int numLevels, int maxRank, bool stronglyAdmissible,
+      int xSizeSource, int xSizeTarget,
       int ySizeSource, int ySizeTarget,
       int zSizeSource, int zSizeTarget, const Teams& teams );
-	  
+
 	// Generate an H-matrix from sparse matrix.
     DistHMat3d
     ( const Sparse<Scalar>& S,
-      int numLevels, int maxRank, bool stronglyAdmissible, 
+      int numLevels, int maxRank, bool stronglyAdmissible,
       int xSize, int ySize, int zSize, const Teams& teams );
 
     // Unpack our portion of a distributed H-matrix. The buffer should have been
@@ -219,7 +219,7 @@ public:
     void AdjointPassData( const DistHMat3d<Scalar>& B );
     void AdjointPassDataCount
     ( const DistHMat3d<Scalar>& B,
-      std::map<int,int>& sendSizes, 
+      std::map<int,int>& sendSizes,
       std::map<int,int>& recvSizes ) const;
     void AdjointPassDataPack
     ( const DistHMat3d<Scalar>& B,
@@ -232,12 +232,12 @@ public:
 
     // y := alpha H x
     void Multiply
-    ( Scalar alpha, const Vector<Scalar>& xLocal, 
+    ( Scalar alpha, const Vector<Scalar>& xLocal,
                           Vector<Scalar>& yLocal ) const;
 
     // y := alpha H x + beta y
     void Multiply
-    ( Scalar alpha, const Vector<Scalar>& xLocal, 
+    ( Scalar alpha, const Vector<Scalar>& xLocal,
       Scalar beta,        Vector<Scalar>& yLocal ) const;
 
     // Y := alpha H X
@@ -250,7 +250,7 @@ public:
     ( Scalar alpha, const Dense<Scalar>& XLocal,
       Scalar beta,        Dense<Scalar>& YLocal ) const;
 
-    // C := alpha A B 
+    // C := alpha A B
     void Multiply
     ( Scalar alpha, DistHMat3d<Scalar>& B,
                     DistHMat3d<Scalar>& C,
@@ -264,12 +264,12 @@ public:
 
     // y := alpha H^T x
     void TransposeMultiply
-    ( Scalar alpha, const Vector<Scalar>& xLocal, 
+    ( Scalar alpha, const Vector<Scalar>& xLocal,
                           Vector<Scalar>& yLocal ) const;
 
     // y := alpha H^T x + beta y
     void TransposeMultiply
-    ( Scalar alpha, const Vector<Scalar>& xLocal, 
+    ( Scalar alpha, const Vector<Scalar>& xLocal,
       Scalar beta,        Vector<Scalar>& yLocal ) const;
 
     // Y := alpha H^T X
@@ -380,12 +380,12 @@ private:
     };
     Node* NewNode() const;
 
-    enum BlockType 
-    { 
+    enum BlockType
+    {
         DIST_NODE,        // each side is distributed
         DIST_NODE_GHOST,  //
         SPLIT_NODE,       // each side is owned by a single process
-        SPLIT_NODE_GHOST, // 
+        SPLIT_NODE_GHOST, //
         NODE,             // serial
         NODE_GHOST,       //
 
@@ -435,7 +435,7 @@ private:
         int sourceOffset, targetOffset;
     };
 
-    // TODO: Merge this with all of the MultiplyVector routines and create 
+    // TODO: Merge this with all of the MultiplyVector routines and create
     //       a full-fledged class.
     struct MultiplyVectorContext
     {
@@ -467,7 +467,7 @@ private:
         void Clear();
     };
 
-    // TODO: Merge this with all of the MultiplyDense routines and create 
+    // TODO: Merge this with all of the MultiplyDense routines and create
     //       a full-fledged class.
     struct MultiplyDenseContext
     {
@@ -529,43 +529,43 @@ private:
     /*
      * Private non-static member functions
      */
-    
+
     // This default constructure is purposely not publically accessible
     // because many routines are not functional without teams_ set.
     // This only constructs one level of the H-matrix.
     DistHMat3d();
-   
+
     // This only constructs one level of the H-matrix
     DistHMat3d
-    ( int numLevels, int maxRank, bool stronglyAdmissible, 
+    ( int numLevels, int maxRank, bool stronglyAdmissible,
       int sourceOffset, int targetOffset,
-      int xSizeSource, int xSizeTarget, 
+      int xSizeSource, int xSizeTarget,
       int ySizeSource, int ySizeTarget,
       int zSizeSource, int zSizeTarget,
-      int xSource, int xTarget, 
+      int xSource, int xTarget,
       int ySource, int yTarget,
       int zSource, int zTarget,
-      const Teams& teams, int level, 
-      bool inSourceTeam, bool inTargetTeam, 
+      const Teams& teams, int level,
+      bool inSourceTeam, bool inTargetTeam,
       int sourceRoot, int targetRoot );
-	  
+
 	// This only constructs one level of the H-matrix from Sparse matrix
     DistHMat3d
     ( const Sparse<Scalar>& S,
-      int numLevels, int maxRank, bool stronglyAdmissible, 
+      int numLevels, int maxRank, bool stronglyAdmissible,
       int sourceOffset, int targetOffset,
-      int xSizeSource, int xSizeTarget, 
+      int xSizeSource, int xSizeTarget,
 	  int ySizeSource, int ySizeTarget,
 	  int zSizeSource, int zSizeTarget,
-      int xSource, int xTarget, 
+      int xSource, int xTarget,
 	  int ySource, int yTarget,
 	  int zSource, int zTarget,
-      const Teams& teams, int level, 
-      bool inSourceTeam, bool inTargetTeam, 
+      const Teams& teams, int level,
+      bool inSourceTeam, bool inTargetTeam,
       int sourceRoot, int targetRoot );
 
     // Continue to fill the H-matrix tree
-    void BuildTree(); 
+    void BuildTree();
 
     // Import Sparse matrix into H-matrix
     void ImportSparse
@@ -583,7 +583,7 @@ private:
     void LatexLocalStructureRecursion
     ( std::ofstream& file, int globalheight ) const;
     void MScriptLocalStructureRecursion( std::ofstream& file ) const;
-    
+
     void UnpackRecursion( const byte*& head );
 
     void FillTargetStructureRecursion
@@ -607,23 +607,23 @@ private:
 
     void MultiplyVectorPrecompute
     ( MultiplyVectorContext& context,
-      Scalar alpha, const Vector<Scalar>& xLocal, 
+      Scalar alpha, const Vector<Scalar>& xLocal,
                           Vector<Scalar>& yLocal ) const;
 
     void MultiplyVectorSums( MultiplyVectorContext& context ) const;
     void MultiplyVectorSumsCount( Vector<int>& sizes ) const;
     void MultiplyVectorSumsPack
-    ( const MultiplyVectorContext& context, 
+    ( const MultiplyVectorContext& context,
       Vector<Scalar>& buffer, Vector<int>& offsets ) const;
     void MultiplyVectorSumsUnpack
-    ( MultiplyVectorContext& context, 
+    ( MultiplyVectorContext& context,
       const Vector<Scalar>& buffer, Vector<int>& offsets ) const;
 
     void MultiplyVectorPassData( MultiplyVectorContext& context ) const;
     void MultiplyVectorPassDataCount
     ( std::map<int,int>& sendSizes, std::map<int,int>& recvSizes ) const;
     void MultiplyVectorPassDataPack
-    ( MultiplyVectorContext& context, Vector<Scalar>& sendBuffer, 
+    ( MultiplyVectorContext& context, Vector<Scalar>& sendBuffer,
       std::map<int,int>& offsets ) const;
     void MultiplyVectorPassDataUnpack
     ( MultiplyVectorContext& context, const Vector<Scalar>& recvBuffer,
@@ -651,24 +651,24 @@ private:
 
     void MultiplyDensePrecompute
     ( MultiplyDenseContext& context,
-      Scalar alpha, const Dense<Scalar>& XLocal, 
+      Scalar alpha, const Dense<Scalar>& XLocal,
                           Dense<Scalar>& YLocal ) const;
 
     void MultiplyDenseSums( MultiplyDenseContext& context ) const;
     void MultiplyDenseSumsCount( Vector<int>& sizes, int numRhs ) const;
     void MultiplyDenseSumsPack
-    ( const MultiplyDenseContext& context, 
+    ( const MultiplyDenseContext& context,
       Vector<Scalar>& buffer, Vector<int>& offsets ) const;
     void MultiplyDenseSumsUnpack
-    ( MultiplyDenseContext& context, 
+    ( MultiplyDenseContext& context,
       const Vector<Scalar>& buffer, Vector<int>& offsets ) const;
 
     void MultiplyDensePassData( MultiplyDenseContext& context ) const;
     void MultiplyDensePassDataCount
-    ( std::map<int,int>& sendSizes, 
+    ( std::map<int,int>& sendSizes,
       std::map<int,int>& recvSizes, int numRhs ) const;
     void MultiplyDensePassDataPack
-    ( MultiplyDenseContext& context, 
+    ( MultiplyDenseContext& context,
       Vector<Scalar>& buffer, std::map<int,int>& offsets ) const;
     void MultiplyDensePassDataUnpack
     ( MultiplyDenseContext& context,
@@ -678,15 +678,15 @@ private:
     void MultiplyDenseBroadcastsCount
     ( Vector<int>& sizes, int numRhs ) const;
     void MultiplyDenseBroadcastsPack
-    ( const MultiplyDenseContext& context, 
+    ( const MultiplyDenseContext& context,
       Vector<Scalar>& buffer, Vector<int>& offsets ) const;
     void MultiplyDenseBroadcastsUnpack
-    ( MultiplyDenseContext& context, 
+    ( MultiplyDenseContext& context,
       const Vector<Scalar>& buffer, Vector<int>& offsets ) const;
 
     void MultiplyDensePostcompute
     ( MultiplyDenseContext& context,
-      Scalar alpha, const Dense<Scalar>& XLocal, 
+      Scalar alpha, const Dense<Scalar>& XLocal,
                           Dense<Scalar>& YLocal ) const;
 
     //
@@ -704,10 +704,10 @@ private:
     void TransposeMultiplyVectorSumsCount
     ( Vector<int>& sizes ) const;
     void TransposeMultiplyVectorSumsPack
-    ( const MultiplyVectorContext& context, 
+    ( const MultiplyVectorContext& context,
       Vector<Scalar>& buffer, Vector<int>& offsets ) const;
     void TransposeMultiplyVectorSumsUnpack
-    ( MultiplyVectorContext& context, 
+    ( MultiplyVectorContext& context,
       const Vector<Scalar>& buffer, Vector<int>& offsets ) const;
 
     void TransposeMultiplyVectorPassData
@@ -729,7 +729,7 @@ private:
     ( const MultiplyVectorContext& context,
       Vector<Scalar>& buffer, Vector<int>& offsets ) const;
     void TransposeMultiplyVectorBroadcastsUnpack
-    ( MultiplyVectorContext& context, 
+    ( MultiplyVectorContext& context,
       const Vector<Scalar>& buffer, Vector<int>& offsets ) const;
 
     void TransposeMultiplyVectorPostcompute
@@ -761,7 +761,7 @@ private:
     void TransposeMultiplyDensePassData
     ( MultiplyDenseContext& context, const Dense<Scalar>& XLocal ) const;
     void TransposeMultiplyDensePassDataCount
-    ( std::map<int,int>& sendSizes, 
+    ( std::map<int,int>& sendSizes,
       std::map<int,int>& recvSizes, int numRhs ) const;
     void TransposeMultiplyDensePassDataPack
     ( MultiplyDenseContext& context, const Dense<Scalar>& XLocal,
@@ -846,7 +846,7 @@ private:
     ( Scalar alpha, DistHMat3d<Scalar>& B,
                     DistHMat3d<Scalar>& C );
 
-    void MultiplyHMatFormGhostRanks( DistHMat3d<Scalar>& B );   
+    void MultiplyHMatFormGhostRanks( DistHMat3d<Scalar>& B );
     void MultiplyHMatFormGhostRanksCount
     ( const DistHMat3d<Scalar>& B,
       std::map<int,int>& sendSizes, std::map<int,int>& recvSizes ) const;
@@ -863,20 +863,20 @@ private:
     void MultiplyHMatMainPrecompute
     ( Scalar alpha, DistHMat3d<Scalar>& B,
                     DistHMat3d<Scalar>& C,
-      int startLevel, int endLevel, 
+      int startLevel, int endLevel,
       int startUpdate, int endUpdate, int update );
 
     void MultiplyHMatMainSums
-    ( DistHMat3d<Scalar>& B, 
-      DistHMat3d<Scalar>& C, 
-      int startLevel, int endLevel, 
+    ( DistHMat3d<Scalar>& B,
+      DistHMat3d<Scalar>& C,
+      int startLevel, int endLevel,
       int startUpdate, int endUpdate );
     // To be called from A
     void MultiplyHMatMainSumsCountA
     ( Vector<int>& sizes, int startLevel, int endLevel ) const;
     void MultiplyHMatMainSumsPackA
-    ( Vector<Scalar>& buffer, Vector<int>& offsets, 
-      int startLevel, int endLevel ) const; 
+    ( Vector<Scalar>& buffer, Vector<int>& offsets,
+      int startLevel, int endLevel ) const;
     void MultiplyHMatMainSumsUnpackA
     ( const Vector<Scalar>& buffer, Vector<int>& offsets,
       int startLevel, int endLevel );
@@ -885,7 +885,7 @@ private:
     ( Vector<int>& sizes, int startLevel, int endLevel ) const;
     void MultiplyHMatMainSumsPackB
     ( Vector<Scalar>& buffer, Vector<int>& offsets,
-      int startLevel, int endLevel ) const; 
+      int startLevel, int endLevel ) const;
     void MultiplyHMatMainSumsUnpackB
     ( const Vector<Scalar>& buffer, Vector<int>& offsets,
       int startLevel, int endLevel );
@@ -893,15 +893,15 @@ private:
     void MultiplyHMatMainSumsCountC
     ( const DistHMat3d<Scalar>& B,
       const DistHMat3d<Scalar>& C,
-      Vector<int>& sizes, 
-      int startLevel, int endLevel, 
+      Vector<int>& sizes,
+      int startLevel, int endLevel,
       int startUpdate, int endUpdate, int update ) const;
     void MultiplyHMatMainSumsPackC
     ( const DistHMat3d<Scalar>& B,
             DistHMat3d<Scalar>& C,
       Vector<Scalar>& buffer, Vector<int>& offsets,
       int startLevel, int endLevel,
-      int startUpdate, int endUpdate, int update ) const; 
+      int startUpdate, int endUpdate, int update ) const;
     void MultiplyHMatMainSumsUnpackC
     ( const DistHMat3d<Scalar>& B,
             DistHMat3d<Scalar>& C,
@@ -956,7 +956,7 @@ private:
 
     void MultiplyHMatMainBroadcasts
     ( DistHMat3d<Scalar>& B,
-      DistHMat3d<Scalar>& C, 
+      DistHMat3d<Scalar>& C,
       int startLevel, int endLevel, int startUpdate, int endUpdate );
     // To be called from A
     void MultiplyHMatMainBroadcastsCountA
@@ -979,8 +979,8 @@ private:
     // To be called from A
     void MultiplyHMatMainBroadcastsCountC
     ( const DistHMat3d<Scalar>& B,
-      const DistHMat3d<Scalar>& C, 
-      Vector<int>& sizes, 
+      const DistHMat3d<Scalar>& C,
+      Vector<int>& sizes,
       int startLevel, int endLevel,
       int startUpdate, int endUpdate, int update ) const;
     void MultiplyHMatMainBroadcastsPackC
@@ -999,24 +999,24 @@ private:
     void MultiplyHMatMainPostcompute
     ( Scalar alpha, DistHMat3d<Scalar>& B,
                     DistHMat3d<Scalar>& C,
-      int startLevel, int endLevel, 
+      int startLevel, int endLevel,
       int startUpdate, int endUpdate );
     void MultiplyHMatMainPostcomputeA // To be called from A
-    ( int startLevel, int endLevel ); 
+    ( int startLevel, int endLevel );
     void MultiplyHMatMainPostcomputeB // To be called from B
-    ( int startLevel, int endLevel ); 
+    ( int startLevel, int endLevel );
     void MultiplyHMatMainPostcomputeC // To be called from A
     ( Scalar alpha, const DistHMat3d<Scalar>& B,
                           DistHMat3d<Scalar>& C,
       int startLevel, int endLevel,
       int startUpdate, int endUpdate, int update ) const;
     void MultiplyHMatMainPostcomputeCCleanup // To be called from C
-    ( int startLevel, int endLevel ); 
+    ( int startLevel, int endLevel );
 
     // TODO: Think of how to switch to the lockstep approach
     void MultiplyHMatParallelQR
     ( const Vector<int>& numQRs,
-      const Vector<Dense<Scalar>*>& Xs,      
+      const Vector<Dense<Scalar>*>& Xs,
       const Vector<int>& XOffsets,
             Vector<int>& halfHeights,
       const Vector<int>& halfHeightOffsets,
@@ -1036,7 +1036,7 @@ private:
       int startLevel, int endLevel, int startUpdate, int endUpdate );
     void MultiplyHMatFHHSumsCount
     ( const DistHMat3d<Scalar>& B, DistHMat3d<Scalar>& C,
-            Vector<int>& sizes, 
+            Vector<int>& sizes,
       int startLevel, int endLevel,
       int startUpdate, int endUpdate, int update ) const;
     void MultiplyHMatFHHSumsPack
@@ -1076,7 +1076,7 @@ private:
       int startUpdate, int endUpdate );
     void MultiplyHMatFHHBroadcastsCount
     ( const DistHMat3d<Scalar>& B, DistHMat3d<Scalar>& C,
-            Vector<int>& sizes, 
+            Vector<int>& sizes,
       int startLevel, int endLevel,
       int startUpdate, int endUpdate, int update ) const;
     void MultiplyHMatFHHBroadcastsPack
@@ -1107,7 +1107,7 @@ private:
       int startLevel, int endLevel,
       int startUpdate, int endUpdate ) const;
     void MultiplyHMatFHHFinalizeCounts // To be called from C
-    ( Vector<int>& numQrs, 
+    ( Vector<int>& numQrs,
       Vector<int>& numTargetFHH, Vector<int>& numSourceFHH,
       int startLevel, int endLevel );
     void MultiplyHMatFHHFinalizeMiddleUpdates
@@ -1125,7 +1125,7 @@ private:
     ( const DistHMat3d<Scalar>& B,
             DistHMat3d<Scalar>& C,
             Vector<Scalar>& allReduceBuffer,
-            Vector<int>& leftOffsets, 
+            Vector<int>& leftOffsets,
             Vector<int>& rightOffsets,
       int startLevel, int endLevel,
       int startUpdate, int endUpdate, int update ) const;
@@ -1253,62 +1253,62 @@ private:
     // The following group of routines are used for HH compress.
     void MultiplyHMatFHHCompress
     ( const DistHMat3d<Scalar>& B, DistHMat3d<Scalar>& C,
-      int startLevel, int endLevel, 
+      int startLevel, int endLevel,
       int startUpdate, int endUpdate);
     void MultiplyHMatFHHCompressPrecompute
     ( const DistHMat3d<Scalar>& B, DistHMat3d<Scalar>& C,
-      int startLevel, int endLevel, 
+      int startLevel, int endLevel,
       int startUpdate, int endUpdate, int update );
     void MultiplyHMatFHHCompressReduces
     ( const DistHMat3d<Scalar>& B, DistHMat3d<Scalar>& C,
-      int startLevel, int endLevel, 
+      int startLevel, int endLevel,
       int startUpdate, int endUpdate, int update );
     void MultiplyHMatFHHCompressReducesCount
     ( const DistHMat3d<Scalar>& B, DistHMat3d<Scalar>& C,
       Vector<int>& sizes,
-      int startLevel, int endLevel, 
+      int startLevel, int endLevel,
       int startUpdate, int endUpdate, int update ) const;
     void MultiplyHMatFHHCompressReducesPack
     ( const DistHMat3d<Scalar>& B, DistHMat3d<Scalar>& C,
       Vector<Scalar>& buffer, Vector<int>& offsets,
-      int startLevel, int endLevel, 
+      int startLevel, int endLevel,
       int startUpdate, int endUpdate, int update ) const;
     void MultiplyHMatFHHCompressTreeReduces
     ( Vector<Scalar>& buffer, Vector<int>& sizes ) const;
     void MultiplyHMatFHHCompressReducesUnpack
     ( const DistHMat3d<Scalar>& B, DistHMat3d<Scalar>& C,
       const Vector<Scalar>& buffer, Vector<int>& offsets,
-      int startLevel, int endLevel, 
+      int startLevel, int endLevel,
       int startUpdate, int endUpdate, int update );
     void MultiplyHMatFHHCompressMidcompute
     ( const DistHMat3d<Scalar>& B, DistHMat3d<Scalar>& C,
       Real epsilon,
-      int startLevel, int endLevel, 
+      int startLevel, int endLevel,
       int startUpdate, int endUpdate, int update );
     void MultiplyHMatFHHCompressBroadcasts
     ( const DistHMat3d<Scalar>& B, DistHMat3d<Scalar>& C,
-      int startLevel, int endLevel, 
+      int startLevel, int endLevel,
       int startUpdate, int endUpdate, int update );
     void MultiplyHMatFHHCompressBroadcastsCount
     ( const DistHMat3d<Scalar>& B, DistHMat3d<Scalar>& C,
       Vector<int>& sizes,
-      int startLevel, int endLevel, 
+      int startLevel, int endLevel,
       int startUpdate, int endUpdate, int update ) const;
     void MultiplyHMatFHHCompressBroadcastsPack
     ( const DistHMat3d<Scalar>& B, DistHMat3d<Scalar>& C,
       Vector<Scalar>& buffer, Vector<int>& offsets,
-      int startLevel, int endLevel, 
+      int startLevel, int endLevel,
       int startUpdate, int endUpdate, int update ) const;
     void MultiplyHMatFHHCompressTreeBroadcasts
     ( Vector<Scalar>& buffer, Vector<int>& sizes ) const;
     void MultiplyHMatFHHCompressBroadcastsUnpack
     ( const DistHMat3d<Scalar>& B, DistHMat3d<Scalar>& C,
       const Vector<Scalar>& buffer, Vector<int>& offsets,
-      int startLevel, int endLevel, 
+      int startLevel, int endLevel,
       int startUpdate, int endUpdate, int update );
     void MultiplyHMatFHHCompressPostcompute
     ( const DistHMat3d<Scalar>& B, DistHMat3d<Scalar>& C,
-      int startLevel, int endLevel, 
+      int startLevel, int endLevel,
       int startUpdate, int endUpdate, int update );
     void MultiplyHMatFHHCompressCleanup
     ( int startLevel, int endLevel );
@@ -1335,9 +1335,9 @@ private:
     bool inSourceTeam_, inTargetTeam_;
     int sourceRoot_, targetRoot_;
 
-    // For temporary products in an H-matrix/H-matrix multiplication. 
+    // For temporary products in an H-matrix/H-matrix multiplication.
     // These are only needed for the C in C += alpha A B
-    MemoryMap<int,MultiplyDenseContext> 
+    MemoryMap<int,MultiplyDenseContext>
         mainContextMap_, colFHHContextMap_, rowFHHContextMap_;
     MemoryMap<int,Dense<Scalar> > UMap_, VMap_, ZMap_, colXMap_, rowXMap_;
     // Tmp space for F compression
@@ -1349,14 +1349,14 @@ private:
     bool haveDenseUpdate_, storedDenseUpdate_;
     Dense<Scalar> D_, SFD_;
 
-    // For the reuse of the computation of T1 = H Omega1 and T2 = H' Omega2 in 
-    // order to capture the column and row space, respectively, of H. These 
-    // variables could be mutable since they do not effect the usage of the 
+    // For the reuse of the computation of T1 = H Omega1 and T2 = H' Omega2 in
+    // order to capture the column and row space, respectively, of H. These
+    // variables could be mutable since they do not effect the usage of the
     // logical state of the class and simply help avoid redundant computation.
     bool beganRowSpaceComp_, finishedRowSpaceComp_,
          beganColSpaceComp_, finishedColSpaceComp_;
     Dense<Scalar> colOmega_, rowOmega_, colT_, rowT_;
-    
+
     MemoryMap<int,Dense<Scalar> > colPinvMap_, rowPinvMap_;
     MemoryMap<int,Dense<Scalar> > colUSqrMap_, rowUSqrMap_;
     MemoryMap<int,Dense<Scalar> > BLMap_, BRMap_;
@@ -1456,9 +1456,9 @@ template<typename Scalar>
 inline typename DistHMat3d<Scalar>::Node*
 DistHMat3d<Scalar>::NewNode() const
 {
-    return 
+    return
         new Node
-        ( xSizeSource_, xSizeTarget_, 
+        ( xSizeSource_, xSizeTarget_,
           ySizeSource_, ySizeTarget_,
           zSizeSource_, zSizeTarget_ );
 }
@@ -1466,7 +1466,7 @@ DistHMat3d<Scalar>::NewNode() const
 template<typename Scalar>
 inline
 DistHMat3d<Scalar>::Block::Block()
-: type(EMPTY), data() 
+: type(EMPTY), data()
 { }
 
 template<typename Scalar>
@@ -1501,7 +1501,7 @@ DistHMat3d<Scalar>::Block::Clear()
 
     case SPLIT_DENSE_GHOST:
     case DENSE_GHOST:
-    case EMPTY: 
+    case EMPTY:
         break;
     }
     type = EMPTY;
@@ -1574,13 +1574,13 @@ DistHMat3d<Scalar>::MultiplyVectorContext::Block::Clear()
 {
     switch( type )
     {
-    case DIST_NODE: 
+    case DIST_NODE:
         delete data.DN; break;
 
     case SPLIT_NODE:
         delete data.SN; break;
 
-    case DIST_LOW_RANK:  
+    case DIST_LOW_RANK:
     case SPLIT_LOW_RANK:
     case SPLIT_DENSE:
         delete data.z; break;
@@ -1596,7 +1596,7 @@ DistHMat3d<Scalar>::MultiplyVectorContext::Block::Clear()
     case NODE:
     case LOW_RANK:
     case DENSE:
-    case EMPTY: 
+    case EMPTY:
         break;
     }
     type = EMPTY;
@@ -1642,9 +1642,9 @@ DistHMat3d<Scalar>::MultiplyDenseContext::DistNode::Child( int t, int s )
 }
 
 template<typename Scalar>
-inline const typename 
+inline const typename
 DistHMat3d<Scalar>::MultiplyDenseContext&
-DistHMat3d<Scalar>::MultiplyDenseContext::DistNode::Child( int t, int s ) 
+DistHMat3d<Scalar>::MultiplyDenseContext::DistNode::Child( int t, int s )
 const
 {
 #ifndef RELEASE
@@ -1676,13 +1676,13 @@ DistHMat3d<Scalar>::MultiplyDenseContext::Block::Clear()
 {
     switch( type )
     {
-    case DIST_NODE: 
+    case DIST_NODE:
         delete data.DN; break;
 
     case SPLIT_NODE:
         delete data.SN; break;
 
-    case DIST_LOW_RANK:  
+    case DIST_LOW_RANK:
     case SPLIT_LOW_RANK:
     case SPLIT_DENSE:
         delete data.Z; break;
@@ -1698,7 +1698,7 @@ DistHMat3d<Scalar>::MultiplyDenseContext::Block::Clear()
     case NODE:
     case LOW_RANK:
     case DENSE:
-    case EMPTY: 
+    case EMPTY:
         break;
     }
     type = EMPTY;
@@ -1870,7 +1870,7 @@ DistHMat3d<Scalar>::Teams::TreeSums
     if( totalSize == 0 )
         return;
 
-    // Use O(log(p)) custom method: 
+    // Use O(log(p)) custom method:
     // - AllReduce over each cross communicator
     int partialSize = totalSize;
     for( int i=0; i<numAllReduces; ++i )
@@ -1903,7 +1903,7 @@ DistHMat3d<Scalar>::Teams::TreeSumToRoots
     if( totalSize == 0 )
         return;
 
-    // Use O(log(p)) custom method: 
+    // Use O(log(p)) custom method:
     // - Reduce to the root of each cross communicator
     int partialSize = totalSize;
     for( int i=0; i<numReduces; ++i )
@@ -1914,7 +1914,7 @@ DistHMat3d<Scalar>::Teams::TreeSumToRoots
         const int crossTeamRank = mpi::CommRank( crossTeam );
         if( crossTeamRank == 0 )
             mpi::Reduce
-            ( (const Scalar*)MPI_IN_PLACE, &buffer[0], 
+            ( (const Scalar*)MPI_IN_PLACE, &buffer[0],
               partialSize, mpi::SUM, 0, crossTeam );
         else
             mpi::Reduce
@@ -1941,7 +1941,7 @@ DistHMat3d<Scalar>::Teams::TreeBroadcasts
     if( totalSize == 0 )
         return;
 
-    // Use O(log(p)) custom method: 
+    // Use O(log(p)) custom method:
     // - Broadcast over each cross communicator
     int partialSize = totalSize;
     for( int i=0; i<numBroadcasts; ++i )
@@ -1972,7 +1972,7 @@ DistHMat3d<Scalar>::Teams::TreeBroadcasts
     if( totalSize == 0 )
         return;
 
-    // Use O(log(p)) custom method: 
+    // Use O(log(p)) custom method:
     // - Broadcast over each cross communicator
     int partialSize = totalSize;
     for( int i=0; i<numBroadcasts; ++i )
@@ -1985,6 +1985,6 @@ DistHMat3d<Scalar>::Teams::TreeBroadcasts
     }
 }
 
-} // namespace dmhm 
+} // namespace dmhm
 
 #endif // ifndef DMHM_DISTHMAT3D_HPP

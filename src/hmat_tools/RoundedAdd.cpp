@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -15,25 +15,25 @@ namespace hmat_tools {
 //
 // TODO:
 // We could make use of a pivoted QLP factorization [Stewart, 1999] in order to
-// get a more accurate approximation to the truncated singular value 
+// get a more accurate approximation to the truncated singular value
 // decomposition in O(mnk) work for an m x n matrix and k singular vectors.
 //
 // See Huckaby and Chan's 2004 paper:
 // "Stewart's pivoted QLP decomposition for low-rank matrices".
 //
 // The current implementation attempts to pack as many of the needed buffers
-// into one place and minimize data movement and flops as much as possible 
+// into one place and minimize data movement and flops as much as possible
 // while still using BLAS3. This can be considered as most of the work towards
 // almost entirely avoiding memory allocation since we could keep a sufficiently
 // large buffer lying around and pack into it instead. This approach might be
-// overly complicated, but rounded addition is supposedly one of the most 
+// overly complicated, but rounded addition is supposedly one of the most
 // expensive parts of H-algebra.
 
 template<typename Real>
 void RoundedAdd
 ( int maxRank,
-  Real alpha, const LowRank<Real>& A, 
-  Real beta,  const LowRank<Real>& B, 
+  Real alpha, const LowRank<Real>& A,
+  Real beta,  const LowRank<Real>& B,
                     LowRank<Real>& C )
 {
 #ifndef RELEASE
@@ -109,7 +109,7 @@ void RoundedAdd
         MemCopy( V.Buffer(0,j+Ar), B.V.LockedBuffer(0,j), n );
 
 #if defined(PIVOTED_QR)
-    // TODO 
+    // TODO
     throw std::logic_error("Pivoted QR is not yet supported for this routine.");
 #else
     // Perform an unpivoted QR decomposition on U
@@ -151,7 +151,7 @@ void RoundedAdd
     ( 'O', 'S', minDimU, minDimV, W.Buffer(), W.LDim(),
       &s[0], 0, 1, VT.Buffer(), VT.LDim(), &workSVD[0], lworkSVD );
 
-    // Form the rounded C.U by first filling it with 
+    // Form the rounded C.U by first filling it with
     //  | S*U_Left |, and then hitting it from the left with Q1
     //  |  0       |
     Scale( (Real)0, C.U );
@@ -169,7 +169,7 @@ void RoundedAdd
     ( 'L', 'N', m, roundedRank, minDimU, U.LockedBuffer(), U.LDim(), &tauU[0],
       C.U.Buffer(), C.U.LDim(), &workU[0], workU.size() );
 
-    // Form the rounded C.V by first filling it with 
+    // Form the rounded C.V by first filling it with
     //  | (VT_Top)^T |, and then hitting it from the left with Q2
     //  |      0     |
     Scale( (Real)0, C.V );
@@ -184,7 +184,7 @@ void RoundedAdd
     // Apply Q2
     workV.resize( std::max(1,n*roundedRank) );
     lapack::ApplyQ
-    ( 'L', 'N', n, roundedRank, minDimV, V.LockedBuffer(), V.LDim(), &tauV[0], 
+    ( 'L', 'N', n, roundedRank, minDimV, V.LockedBuffer(), V.LDim(), &tauV[0],
       C.V.Buffer(), C.V.LDim(), &workV[0], workV.size() );
 #endif // PIVOTED_QR
 }
@@ -192,9 +192,9 @@ void RoundedAdd
 template<typename Real>
 void RoundedAdd
 ( int maxRank,
-  std::complex<Real> alpha, 
+  std::complex<Real> alpha,
   const LowRank<std::complex<Real> >& A,
-  std::complex<Real> beta,  
+  std::complex<Real> beta,
   const LowRank<std::complex<Real> >& B,
         LowRank<std::complex<Real> >& C )
 {
@@ -273,7 +273,7 @@ void RoundedAdd
         MemCopy( V.Buffer(0,j+Ar), B.V.LockedBuffer(0,j), n );
 
 #if defined(PIVOTED_QR)
-    // TODO 
+    // TODO
     throw std::logic_error("Pivoted QR is not yet supported for this routine.");
 #else
     // Perform an unpivoted QR decomposition on U
@@ -310,7 +310,7 @@ void RoundedAdd
     // Get the SVD of R1 R2^[T,H], overwriting R1 R2^[T,H] with UNew
     std::vector<Real> s( std::min(minDimU,minDimV) );
     Dense<Scalar> VH( std::min(minDimU,minDimV), minDimV );
-    const int lworkSVD = lapack::SVDWorkSize( minDimU, minDimV ); 
+    const int lworkSVD = lapack::SVDWorkSize( minDimU, minDimV );
     std::vector<Scalar> workSVD( lworkSVD );
     std::vector<Real> realWorkSVD( 5*r );
     lapack::SVD
@@ -318,7 +318,7 @@ void RoundedAdd
       &s[0], 0, 1, VH.Buffer(), VH.LDim(), &workSVD[0], lworkSVD,
       &realWorkSVD[0] );
 
-    // Form the rounded C.U by first filling it with 
+    // Form the rounded C.U by first filling it with
     //  | S*U_Left |, and then hitting it from the left with Q1
     //  |  0       |
     Scale( Scalar(0), C.U );
@@ -336,7 +336,7 @@ void RoundedAdd
     ( 'L', 'N', m, roundedRank, minDimU, U.LockedBuffer(), U.LDim(), &tauU[0],
       C.U.Buffer(), C.U.LDim(), &workU[0], workU.size() );
 
-    // Form the rounded C.V by first filling it with 
+    // Form the rounded C.V by first filling it with
     //  | (VH_Top)^[T,H] |, and then hitting it from the left with Q2
     //  |      0         |
     Scale( Scalar(0), C.V );

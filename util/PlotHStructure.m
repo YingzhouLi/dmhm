@@ -1,5 +1,5 @@
 function [] = PlotHStructure(filename)
-%PlotHStructure: 
+%PlotHStructure:
 % Generates a plot for an H-structure that was printed using the
 % psp::Quasi2dHMatrix::PrintStructure command.
 

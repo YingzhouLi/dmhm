@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -11,7 +11,7 @@
  #include <QApplication>
 #endif
 
-namespace { 
+namespace {
 
 int numDmhmInits=0;
 bool dmhmInitializedMpi = false;
@@ -24,7 +24,7 @@ QCoreApplication* coreApp;
 dmhm::MpiArgs* args = 0;
 
 #ifndef RELEASE
-std::stack<std::string> callStack; 
+std::stack<std::string> callStack;
 #endif
 
 int oversample=4;
@@ -93,7 +93,7 @@ void Initialize( int& argc, char**& argv )
 void Finalize()
 {
 #ifndef RELEASE
-    CallStackEntry entry("Finalize");    
+    CallStackEntry entry("Finalize");
 #endif
     if( ::numDmhmInits <= 0 )
         throw std::logic_error("Finalized DMHM more than initialized");
@@ -120,7 +120,7 @@ void Finalize()
         delete ::coreApp;
     }
 #endif
-} 
+}
 MpiArgs& GetArgs()
 {
     if( args == 0 )
@@ -129,15 +129,15 @@ MpiArgs& GetArgs()
 }
 
 #ifndef RELEASE
-void PushCallStack( const std::string s ) 
+void PushCallStack( const std::string s )
 { ::callStack.push(s); }
 
-void PopCallStack() 
+void PopCallStack()
 { ::callStack.pop(); }
 
-void DumpCallStack() 
+void DumpCallStack()
 {
-    std::cout << "Dumping call stack of size " << ::callStack.size() 
+    std::cout << "Dumping call stack of size " << ::callStack.size()
               << std::endl;
     std::ostringstream msg;
     while( ! ::callStack.empty() )
@@ -200,6 +200,11 @@ void SetMidcomputeTolerance<double>( double tolerance )
 { ::midcomputeTolDouble = tolerance; }
 
 #ifdef MEMORY_INFO
+void ResetMemoryCount()
+{   ::memoryUsage = 0;
+    ::peakMemoryUsage = 0;
+}
+
 void AddToMemoryCount( double size )
 {   ::memoryUsage += size;
     if( ::memoryUsage > ::peakMemoryUsage )

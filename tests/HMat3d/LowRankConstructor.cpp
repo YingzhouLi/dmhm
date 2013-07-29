@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Yingzhou Li, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Yingzhou Li, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -21,7 +21,7 @@ main( int argc, char* argv[] )
 
     std::cout << "-----------------------------------------------\n"
               << "Converting double-precision low-rank to HMat3d \n"
-              << "-------------------------------------------------" 
+              << "-------------------------------------------------"
               << std::endl;
     try
     {
@@ -59,10 +59,10 @@ main( int argc, char* argv[] )
         DumpCallStack();
 #endif
     }
-    
+
     std::cout << "-----------------------------------------------\n"
               << "Converting double-complex sparse to HMat3d\n"
-              << "------------------------------------------------" 
+              << "------------------------------------------------"
               << std::endl;
     try
     {
@@ -77,7 +77,7 @@ main( int argc, char* argv[] )
                 F.V.Set( i, j, std::complex<double>(i+j,i-j) );
         F.Print( "F" );
 
-        HMat3d<std::complex<double> > 
+        HMat3d<std::complex<double> >
             H( F, 2, r, false, xSize, ySize, zSize );
 
         Vector< std::complex<double> > x( n );

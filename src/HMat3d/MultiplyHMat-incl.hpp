@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Yingzhou Li, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Yingzhou Li, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -83,7 +83,7 @@ HMat3d<Scalar>::Multiply
         {
             // C.F.U := alpha A B.F.U
             hmat_tools::Multiply
-            ( alpha, *A.block_.data.D, 
+            ( alpha, *A.block_.data.D,
               B.block_.data.F->U, C.block_.data.F->U );
             // C.F.V := B.F.V
             hmat_tools::Copy( B.block_.data.F->V, C.block_.data.F->V );
@@ -129,7 +129,7 @@ HMat3d<Scalar>::Multiply
         }
         else if( A.IsHierarchical() && B.IsLowRank() )
         {
-            // Form W := alpha A B    
+            // Form W := alpha A B
             LowRank<Scalar> W;
             Multiply( alpha, B.block_.data.F->U, W.U );
             hmat_tools::Copy( B.block_.data.F->V, W.V );
@@ -199,10 +199,10 @@ HMat3d<Scalar>::Multiply
 {
 #ifndef RELEASE
     CallStackEntry entry("HMat3d::Multiply (H := H H + H)");
-    if( Width() != B.Height() || 
+    if( Width() != B.Height() ||
         Height() != C.Height() || B.Width() != C.Width() )
         throw std::logic_error("Attempted nonconformal matrix-matrix multiply");
-    if( NumLevels() != B.NumLevels() || 
+    if( NumLevels() != B.NumLevels() ||
         NumLevels() != C.NumLevels() )
         throw std::logic_error
         ("Can only multiply H-matrices with same number of levels.");
@@ -283,7 +283,7 @@ HMat3d<Scalar>::Multiply
         else if( A.IsDense() && B.IsDense() )
             hmat_tools::Multiply
             ( C.MaxRank(),
-              alpha, *A.block_.data.D, *B.block_.data.D, 
+              alpha, *A.block_.data.D, *B.block_.data.D,
               beta, *C.block_.data.F );
 #ifndef RELEASE
         else
@@ -299,7 +299,7 @@ HMat3d<Scalar>::Multiply
 #endif
         if( A.IsLowRank() && B.IsLowRank() )
         {
-            // Form W := alpha A B 
+            // Form W := alpha A B
             LowRank<Scalar> W;
             hmat_tools::Multiply
             ( alpha, *A.block_.data.F, *B.block_.data.F, W );
@@ -321,7 +321,7 @@ HMat3d<Scalar>::Multiply
         }
         else if( A.IsHierarchical() && B.IsLowRank() )
         {
-            // Form W := alpha A B    
+            // Form W := alpha A B
             LowRank<Scalar> W;
             Multiply( alpha, B.block_.data.F->U, W.U );
             hmat_tools::Copy( B.block_.data.F->V, W.V );
@@ -334,7 +334,7 @@ HMat3d<Scalar>::Multiply
         {
             if( A.Symmetric() || B.Symmetric() )
                 throw std::logic_error("Unsupported h-matrix multipy case.");
-            else 
+            else
             {
                 const Node& nodeA = *A.block_.data.N;
                 const Node& nodeB = *B.block_.data.N;
@@ -346,13 +346,13 @@ HMat3d<Scalar>::Multiply
                     {
                         // Scale the [t,s] box of C in the first product
                         nodeA.Child(t,0).Multiply
-                        ( alpha, nodeB.Child(0,s), beta, nodeC.Child(t,s) ); 
-        
+                        ( alpha, nodeB.Child(0,s), beta, nodeC.Child(t,s) );
+
                         // Add the other three products onto it
                         for( int u=1; u<8; ++u )
                             nodeA.Child(t,u).Multiply
-                            ( alpha, nodeB.Child(u,s), 
-                              Scalar(1), nodeC.Child(t,s) ); 
+                            ( alpha, nodeB.Child(u,s),
+                              Scalar(1), nodeC.Child(t,s) );
                     }
                 }
             }
@@ -366,19 +366,19 @@ HMat3d<Scalar>::Multiply
 #endif
         if( A.IsDense() && B.IsDense() )
             hmat_tools::Multiply
-            ( alpha, *A.block_.data.D, *B.block_.data.D, 
+            ( alpha, *A.block_.data.D, *B.block_.data.D,
               beta, *C.block_.data.D );
         else if( A.IsDense() && B.IsLowRank() )
             hmat_tools::Multiply
-            ( alpha, *A.block_.data.D, *B.block_.data.F, 
+            ( alpha, *A.block_.data.D, *B.block_.data.F,
               beta, *C.block_.data.D );
         else if( A.IsLowRank() && B.IsDense() )
             hmat_tools::Multiply
-            ( alpha, *A.block_.data.F, *B.block_.data.D, 
+            ( alpha, *A.block_.data.F, *B.block_.data.D,
               beta, *C.block_.data.D );
         else /* both low-rank */
             hmat_tools::Multiply
-            ( alpha, *A.block_.data.F, *B.block_.data.F, 
+            ( alpha, *A.block_.data.F, *B.block_.data.F,
               beta, *C.block_.data.D );
     }
 }

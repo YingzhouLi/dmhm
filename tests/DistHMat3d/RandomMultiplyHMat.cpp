@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -28,7 +28,7 @@ main( int argc, char* argv[] )
         const int multType = Input("--multType","multiply type",2);
         const bool structure = Input("--structure","print structure?",true);
         const int oversample = Input("--oversample","num extra basis vecs",4);
-        const double midcomputeTol = 
+        const double midcomputeTol =
             Input("--midcomputeTol","tolerance for midcompute stage",1e-16);
         const double compressionTol =
             Input("--compressionTol","tolerance for compression",1e-16);
@@ -103,13 +103,13 @@ main( int argc, char* argv[] )
     catch( ArgException& e ) { }
     catch( std::exception& e )
     {
-        std::cerr << "Process " << commRank << " caught message: " << e.what() 
+        std::cerr << "Process " << commRank << " caught message: " << e.what()
                   << std::endl;
 #ifndef RELEASE
         DumpCallStack();
 #endif
     }
-    
+
     Finalize();
     return 0;
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Yingzhou Li, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Yingzhou Li, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -14,7 +14,7 @@ void
 DistHMat3d<Scalar>::MultiplyHMatFHHCompress
 ( const DistHMat3d<Scalar>& B,
         DistHMat3d<Scalar>& C,
-  int startLevel, int endLevel, 
+  int startLevel, int endLevel,
   int startUpdate, int endUpdate )
 {
 #ifndef RELEASE
@@ -24,13 +24,13 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompress
 #ifdef MEMORY_INFO
     //C.PrintMemoryInfo( "MemoryInfo before FHH Compression" );
 #endif
-    
+
     MultiplyHMatFHHCompressPrecompute
     ( B, C, startLevel, endLevel, startUpdate, endUpdate, 0 );
 
     MultiplyHMatFHHCompressReduces
     ( B, C, startLevel, endLevel, startUpdate, endUpdate, 0 );
-    
+
     const Real midcomputeTol = MidcomputeTolerance<Real>();
     MultiplyHMatFHHCompressMidcompute
     ( B, C, midcomputeTol, startLevel, endLevel, startUpdate, endUpdate, 0 );
@@ -81,7 +81,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompressPrecompute
                 if( C.level_ >= startLevel && C.level_ < endLevel &&
                     update >= startUpdate && update < endUpdate )
                 {
-                    if( C.inTargetTeam_ ) 
+                    if( C.inTargetTeam_ )
                     {
                         const int key = A.sourceOffset_;
                         const Dense<Scalar>& colU = C.colXMap_.Get( key );
@@ -113,7 +113,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompressPrecompute
                         colPinv.Init();
                         blas::Gemm
                         ( 'C', 'N', Omegarank, Trank, LH,
-                          Scalar(1), A.rowOmega_.LockedBuffer(), 
+                          Scalar(1), A.rowOmega_.LockedBuffer(),
                                      A.rowOmega_.LDim(),
                                      colU.LockedBuffer(), colU.LDim(),
                           Scalar(0), colPinv.Buffer(),  colPinv.LDim() );
@@ -150,7 +150,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompressPrecompute
                         rowPinv.Init();
                         blas::Gemm
                         ( 'C', 'N', Omegarank, Trank, LH,
-                          Scalar(1), B.colOmega_.LockedBuffer(), 
+                          Scalar(1), B.colOmega_.LockedBuffer(),
                                      B.colOmega_.LDim(),
                                      rowU.LockedBuffer(), rowU.LDim(),
                           Scalar(0), rowPinv.Buffer(), rowPinv.LDim() );
@@ -207,13 +207,13 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompressReduces
         offsets[i] = offset;
     Vector<int> offsetscopy = offsets;
     MultiplyHMatFHHCompressReducesPack
-    ( B, C, buffer, offsetscopy, 
+    ( B, C, buffer, offsetscopy,
       startLevel, endLevel, startUpdate, endUpdate, update );
-    
+
     C.MultiplyHMatFHHCompressTreeReduces( buffer, sizes );
-    
+
     MultiplyHMatFHHCompressReducesUnpack
-    ( B, C, buffer, offsets, 
+    ( B, C, buffer, offsets,
       startLevel, endLevel, startUpdate, endUpdate, update );
 }
 
@@ -257,7 +257,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompressReducesCount
                     update >= startUpdate && update < endUpdate )
                 {
                     const int key = A.sourceOffset_;
-                    if( C.inTargetTeam_ ) 
+                    if( C.inTargetTeam_ )
                     {
                         const Dense<Scalar>& colUSqr = C.colUSqrMap_.Get( key );
                         const Dense<Scalar>& colPinv = C.colPinvMap_.Get( key );
@@ -337,7 +337,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompressReducesPack
                 {
                     const int key = A.sourceOffset_;
                     int size;
-                    if( C.inTargetTeam_ ) 
+                    if( C.inTargetTeam_ )
                     {
                         const Dense<Scalar>& colUSqr = C.colUSqrMap_.Get( key );
                         const Dense<Scalar>& colPinv = C.colPinvMap_.Get( key );
@@ -450,20 +450,20 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompressReducesUnpack
                     const int teamRank = mpi::CommRank( team );
                     const int key = A.sourceOffset_;
                     int size;
-                    if( C.inTargetTeam_ && teamRank == 0 ) 
+                    if( C.inTargetTeam_ && teamRank == 0 )
                     {
                         Dense<Scalar>& colUSqr = C.colUSqrMap_.Get( key );
                         Dense<Scalar>& colPinv = C.colPinvMap_.Get( key );
 
                         size = colUSqr.Height()*colUSqr.Width();
                         MemCopy
-                        ( colUSqr.Buffer(), &buffer[offsets[C.level_]], 
+                        ( colUSqr.Buffer(), &buffer[offsets[C.level_]],
                           size );
                         offsets[C.level_] += size;
 
                         size = colPinv.Height()*colPinv.Width();
                         MemCopy
-                        ( colPinv.Buffer(), &buffer[offsets[C.level_]], 
+                        ( colPinv.Buffer(), &buffer[offsets[C.level_]],
                           size );
                         offsets[C.level_] += size;
                     }
@@ -474,13 +474,13 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompressReducesUnpack
 
                         size = rowUSqr.Height()*rowUSqr.Width();
                         MemCopy
-                        ( rowUSqr.Buffer(), &buffer[offsets[C.level_]], 
+                        ( rowUSqr.Buffer(), &buffer[offsets[C.level_]],
                           size );
                         offsets[C.level_] += size;
 
                         size = rowPinv.Height()*rowPinv.Width();
                         MemCopy
-                        ( rowPinv.Buffer(), &buffer[offsets[C.level_]], 
+                        ( rowPinv.Buffer(), &buffer[offsets[C.level_]],
                           size );
                         offsets[C.level_] += size;
                     }
@@ -551,26 +551,26 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompressMidcompute
                     update >= startUpdate && update < endUpdate )
                 {
                     const int key = A.sourceOffset_;
-                    if( C.inTargetTeam_ ) 
+                    if( C.inTargetTeam_ )
                     {
                         Dense<Scalar>& USqr = C.colUSqrMap_.Get( key );
                         Dense<Scalar>& Pinv = C.colPinvMap_.Get( key );
                         Dense<Scalar>& BL = C.BLMap_.Get( key );
-                        
+
                         const int k = USqr.Height();
                         Vector<Real> USqrEig( k );
-                        lapack::EVD  
-                        ( 'V', 'U', k, 
+                        lapack::EVD
+                        ( 'V', 'U', k,
                           USqr.Buffer(), USqr.LDim(), &USqrEig[0] );
-   
+
                         //colOmegaT = Omega2' T1
                         Dense<Scalar> OmegaT;
                         hmat_tools::Copy( Pinv, OmegaT );
-                     
+
                         Real maxEig = 0;
                         if( k > 0 )
                             maxEig = std::max( USqrEig[k-1], Real(0) );
-    
+
                         // TODO: Iterate backwards to compute cutoff in manner
                         //       similar to AdjointPseudoInverse
                         const Real tolerance = sqrt(epsilon*maxEig*k);
@@ -584,18 +584,18 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompressMidcompute
                             else
                                 MemZero( USqr.Buffer(0,j), k );
                         }
-                        
+
                         Pinv.Init();
                         blas::Gemm
                         ( 'N', 'N', OmegaT.Height(), k, k,
                          Scalar(1), OmegaT.LockedBuffer(), OmegaT.LDim(),
                                     USqr.LockedBuffer(), USqr.LDim(),
                          Scalar(0), Pinv.Buffer(), Pinv.LDim() );
-   
+
                         lapack::AdjointPseudoInverse
-                        ( Pinv.Height(), Pinv.Width(), 
+                        ( Pinv.Height(), Pinv.Width(),
                           Pinv.Buffer(), Pinv.LDim(), epsilon );
- 
+
                         Dense<Scalar> Ztmp( k, Pinv.Height() );
                         Ztmp.Init();
                         blas::Gemm
@@ -603,7 +603,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompressMidcompute
                          Scalar(1), USqr.LockedBuffer(), USqr.LDim(),
                                     Pinv.LockedBuffer(), Pinv.LDim(),
                          Scalar(0), Ztmp.Buffer(), Ztmp.LDim() );
-                        
+
                         BL.Init();
                         blas::Gemm
                         ( 'N', 'N', k, OmegaT.Width(), Ztmp.Width(),
@@ -616,21 +616,21 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompressMidcompute
                         Dense<Scalar>& USqr = C.rowUSqrMap_.Get( key );
                         Dense<Scalar>& Pinv = C.rowPinvMap_.Get( key );
                         Dense<Scalar>& BR = C.BRMap_.Get( key );
-   
+
                         const int k = USqr.Height();
                         Vector<Real> USqrEig( k );
-                        lapack::EVD  
-                        ( 'V', 'U', k, 
+                        lapack::EVD
+                        ( 'V', 'U', k,
                           USqr.Buffer(), USqr.LDim(), &USqrEig[0] );
-     
+
                         //colOmegaT = Omega2' T1
                         Dense<Scalar> OmegaT;
                         hmat_tools::Copy( Pinv, OmegaT );
-   
+
                         Real maxEig = 0;
                         if( k > 0 )
                             maxEig = std::max( USqrEig[k-1], Real(0) );
-   
+
                         // TODO: Iterate backwards to compute cutoff in manner
                         //       similar to AdjointPseudoInverse
                         const Real tolerance = sqrt(epsilon*maxEig*k);
@@ -644,18 +644,18 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompressMidcompute
                             else
                                 MemZero( USqr.Buffer(0,j), k );
                         }
-                        
+
                         Pinv.Init();
                         blas::Gemm
                         ( 'N', 'N', OmegaT.Height(), k, k,
                          Scalar(1), OmegaT.LockedBuffer(), OmegaT.LDim(),
                                     USqr.LockedBuffer(), USqr.LDim(),
                          Scalar(0), Pinv.Buffer(), Pinv.LDim() );
-        
+
                         lapack::AdjointPseudoInverse
-                        ( Pinv.Height(), Pinv.Width(), 
+                        ( Pinv.Height(), Pinv.Width(),
                           Pinv.Buffer(), Pinv.LDim(), epsilon );
-   
+
                         BR.Init();
                         blas::Gemm
                         ( 'N', 'C', k, Pinv.Height(), k,
@@ -715,13 +715,13 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompressBroadcasts
         offsets[i] = offset;
     Vector<int> offsetscopy = offsets;
     MultiplyHMatFHHCompressBroadcastsPack
-    ( B, C, buffer, offsetscopy, 
+    ( B, C, buffer, offsetscopy,
       startLevel, endLevel, startUpdate, endUpdate, update );
 
     MultiplyHMatFHHCompressTreeBroadcasts( buffer, sizes );
-    
+
     MultiplyHMatFHHCompressBroadcastsUnpack
-    ( B, C, buffer, offsets, 
+    ( B, C, buffer, offsets,
       startLevel, endLevel, startUpdate, endUpdate, update );
 }
 
@@ -765,7 +765,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompressBroadcastsCount
                     update >= startUpdate && update < endUpdate )
                 {
                     const int key = A.sourceOffset_;
-                    if( C.inTargetTeam_ ) 
+                    if( C.inTargetTeam_ )
                     {
                         const Dense<Scalar>& BL = C.BLMap_.Get( key );
                         sizes[C.level_] += BL.Height()*BL.Width();
@@ -844,7 +844,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompressBroadcastsPack
                     if( teamRank == 0 )
                     {
                         const int key = A.sourceOffset_;
-                        if( C.inTargetTeam_ ) 
+                        if( C.inTargetTeam_ )
                         {
                             const Dense<Scalar>& BL = C.BLMap_.Get( key );
                             int size = BL.Height()*BL.Width();
@@ -938,25 +938,25 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompressBroadcastsUnpack
                 if( C.level_ >= startLevel && C.level_ < endLevel &&
                     update >= startUpdate && update < endUpdate )
                 {
-                    const int key = A.sourceOffset_;                     
-                    if( C.inTargetTeam_ )                                   
-                    {                                                       
-                        Dense<Scalar>& BL = C.BLMap_.Get( key );      
-                        int size = BL.Height()*BL.Width();                  
-                        MemCopy                                         
-                        ( BL.Buffer(), &buffer[offsets[C.level_]],    
-                          size );                            
-                        offsets[C.level_] += size;                          
-                    }                                                       
-                    if( C.inSourceTeam_ )                                   
-                    {                                                       
-                        Dense<Scalar>& BR = C.BRMap_.Get( key );      
-                        int size = BR.Height()*BR.Width();                  
-                        MemCopy                                         
-                        ( BR.Buffer(), &buffer[offsets[C.level_]],    
-                          size );                            
-                        offsets[C.level_] += size;                          
-                    }                                                       
+                    const int key = A.sourceOffset_;
+                    if( C.inTargetTeam_ )
+                    {
+                        Dense<Scalar>& BL = C.BLMap_.Get( key );
+                        int size = BL.Height()*BL.Width();
+                        MemCopy
+                        ( BL.Buffer(), &buffer[offsets[C.level_]],
+                          size );
+                        offsets[C.level_] += size;
+                    }
+                    if( C.inSourceTeam_ )
+                    {
+                        Dense<Scalar>& BR = C.BRMap_.Get( key );
+                        int size = BR.Height()*BR.Width();
+                        MemCopy
+                        ( BR.Buffer(), &buffer[offsets[C.level_]],
+                          size );
+                        offsets[C.level_] += size;
+                    }
                 }
             }
             else if( C.level_+1 < endLevel )
@@ -1018,34 +1018,34 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompressPostcompute
                 if( C.level_ >= startLevel && C.level_ < endLevel &&
                     update >= startUpdate && update < endUpdate )
                 {
-                    const int key = A.sourceOffset_;                     
-                    if( C.inTargetTeam_ )                                   
-                    {                                                       
-                        Dense<Scalar>& BL = C.BLMap_.Get( key );      
+                    const int key = A.sourceOffset_;
+                    if( C.inTargetTeam_ )
+                    {
+                        Dense<Scalar>& BL = C.BLMap_.Get( key );
                         Dense<Scalar>& colU = C.colXMap_.Get( key );
                         Dense<Scalar> Ztmp(colU.Height(), BL.Width());
                         Ztmp.Init();
                         blas::Gemm
-                        ('N', 'N', colU.Height(), BL.Width(), colU.Width(), 
+                        ('N', 'N', colU.Height(), BL.Width(), colU.Width(),
                          Scalar(1), colU.LockedBuffer(), colU.LDim(),
                                     BL.LockedBuffer(), BL.LDim(),
                          Scalar(0), Ztmp.Buffer(),  Ztmp.LDim() );
                         hmat_tools::Copy( Ztmp, colU );
-                    }                                                       
-                    if( C.inSourceTeam_ )                                   
-                    {                                                       
-                        Dense<Scalar>& BR = C.BRMap_.Get( key );      
+                    }
+                    if( C.inSourceTeam_ )
+                    {
+                        Dense<Scalar>& BR = C.BRMap_.Get( key );
                         Dense<Scalar>& rowU = C.rowXMap_.Get( key );
                         Dense<Scalar> Ztmp(rowU.Height(), BR.Width());
                         Ztmp.Init();
                         blas::Gemm
-                        ('N', 'N', rowU.Height(), BR.Width(), rowU.Width(), 
+                        ('N', 'N', rowU.Height(), BR.Width(), rowU.Width(),
                          Scalar(1), rowU.LockedBuffer(), rowU.LDim(),
                                     BR.LockedBuffer(), BR.LDim(),
                          Scalar(0), Ztmp.Buffer(),  Ztmp.LDim() );
                         hmat_tools::Copy( Ztmp, rowU );
                         hmat_tools::Conjugate( rowU );
-                    }                                                       
+                    }
                 }
             }
             else if( C.level_+1 < endLevel )

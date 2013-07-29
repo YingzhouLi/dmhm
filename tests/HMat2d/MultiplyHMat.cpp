@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -12,7 +12,7 @@ using namespace dmhm;
 template<typename Real>
 void
 FormRow
-( int x, int y, int xSize, int ySize, 
+( int x, int y, int xSize, int ySize,
   Vector<std::complex<Real> >& row, Vector<int>& colIndices )
 {
     typedef std::complex<Real> Scalar;
@@ -65,7 +65,7 @@ main( int argc, char* argv[] )
     if( commSize != 1 )
     {
         if( commRank == 0 )
-            std::cerr << "This test must be run with a single MPI process" 
+            std::cerr << "This test must be run with a single MPI process"
                       << std::endl;
         Finalize();
         return 0;
@@ -125,7 +125,7 @@ main( int argc, char* argv[] )
         }
         S.rowOffsets.Push_back( S.nonzeros.Size() );
         double fillStopTime = mpi::Time();
-        std::cout << "done: " << fillStopTime-fillStartTime << " seconds." 
+        std::cout << "done: " << fillStopTime-fillStartTime << " seconds."
                   << std::endl;
 
         // Convert to H-matrix form
@@ -134,7 +134,7 @@ main( int argc, char* argv[] )
         double constructStartTime = mpi::Time();
         HMat A( S, numLevels, maxRank, strong, xSize, ySize );
         double constructStopTime = mpi::Time();
-        std::cout << "done: " << constructStopTime-constructStartTime 
+        std::cout << "done: " << constructStopTime-constructStartTime
                   << " seconds." << std::endl;
 
         // Invert H-matrix and make a copy
@@ -145,7 +145,7 @@ main( int argc, char* argv[] )
         HMat B;
         B.CopyFrom( A );
         double invertStopTime = mpi::Time();
-        std::cout << "done: " << invertStopTime-invertStartTime 
+        std::cout << "done: " << invertStopTime-invertStartTime
                   << " seconds." << std::endl;
         if( print )
         {
@@ -199,7 +199,7 @@ main( int argc, char* argv[] )
         }
         if( print )
             X.Print("X");
-        
+
         Dense<Scalar> Y, Z;
         // Y := AZ := ABX
         B.Multiply( (Scalar)1, X, Z );
@@ -229,8 +229,8 @@ main( int argc, char* argv[] )
         }
 
         // Compute the error norms and put Z := Y - Z
-        double infTruth=0, infError=0, 
-               L1Truth=0, L1Error=0, 
+        double infTruth=0, infError=0,
+               L1Truth=0, L1Error=0,
                L2SquaredTruth=0, L2SquaredError=0;
         for( int j=0; j<X.Width(); ++j )
         {
@@ -257,13 +257,13 @@ main( int argc, char* argv[] )
                   << "||ABX||_2     = " << sqrt(L2SquaredTruth) << "\n"
                   << "||CX-ABX||_oo = " << infError << "\n"
                   << "||CX-ABX||_1  = " << L1Error << "\n"
-                  << "||CX-ABX||_2  = " << sqrt(L2SquaredError) 
+                  << "||CX-ABX||_2  = " << sqrt(L2SquaredError)
                   << std::endl;
 
         if( print )
         {
             std::ofstream EFile( "E.m" );
-            EFile << "EMat=[\n"; 
+            EFile << "EMat=[\n";
             Z.Print( "", EFile );
             EFile << "];\n";
         }
@@ -276,7 +276,7 @@ main( int argc, char* argv[] )
         DumpCallStack();
 #endif
     }
-    
+
     Finalize();
     return 0;
 }

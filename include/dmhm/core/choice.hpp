@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -72,25 +72,25 @@ private:
     std::ostream& error_;
 
     struct RequiredArg
-    { 
-        std::string name, desc, typeInfo, usedVal; 
+    {
+        std::string name, desc, typeInfo, usedVal;
         bool found;
 
         RequiredArg
-        ( std::string n, std::string d, std::string t, std::string uv, bool f ) 
+        ( std::string n, std::string d, std::string t, std::string uv, bool f )
         : name(n), desc(d), typeInfo(t), usedVal(uv), found(f) { };
     };
 
     struct OptionalArg
-    { 
-        std::string name, desc, typeInfo, defaultVal, usedVal; 
+    {
+        std::string name, desc, typeInfo, defaultVal, usedVal;
         bool found;
 
         OptionalArg
-        ( std::string n, std::string d, std::string t, 
+        ( std::string n, std::string d, std::string t,
           std::string dv, std::string uv, bool f )
-        : name(n), desc(d), typeInfo(t), 
-          defaultVal(dv), usedVal(uv), found(f) { } 
+        : name(n), desc(d), typeInfo(t),
+          defaultVal(dv), usedVal(uv), found(f) { }
     };
 
     std::vector<RequiredArg> requiredArgs_;
@@ -257,7 +257,7 @@ Args::PrintReport( std::ostream& output ) const
                << "    " << optArg.desc << "\n\n";
     }
 
-    output << "Out of " << numRequired << " required arguments, " 
+    output << "Out of " << numRequired << " required arguments, "
            << numReqFailed << " were not specified." << std::endl;
 
     output << "Out of " << numOptional << " optional arguments, "

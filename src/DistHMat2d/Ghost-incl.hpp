@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -22,7 +22,7 @@ DistHMat2d<Scalar>::FormTargetGhostNodes()
     // is known.
     Vector<std::set<int> > targetStructure( numLevels_ );
     FillTargetStructureRecursion( targetStructure );
-    
+
     // Fill in the local ghosted structure (but without the ghosts' ranks)
     FindTargetGhostNodesRecursion( targetStructure, 0, 0 );
 }
@@ -40,7 +40,7 @@ DistHMat2d<Scalar>::FormSourceGhostNodes()
     // is known.
     Vector<std::set<int> > sourceStructure( numLevels_ );
     FillSourceStructureRecursion( sourceStructure );
-    
+
     // Fill in the local ghosted structure (but without the ghosts' ranks)
     FindSourceGhostNodesRecursion( sourceStructure, 0, 0 );
 }
@@ -273,7 +273,7 @@ DistHMat2d<Scalar>::FindTargetGhostNodesRecursion
             for( int t=0; t<4; ++t )
                 for( int s=0; s<4; ++s )
                     node.Child(t,s).FindTargetGhostNodesRecursion
-                    ( targetStructure, 
+                    ( targetStructure,
                       sourceRoot+s*teamSize/4, targetRoot+t*teamSize/4 );
         }
         else // teamSize == 2
@@ -306,7 +306,7 @@ DistHMat2d<Scalar>::FindTargetGhostNodesRecursion
             ( targetStructure[level_].begin(),
               targetStructure[level_].end(), targetOffset_ ) )
             break;
-                               
+
         mpi::Comm team = teams_->Team( level_ );
         const int teamSize = mpi::CommSize( team );
 
@@ -358,13 +358,13 @@ DistHMat2d<Scalar>::FindTargetGhostNodesRecursion
                     }
                     else
                     {
-                        block_.type = 
-                            ( sourceRoot==targetRoot ? 
+                        block_.type =
+                            ( sourceRoot==targetRoot ?
                               NODE_GHOST : SPLIT_NODE_GHOST );
                         newSourceRoot = sourceRoot;
                         newTargetRoot = targetRoot;
                     }
-                    node.children[s+4*t] = 
+                    node.children[s+4*t] =
                         new DistHMat2d<Scalar>
                         ( numLevels_-1, maxRank_, stronglyAdmissible_,
                           sourceOffset_+sOffset, targetOffset_+tOffset,
@@ -372,7 +372,7 @@ DistHMat2d<Scalar>::FindTargetGhostNodesRecursion
                           node.ySourceSizes[s/2], node.yTargetSizes[t/2],
                           2*xSource_+(s&1), 2*xTarget_+(t&1),
                           2*ySource_+(s/2), 2*yTarget_+(t/2),
-                          *teams_, level_+1, false, false, 
+                          *teams_, level_+1, false, false,
                           newSourceRoot, newTargetRoot );
                     node.Child(t,s).FindTargetGhostNodesRecursion
                     ( targetStructure, newSourceRoot, newTargetRoot );
@@ -416,7 +416,7 @@ DistHMat2d<Scalar>::FindSourceGhostNodesRecursion
             for( int t=0; t<4; ++t )
                 for( int s=0; s<4; ++s )
                     node.Child(t,s).FindSourceGhostNodesRecursion
-                    ( sourceStructure, 
+                    ( sourceStructure,
                       sourceRoot+s*teamSize/4, targetRoot+t*teamSize/4 );
         }
         else // teamSize == 2
@@ -449,7 +449,7 @@ DistHMat2d<Scalar>::FindSourceGhostNodesRecursion
             ( sourceStructure[level_].begin(),
               sourceStructure[level_].end(), sourceOffset_ ) )
             break;
-                               
+
         mpi::Comm team = teams_->Team( level_ );
         const int teamSize = mpi::CommSize( team );
 
@@ -500,13 +500,13 @@ DistHMat2d<Scalar>::FindSourceGhostNodesRecursion
                     }
                     else
                     {
-                        block_.type = 
-                            ( sourceRoot==targetRoot ? 
+                        block_.type =
+                            ( sourceRoot==targetRoot ?
                               NODE_GHOST : SPLIT_NODE_GHOST );
                         newSourceRoot = sourceRoot;
                         newTargetRoot = targetRoot;
                     }
-                    node.children[s+4*t] = 
+                    node.children[s+4*t] =
                         new DistHMat2d<Scalar>
                         ( numLevels_-1, maxRank_, stronglyAdmissible_,
                           sourceOffset_+sOffset, targetOffset_+tOffset,
@@ -514,7 +514,7 @@ DistHMat2d<Scalar>::FindSourceGhostNodesRecursion
                           node.ySourceSizes[s/2], node.yTargetSizes[t/2],
                           2*xSource_+(s&1), 2*xTarget_+(t&1),
                           2*ySource_+(s/2), 2*yTarget_+(t/2),
-                          *teams_, level_+1, false, false, 
+                          *teams_, level_+1, false, false,
                           newSourceRoot, newTargetRoot );
                     node.Child(t,s).FindSourceGhostNodesRecursion
                     ( sourceStructure, newSourceRoot, newTargetRoot );
@@ -530,7 +530,7 @@ DistHMat2d<Scalar>::FindSourceGhostNodesRecursion
         }
         break;
     }
-    
+
     default:
         break;
     }

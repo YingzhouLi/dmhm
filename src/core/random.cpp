@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -8,19 +8,19 @@
 */
 #include "dmhm.hpp"
 
-namespace { 
+namespace {
 
 // Manually import Knuth's multiplication constant, 6364136223846793005,
 // and his additive constant, 1442695040888963407.
 //
 // We initialize the state to an arbitrary value.
-const dmhm::ExpandedUInt64 serialMultValue={{32557U,19605U,62509U,22609U}}; 
+const dmhm::ExpandedUInt64 serialMultValue={{32557U,19605U,62509U,22609U}};
 const dmhm::ExpandedUInt64 serialAddValue={{33103U,63335U,31614U,5125U}};
 dmhm::ExpandedUInt64 serialLcgValue={{03U,17U,19U,86U}};
 
 // We initialize the state to an arbitrary value and set the coefficients
 // equal to the serial case by default.
-dmhm::ExpandedUInt64 parallelMultValue=serialMultValue, 
+dmhm::ExpandedUInt64 parallelMultValue=serialMultValue,
                     parallelAddValue=serialAddValue,
                     parallelLcgValue=serialLcgValue;
 
@@ -70,13 +70,13 @@ void SeedSerialLcg( UInt64 seed )
 void SeedParallelLcg( UInt32 rank, UInt32 commSize, UInt64 globalSeed )
 {
     // Compute a^rank and a^commSize in O(log2(commSize)) work.
-    const ExpandedUInt64 myMultValue = 
+    const ExpandedUInt64 myMultValue =
         IntegerPowerWith64BitMod( ::serialMultValue, Expand(rank) );
-    ::parallelMultValue = 
+    ::parallelMultValue =
         IntegerPowerWith64BitMod( ::serialMultValue, Expand(commSize) );
 
     // Compute (a^rank-1)/(a-1) and (a^commSize-1)/(a-1) in O(commSize) work.
-    // This could almost certainly be optimized, but its execution time is 
+    // This could almost certainly be optimized, but its execution time is
     // probably ignorable.
     ExpandedUInt64 Y={{0U,0U,0U,0U}}, one={{1U,0U,0U,0U}};
     for( unsigned j=0; j<rank; ++j )
@@ -84,7 +84,7 @@ void SeedParallelLcg( UInt32 rank, UInt32 commSize, UInt64 globalSeed )
         Y = MultiplyWith64BitMod( Y, ::serialMultValue );
         Y = AddWith64BitMod( Y, one );
     }
-    const ExpandedUInt64 myAddValue = 
+    const ExpandedUInt64 myAddValue =
         MultiplyWith64BitMod( Y, ::serialAddValue );
     for( unsigned j=rank; j<commSize; ++j )
     {
@@ -93,7 +93,7 @@ void SeedParallelLcg( UInt32 rank, UInt32 commSize, UInt64 globalSeed )
     }
     ::parallelAddValue = MultiplyWith64BitMod( Y, ::serialAddValue );
 
-    // Set our local value equal to 
+    // Set our local value equal to
     //     X_rank := a^rank X_0 + (a^rank-1)/(a-1) c mod 2^64
     // where X_0 is 'globalSeed'.
     ::parallelLcgValue = Expand( globalSeed );
@@ -112,7 +112,7 @@ UInt64 SerialLcg()
 UInt64 ParallelLcg()
 {
     UInt64 value = Deflate( ::parallelLcgValue );
-    ManualLcg( ::parallelMultValue, ::parallelAddValue, ::parallelLcgValue ); 
+    ManualLcg( ::parallelMultValue, ::parallelAddValue, ::parallelLcgValue );
     return value;
 }
 

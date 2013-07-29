@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -25,14 +25,14 @@ namespace dmhm {
 //----------------------------------------------------------------------------//
 
 template<typename Scalar>
-void 
+void
 HMat2d<Scalar>::BuildMapOnQuadrant
 ( int* map, int& index, int level, int numLevels,
   int xSize, int ySize, int thisXSize, int thisYSize )
 {
     if( level == numLevels-1 )
     {
-        // Stamp these indices into the buffer 
+        // Stamp these indices into the buffer
         for( int j=0; j<thisYSize; ++j )
         {
             int* thisRow = &map[j*xSize];
@@ -47,7 +47,7 @@ HMat2d<Scalar>::BuildMapOnQuadrant
         const int bottomHeight = thisYSize/2;
         const int topHeight = thisYSize - bottomHeight;
 
-        // Recurse on the lower-left quadrant 
+        // Recurse on the lower-left quadrant
         BuildMapOnQuadrant
         ( &map[0], index, level+1, numLevels,
           xSize, ySize, leftWidth, bottomHeight );
@@ -96,7 +96,7 @@ HMat2d<Scalar>::HMat2d()
 : numLevels_(0),
   maxRank_(0),
   sourceOffset_(0), targetOffset_(0),
-  symmetric_(false), 
+  symmetric_(false),
   stronglyAdmissible_(false),
   xSizeSource_(0), xSizeTarget_(0),
   ySizeSource_(0), ySizeTarget_(0),
@@ -112,7 +112,7 @@ HMat2d<Scalar>::HMat2d
 : numLevels_(numLevels),
   maxRank_(maxRank),
   sourceOffset_(0), targetOffset_(0),
-  symmetric_(symmetric), 
+  symmetric_(symmetric),
   stronglyAdmissible_(stronglyAdmissible),
   xSizeSource_(xSize), xSizeTarget_(xSize),
   ySizeSource_(ySize), ySizeTarget_(ySize),
@@ -128,7 +128,7 @@ HMat2d<Scalar>::HMat2d
 : numLevels_(numLevels),
   maxRank_(maxRank),
   sourceOffset_(0), targetOffset_(0),
-  symmetric_(false), 
+  symmetric_(false),
   stronglyAdmissible_(stronglyAdmissible),
   xSizeSource_(xSize), xSizeTarget_(xSize),
   ySizeSource_(ySize), ySizeTarget_(ySize),
@@ -221,7 +221,7 @@ HMat2d<Scalar>::HMat2d
   symmetric_(S.symmetric && sourceOffset==targetOffset),
   stronglyAdmissible_(stronglyAdmissible),
   xSizeSource_(xSizeSource), xSizeTarget_(xSizeTarget),
-  ySizeSource_(ySizeSource), ySizeTarget_(ySizeTarget), 
+  ySizeSource_(ySizeSource), ySizeTarget_(ySizeTarget),
   xSource_(xSource), xTarget_(xTarget),
   ySource_(ySource), yTarget_(yTarget)
 {
@@ -278,7 +278,7 @@ HMat2d<Scalar>::Display( std::string title ) const
     for( int j=0; j<n; ++j )
         for( int i=0; i<m; ++i )
             A->Set( i, j, 0 );
- 
+
     // Now fill in the H-matrix blocks recursively
     DisplayRecursion( A, mRatio, nRatio );
 
@@ -773,7 +773,7 @@ HMat2d<Scalar>::UpdateWith( Scalar alpha, const HMat2d<Scalar>& B )
     }
     case LOW_RANK:
         hmat_tools::RoundedUpdate
-        ( this->maxRank_, 
+        ( this->maxRank_,
           alpha, *B.block_.data.F, Scalar(1), *A.block_.data.F );
         break;
     case DENSE:
@@ -843,10 +843,10 @@ HMat2d<Scalar>::ImportLowRank( const LowRank<Scalar>& F )
                     FSub.V.LockedView
                     ( F.V, sOffset, 0, node.sizes[s], F.Rank() );
 
-                    node.children[child++] = 
+                    node.children[child++] =
                       new HMat2d<Scalar>
-                      ( FSub, 
-                        numLevels_-1, maxRank_, 
+                      ( FSub,
+                        numLevels_-1, maxRank_,
                         stronglyAdmissible_,
                         node.xSizes[s&1], node.xSizes[t&1],
                         node.ySizes[s/2], node.ySizes[t/2],
@@ -875,7 +875,7 @@ HMat2d<Scalar>::ImportLowRank( const LowRank<Scalar>& F )
                     FSub.V.LockedView
                     ( F.V, sOffset, 0, node.sourceSizes[s], F.Rank() );
 
-                    node.children[s+4*t] = 
+                    node.children[s+4*t] =
                       new HMat2d<Scalar>
                       ( FSub,
                         numLevels_-1, maxRank_,
@@ -884,7 +884,7 @@ HMat2d<Scalar>::ImportLowRank( const LowRank<Scalar>& F )
                         node.ySourceSizes[s/2], node.yTargetSizes[t/2],
                         2*xSource_+(s&1), 2*xTarget_+(t&1),
                         2*ySource_+(s/2), 2*yTarget_+(t/2),
-                        sOffset+parentSourceOffset, 
+                        sOffset+parentSourceOffset,
                         tOffset+parentTargetOffset );
                 }
             }
@@ -987,9 +987,9 @@ HMat2d<Scalar>::ImportSparse
             {
                 for( int s=0,sOffset=0; s<=t; sOffset+=node.sizes[s],++s )
                 {
-                    node.children[child++] = 
+                    node.children[child++] =
                       new HMat2d<Scalar>
-                      ( S, 
+                      ( S,
                         numLevels_-1, maxRank_,
                         stronglyAdmissible_,
                         node.xSizes[s&1], node.xSizes[t&1],
@@ -1010,7 +1010,7 @@ HMat2d<Scalar>::ImportSparse
             {
                 for( int s=0,sOffset=0; s<4; sOffset+=node.sourceSizes[s],++s )
                 {
-                    node.children[s+4*t] = 
+                    node.children[s+4*t] =
                       new HMat2d<Scalar>
                       ( S,
                         numLevels_-1, maxRank_, stronglyAdmissible_,
@@ -1065,7 +1065,7 @@ HMat2d<Scalar>::UpdateVectorWithNodeSymmetric
         Vector<Scalar> ySub;
         ySub.View( y, tOffset, node.sizes[s] );
 
-        for( int t=s+1,sOffset=tOffset+node.sizes[s]; t<4; 
+        for( int t=s+1,sOffset=tOffset+node.sizes[s]; t<4;
              sOffset+=node.sizes[t],++t )
         {
             Vector<Scalar> xSub;
@@ -1110,7 +1110,7 @@ HMat2d<Scalar>::UpdateWithNodeSymmetric
         Dense<Scalar> CSub;
         CSub.View( C, tOffset, 0, node.sizes[s], C.Width() );
 
-        for( int t=s+1,sOffset=tOffset+node.sizes[s]; t<4; 
+        for( int t=s+1,sOffset=tOffset+node.sizes[s]; t<4;
              sOffset+=node.sizes[t],++t )
         {
             Dense<Scalar> BSub;
@@ -1150,7 +1150,7 @@ void DrawBox
     // Draw the horizontal border
     for( int j=nStart; j<nStop; ++j )
     {
-        matrix->Set( mStart,  j, borderValue );     
+        matrix->Set( mStart,  j, borderValue );
         matrix->Set( mStop-1, j, borderValue );
     }
     // Draw the vertical border
@@ -1233,7 +1233,7 @@ void
 HMat2d<Scalar>::LatexStructureRecursion
 ( std::ofstream& file, int globalHeight ) const
 {
-    const double invScale = globalHeight; 
+    const double invScale = globalHeight;
     const double hStart = sourceOffset_/invScale;
     const double hStop  = (sourceOffset_+Width())/invScale;
     const double vStart = (globalHeight-(targetOffset_ + Height()))/invScale;
@@ -1286,7 +1286,7 @@ HMat2d<Scalar>::MScriptStructureRecursion( std::ofstream& file ) const
     {
     case NODE:
     {
-        file << "1 " 
+        file << "1 "
              << targetOffset_ << " " << sourceOffset_ << " "
              << Height() << " " << Width() << "\n";
         const Node& node = *block_.data.N;
@@ -1297,7 +1297,7 @@ HMat2d<Scalar>::MScriptStructureRecursion( std::ofstream& file ) const
     }
     case NODE_SYMMETRIC:
     {
-        file << "1 " 
+        file << "1 "
              << targetOffset_ << " " << sourceOffset_ << " "
              << Height() << " " << Width() << "\n";
         const NodeSymmetric& node = *block_.data.NS;
@@ -1306,12 +1306,12 @@ HMat2d<Scalar>::MScriptStructureRecursion( std::ofstream& file ) const
         break;
     }
     case LOW_RANK:
-        file << "5 " 
+        file << "5 "
              << targetOffset_ << " " << sourceOffset_ << " "
              << Height() << " " << Width() << "\n";
         break;
     case DENSE:
-        file << "20 " 
+        file << "20 "
              << targetOffset_ << " " << sourceOffset_ << " "
              << Height() << " " << Width() << "\n";
         break;

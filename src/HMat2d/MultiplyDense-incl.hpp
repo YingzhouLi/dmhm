@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -12,7 +12,7 @@ namespace dmhm {
 template<typename Scalar>
 void
 HMat2d<Scalar>::Multiply
-( Scalar alpha, const Dense<Scalar>& B, 
+( Scalar alpha, const Dense<Scalar>& B,
   Scalar beta,        Dense<Scalar>& C ) const
 {
 #ifndef RELEASE

@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -13,13 +13,13 @@ using namespace dmhm;
 int
 main( int argc, char* argv[] )
 {
-    Initialize( argc, argv ); 
+    Initialize( argc, argv );
     const int commSize = mpi::CommSize( mpi::COMM_WORLD );
     const int commRank = mpi::CommRank( mpi::COMM_WORLD );
     if( commSize != 1 )
     {
         if( commRank == 0 )
-            std::cerr << "This test should be run with a single MPI process" 
+            std::cerr << "This test should be run with a single MPI process"
                       << std::endl;
         MPI_Finalize();
         return 0;
@@ -69,8 +69,8 @@ main( int argc, char* argv[] )
                   << "Timer 2: " << timer.GetTime( 2 ) << " seconds\n"
                   << "Timer 3: " << timer.GetTime( 3 ) << " seconds\n"
                   << std::endl;
-        
-        std::cout << "Repeating experiment after clearing timer 0." 
+
+        std::cout << "Repeating experiment after clearing timer 0."
                   << std::endl;
         timer.Clear( 0 );
 
@@ -93,7 +93,7 @@ main( int argc, char* argv[] )
                   << "Timer 3: " << timer.GetTime( 3 ) << " seconds\n"
                   << std::endl;
 
-        std::cout << "Repeating experiment after clearing all timers." 
+        std::cout << "Repeating experiment after clearing all timers."
                   << std::endl;
         timer.Clear();
 

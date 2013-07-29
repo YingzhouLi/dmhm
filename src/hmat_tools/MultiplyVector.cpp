@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -24,17 +24,17 @@ void Multiply
     if( A.Symmetric() )
     {
         blas::Symv
-        ( 'L', A.Height(), 
-          alpha, A.LockedBuffer(), A.LDim(), 
-                 x.LockedBuffer(), 1, 
+        ( 'L', A.Height(),
+          alpha, A.LockedBuffer(), A.LDim(),
+                 x.LockedBuffer(), 1,
           beta,  y.Buffer(),       1 );
     }
     else
     {
         blas::Gemv
-        ( 'N', A.Height(), A.Width(), 
-          alpha, A.LockedBuffer(), A.LDim(), 
-                 x.LockedBuffer(), 1, 
+        ( 'N', A.Height(), A.Width(),
+          alpha, A.LockedBuffer(), A.LDim(),
+                 x.LockedBuffer(), 1,
           beta,  y.Buffer(),       1 );
     }
 }
@@ -42,7 +42,7 @@ void Multiply
 // Dense y := alpha A x
 template<typename Scalar>
 void Multiply
-( Scalar alpha, const Dense<Scalar>& A, 
+( Scalar alpha, const Dense<Scalar>& A,
                 const Vector<Scalar>& x,
                       Vector<Scalar>& y )
 {
@@ -53,17 +53,17 @@ void Multiply
     if( A.Symmetric() )
     {
         blas::Symv
-        ( 'L', A.Height(), 
-          alpha, A.LockedBuffer(), A.LDim(), 
-                 x.LockedBuffer(), 1, 
+        ( 'L', A.Height(),
+          alpha, A.LockedBuffer(), A.LDim(),
+                 x.LockedBuffer(), 1,
           0,     y.Buffer(),       1 );
     }
     else
     {
         blas::Gemv
-        ( 'N', A.Height(), A.Width(), 
-          alpha, A.LockedBuffer(), A.LDim(), 
-                 x.LockedBuffer(), 1, 
+        ( 'N', A.Height(), A.Width(),
+          alpha, A.LockedBuffer(), A.LDim(),
+                 x.LockedBuffer(), 1,
           0,     y.Buffer(),       1 );
     }
 }
@@ -71,7 +71,7 @@ void Multiply
 // Low-rank y := alpha A x + beta y
 template<typename Scalar>
 void Multiply
-( Scalar alpha, const LowRank<Scalar>& A, 
+( Scalar alpha, const LowRank<Scalar>& A,
                 const Vector<Scalar>& x,
   Scalar beta,        Vector<Scalar>& y )
 {
@@ -84,23 +84,23 @@ void Multiply
     Vector<Scalar> t( r );
     const char option = 'T';
     blas::Gemv
-    ( option, A.Width(), r, 
-      alpha, A.V.LockedBuffer(), A.V.LDim(), 
-             x.LockedBuffer(),   1, 
+    ( option, A.Width(), r,
+      alpha, A.V.LockedBuffer(), A.V.LDim(),
+             x.LockedBuffer(),   1,
       0,     t.Buffer(),         1 );
 
     // Form y := (A.U) t + beta y
     blas::Gemv
-    ( 'N', A.Height(), r, 
-      1,    A.U.LockedBuffer(), A.U.LDim(), 
-            t.LockedBuffer(),   1, 
+    ( 'N', A.Height(), r,
+      1,    A.U.LockedBuffer(), A.U.LDim(),
+            t.LockedBuffer(),   1,
       beta, y.Buffer(),         1 );
 }
 
 // Low-rank y := alpha A x
 template<typename Scalar>
 void Multiply
-( Scalar alpha, const LowRank<Scalar>& A, 
+( Scalar alpha, const LowRank<Scalar>& A,
                 const Vector<Scalar>& x,
                       Vector<Scalar>& y )
 {
@@ -113,17 +113,17 @@ void Multiply
     Vector<Scalar> t( r );
     const char option = 'T';
     blas::Gemv
-    ( option, A.Width(), r, 
-      alpha, A.V.LockedBuffer(), A.V.LDim(), 
-             x.LockedBuffer(),   1, 
+    ( option, A.Width(), r,
+      alpha, A.V.LockedBuffer(), A.V.LDim(),
+             x.LockedBuffer(),   1,
       0,     t.Buffer(),         1 );
 
     // Form y := (A.U) t
     y.Resize( A.Height() );
     blas::Gemv
-    ( 'N', A.Height(), r, 
-      1, A.U.LockedBuffer(), A.U.LDim(), 
-         t.LockedBuffer(),   1, 
+    ( 'N', A.Height(), r,
+      1, A.U.LockedBuffer(), A.U.LDim(),
+         t.LockedBuffer(),   1,
       0, y.Buffer(),         1 );
 }
 
@@ -170,13 +170,13 @@ template void Multiply
                 const Vector<double>& x,
   double beta,        Vector<double>& y );
 template void Multiply
-( std::complex<float> alpha, 
+( std::complex<float> alpha,
   const LowRank<std::complex<float> >& A,
   const Vector<std::complex<float> >& x,
   std::complex<float> beta,
         Vector<std::complex<float> >& y );
 template void Multiply
-( std::complex<double> alpha, 
+( std::complex<double> alpha,
   const LowRank<std::complex<double> >& A,
   const Vector<std::complex<double> >& x,
   std::complex<double> beta,
@@ -191,12 +191,12 @@ template void Multiply
                 const Vector<double>& x,
                       Vector<double>& y );
 template void Multiply
-( std::complex<float> alpha, 
+( std::complex<float> alpha,
   const LowRank<std::complex<float> >& A,
   const Vector<std::complex<float> >& x,
         Vector<std::complex<float> >& y );
 template void Multiply
-( std::complex<double> alpha, 
+( std::complex<double> alpha,
   const LowRank<std::complex<double> >& A,
   const Vector<std::complex<double> >& x,
         Vector<std::complex<double> >& y );

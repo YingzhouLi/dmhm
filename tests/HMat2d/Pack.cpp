@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -115,7 +115,7 @@ main( int argc, char* argv[] )
         double fillStopTime = mpi::Time();
         if( rank == 0 )
         {
-            std::cout << "done: " << fillStopTime-fillStartTime << " seconds." 
+            std::cout << "done: " << fillStopTime-fillStartTime << " seconds."
                       << std::endl;
             if( print )
                 S.Print("S");
@@ -132,7 +132,7 @@ main( int argc, char* argv[] )
         double constructStopTime = mpi::Time();
         if( rank == 0 )
         {
-            std::cout << "done: " << constructStopTime-constructStartTime 
+            std::cout << "done: " << constructStopTime-constructStartTime
                       << " seconds." << std::endl;
             if( print )
                 H.Print("H");
@@ -155,7 +155,7 @@ main( int argc, char* argv[] )
         double matVecStopTime = mpi::Time();
         if( rank == 0 )
         {
-            std::cout << "done: " << matVecStopTime-matVecStartTime 
+            std::cout << "done: " << matVecStopTime-matVecStartTime
                       << " seconds." << std::endl;
             if( print )
                 y.Print("y := H x ~= S x");
@@ -189,13 +189,13 @@ main( int argc, char* argv[] )
         double unpackStopTime = mpi::Time();
         if( rank == 0 )
         {
-            std::cout << "done: " << unpackStopTime-unpackStartTime 
+            std::cout << "done: " << unpackStopTime-unpackStartTime
                       << " seconds." << std::endl;
             if( print )
                 HCopy.Print("Unpacked copy of H-matrix");
         }
 
-        // Check that the copied H-matrix has the same action on our vector of 
+        // Check that the copied H-matrix has the same action on our vector of
         // all 1's
         Vector<Scalar> z;
         if( rank == 0 )
@@ -208,7 +208,7 @@ main( int argc, char* argv[] )
         matVecStopTime = mpi::Time();
         if( rank == 0 )
         {
-            std::cout << "done: " << matVecStopTime-matVecStartTime 
+            std::cout << "done: " << matVecStopTime-matVecStartTime
                       << " seconds." << std::endl;
             if( print )
                 z.Print("z := HCopy x ~= S x");
@@ -226,13 +226,13 @@ main( int argc, char* argv[] )
     catch( ArgException& e ) { }
     catch( std::exception& e )
     {
-        std::cerr << "Process " << rank << " caught message: " << e.what() 
+        std::cerr << "Process " << rank << " caught message: " << e.what()
                   << std::endl;
 #ifndef RELEASE
         DumpCallStack();
 #endif
     }
-    
+
     Finalize();
     return 0;
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -12,7 +12,7 @@ namespace dmhm {
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyHMatFormGhostRanks
-( DistHMat2d<Scalar>& B ) 
+( DistHMat2d<Scalar>& B )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MultiplyHMatFormGhostRanks");
@@ -133,13 +133,13 @@ DistHMat2d<Scalar>::MultiplyHMatFormGhostRanksCount
         case NODE_GHOST:
         {
             // Check if C will be admissible
-            const bool admissibleC = 
+            const bool admissibleC =
                 A.Admissible( B.xSource_, A.xTarget_, B.ySource_, A.yTarget_ );
 
             if( !admissibleC )
             {
                 // Recurse
-                const Node& nodeA = *A.block_.data.N;        
+                const Node& nodeA = *A.block_.data.N;
                 const Node& nodeB = *B.block_.data.N;
                 for( int t=0; t<4; ++t )
                     for( int s=0; s<4; ++s )
@@ -155,7 +155,7 @@ DistHMat2d<Scalar>::MultiplyHMatFormGhostRanksCount
         {
             // Test if we need to send to A's target team
             if( B.inSourceTeam_ &&
-                A.targetRoot_ != B.targetRoot_ && 
+                A.targetRoot_ != B.targetRoot_ &&
                 A.targetRoot_ != B.sourceRoot_ )
                 AddToMap( sendSizes, A.targetRoot_+teamRank, 1 );
             break;
@@ -219,7 +219,7 @@ DistHMat2d<Scalar>::MultiplyHMatFormGhostRanksCount
         case SPLIT_LOW_RANK:
         {
             // Check if we need to send to A's target team
-            if( B.inSourceTeam_ && 
+            if( B.inSourceTeam_ &&
                 A.targetRoot_ != B.targetRoot_ &&
                 A.targetRoot_ != B.sourceRoot_ )
                 AddToMap( sendSizes, A.targetRoot_+teamRank, 1 );
@@ -241,7 +241,7 @@ DistHMat2d<Scalar>::MultiplyHMatFormGhostRanksCount
         case LOW_RANK:
         {
             // Check if we need to send to A's target team
-            if( B.inSourceTeam_ && 
+            if( B.inSourceTeam_ &&
                 A.targetRoot_ != B.targetRoot_ &&
                 A.targetRoot_ != B.sourceRoot_ )
                 AddToMap( sendSizes, A.targetRoot_, 1 );
@@ -300,13 +300,13 @@ DistHMat2d<Scalar>::MultiplyHMatFormGhostRanksPack
         case NODE_GHOST:
         {
             // Check if C will be admissible
-            const bool admissibleC = 
+            const bool admissibleC =
                 A.Admissible( B.xSource_, A.xTarget_, B.ySource_, A.yTarget_ );
 
             if( !admissibleC )
             {
                 // Recurse
-                const Node& nodeA = *A.block_.data.N;        
+                const Node& nodeA = *A.block_.data.N;
                 const Node& nodeB = *B.block_.data.N;
                 for( int t=0; t<4; ++t )
                     for( int s=0; s<4; ++s )
@@ -322,7 +322,7 @@ DistHMat2d<Scalar>::MultiplyHMatFormGhostRanksPack
         {
             // Test if we need to send to A's target team
             if( B.inSourceTeam_ &&
-                A.targetRoot_ != B.targetRoot_ && 
+                A.targetRoot_ != B.targetRoot_ &&
                 A.targetRoot_ != B.sourceRoot_ )
                 sendBuffer[offsets[A.targetRoot_+teamRank]++] = B.Rank();
             break;
@@ -337,7 +337,7 @@ DistHMat2d<Scalar>::MultiplyHMatFormGhostRanksPack
     case LOW_RANK:
     {
         // Check if we need to send to B's source team
-        if( A.inTargetTeam_ && 
+        if( A.inTargetTeam_ &&
             B.sourceRoot_ != A.targetRoot_ &&
             B.sourceRoot_ != A.sourceRoot_ )
             sendBuffer[offsets[B.sourceRoot_+teamRank]++] = A.Rank();
@@ -349,7 +349,7 @@ DistHMat2d<Scalar>::MultiplyHMatFormGhostRanksPack
         case LOW_RANK:
         {
             // Check if we need to send to A's target team
-            if( B.inSourceTeam_ && 
+            if( B.inSourceTeam_ &&
                 A.targetRoot_ != B.targetRoot_ &&
                 A.targetRoot_ != B.sourceRoot_ )
                 sendBuffer[offsets[A.targetRoot_+teamRank]++] = B.Rank();
@@ -371,7 +371,7 @@ DistHMat2d<Scalar>::MultiplyHMatFormGhostRanksPack
         case LOW_RANK:
         {
             // Check if we need to send to A's target team
-            if( B.inSourceTeam_ && 
+            if( B.inSourceTeam_ &&
                 A.targetRoot_ != B.targetRoot_ &&
                 A.targetRoot_ != B.sourceRoot_ )
                 sendBuffer[offsets[A.targetRoot_+teamRank]++] = B.Rank();
@@ -393,7 +393,7 @@ DistHMat2d<Scalar>::MultiplyHMatFormGhostRanksPack
         case LOW_RANK:
         {
             // Check if we need to send to A's target team
-            if( B.inSourceTeam_ && 
+            if( B.inSourceTeam_ &&
                 A.targetRoot_ != B.targetRoot_ &&
                 A.targetRoot_ != B.sourceRoot_ )
                 sendBuffer[offsets[A.targetRoot_]++] = B.Rank();
@@ -444,15 +444,15 @@ DistHMat2d<Scalar>::MultiplyHMatFormGhostRanksUnpack
         case SPLIT_NODE_GHOST:
         case NODE:
         case NODE_GHOST:
-        {   
+        {
             // Check if C will be admissible
-            const bool admissibleC = 
+            const bool admissibleC =
                 A.Admissible( B.xSource_, A.xTarget_, B.ySource_, A.yTarget_ );
 
             if( !admissibleC )
             {
                 // Recurse
-                Node& nodeA = *A.block_.data.N;        
+                Node& nodeA = *A.block_.data.N;
                 Node& nodeB = *B.block_.data.N;
                 for( int t=0; t<4; ++t )
                     for( int s=0; s<4; ++s )

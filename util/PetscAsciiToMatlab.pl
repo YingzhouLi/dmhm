@@ -20,7 +20,7 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# This script is for converting the PETSc ASCII sparse complex matrix output 
+# This script is for converting the PETSc ASCII sparse complex matrix output
 # files into a Matlab-readable format.
 
 $numArgs = $#ARGV + 1;

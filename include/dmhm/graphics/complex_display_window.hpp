@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -28,7 +28,7 @@ public:
     ~ComplexDisplayWindow();
 
     void Display
-    ( const Dense<std::complex<double> >* A, 
+    ( const Dense<std::complex<double> >* A,
       QString title=QString("Default title") );
 
 private:

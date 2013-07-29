@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -14,7 +14,7 @@ namespace hmat_tools {
 // Dense B := alpha A + beta B
 template<typename Scalar>
 void Update
-( Scalar alpha, const Dense<Scalar>& A, 
+( Scalar alpha, const Dense<Scalar>& A,
   Scalar beta,        Dense<Scalar>& B )
 {
 #ifndef RELEASE
@@ -55,7 +55,7 @@ void Update
 // Low-rank B := alpha A + beta B
 template<typename Scalar>
 void Update
-( Scalar alpha, const LowRank<Scalar>& A, 
+( Scalar alpha, const LowRank<Scalar>& A,
   Scalar beta,        LowRank<Scalar>& B )
 {
 #ifndef RELEASE
@@ -90,7 +90,7 @@ void Update
 // Dense updated with low-rank, B := alpha A + beta B
 template<typename Scalar>
 void Update
-( Scalar alpha, const LowRank<Scalar>& A, 
+( Scalar alpha, const LowRank<Scalar>& A,
   Scalar beta,        Dense<Scalar>& B )
 {
 #ifndef RELEASE
@@ -102,8 +102,8 @@ void Update
 #endif
     const char option = 'T';
     blas::Gemm
-    ( 'N', option, A.Height(), A.Width(), A.Rank(), 
-      alpha, A.U.LockedBuffer(), A.U.LDim(), A.V.LockedBuffer(), A.V.LDim(), 
+    ( 'N', option, A.Height(), A.Width(), A.Rank(),
+      alpha, A.U.LockedBuffer(), A.U.LDim(), A.V.LockedBuffer(), A.V.LDim(),
       beta, B.Buffer(), B.LDim() );
 }
 

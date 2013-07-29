@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -25,9 +25,9 @@ main( int argc, char* argv[] )
         for( int entry=0; entry<numEntries; ++entry,memoryMap.Increment() )
         {
             const int currentIndex = memoryMap.CurrentIndex();
-            const Dense<double>& D = *memoryMap.CurrentEntry(); 
-            std::cout << "Index " << currentIndex << ": " 
-                      << D.Height() << " x " << D.Width() << "\n"; 
+            const Dense<double>& D = *memoryMap.CurrentEntry();
+            std::cout << "Index " << currentIndex << ": "
+                      << D.Height() << " x " << D.Width() << "\n";
         }
         std::cout << std::endl;
 
@@ -43,7 +43,7 @@ main( int argc, char* argv[] )
             if( entry%3 == 2 )
             {
                 memoryMap.EraseCurrentEntry();
-                std::cout << "Erased third entry, new size is: " 
+                std::cout << "Erased third entry, new size is: "
                           << memoryMap.Size() << "\n";
             }
             else

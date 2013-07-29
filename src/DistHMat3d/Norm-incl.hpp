@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -28,9 +28,9 @@ DistHMat3d<Scalar>::ParallelEstimateTwoNorm( Real theta, Real confidence )
         const int teamRank = mpi::CommRank( team );
         if( teamRank == 0 )
         {
-            std::cout << "Going to use A^" << k  
+            std::cout << "Going to use A^" << k
                       << " in order to estimate "
-                      << "||A||_2 within " << (theta-1.0)*100 
+                      << "||A||_2 within " << (theta-1.0)*100
                       << "% with probability "
                       << "1-10^{-" << confidence << "}" << std::endl;
         }
@@ -48,7 +48,7 @@ DistHMat3d<Scalar>::ParallelEstimateTwoNorm( Real theta, Real confidence )
     }
 
 
-    Real estimate = theta; 
+    Real estimate = theta;
     const Real root = ((Real)1) / ((Real)k);
     Vector<Scalar> y;
     for( int i=0; i<k; ++i )

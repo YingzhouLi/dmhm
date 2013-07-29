@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -27,18 +27,18 @@ void AdjointMultiply
         Conjugate( x, xConj );
         Conjugate( y );
         blas::Symv
-        ( 'L', A.Height(), 
-          Conj(alpha), A.LockedBuffer(), A.LDim(), 
-                       xConj.Buffer(),   1, 
+        ( 'L', A.Height(),
+          Conj(alpha), A.LockedBuffer(), A.LDim(),
+                       xConj.Buffer(),   1,
           Conj(beta),  y.Buffer(),       1 );
         Conjugate( y );
     }
     else
     {
         blas::Gemv
-        ( 'C', A.Height(), A.Width(), 
-          alpha, A.LockedBuffer(), A.LDim(), 
-                 x.LockedBuffer(), 1, 
+        ( 'C', A.Height(), A.Width(),
+          alpha, A.LockedBuffer(), A.LDim(),
+                 x.LockedBuffer(), 1,
           beta,  y.Buffer(),       1 );
     }
 }
@@ -46,7 +46,7 @@ void AdjointMultiply
 // Dense y := alpha A^H x
 template<typename Scalar>
 void AdjointMultiply
-( Scalar alpha, const Dense<Scalar>& A, 
+( Scalar alpha, const Dense<Scalar>& A,
                 const Vector<Scalar>& x,
                       Vector<Scalar>& y )
 {
@@ -59,18 +59,18 @@ void AdjointMultiply
         Vector<Scalar> xConj;
         Conjugate( x, xConj );
         blas::Symv
-        ( 'L', A.Height(), 
-          Conj(alpha), A.LockedBuffer(), A.LDim(), 
-                       xConj.Buffer(),   1, 
+        ( 'L', A.Height(),
+          Conj(alpha), A.LockedBuffer(), A.LDim(),
+                       xConj.Buffer(),   1,
           0,           y.Buffer(),       1 );
         Conjugate( y );
     }
     else
     {
         blas::Gemv
-        ( 'C', A.Height(), A.Width(), 
-          alpha, A.LockedBuffer(), A.LDim(), 
-                 x.LockedBuffer(), 1, 
+        ( 'C', A.Height(), A.Width(),
+          alpha, A.LockedBuffer(), A.LDim(),
+                 x.LockedBuffer(), 1,
           0,     y.Buffer(),       1 );
     }
 }
@@ -78,7 +78,7 @@ void AdjointMultiply
 // Low-rank y := alpha A^H x + beta y
 template<typename Scalar>
 void AdjointMultiply
-( Scalar alpha, const LowRank<Scalar>& A, 
+( Scalar alpha, const LowRank<Scalar>& A,
                 const Vector<Scalar>& x,
   Scalar beta,        Vector<Scalar>& y )
 {
@@ -92,17 +92,17 @@ void AdjointMultiply
     // Form t := alpha (A.U)^H x
     Vector<Scalar> t( r );
     blas::Gemv
-    ( 'C', m, r, 
-      alpha, A.U.LockedBuffer(), A.U.LDim(), 
-             x.LockedBuffer(),   1, 
+    ( 'C', m, r,
+      alpha, A.U.LockedBuffer(), A.U.LDim(),
+             x.LockedBuffer(),   1,
       0,     t.Buffer(),         1 );
 
     Conjugate( t );
     Conjugate( y );
     blas::Gemv
-    ( 'N', n, r, 
-      1,          A.V.LockedBuffer(), A.V.LDim(), 
-                  t.LockedBuffer(),   1, 
+    ( 'N', n, r,
+      1,          A.V.LockedBuffer(), A.V.LDim(),
+                  t.LockedBuffer(),   1,
       Conj(beta), y.Buffer(),         1 );
     Conjugate( y );
 }
@@ -110,7 +110,7 @@ void AdjointMultiply
 // Low-rank y := alpha A^H x
 template<typename Scalar>
 void AdjointMultiply
-( Scalar alpha, const LowRank<Scalar>& A, 
+( Scalar alpha, const LowRank<Scalar>& A,
                 const Vector<Scalar>& x,
                       Vector<Scalar>& y )
 {
@@ -124,17 +124,17 @@ void AdjointMultiply
     // Form t := alpha (A.U)^H x
     Vector<Scalar> t( r );
     blas::Gemv
-    ( 'C', m, r, 
-      alpha, A.U.LockedBuffer(), A.U.LDim(), 
-             x.LockedBuffer(),   1, 
+    ( 'C', m, r,
+      alpha, A.U.LockedBuffer(), A.U.LDim(),
+             x.LockedBuffer(),   1,
       0,     t.Buffer(),         1 );
 
     y.Resize( n );
     Conjugate( t );
     blas::Gemv
-    ( 'N', n, r, 
-      1, A.V.LockedBuffer(), A.V.LDim(), 
-         t.LockedBuffer(),   1, 
+    ( 'N', n, r,
+      1, A.V.LockedBuffer(), A.V.LDim(),
+         t.LockedBuffer(),   1,
       0, y.Buffer(),         1 );
     Conjugate( y );
 }
@@ -182,13 +182,13 @@ template void AdjointMultiply
                 const Vector<double>& x,
   double beta,        Vector<double>& y );
 template void AdjointMultiply
-( std::complex<float> alpha, 
+( std::complex<float> alpha,
   const LowRank<std::complex<float> >& A,
   const Vector<std::complex<float> >& x,
-  std::complex<float> beta, 
+  std::complex<float> beta,
         Vector<std::complex<float> >& y );
 template void AdjointMultiply
-( std::complex<double> alpha, 
+( std::complex<double> alpha,
   const LowRank<std::complex<double> >& A,
   const Vector<std::complex<double> >& x,
   std::complex<double> beta,
@@ -203,12 +203,12 @@ template void AdjointMultiply
                 const Vector<double>& x,
                       Vector<double>& y );
 template void AdjointMultiply
-( std::complex<float> alpha, 
+( std::complex<float> alpha,
   const LowRank<std::complex<float> >& A,
   const Vector<std::complex<float> >& x,
         Vector<std::complex<float> >& y );
 template void AdjointMultiply
-( std::complex<double> alpha, 
+( std::complex<double> alpha,
   const LowRank<std::complex<double> >& A,
   const Vector<std::complex<double> >& x,
         Vector<std::complex<double> >& y );

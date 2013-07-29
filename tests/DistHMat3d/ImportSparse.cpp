@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -12,7 +12,7 @@ using namespace dmhm;
 template<typename Real>
 void
 FormCol
-( int x, int y, int z, int xSize, int ySize, int zSize, 
+( int x, int y, int z, int xSize, int ySize, int zSize,
   Vector<std::complex<Real> >& col, Vector<int>& rowIndices )
 {
     typedef std::complex<Real> Scalar;
@@ -115,13 +115,13 @@ main( int argc, char* argv[] )
     catch( ArgException& e ) { }
     catch( std::exception& e )
     {
-        std::cerr << "Process " << rank << " caught message: " << e.what() 
+        std::cerr << "Process " << rank << " caught message: " << e.what()
                   << std::endl;
 #ifndef RELEASE
         DumpCallStack();
 #endif
     }
-    
+
     Finalize();
     return 0;
 }

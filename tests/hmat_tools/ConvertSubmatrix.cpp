@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -21,7 +21,7 @@ main( int argc, char* argv[] )
 
     std::cout << "----------------------------------------------------\n"
               << "Converting double-precision sparse to dense         \n"
-              << "----------------------------------------------------" 
+              << "----------------------------------------------------"
               << std::endl;
     try
     {
@@ -46,7 +46,7 @@ main( int argc, char* argv[] )
                 S.columnIndices.Push_back( i-1 );
             }
 
-            S.nonzeros.Push_back( S.nonzeros.Size()+1 );    
+            S.nonzeros.Push_back( S.nonzeros.Size()+1 );
             S.columnIndices.Push_back( i );
 
             if( i+1 < n )
@@ -75,10 +75,10 @@ main( int argc, char* argv[] )
         DumpCallStack();
 #endif
     }
-    
+
     std::cout << "----------------------------------------------------\n"
               << "Converting double-precision sparse to low-rank      \n"
-              << "----------------------------------------------------" 
+              << "----------------------------------------------------"
               << std::endl;
     try
     {
@@ -93,7 +93,7 @@ main( int argc, char* argv[] )
 
             if( i+xSize < n )
             {
-                S.nonzeros.Push_back( S.nonzeros.Size()+1 );    
+                S.nonzeros.Push_back( S.nonzeros.Size()+1 );
                 S.columnIndices.Push_back( i+xSize );
             }
         }

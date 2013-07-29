@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -29,8 +29,8 @@ main( int argc, char* argv[] )
         // and t x r matrices with Gaussian random variables.
         const int minDimT = std::min(s,r);
         const int minDimB = std::min(t,r);
-        const int packedSize = 
-            (minDimT*minDimT+minDimT)/2 + (r-minDimT)*minDimT + 
+        const int packedSize =
+            (minDimT*minDimT+minDimT)/2 + (r-minDimT)*minDimT +
             (minDimB*minDimB+minDimB)/2 + (r-minDimB)*minDimB;
 
         // Form the random packed A
@@ -58,7 +58,7 @@ main( int argc, char* argv[] )
         }
 
         // Allocate a workspace and perform the packed QR
-        std::vector<std::complex<double> > 
+        std::vector<std::complex<double> >
             tau( std::min(s+t,r) ), work(std::max(s+t,r));
         hmat_tools::PackedQR( r, s, t, &packedA[0], &tau[0], &work[0] );
         if( print )
@@ -97,7 +97,7 @@ main( int argc, char* argv[] )
             double maxError = 0;
             for( int j=0; j<r; ++j )
                 for( int i=0; i<s+t; ++i )
-                    maxError = 
+                    maxError =
                         std::max(maxError,Abs(B.Get(i,j)-A.Get(i,j)));
             std::cout << "||QR-A||_oo = " << maxError << std::endl;
         }
@@ -107,7 +107,7 @@ main( int argc, char* argv[] )
             std::cout << std::endl;
         }
 
-        // Create an (s+t) x (s+t) identity matrix and then apply Q' Q from 
+        // Create an (s+t) x (s+t) identity matrix and then apply Q' Q from
         // the left
         B.Resize( s+t, s+t );
         work.resize( s+t );
@@ -139,7 +139,7 @@ main( int argc, char* argv[] )
             std::cout << std::endl;
         }
 
-        // Create an (s+t) x (s+t) identity matrix and then apply Q' Q from 
+        // Create an (s+t) x (s+t) identity matrix and then apply Q' Q from
         // the right
         hmat_tools::Scale( std::complex<double>(0), B );
         for( int j=0; j<s+t; ++j )

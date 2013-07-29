@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -54,8 +54,8 @@ void Compress( int maxRank, Dense<Real>& D, LowRank<Real>& F )
 
 template<typename Real>
 void Compress
-( int maxRank, 
-  Dense<std::complex<Real> >& D, 
+( int maxRank,
+  Dense<std::complex<Real> >& D,
   LowRank<std::complex<Real> >& F )
 {
 #ifndef RELEASE
@@ -159,7 +159,7 @@ void Compress( int maxRank, LowRank<Real>& A )
     // Update W := R1 R2^T. We are unfortunately performing 2x as many
     // flops as are required.
     blas::Trmm
-    ( 'R', 'U', 'T', 'N', r, r, 
+    ( 'R', 'U', 'T', 'N', r, r,
       1, A.V.LockedBuffer(), A.V.LDim(), &buffer[0], r );
 
     //------------------------------------------------------------------------//
@@ -170,7 +170,7 @@ void Compress( int maxRank, LowRank<Real>& A )
     // Get the SVD of R1 R2^T, overwriting R1 R2^T with U
     std::vector<Real> s( r );
     lapack::SVD
-    ( 'O', 'S', r, r, &buffer[0], r, &s[0], 0, 1, 
+    ( 'O', 'S', r, r, &buffer[0], r, &s[0], 0, 1,
       &buffer[blockSize], r, &buffer[2*blockSize], lworkSVD );
 
     //------------------------------------------------------------------------//
@@ -182,7 +182,7 @@ void Compress( int maxRank, LowRank<Real>& A )
     // Copy the result of the QR factorization of A.U into a temporary buffer
     for( int j=0; j<r; ++j )
         MemCopy( &buffer[2*blockSize+j*m], A.U.LockedBuffer(0,j), m );
-    // Logically shrink A.U 
+    // Logically shrink A.U
     A.U.Resize( m, roundedRank );
     // Zero the shrunk buffer
     Scale( (Real)0, A.U );
@@ -197,7 +197,7 @@ void Compress( int maxRank, LowRank<Real>& A )
     }
     // Hit the matrix from the left with Q1 from the QR decomp of the orig A.U
     lapack::ApplyQ
-    ( 'L', 'N', m, roundedRank, r, &buffer[2*blockSize], m, &tauU[0], 
+    ( 'L', 'N', m, roundedRank, r, &buffer[2*blockSize], m, &tauU[0],
       A.U.Buffer(), A.U.LDim(), &buffer[0], blockSize );
 
     // Copy the result of the QR factorization of A.V into a temporary buffer
@@ -224,7 +224,7 @@ void Compress( int maxRank, LowRank<Real>& A )
 
 // A :~= A
 //
-// Approximate A with a given maximum rank. 
+// Approximate A with a given maximum rank.
 template<typename Real>
 void Compress( int maxRank, LowRank<std::complex<Real> >& A )
 {
@@ -286,7 +286,7 @@ void Compress( int maxRank, LowRank<std::complex<Real> >& A )
     // We are unfortunately performing 2x as many flops as required.
     const char option = 'T';
     blas::Trmm
-    ( 'R', 'U', option, 'N', r, r, 
+    ( 'R', 'U', option, 'N', r, r,
       1, A.V.LockedBuffer(), A.V.LDim(), &buffer[0], r );
 
     //------------------------------------------------------------------------//
@@ -297,7 +297,7 @@ void Compress( int maxRank, LowRank<std::complex<Real> >& A )
     // Get the SVD of R1 R2^[T,H], overwriting it with U
     std::vector<Real> realBuffer( 6*r );
     lapack::SVD
-    ( 'O', 'S', r, r, &buffer[0], r, &realBuffer[0], 0, 1, 
+    ( 'O', 'S', r, r, &buffer[0], r, &realBuffer[0], 0, 1,
       &buffer[blockSize], r, &buffer[2*blockSize], lworkSVD, &realBuffer[r] );
 
     //------------------------------------------------------------------------//
@@ -327,7 +327,7 @@ void Compress( int maxRank, LowRank<std::complex<Real> >& A )
     }
     // Hit the matrix from the left with Q1 from the QR decomp of the orig A.U
     lapack::ApplyQ
-    ( 'L', 'N', m, roundedRank, r, &buffer[2*blockSize], m, &tauU[0], 
+    ( 'L', 'N', m, roundedRank, r, &buffer[2*blockSize], m, &tauU[0],
       A.U.Buffer(), A.U.LDim(), &buffer[0], blockSize );
 
     // Copy the result of the QR factorization of A.V into a temporary buffer
@@ -355,12 +355,12 @@ void Compress( int maxRank, LowRank<std::complex<Real> >& A )
 template void Compress( int maxRank, Dense<float>& D, LowRank<float>& F );
 template void Compress( int maxRank, Dense<double>& D, LowRank<double>& F );
 template void Compress
-( int maxRank, 
-  Dense<std::complex<float> >& D, 
+( int maxRank,
+  Dense<std::complex<float> >& D,
   LowRank<std::complex<float> >& F );
 template void Compress
-( int maxRank, 
-  Dense<std::complex<double> >& D, 
+( int maxRank,
+  Dense<std::complex<double> >& D,
   LowRank<std::complex<double> >& F );
 
 template void Compress( int maxRank, LowRank<float>& A );

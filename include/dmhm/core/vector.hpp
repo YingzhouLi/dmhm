@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -16,8 +16,8 @@
 
 namespace dmhm {
 
-// A vector implementation that allows O(1) creation of subvectors. 
-// The tradeoff versus std::vector is that introducing (locked) views makes 
+// A vector implementation that allows O(1) creation of subvectors.
+// The tradeoff versus std::vector is that introducing (locked) views makes
 template<typename T>
 class Vector
 {
@@ -46,7 +46,7 @@ public:
     T Get( int i ) const;
     T & operator[]( int i );
     const T & operator[]( int i ) const;
-    
+
     typedef typename std::vector<T>::iterator iterator;
     iterator Begin()
     { return memory_.begin(); }
@@ -256,7 +256,7 @@ Vector<T>::operator[]( int i ) const
 template<typename T>
 inline void
 Vector<T>::Erase( const iterator bp, const iterator ep )
-{ 
+{
 #ifndef RELEASE
     CallStackEntry entry("Vector::Erase");
 #endif
@@ -274,7 +274,7 @@ Vector<T>::Erase( const iterator bp, const iterator ep )
 template<typename T>
 inline void
 Vector<T>::Push_back( const T& x )
-{ 
+{
 #ifndef RELEASE
     CallStackEntry entry("Vector::Push_back");
 #endif
@@ -292,7 +292,7 @@ Vector<T>::Push_back( const T& x )
 template<typename T>
 inline void
 Vector<T>::Push_back( T& x )
-{ 
+{
 #ifndef RELEASE
     CallStackEntry entry("Vector::Push_back");
 #endif
@@ -305,12 +305,12 @@ Vector<T>::Push_back( T& x )
 #ifdef MEMORY_INFO
     AddToMemoryCount( (double)memory_.size()*sizeof(T) );
 #endif
-} 
+}
 
 template<typename T>
 inline void
 Vector<T>::Pop_back()
-{ 
+{
 #ifndef RELEASE
     CallStackEntry entry("Vector::Pop_back");
     if( height_ == 0 )
@@ -325,7 +325,7 @@ Vector<T>::Pop_back()
 #ifdef MEMORY_INFO
     AddToMemoryCount( (double)memory_.size()*sizeof(T) );
 #endif
-} 
+}
 
 template<typename T>
 inline void

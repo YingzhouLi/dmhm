@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -62,7 +62,7 @@ DistHMat3d<Scalar>::MultiplyHMatFullAccumulate
     C.Clear();
 
 #ifdef TIME_MULTIPLY
-    Timer timer; 
+    Timer timer;
     mpi::Barrier( mpi::COMM_WORLD );
     timer.Start( 0 );
 #endif
@@ -226,7 +226,7 @@ DistHMat3d<Scalar>::MultiplyHMatSingleLevelAccumulate
     C.Clear();
 
 #ifdef TIME_MULTIPLY
-    Timer timer; 
+    Timer timer;
     mpi::Barrier( mpi::COMM_WORLD );
     timer.Start( 0 );
 #endif
@@ -394,7 +394,7 @@ DistHMat3d<Scalar>::MultiplyHMatSingleUpdateAccumulate
     C.Clear();
 
 #ifdef TIME_MULTIPLY
-    Timer timer; 
+    Timer timer;
     mpi::Barrier( mpi::COMM_WORLD );
     timer.Start( 0 );
 #endif

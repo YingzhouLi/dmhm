@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -14,8 +14,8 @@ namespace hmat_tools {
 // Dense C := alpha A^T B
 template<typename Scalar>
 void TransposeMultiply
-( Scalar alpha, const Dense<Scalar>& A, 
-                const Dense<Scalar>& B, 
+( Scalar alpha, const Dense<Scalar>& A,
+                const Dense<Scalar>& B,
                       Dense<Scalar>& C )
 {
 #ifndef RELEASE
@@ -29,8 +29,8 @@ void TransposeMultiply
 // Dense C := alpha A^T B + beta C
 template<typename Scalar>
 void TransposeMultiply
-( Scalar alpha, const Dense<Scalar>& A, 
-                const Dense<Scalar>& B, 
+( Scalar alpha, const Dense<Scalar>& A,
+                const Dense<Scalar>& B,
   Scalar beta,        Dense<Scalar>& C )
 {
 #ifndef RELEASE
@@ -44,7 +44,7 @@ void TransposeMultiply
     {
         blas::Symm
         ( 'L', 'L', C.Height(), C.Width(),
-          alpha, A.LockedBuffer(), A.LDim(), B.LockedBuffer(), B.LDim(), 
+          alpha, A.LockedBuffer(), A.LDim(), B.LockedBuffer(), B.LDim(),
           beta, C.Buffer(), C.LDim() );
     }
     else
@@ -59,8 +59,8 @@ void TransposeMultiply
 // Form a dense matrix from a dense matrix times a low-rank matrix
 template<typename Scalar>
 void TransposeMultiply
-( Scalar alpha, const Dense<Scalar>& A, 
-                const LowRank<Scalar>& B, 
+( Scalar alpha, const Dense<Scalar>& A,
+                const LowRank<Scalar>& B,
                       Dense<Scalar>& C )
 {
 #ifndef RELEASE
@@ -74,8 +74,8 @@ void TransposeMultiply
 // Form a dense matrix from a dense matrix times a low-rank matrix
 template<typename Scalar>
 void TransposeMultiply
-( Scalar alpha, const Dense<Scalar>& A, 
-                const LowRank<Scalar>& B, 
+( Scalar alpha, const Dense<Scalar>& A,
+                const LowRank<Scalar>& B,
   Scalar beta,        Dense<Scalar>& C )
 {
 #ifndef RELEASE
@@ -91,29 +91,29 @@ void TransposeMultiply
     {
         blas::Symm
         ( 'L', 'L', A.Width(), B.Rank(),
-          1, A.LockedBuffer(), A.LDim(), B.U.LockedBuffer(), B.U.LDim(), 
+          1, A.LockedBuffer(), A.LDim(), B.U.LockedBuffer(), B.U.LDim(),
           0, W.Buffer(), W.LDim() );
     }
     else
     {
         blas::Gemm
         ( 'T', 'N', A.Width(), B.Rank(), A.Height(),
-          1, A.LockedBuffer(), A.LDim(), B.U.LockedBuffer(), B.U.LDim(), 
+          1, A.LockedBuffer(), A.LDim(), B.U.LockedBuffer(), B.U.LDim(),
           0, W.Buffer(), W.LDim() );
     }
     // C := alpha W B.V^[T,H] + beta C
     const char option = 'T';
     blas::Gemm
     ( 'N', option, C.Height(), C.Width(), B.Rank(),
-      alpha, W.LockedBuffer(), W.LDim(), B.V.LockedBuffer(), B.V.LDim(), 
+      alpha, W.LockedBuffer(), W.LDim(), B.V.LockedBuffer(), B.V.LDim(),
       beta,  C.Buffer(), C.LDim() );
 }
 
 // Form a dense matrix from a low-rank matrix times a dense matrix
 template<typename Scalar>
 void TransposeMultiply
-( Scalar alpha, const LowRank<Scalar>& A, 
-                const Dense<Scalar>& B, 
+( Scalar alpha, const LowRank<Scalar>& A,
+                const Dense<Scalar>& B,
                       Dense<Scalar>& C )
 {
 #ifndef RELEASE
@@ -127,8 +127,8 @@ void TransposeMultiply
 // Form a dense matrix from a low-rank matrix times a dense matrix
 template<typename Scalar>
 void TransposeMultiply
-( Scalar alpha, const LowRank<Scalar>& A, 
-                const Dense<Scalar>& B, 
+( Scalar alpha, const LowRank<Scalar>& A,
+                const Dense<Scalar>& B,
   Scalar beta,        Dense<Scalar>& C )
 {
 #ifndef RELEASE
@@ -153,7 +153,7 @@ void TransposeMultiply
         Dense<Scalar> W( A.Height(), r );
         blas::Symm
         ( 'L', 'L', A.Height(), r,
-          1, B.LockedBuffer(), B.LDim(), A.U.LockedBuffer(), A.U.LDim(), 
+          1, B.LockedBuffer(), B.LDim(), A.U.LockedBuffer(), A.U.LDim(),
           0, W.Buffer(), W.LDim() );
         blas::Gemm
         ( 'N', 'N', m, A.Height(), r,
@@ -170,7 +170,7 @@ void TransposeMultiply
         Dense<Scalar> W( r, n );
         blas::Gemm
         ( 'T', 'N', r, n, A.Height(),
-          1, A.U.LockedBuffer(), A.U.LDim(), B.LockedBuffer(), B.LDim(), 
+          1, A.U.LockedBuffer(), A.U.LDim(), B.LockedBuffer(), B.LDim(),
           0, W.Buffer(), W.LDim() );
         blas::Gemm
         ( 'N', 'N', m, n, r,
@@ -211,7 +211,7 @@ void TransposeMultiply
     Dense<Scalar> X( A.Width(), B.Rank() );
     blas::Gemm
     ( 'N', 'N', A.Width(), B.Rank(), A.Rank(),
-      1, A.V.LockedBuffer(), A.V.LDim(), W.LockedBuffer(), W.LDim(), 
+      1, A.V.LockedBuffer(), A.V.LDim(), W.LockedBuffer(), W.LDim(),
       0, X.Buffer(), X.LDim() );
     blas::Gemm
     ( 'N', 'T', C.Height(), C.Width(), B.Rank(),
@@ -222,8 +222,8 @@ void TransposeMultiply
 // Low-rank C := alpha A^T B
 template<typename Scalar>
 void TransposeMultiply
-( Scalar alpha, const LowRank<Scalar>& A, 
-                const LowRank<Scalar>& B, 
+( Scalar alpha, const LowRank<Scalar>& A,
+                const LowRank<Scalar>& B,
                       LowRank<Scalar>& C )
 {
 #ifndef RELEASE
@@ -254,13 +254,13 @@ void TransposeMultiply
         Dense<Scalar> W( Br, Ar );
         blas::Gemm
         ( 'T', 'N', Br, Ar, B.Height(),
-          1, B.U.LockedBuffer(), B.U.LDim(), 
-             A.U.LockedBuffer(), A.U.LDim(), 
+          1, B.U.LockedBuffer(), B.U.LDim(),
+             A.U.LockedBuffer(), A.U.LDim(),
           0, W.Buffer(),         W.LDim() );
         blas::Gemm
         ( 'N', 'N', n, Ar, Br,
-          alpha, B.V.LockedBuffer(), B.V.LDim(), 
-                 W.LockedBuffer(),   W.LDim(), 
+          alpha, B.V.LockedBuffer(), B.V.LDim(),
+                 W.LockedBuffer(),   W.LDim(),
           0,     C.V.Buffer(),       C.V.LDim() );
     }
     else // B.r < A.r
@@ -279,13 +279,13 @@ void TransposeMultiply
         Dense<Scalar> W( Ar, Br );
         blas::Gemm
         ( 'T', 'N', Ar, Br, A.Height(),
-          1, A.U.LockedBuffer(), A.U.LDim(), 
-             B.U.LockedBuffer(), B.U.LDim(), 
+          1, A.U.LockedBuffer(), A.U.LDim(),
+             B.U.LockedBuffer(), B.U.LDim(),
           0, W.Buffer(),         W.LDim() );
         blas::Gemm
         ( 'N', 'N', m, Br, Ar,
-          alpha, A.V.LockedBuffer(), A.V.LDim(), 
-                 W.LockedBuffer(),   W.LDim(), 
+          alpha, A.V.LockedBuffer(), A.V.LDim(),
+                 W.LockedBuffer(),   W.LDim(),
           0,     C.U.Buffer(),       C.U.LDim() );
         Copy( B.V, C.V );
     }
@@ -294,8 +294,8 @@ void TransposeMultiply
 // Form a low-rank matrix from a dense matrix times a low-rank matrix
 template<typename Scalar>
 void TransposeMultiply
-( Scalar alpha, const Dense<Scalar>& A, 
-                const LowRank<Scalar>& B, 
+( Scalar alpha, const Dense<Scalar>& A,
+                const LowRank<Scalar>& B,
                       LowRank<Scalar>& C )
 {
 #ifndef RELEASE
@@ -314,17 +314,17 @@ void TransposeMultiply
     if( A.Symmetric() )
     {
         blas::Symm
-        ( 'L', 'L', m, r, 
-          alpha, A.LockedBuffer(),   A.LDim(), 
-                 B.U.LockedBuffer(), B.U.LDim(), 
+        ( 'L', 'L', m, r,
+          alpha, A.LockedBuffer(),   A.LDim(),
+                 B.U.LockedBuffer(), B.U.LDim(),
           0,     C.U.Buffer(),       C.U.LDim() );
     }
     else
     {
         blas::Gemm
         ( 'T', 'N', m, r, A.Height(),
-          alpha, A.LockedBuffer(),   A.LDim(), 
-                 B.U.LockedBuffer(), B.U.LDim(), 
+          alpha, A.LockedBuffer(),   A.LDim(),
+                 B.U.LockedBuffer(), B.U.LDim(),
           0,     C.U.Buffer(),       C.U.LDim() );
     }
 
@@ -335,8 +335,8 @@ void TransposeMultiply
 // Form a low-rank matrix from a low-rank matrix times a dense matrix
 template<typename Scalar>
 void TransposeMultiply
-( Scalar alpha, const LowRank<Scalar>& A, 
-                const Dense<Scalar>& B, 
+( Scalar alpha, const LowRank<Scalar>& A,
+                const Dense<Scalar>& B,
                       LowRank<Scalar>& C )
 {
 #ifndef RELEASE
@@ -347,7 +347,7 @@ void TransposeMultiply
     const int m = A.Width();
     const int n = B.Width();
     const int r = A.Rank();
-    
+
     C.U.SetType( GENERAL ); C.U.Resize( m, r );
     C.V.SetType( GENERAL ); C.V.Resize( n, r );
 
@@ -363,8 +363,8 @@ void TransposeMultiply
         Copy( A.V, C.U );
         blas::Symm
         ( 'L', 'L', A.Height(), r,
-          alpha, B.LockedBuffer(),   B.LDim(), 
-                 A.U.LockedBuffer(), A.U.LDim(), 
+          alpha, B.LockedBuffer(),   B.LDim(),
+                 A.U.LockedBuffer(), A.U.LDim(),
           0,     C.V.Buffer(),       C.V.LDim() );
     }
     else
@@ -378,8 +378,8 @@ void TransposeMultiply
         Copy( A.V, C.U );
         blas::Gemm
         ( 'T', 'N', n, r, A.Height(),
-          alpha, B.LockedBuffer(),   B.LDim(), 
-                 A.U.LockedBuffer(), A.U.LDim(), 
+          alpha, B.LockedBuffer(),   B.LDim(),
+                 A.U.LockedBuffer(), A.U.LDim(),
           0,     C.V.Buffer(),       C.V.LDim() );
     }
 }
@@ -563,41 +563,41 @@ template void TransposeMultiply
 
 // Form a dense matrix from a dense matrix times a low-rank matrix
 template void TransposeMultiply
-( float alpha, const Dense<float>& A, 
-               const LowRank<float>& B, 
+( float alpha, const Dense<float>& A,
+               const LowRank<float>& B,
                      Dense<float>& C );
 template void TransposeMultiply
 ( double alpha, const Dense<double>& A,
                 const LowRank<double>& B,
                       Dense<double>& C );
 template void TransposeMultiply
-( std::complex<float> alpha, 
+( std::complex<float> alpha,
   const Dense<std::complex<float> >& A,
   const LowRank<std::complex<float> >& B,
         Dense<std::complex<float> >& C );
 template void TransposeMultiply
-( std::complex<double> alpha, 
+( std::complex<double> alpha,
   const Dense<std::complex<double> >& A,
   const LowRank<std::complex<double> >& B,
         Dense<std::complex<double> >& C );
 
 // Form a dense matrix from a dense matrix times a low-rank matrix
 template void TransposeMultiply
-( float alpha, const Dense<float>& A, 
-               const LowRank<float>& B, 
+( float alpha, const Dense<float>& A,
+               const LowRank<float>& B,
   float beta,        Dense<float>& C );
 template void TransposeMultiply
 ( double alpha, const Dense<double>& A,
                 const LowRank<double>& B,
   double beta,        Dense<double>& C );
 template void TransposeMultiply
-( std::complex<float> alpha, 
+( std::complex<float> alpha,
   const Dense<std::complex<float> >& A,
   const LowRank<std::complex<float> >& B,
   std::complex<float> beta,
         Dense<std::complex<float> >& C );
 template void TransposeMultiply
-( std::complex<double> alpha, 
+( std::complex<double> alpha,
   const Dense<std::complex<double> >& A,
   const LowRank<std::complex<double> >& B,
   std::complex<double> beta,
@@ -605,41 +605,41 @@ template void TransposeMultiply
 
 // Form a dense matrix from a low-rank matrix times a dense matrix
 template void TransposeMultiply
-( float alpha, const LowRank<float>& A, 
-               const Dense<float>& B, 
+( float alpha, const LowRank<float>& A,
+               const Dense<float>& B,
                      Dense<float>& C );
 template void TransposeMultiply
 ( double alpha, const LowRank<double>& A,
                 const Dense<double>& B,
                       Dense<double>& C );
 template void TransposeMultiply
-( std::complex<float> alpha, 
+( std::complex<float> alpha,
   const LowRank<std::complex<float> >& A,
   const Dense<std::complex<float> >& B,
         Dense<std::complex<float> >& C );
 template void TransposeMultiply
-( std::complex<double> alpha, 
+( std::complex<double> alpha,
   const LowRank<std::complex<double> >& A,
   const Dense<std::complex<double> >& B,
         Dense<std::complex<double> >& C );
 
 // Form a dense matrix from a low-rank matrix times a dense matrix
 template void TransposeMultiply
-( float alpha, const LowRank<float>& A, 
-               const Dense<float>& B, 
+( float alpha, const LowRank<float>& A,
+               const Dense<float>& B,
   float beta,        Dense<float>& C );
 template void TransposeMultiply
 ( double alpha, const LowRank<double>& A,
                 const Dense<double>& B,
   double beta,        Dense<double>& C );
 template void TransposeMultiply
-( std::complex<float> alpha, 
+( std::complex<float> alpha,
   const LowRank<std::complex<float> >& A,
   const Dense<std::complex<float> >& B,
   std::complex<float> beta,
         Dense<std::complex<float> >& C );
 template void TransposeMultiply
-( std::complex<double> alpha, 
+( std::complex<double> alpha,
   const LowRank<std::complex<double> >& A,
   const Dense<std::complex<double> >& B,
   std::complex<double> beta,
@@ -697,52 +697,52 @@ template void TransposeMultiply
                 const LowRank<double>& B,
                       LowRank<double>& C );
 template void TransposeMultiply
-( std::complex<float> alpha, 
+( std::complex<float> alpha,
   const LowRank<std::complex<float> >& A,
   const LowRank<std::complex<float> >& B,
         LowRank<std::complex<float> >& C );
 template void TransposeMultiply
-( std::complex<double> alpha, 
+( std::complex<double> alpha,
   const LowRank<std::complex<double> >& A,
   const LowRank<std::complex<double> >& B,
         LowRank<std::complex<double> >& C );
 
 // Form a low-rank matrix from a dense matrix times a low-rank matrix
 template void TransposeMultiply
-( float alpha, const Dense<float>& A, 
-               const LowRank<float>& B, 
+( float alpha, const Dense<float>& A,
+               const LowRank<float>& B,
                      LowRank<float>& C );
 template void TransposeMultiply
 ( double alpha, const Dense<double>& A,
                 const LowRank<double>& B,
                       LowRank<double>& C );
 template void TransposeMultiply
-( std::complex<float> alpha, 
+( std::complex<float> alpha,
   const Dense<std::complex<float> >& A,
   const LowRank<std::complex<float> >& B,
         LowRank<std::complex<float> >& C );
 template void TransposeMultiply
-( std::complex<double> alpha, 
+( std::complex<double> alpha,
   const Dense<std::complex<double> >& A,
   const LowRank<std::complex<double> >& B,
         LowRank<std::complex<double> >& C );
 
 // Form a low-rank matrix from a low-rank matrix times a dense matrix
 template void TransposeMultiply
-( float alpha, const LowRank<float>& A, 
-               const Dense<float>& B, 
+( float alpha, const LowRank<float>& A,
+               const Dense<float>& B,
                      LowRank<float>& C );
 template void TransposeMultiply
 ( double alpha, const LowRank<double>& A,
                 const Dense<double>& B,
                       LowRank<double>& C );
 template void TransposeMultiply
-( std::complex<float> alpha, 
+( std::complex<float> alpha,
   const LowRank<std::complex<float> >& A,
   const Dense<std::complex<float> >& B,
         LowRank<std::complex<float> >& C );
 template void TransposeMultiply
-( std::complex<double> alpha, 
+( std::complex<double> alpha,
   const LowRank<std::complex<double> >& A,
   const Dense<std::complex<double> >& B,
         LowRank<std::complex<double> >& C );

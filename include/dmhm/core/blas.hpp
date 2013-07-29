@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -126,7 +126,7 @@ void BLAS(zsymv)
   const dcomplex* beta,        dcomplex* y, const int* incy );
 
 void BLAS(sgemm)
-( const char* transa, const char* transb, 
+( const char* transa, const char* transb,
   const int* m, const int* n, const int* k,
   const float* alpha, const float* A, const int* lda,
                       const float* B, const int* ldb,
@@ -251,8 +251,8 @@ inline void Scal
 //----------------------------------------------------------------------------//
 
 inline void Ger
-( int m, int n, 
-  float alpha, const float* x, int incx, 
+( int m, int n,
+  float alpha, const float* x, int incx,
                const float* y, int incy,
                      float* A, int lda )
 {
@@ -265,8 +265,8 @@ inline void Ger
 }
 
 inline void Ger
-( int m, int n, 
-  double alpha, const double* x, int incx, 
+( int m, int n,
+  double alpha, const double* x, int incx,
                 const double* y, int incy,
                       double* A, int lda )
 {
@@ -279,8 +279,8 @@ inline void Ger
 }
 
 inline void Ger
-( int m, int n, 
-  std::complex<float> alpha, const std::complex<float>* x, int incx, 
+( int m, int n,
+  std::complex<float> alpha, const std::complex<float>* x, int incx,
                              const std::complex<float>* y, int incy,
                                    std::complex<float>* A, int lda )
 {
@@ -293,8 +293,8 @@ inline void Ger
 }
 
 inline void Ger
-( int m, int n, 
-  std::complex<double> alpha, const std::complex<double>* x, int incx, 
+( int m, int n,
+  std::complex<double> alpha, const std::complex<double>* x, int incx,
                               const std::complex<double>* y, int incy,
                                     std::complex<double>* A, int lda )
 {
@@ -311,9 +311,9 @@ inline void Ger
 //----------------------------------------------------------------------------//
 
 inline void Gemv
-( char trans, int m, int n, 
-  float alpha, const float* A, int lda, 
-               const float* x, int incx, 
+( char trans, int m, int n,
+  float alpha, const float* A, int lda,
+               const float* x, int incx,
   float beta,        float* y, int incy )
 {
 #ifndef RELEASE
@@ -364,9 +364,9 @@ inline void Gemv
 }
 
 inline void Gemv
-( char trans, int m, int n, 
-  double alpha, const double* A, int lda, 
-                const double* x, int incx, 
+( char trans, int m, int n,
+  double alpha, const double* A, int lda,
+                const double* x, int incx,
   double beta,        double* y, int incy )
 {
 #ifndef RELEASE
@@ -417,9 +417,9 @@ inline void Gemv
 }
 
 inline void Gemv
-( char trans, int m, int n, 
-  std::complex<float> alpha, const std::complex<float>* A, int lda, 
-                             const std::complex<float>* x, int incx, 
+( char trans, int m, int n,
+  std::complex<float> alpha, const std::complex<float>* A, int lda,
+                             const std::complex<float>* x, int incx,
   std::complex<float> beta,        std::complex<float>* y, int incy )
 {
 #ifndef RELEASE
@@ -470,9 +470,9 @@ inline void Gemv
 }
 
 inline void Gemv
-( char trans, int m, int n, 
-  std::complex<double> alpha, const std::complex<double>* A, int lda, 
-                              const std::complex<double>* x, int incx, 
+( char trans, int m, int n,
+  std::complex<double> alpha, const std::complex<double>* A, int lda,
+                              const std::complex<double>* x, int incx,
   std::complex<double> beta,        std::complex<double>* y, int incy )
 {
 #ifndef RELEASE
@@ -527,9 +527,9 @@ inline void Gemv
 //----------------------------------------------------------------------------//
 
 inline void Symv
-( char uplo, int n, 
+( char uplo, int n,
   float alpha, const float* A, int lda,
-               const float* x, int incx, 
+               const float* x, int incx,
   float beta,        float* y, int incy )
 {
 #ifndef RELEASE
@@ -541,9 +541,9 @@ inline void Symv
 }
 
 inline void Symv
-( char uplo, int n, 
+( char uplo, int n,
   double alpha, const double* A, int lda,
-                const double* x, int incx, 
+                const double* x, int incx,
   double beta,        double* y, int incy )
 {
 #ifndef RELEASE
@@ -555,9 +555,9 @@ inline void Symv
 }
 
 inline void Symv
-( char uplo, int n, 
+( char uplo, int n,
   std::complex<float> alpha, const std::complex<float>* A, int lda,
-                             const std::complex<float>* x, int incx, 
+                             const std::complex<float>* x, int incx,
   std::complex<float> beta,        std::complex<float>* y, int incy )
 {
 #ifndef RELEASE
@@ -569,9 +569,9 @@ inline void Symv
 }
 
 inline void Symv
-( char uplo, int n, 
+( char uplo, int n,
   std::complex<double> alpha, const std::complex<double>* A, int lda,
-                              const std::complex<double>* x, int incx, 
+                              const std::complex<double>* x, int incx,
   std::complex<double> beta,        std::complex<double>* y, int incy )
 {
 #ifndef RELEASE
@@ -594,8 +594,8 @@ inline void PrintGemmDimensions
 }
 
 inline void Gemm
-( char transa, char transb, int m, int n, int k, 
-  float alpha, const float* A, int lda, 
+( char transa, char transb, int m, int n, int k,
+  float alpha, const float* A, int lda,
                const float* B, int ldb,
   float beta,        float* C, int ldc )
 {
@@ -635,7 +635,7 @@ inline void Gemm
 #endif
     if( k != 0 )
         BLAS(sgemm)
-        ( &transa, &transb, &m, &n, &k, 
+        ( &transa, &transb, &m, &n, &k,
           &alpha, A, &lda, B, &ldb, &beta, C, &ldc );
     else
     {
@@ -650,8 +650,8 @@ inline void Gemm
 }
 
 inline void Gemm
-( char transa, char transb, int m, int n, int k, 
-  double alpha, const double* A, int lda, 
+( char transa, char transb, int m, int n, int k,
+  double alpha, const double* A, int lda,
                 const double* B, int ldb,
   double beta,        double* C, int ldc )
 {
@@ -691,7 +691,7 @@ inline void Gemm
 #endif
     if( k != 0 )
         BLAS(dgemm)
-        ( &transa, &transb, &m, &n, &k, 
+        ( &transa, &transb, &m, &n, &k,
           &alpha, A, &lda, B, &ldb, &beta, C, &ldc );
     else
     {
@@ -706,8 +706,8 @@ inline void Gemm
 }
 
 inline void Gemm
-( char transa, char transb, int m, int n, int k, 
-  std::complex<float> alpha, const std::complex<float>* A, int lda, 
+( char transa, char transb, int m, int n, int k,
+  std::complex<float> alpha, const std::complex<float>* A, int lda,
                              const std::complex<float>* B, int ldb,
   std::complex<float> beta,        std::complex<float>* C, int ldc )
 {
@@ -747,7 +747,7 @@ inline void Gemm
 #endif
     if( k != 0 )
         BLAS(cgemm)
-        ( &transa, &transb, &m, &n, &k, 
+        ( &transa, &transb, &m, &n, &k,
           &alpha, A, &lda, B, &ldb, &beta, C, &ldc );
     else
     {
@@ -762,8 +762,8 @@ inline void Gemm
 }
 
 inline void Gemm
-( char transa, char transb, int m, int n, int k, 
-  std::complex<double> alpha, const std::complex<double>* A, int lda, 
+( char transa, char transb, int m, int n, int k,
+  std::complex<double> alpha, const std::complex<double>* A, int lda,
                               const std::complex<double>* B, int ldb,
   std::complex<double> beta,        std::complex<double>* C, int ldc )
 {
@@ -803,7 +803,7 @@ inline void Gemm
 #endif
     if( k != 0 )
         BLAS(zgemm)
-        ( &transa, &transb, &m, &n, &k, 
+        ( &transa, &transb, &m, &n, &k,
           &alpha, A, &lda, B, &ldb, &beta, C, &ldc );
     else
     {
@@ -822,8 +822,8 @@ inline void Gemm
 //----------------------------------------------------------------------------//
 
 inline void Symm
-( char side, char uplo, int m, int n, 
-  float alpha, const float* A, int lda, 
+( char side, char uplo, int m, int n,
+  float alpha, const float* A, int lda,
                const float* B, int ldb,
   float beta,        float* C, int ldc )
 {
@@ -841,8 +841,8 @@ inline void Symm
 }
 
 inline void Symm
-( char side, char uplo, int m, int n, 
-  double alpha, const double* A, int lda, 
+( char side, char uplo, int m, int n,
+  double alpha, const double* A, int lda,
                 const double* B, int ldb,
   double beta,        double* C, int ldc )
 {
@@ -861,7 +861,7 @@ inline void Symm
 
 inline void Symm
 ( char side, char uplo, int m, int n,
-  std::complex<float> alpha, const std::complex<float>* A, int lda, 
+  std::complex<float> alpha, const std::complex<float>* A, int lda,
                              const std::complex<float>* B, int ldb,
   std::complex<float> beta,        std::complex<float>* C, int ldc )
 {
@@ -879,8 +879,8 @@ inline void Symm
 }
 
 inline void Symm
-( char side, char uplo, int m, int n, 
-  std::complex<double> alpha, const std::complex<double>* A, int lda, 
+( char side, char uplo, int m, int n,
+  std::complex<double> alpha, const std::complex<double>* A, int lda,
                               const std::complex<double>* B, int ldb,
   std::complex<double> beta,        std::complex<double>* C, int ldc )
 {
@@ -902,8 +902,8 @@ inline void Symm
 //----------------------------------------------------------------------------//
 
 inline void Trmm
-( char side, char uplo, char transa, char diag, int m, int n, 
-  float alpha, const float* A, int lda, 
+( char side, char uplo, char transa, char diag, int m, int n,
+  float alpha, const float* A, int lda,
                      float* B, int ldb )
 {
 #ifndef RELEASE
@@ -918,8 +918,8 @@ inline void Trmm
 }
 
 inline void Trmm
-( char side, char uplo, char transa, char diag, int m, int n, 
-  double alpha, const double* A, int lda, 
+( char side, char uplo, char transa, char diag, int m, int n,
+  double alpha, const double* A, int lda,
                       double* B, int ldb )
 {
 #ifndef RELEASE
@@ -934,8 +934,8 @@ inline void Trmm
 }
 
 inline void Trmm
-( char side, char uplo, char transa, char diag, int m, int n, 
-  std::complex<float> alpha, const std::complex<float>* A, int lda, 
+( char side, char uplo, char transa, char diag, int m, int n,
+  std::complex<float> alpha, const std::complex<float>* A, int lda,
                                    std::complex<float>* B, int ldb )
 {
 #ifndef RELEASE
@@ -950,8 +950,8 @@ inline void Trmm
 }
 
 inline void Trmm
-( char side, char uplo, char transa, char diag, int m, int n, 
-  std::complex<double> alpha, const std::complex<double>* A, int lda, 
+( char side, char uplo, char transa, char diag, int m, int n,
+  std::complex<double> alpha, const std::complex<double>* A, int lda,
                                     std::complex<double>* B, int ldb )
 {
 #ifndef RELEASE
@@ -966,6 +966,6 @@ inline void Trmm
 }
 
 } // namespace blas
-} // namespace dmhm 
+} // namespace dmhm
 
 #endif // ifndef DMHM_BLAS_HPP

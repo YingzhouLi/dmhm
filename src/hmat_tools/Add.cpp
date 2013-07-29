@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -14,8 +14,8 @@ namespace hmat_tools {
 // Dense C := alpha A + beta B
 template<typename Scalar>
 void Add
-( Scalar alpha, const Dense<Scalar>& A, 
-  Scalar beta,  const Dense<Scalar>& B, 
+( Scalar alpha, const Dense<Scalar>& A,
+  Scalar beta,  const Dense<Scalar>& B,
                       Dense<Scalar>& C )
 {
 #ifndef RELEASE
@@ -59,8 +59,8 @@ void Add
 // Low-rank C := alpha A + beta B
 template<typename Scalar>
 void Add
-( Scalar alpha, const LowRank<Scalar>& A, 
-  Scalar beta,  const LowRank<Scalar>& B, 
+( Scalar alpha, const LowRank<Scalar>& A,
+  Scalar beta,  const LowRank<Scalar>& B,
                       LowRank<Scalar>& C )
 {
 #ifndef RELEASE
@@ -105,7 +105,7 @@ void Add
 // Dense from sum of low-rank and dense:  C := alpha A + beta B
 template<typename Scalar>
 void Add
-( Scalar alpha, const LowRank<Scalar>& A, 
+( Scalar alpha, const LowRank<Scalar>& A,
   Scalar beta,  const Dense<Scalar>& B,
                       Dense<Scalar>& C )
 {
@@ -124,7 +124,7 @@ void Add
     if( B.Symmetric() )
     {
         // Form the full C := beta B from the symmetric B
-        
+
         // Form the lower triangle
         for( int j=0; j<n; ++j )
         {
@@ -147,8 +147,8 @@ void Add
         // C := alpha A + C = alpha A.U A.V^[T,H] + C
         const char option = 'T';
         blas::Gemm
-        ( 'N', option, m, n, r, 
-          alpha, A.U.LockedBuffer(), A.U.LDim(), 
+        ( 'N', option, m, n, r,
+          alpha, A.U.LockedBuffer(), A.U.LDim(),
                  A.V.LockedBuffer(), A.V.LDim(),
           1,     C.Buffer(),         C.LDim() );
     }
@@ -166,8 +166,8 @@ void Add
         // C := alpha A + C = alpha A.U A.V^[T,H] + C
         const char option = 'T';
         blas::Gemm
-        ( 'N', option, m, n, r, 
-          alpha, A.U.LockedBuffer(), A.U.LDim(), 
+        ( 'N', option, m, n, r,
+          alpha, A.U.LockedBuffer(), A.U.LDim(),
                  A.V.LockedBuffer(), A.V.LDim(),
           1,     C.Buffer(),         C.LDim() );
     }
@@ -177,7 +177,7 @@ void Add
 // The arguments are switched for generality, so just call the other version.
 template<typename Scalar>
 void Add
-( Scalar alpha, const Dense<Scalar>& A, 
+( Scalar alpha, const Dense<Scalar>& A,
   Scalar beta,  const LowRank<Scalar>& B,
                       Dense<Scalar>& C )
 {
@@ -190,7 +190,7 @@ void Add
 // Dense as sum of two low-rank matrices
 template<typename Scalar>
 void Add
-( Scalar alpha, const LowRank<Scalar>& A, 
+( Scalar alpha, const LowRank<Scalar>& A,
   Scalar beta,  const LowRank<Scalar>& B,
                       Dense<Scalar>& C )
 {
@@ -209,14 +209,14 @@ void Add
     // C := alpha A = alpha A.U A.V^[T,H] + C
     const char option = 'T';
     blas::Gemm
-    ( 'N', option, m, n, r, 
-      alpha, A.U.LockedBuffer(), A.U.LDim(), 
+    ( 'N', option, m, n, r,
+      alpha, A.U.LockedBuffer(), A.U.LDim(),
              A.V.LockedBuffer(), A.V.LDim(),
       0,     C.Buffer(),         C.LDim() );
     // C := beta B + C = beta B.U B.V^[T,H] + C
     blas::Gemm
-    ( 'N', option, m, n, r, 
-      beta, B.U.LockedBuffer(), B.U.LDim(), 
+    ( 'N', option, m, n, r,
+      beta, B.U.LockedBuffer(), B.U.LDim(),
             B.V.LockedBuffer(), B.V.LDim(),
       1,    C.Buffer(),         C.LDim() );
 }

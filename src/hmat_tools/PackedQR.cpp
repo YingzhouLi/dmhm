@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -29,7 +29,7 @@ Real Householder( const int m, Real* buffer )
         beta = dmhm::lapack::SafeNorm( alpha, norm );
     else
         beta = -dmhm::lapack::SafeNorm( alpha, norm );
-    
+
     // Avoid overflow by scaling the vector
     const Real safeMin = dmhm::lapack::MachineSafeMin<Real>() /
                          dmhm::lapack::MachineEpsilon<Real>();
@@ -46,7 +46,7 @@ Real Householder( const int m, Real* buffer )
         } while( dmhm::Abs( beta ) < safeMin );
 
         norm = dmhm::blas::Nrm2( m-1, &buffer[1], 1 );
-        if( alpha <= 0 ) 
+        if( alpha <= 0 )
             beta = dmhm::lapack::SafeNorm( alpha, norm );
         else
             beta = -dmhm::lapack::SafeNorm( alpha, norm );
@@ -82,7 +82,7 @@ std::complex<Real> Householder( const int m, std::complex<Real>* buffer )
         beta = dmhm::lapack::SafeNorm( real(alpha), imag(alpha), norm );
     else
         beta = -dmhm::lapack::SafeNorm( real(alpha), imag(alpha), norm );
-    
+
     // Avoid overflow by scaling the vector
     const Real safeMin = dmhm::lapack::MachineSafeMin<Real>() /
                          dmhm::lapack::MachineEpsilon<Real>();
@@ -99,7 +99,7 @@ std::complex<Real> Householder( const int m, std::complex<Real>* buffer )
         } while( dmhm::Abs( beta ) < safeMin );
 
         norm = dmhm::blas::Nrm2( m-1, &buffer[1], 1 );
-        if( real(alpha) <= 0 ) 
+        if( real(alpha) <= 0 )
             beta = dmhm::lapack::SafeNorm( real(alpha), imag(alpha), norm );
         else
             beta = -dmhm::lapack::SafeNorm( real(alpha), imag(alpha), norm );
@@ -122,7 +122,7 @@ namespace dmhm {
 namespace hmat_tools {
 
 // Perform a QR factorization of size (s+t) x r where only the upper triangles
-// of the s x r and t x r submatrices are nonzero, and the nonzeros are packed 
+// of the s x r and t x r submatrices are nonzero, and the nonzeros are packed
 // columnwise.
 //
 // The work buffer must be of size t-1.
@@ -144,7 +144,7 @@ void PackedQR
         const int jDiag = jCol + j;
         tau[j] = Householder( S+T-j, &packedA[jDiag] );
 
-        // Form z := A(I_j,j+1:end)' v in the work vector 
+        // Form z := A(I_j,j+1:end)' v in the work vector
         int iCol = jCol + S + T;
         for( int i=0; i<r-(j+1); ++i )
         {
@@ -176,7 +176,7 @@ void PackedQR
             const int iDiagRight = iCol + j;
             packedA[iDiagRight] -= scale;
 
-            // Traverse over the relevant piece of this col of the 
+            // Traverse over the relevant piece of this col of the
             // lower-triangle
             const int jump = ( j >= s ? 1 : Si-j );
             for( int k=0; k<T-overlap; ++k )
@@ -192,7 +192,7 @@ void PackedQR
 template<typename Scalar>
 void ApplyPackedQFromLeft
 ( const int r, const int s, const int t,
-  const Scalar* RESTRICT packedA, const Scalar* RESTRICT tau, 
+  const Scalar* RESTRICT packedA, const Scalar* RESTRICT tau,
   Dense<Scalar>& B, Scalar* work )
 {
 #ifndef RELEASE
@@ -220,27 +220,27 @@ void ApplyPackedQFromLeft
         //    = B - tau_j v_j (B' v_j)'
 
         // 1) Form w_j := B' v_j
-        // Since v_j's only nonzero entries are a 1 in the j'th entry and 
-        // arbitrary values in the r:r+j entries, 
+        // Since v_j's only nonzero entries are a 1 in the j'th entry and
+        // arbitrary values in the r:r+j entries,
         //     w_j = B(j,:)' + B(s:s+T-1,:)' v_j(s:s+T-1)
         for( int i=0; i<n; ++i )
             work[i] = Conj(BBuffer[j+i*BLDim]);
         blas::Gemv
-        ( 'C', T-overlap, n, 
+        ( 'C', T-overlap, n,
           Scalar(1), &BBuffer[s+overlap],      BLDim,
                      &packedA[jCol+S+overlap], 1,
           Scalar(1), work,                     1 );
 
         // 2) B := B - tau_j v_j w_j'
-        // Since v_j has the structure described above, we only need to 
+        // Since v_j has the structure described above, we only need to
         // subtract tau_j w_j' from the j'th row of B and then perform the
-        // update 
+        // update
         //     B(s:s+T-1,:) -= tau_j v_j(s:s+T-1) w_j'
         const Scalar tauj = tau[j];
         for( int i=0; i<n; ++i )
             BBuffer[j+i*BLDim] -= tauj*Conj(work[i]);
         blas::Ger
-        ( T-overlap, n, 
+        ( T-overlap, n,
           -tauj, &packedA[jCol+S+overlap], 1,
                  work,                     1,
                  &BBuffer[s+overlap],      BLDim );
@@ -250,7 +250,7 @@ void ApplyPackedQFromLeft
 template<typename Scalar>
 void ApplyPackedQAdjointFromLeft
 ( const int r, const int s, const int t,
-  const Scalar* RESTRICT packedA, const Scalar* RESTRICT tau, 
+  const Scalar* RESTRICT packedA, const Scalar* RESTRICT tau,
   Dense<Scalar>& B, Scalar* work )
 {
 #ifndef RELEASE
@@ -277,27 +277,27 @@ void ApplyPackedQAdjointFromLeft
         //    = B - conj(tau_j) v_j (B' v_j)'
 
         // 1) Form w_j := B' v_j
-        // Since v_j's only nonzero entries are a 1 in the j'th entry and 
-        // arbitrary values in the r:r+j entries, 
+        // Since v_j's only nonzero entries are a 1 in the j'th entry and
+        // arbitrary values in the r:r+j entries,
         //     w_j = B(j,:)' + B(s:s+T-1,:)' v_j(s:s+T-1)
         for( int i=0; i<n; ++i )
             work[i] = Conj(BBuffer[j+i*BLDim]);
         blas::Gemv
-        ( 'C', T-overlap, n, 
+        ( 'C', T-overlap, n,
           Scalar(1), &BBuffer[s+overlap],      BLDim,
                      &packedA[jCol+S+overlap], 1,
           Scalar(1), work,                     1 );
 
         // 2) B := B - tau_j v_j w_j'
-        // Since v_j has the structure described above, we only need to 
+        // Since v_j has the structure described above, we only need to
         // subtract tau_j w_j' from the j'th row of B and then perform the
-        // update 
+        // update
         //     B(s:s+T-1,:) -= tau_j v_j(s:s+T-1) w_j'
         const Scalar conjTauj = Conj(tau[j]);
         for( int i=0; i<n; ++i )
             BBuffer[j+i*BLDim] -= conjTauj*Conj(work[i]);
         blas::Ger
-        ( T-overlap, n, 
+        ( T-overlap, n,
           -conjTauj, &packedA[jCol+S+overlap], 1,
                      work,                     1,
                      &BBuffer[s+overlap],      BLDim );
@@ -309,7 +309,7 @@ void ApplyPackedQAdjointFromLeft
 template<typename Scalar>
 void ApplyPackedQFromRight
 ( const int r, const int s, const int t,
-  const Scalar* RESTRICT packedA, const Scalar* RESTRICT tau, 
+  const Scalar* RESTRICT packedA, const Scalar* RESTRICT tau,
   Dense<Scalar>& B, Scalar* work )
 {
 #ifndef RELEASE
@@ -360,7 +360,7 @@ void ApplyPackedQFromRight
 template<typename Scalar>
 void ApplyPackedQAdjointFromRight
 ( const int r, const int s, const int t,
-  const Scalar* RESTRICT packedA, const Scalar* RESTRICT tau, 
+  const Scalar* RESTRICT packedA, const Scalar* RESTRICT tau,
   Dense<Scalar>& B, Scalar* work )
 {
 #ifndef RELEASE
@@ -409,7 +409,7 @@ void ApplyPackedQAdjointFromRight
 
 template<typename Scalar>
 void PrintPacked
-( const std::string msg, 
+( const std::string msg,
   const int r, const int s, const int t,
   const Scalar* packedA, std::ostream& os )
 {
@@ -423,7 +423,7 @@ void PrintPacked
     for( int i=0; i<s; ++i )
     {
         const int Si = std::min(i+1,s);
-        const int Ti = std::min(i+1,t); 
+        const int Ti = std::min(i+1,t);
 
         for( int j=0; j<i; ++j )
             os << "0 ";
@@ -449,7 +449,7 @@ void PrintPacked
     for( int i=0; i<t; ++i )
     {
         const int Si = std::min(i+1,s);
-        const int Ti = std::min(i+1,t); 
+        const int Ti = std::min(i+1,t);
 
         for( int j=0; j<i; ++j )
             os << "0 ";
@@ -475,128 +475,128 @@ void PrintPacked
 
 template void PackedQR
 ( const int r, const int s, const int t,
-  float* RESTRICT A, 
+  float* RESTRICT A,
   float* RESTRICT tau,
   float* RESTRICT work );
 template void PackedQR
 ( const int r, const int s, const int t,
-  double* RESTRICT A, 
+  double* RESTRICT A,
   double* RESTRICT tau,
   double* RESTRICT work );
 template void PackedQR
 ( const int r, const int s, const int t,
-  std::complex<float>* RESTRICT A, 
+  std::complex<float>* RESTRICT A,
   std::complex<float>* RESTRICT tau,
   std::complex<float>* RESTRICT work );
 template void PackedQR
 ( const int r, const int s, const int t,
-  std::complex<double>* RESTRICT A, 
+  std::complex<double>* RESTRICT A,
   std::complex<double>* RESTRICT tau,
   std::complex<double>* RESTRICT work );
 
 template void ApplyPackedQFromLeft
 ( const int r, const int s, const int t,
-  const float* RESTRICT A, 
+  const float* RESTRICT A,
   const float* RESTRICT tau,
-        Dense<float>& B, 
+        Dense<float>& B,
         float* RESTRICT work );
 template void ApplyPackedQFromLeft
 ( const int r, const int s, const int t,
-  const double* RESTRICT A, 
+  const double* RESTRICT A,
   const double* RESTRICT tau,
-        Dense<double>& B, 
+        Dense<double>& B,
         double* RESTRICT work );
 template void ApplyPackedQFromLeft
 ( const int r, const int s, const int t,
-  const std::complex<float>* RESTRICT A, 
+  const std::complex<float>* RESTRICT A,
   const std::complex<float>* RESTRICT tau,
         Dense<std::complex<float> >& B,
         std::complex<float>* RESTRICT work );
 template void ApplyPackedQFromLeft
 ( const int r, const int s, const int t,
-  const std::complex<double>* RESTRICT A, 
+  const std::complex<double>* RESTRICT A,
   const std::complex<double>* RESTRICT tau,
         Dense<std::complex<double> >& B,
         std::complex<double>* RESTRICT work );
 
 template void ApplyPackedQAdjointFromLeft
 ( const int r, const int s, const int t,
-  const float* RESTRICT A, 
+  const float* RESTRICT A,
   const float* RESTRICT tau,
-        Dense<float>& B, 
+        Dense<float>& B,
         float* RESTRICT work );
 template void ApplyPackedQAdjointFromLeft
 ( const int r, const int s, const int t,
-  const double* RESTRICT A, 
+  const double* RESTRICT A,
   const double* RESTRICT tau,
-        Dense<double>& B, 
+        Dense<double>& B,
         double* RESTRICT work );
 template void ApplyPackedQAdjointFromLeft
 ( const int r, const int s, const int t,
-  const std::complex<float>* RESTRICT A, 
+  const std::complex<float>* RESTRICT A,
   const std::complex<float>* RESTRICT tau,
         Dense<std::complex<float> >& B,
         std::complex<float>* RESTRICT work );
 template void ApplyPackedQAdjointFromLeft
 ( const int r, const int s, const int t,
-  const std::complex<double>* RESTRICT A, 
+  const std::complex<double>* RESTRICT A,
   const std::complex<double>* RESTRICT tau,
         Dense<std::complex<double> >& B,
         std::complex<double>* RESTRICT work );
 
 template void ApplyPackedQFromRight
 ( const int r, const int s, const int t,
-  const float* RESTRICT A, 
+  const float* RESTRICT A,
   const float* RESTRICT tau,
-        Dense<float>& B, 
+        Dense<float>& B,
         float* RESTRICT work );
 template void ApplyPackedQFromRight
 ( const int r, const int s, const int t,
-  const double* RESTRICT A, 
+  const double* RESTRICT A,
   const double* RESTRICT tau,
-        Dense<double>& B, 
+        Dense<double>& B,
         double* RESTRICT work );
 template void ApplyPackedQFromRight
 ( const int r, const int s, const int t,
-  const std::complex<float>* RESTRICT A, 
+  const std::complex<float>* RESTRICT A,
   const std::complex<float>* RESTRICT tau,
         Dense<std::complex<float> >& B,
         std::complex<float>* RESTRICT work );
 template void ApplyPackedQFromRight
 ( const int r, const int s, const int t,
-  const std::complex<double>* RESTRICT A, 
+  const std::complex<double>* RESTRICT A,
   const std::complex<double>* RESTRICT tau,
         Dense<std::complex<double> >& B,
         std::complex<double>* RESTRICT work );
 
 template void ApplyPackedQAdjointFromRight
 ( const int r, const int s, const int t,
-  const float* RESTRICT A, 
+  const float* RESTRICT A,
   const float* RESTRICT tau,
-        Dense<float>& B, 
+        Dense<float>& B,
         float* RESTRICT work );
 template void ApplyPackedQAdjointFromRight
 ( const int r, const int s, const int t,
-  const double* RESTRICT A, 
+  const double* RESTRICT A,
   const double* RESTRICT tau,
-        Dense<double>& B, 
+        Dense<double>& B,
         double* RESTRICT work );
 template void ApplyPackedQAdjointFromRight
 ( const int r, const int s, const int t,
-  const std::complex<float>* RESTRICT A, 
+  const std::complex<float>* RESTRICT A,
   const std::complex<float>* RESTRICT tau,
         Dense<std::complex<float> >& B,
         std::complex<float>* RESTRICT work );
 template void ApplyPackedQAdjointFromRight
 ( const int r, const int s, const int t,
-  const std::complex<double>* RESTRICT A, 
+  const std::complex<double>* RESTRICT A,
   const std::complex<double>* RESTRICT tau,
         Dense<std::complex<double> >& B,
         std::complex<double>* RESTRICT work );
 
 template void PrintPacked
 ( const std::string msg,
-  const int r, const int s, const int t, const float* packedA, 
+  const int r, const int s, const int t, const float* packedA,
   std::ostream& os );
 template void PrintPacked
 ( const std::string msg,

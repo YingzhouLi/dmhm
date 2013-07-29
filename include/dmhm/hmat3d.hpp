@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Yingzhou Li, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Yingzhou Li, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -22,7 +22,7 @@ template<typename Scalar> class DistHMat3d;
 template<typename Scalar>
 class HMat3d : public AbstractHMat<Scalar>
 {
-public:    
+public:
     typedef BASE(Scalar) Real;
     friend class DistHMat3d<Scalar>;
 
@@ -58,7 +58,7 @@ public:
     ( const Sparse<Scalar>& S,
       int numLevels, int maxRank, bool stronglyAdmissible,
       int xSize, int ySize, int zSize );
-    
+
     // Create a potentially non-square non-top-level H-matrix
     HMat3d
     ( int numLevels, int maxRank, bool symmetric, bool stronglyAdmissible,
@@ -134,7 +134,7 @@ public:
     { return block_.type == NODE || block_.type == NODE_SYMMETRIC; }
     bool IsLowRank() const { return block_.type == LOW_RANK; }
 
-    /* 
+    /*
      * Visualize the H-matrix structure
      */
 #ifdef HAVE_QT5
@@ -156,7 +156,7 @@ public:
 
     // y := alpha H x + beta y
     virtual void Multiply
-    ( Scalar alpha, const Vector<Scalar>& x, Scalar beta, Vector<Scalar>& y ) 
+    ( Scalar alpha, const Vector<Scalar>& x, Scalar beta, Vector<Scalar>& y )
     const;
 
     // y := alpha A x
@@ -165,7 +165,7 @@ public:
 
     // y := alpha A^T x + beta y
     virtual void TransposeMultiply
-    ( Scalar alpha, const Vector<Scalar>& x, Scalar beta, Vector<Scalar>& y ) 
+    ( Scalar alpha, const Vector<Scalar>& x, Scalar beta, Vector<Scalar>& y )
     const;
 
     // y := alpha A^T x
@@ -174,12 +174,12 @@ public:
 
     // y := alpha A^H x + beta y
     virtual void AdjointMultiply
-    ( Scalar alpha, const Vector<Scalar>& x, Scalar beta, Vector<Scalar>& y ) 
+    ( Scalar alpha, const Vector<Scalar>& x, Scalar beta, Vector<Scalar>& y )
     const;
 
     // y := alpha A^H x + beta y (temporarily conjugate x in-place)
     void AdjointMultiply
-    ( Scalar alpha, Vector<Scalar>& x, Scalar beta, Vector<Scalar>& y ) 
+    ( Scalar alpha, Vector<Scalar>& x, Scalar beta, Vector<Scalar>& y )
     const;
 
     // y := alpha A^H x
@@ -192,47 +192,47 @@ public:
 
     // C := alpha A B + beta C
     virtual void Multiply
-    ( Scalar alpha, const Dense<Scalar>& B, 
+    ( Scalar alpha, const Dense<Scalar>& B,
       Scalar beta,        Dense<Scalar>& C ) const;
 
     // C := alpha A B
     virtual void Multiply
     ( Scalar alpha, const Dense<Scalar>& B, Dense<Scalar>& C ) const;
-    
+
     // C := alpha A^T B + beta C
     virtual void TransposeMultiply
-    ( Scalar alpha, const Dense<Scalar>& B, 
+    ( Scalar alpha, const Dense<Scalar>& B,
       Scalar beta,        Dense<Scalar>& C ) const;
 
     // C := alpha A^T B
     virtual void TransposeMultiply
     ( Scalar alpha, const Dense<Scalar>& B, Dense<Scalar>& C ) const;
-    
+
     // C := alpha A^H B + beta C
     virtual void AdjointMultiply
-    ( Scalar alpha, const Dense<Scalar>& B, 
+    ( Scalar alpha, const Dense<Scalar>& B,
       Scalar beta,        Dense<Scalar>& C ) const;
 
     // C := alpha A^H B + beta C (temporarily conjugate B in place)
     void AdjointMultiply
-    ( Scalar alpha, Dense<Scalar>& B, 
+    ( Scalar alpha, Dense<Scalar>& B,
       Scalar beta,  Dense<Scalar>& C ) const;
 
     // C := alpha A^H B
     virtual void AdjointMultiply
     ( Scalar alpha, const Dense<Scalar>& B, Dense<Scalar>& C ) const;
-    
+
     // C := alpha A^H B (temporarily conjugate B in place)
     void AdjointMultiply
     ( Scalar alpha, Dense<Scalar>& B, Dense<Scalar>& C ) const;
-    
+
     //------------------------------------------------------------------------//
     // Computational routines specific to HMat3d                         //
     //------------------------------------------------------------------------//
 
     // A := B
     void CopyFrom( const HMat3d<Scalar>& B );
-    
+
     // A := conj(A)
     void Conjugate();
 
@@ -259,18 +259,18 @@ public:
 
     // C :~= alpha A B
     void Multiply
-    ( Scalar alpha, const HMat3d<Scalar>& B, 
+    ( Scalar alpha, const HMat3d<Scalar>& B,
                           HMat3d<Scalar>& C ) const;
 
     // C :~= alpha A B + beta C
     void Multiply
-    ( Scalar alpha, const HMat3d<Scalar>& B, 
+    ( Scalar alpha, const HMat3d<Scalar>& B,
       Scalar beta,        HMat3d<Scalar>& C ) const;
 
     // A :~= inv(A) using recursive Schur complements
     void DirectInvert();
 
-    // A :~= inv(A) using Schulz iteration, 
+    // A :~= inv(A) using Schulz iteration,
     //     X_k+1 = X_k (2I - A X_k) = (2I - X_k A) X_k,
     // where X_k -> inv(A) if X_0 = alpha A^H,
     // with 0 < alpha < 2/||A||_2^2.
@@ -329,12 +329,12 @@ private:
     };
     NodeSymmetric* NewNodeSymmetric() const;
 
-    enum BlockType 
-    { 
-        NODE, 
-        NODE_SYMMETRIC, 
-        LOW_RANK, 
-        DENSE 
+    enum BlockType
+    {
+        NODE,
+        NODE_SYMMETRIC,
+        LOW_RANK,
+        DENSE
     };
 
     struct Block
@@ -377,12 +377,12 @@ private:
     void PackRecursion( byte*& head ) const;
 
     bool Admissible() const;
-    bool Admissible( int xSource, int xTarget, 
+    bool Admissible( int xSource, int xTarget,
                      int ySource, int yTarget,
                      int zSource, int zTarget ) const;
 
     void ImportLowRank( const LowRank<Scalar>& F );
-    
+
     void UpdateWithLowRank( Scalar alpha, const LowRank<Scalar>& F );
 
     void ImportSparse
@@ -467,7 +467,7 @@ HMat3d<Scalar>::Node::Node
     ySourceSizes[1] = ySizeSource - ySourceSizes[0];
     zSourceSizes[0] = zSizeSource/2;
     zSourceSizes[1] = zSizeSource - zSourceSizes[0];
-            
+
     sourceSizes[0] = xSourceSizes[0]*ySourceSizes[0]*zSourceSizes[0];
     sourceSizes[1] = xSourceSizes[1]*ySourceSizes[0]*zSourceSizes[0];
     sourceSizes[2] = xSourceSizes[0]*ySourceSizes[1]*zSourceSizes[0];
@@ -504,9 +504,9 @@ HMat3d<Scalar>::Node::~Node()
 }
 
 template<typename Scalar>
-inline HMat3d<Scalar>& 
+inline HMat3d<Scalar>&
 HMat3d<Scalar>::Node::Child( int i, int j )
-{ 
+{
 #ifndef RELEASE
     CallStackEntry entry("HMat3d::Node::Child");
     if( i < 0 || j < 0 )
@@ -516,13 +516,13 @@ HMat3d<Scalar>::Node::Child( int i, int j )
     if( children.Size() != 64 )
         throw std::logic_error("children array not yet set up");
 #endif
-    return *children[j+8*i]; 
+    return *children[j+8*i];
 }
 
 template<typename Scalar>
-inline const HMat3d<Scalar>& 
+inline const HMat3d<Scalar>&
 HMat3d<Scalar>::Node::Child( int i, int j ) const
-{ 
+{
 #ifndef RELEASE
     CallStackEntry entry("HMat3d::Node::Child");
     if( i < 0 || j < 0 )
@@ -532,17 +532,17 @@ HMat3d<Scalar>::Node::Child( int i, int j ) const
     if( children.Size() != 64 )
         throw std::logic_error("children array not yet set up");
 #endif
-    return *children[j+8*i]; 
+    return *children[j+8*i];
 }
 
 template<typename Scalar>
 inline typename HMat3d<Scalar>::Node*
 HMat3d<Scalar>::NewNode() const
 {
-    return 
+    return
         new typename HMat3d<Scalar>::Node
-        ( xSizeSource_, xSizeTarget_, 
-          ySizeSource_, ySizeTarget_, 
+        ( xSizeSource_, xSizeTarget_,
+          ySizeSource_, ySizeTarget_,
           zSizeSource_, zSizeTarget_ );
 }
 
@@ -578,9 +578,9 @@ HMat3d<Scalar>::NodeSymmetric::~NodeSymmetric()
 }
 
 template<typename Scalar>
-inline HMat3d<Scalar>& 
+inline HMat3d<Scalar>&
 HMat3d<Scalar>::NodeSymmetric::Child( int i, int j )
-{ 
+{
 #ifndef RELEASE
     CallStackEntry entry("HMat3d::NodeSymmetric::Child");
     if( i < 0 || j < 0 )
@@ -592,11 +592,11 @@ HMat3d<Scalar>::NodeSymmetric::Child( int i, int j )
     if( children.Size() != 36 )
         throw std::logic_error("children array not yet set up");
 #endif
-    return *children[(i*(i+1))/2 + j]; 
+    return *children[(i*(i+1))/2 + j];
 }
 
 template<typename Scalar>
-inline const HMat3d<Scalar>& 
+inline const HMat3d<Scalar>&
 HMat3d<Scalar>::NodeSymmetric::Child( int i, int j ) const
 {
 #ifndef RELEASE
@@ -617,7 +617,7 @@ template<typename Scalar>
 inline typename HMat3d<Scalar>::NodeSymmetric*
 HMat3d<Scalar>::NewNodeSymmetric() const
 {
-    return 
+    return
         new typename HMat3d<Scalar>::NodeSymmetric
         ( xSizeSource_, ySizeSource_, zSizeSource_ );
 }
@@ -625,7 +625,7 @@ HMat3d<Scalar>::NewNodeSymmetric() const
 template<typename Scalar>
 inline
 HMat3d<Scalar>::Block::Block()
-: type(NODE), data() 
+: type(NODE), data()
 { }
 
 template<typename Scalar>

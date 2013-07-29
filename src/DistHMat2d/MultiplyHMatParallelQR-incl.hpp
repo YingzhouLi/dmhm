@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -12,7 +12,7 @@ namespace dmhm {
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyHMatParallelQR
-( const Vector<int>& numQRs, 
+( const Vector<int>& numQRs,
   const Vector<Dense<Scalar>*>& Xs,
   const Vector<int>& XOffsets,
         Vector<int>& halfHeights,
@@ -115,10 +115,10 @@ DistHMat2d<Scalar>::MultiplyHMatParallelQR
                 if( halfHeight < r )
                 {
                     const int sendTrunc = r - halfHeight;
-                    sendHead += 
+                    sendHead +=
                         (sendTrunc*sendTrunc+sendTrunc)/2*sizeof(Scalar);
                 }
-                
+
                 // Advance our index to the next send piece
                 qrPieceOffset += log2ParentTeamSize*(r*r+r);
             }
@@ -154,7 +154,7 @@ DistHMat2d<Scalar>::MultiplyHMatParallelQR
                 {
                     const Dense<Scalar>& X = *XLevel[k];
                     const int r = X.Width();
-                    const int halfHeightOffset = 
+                    const int halfHeightOffset =
                         (k*log2ParentTeamSize+passes)*2;
 
                     int s, t;
@@ -171,7 +171,7 @@ DistHMat2d<Scalar>::MultiplyHMatParallelQR
                                 const int S = std::min(j+1,s);
                                 const int T = std::min(j+1,t);
 
-                                // Read column strip from X    
+                                // Read column strip from X
                                 MemCopy
                                 ( &qrLevel[qrOffset], X.LockedBuffer(0,j), S );
                                 qrOffset += S;
@@ -257,15 +257,15 @@ DistHMat2d<Scalar>::MultiplyHMatParallelQR
                         }
                     }
                     // Move past the padding for this recv piece
-                    const int recvTrunc = 
+                    const int recvTrunc =
                         ( firstRoot ? r-std::min(t,r) : r-std::min(s,r) );
-                    recvHead += 
+                    recvHead +=
                         (recvTrunc*recvTrunc+recvTrunc)/2*sizeof(Scalar);
 
                     hmat_tools::PackedQR
                     ( r, s, t, &qrLevel[qrPieceOffset+passes*(r*r+r)],
                       &tauLevel[tauPieceOffset+(passes+1)*r], &qrWork[0] );
-                    
+
                     if( haveAnotherComm )
                     {
                         const int minDim = std::min(s+t,r);
@@ -287,7 +287,7 @@ DistHMat2d<Scalar>::MultiplyHMatParallelQR
             const bool secondRoot = !(teamRank & (1u<<(passes+1)));
 
             // Unpack the recv messages, perform the QR factorizations, and
-            // pack the resulting R into the next step and into the next 
+            // pack the resulting R into the next step and into the next
             // send buffer in a single sweep.
             sendHead = &sendBuffer[0];
             const byte* recvHead = &recvBuffer[0];
@@ -306,7 +306,7 @@ DistHMat2d<Scalar>::MultiplyHMatParallelQR
                 {
                     const Dense<Scalar>& X = *XLevel[k];
                     const int r = X.Width();
-                    const int halfHeightOffset = 
+                    const int halfHeightOffset =
                         (k*log2ParentTeamSize+passes)*2;
 
                     int s, t;
@@ -323,7 +323,7 @@ DistHMat2d<Scalar>::MultiplyHMatParallelQR
                                 const int S = std::min(j+1,s);
                                 const int T = std::min(j+1,t);
 
-                                // Read column strip from X    
+                                // Read column strip from X
                                 MemCopy
                                 ( &qrLevel[qrOffset], X.LockedBuffer(0,j), S );
                                 qrOffset += S;
@@ -409,13 +409,13 @@ DistHMat2d<Scalar>::MultiplyHMatParallelQR
                         }
                     }
                     // Move past the padding for this recv piece
-                    const int recvTrunc = 
+                    const int recvTrunc =
                         ( firstRoot ? r-std::min(t,r) : r-std::min(s,r) );
-                    recvHead += 
+                    recvHead +=
                         (recvTrunc*recvTrunc+recvTrunc)/2*sizeof(Scalar);
 
                     hmat_tools::PackedQR
-                    ( r, s, t, 
+                    ( r, s, t,
                       &qrLevel[qrPieceOffset+passes*(r*r+r)],
                       &tauLevel[tauPieceOffset+(passes+1)*r], &qrWork[0] );
 
@@ -436,19 +436,19 @@ DistHMat2d<Scalar>::MultiplyHMatParallelQR
                     }
                     // Move past the send padding
                     const int sendTrunc = r-std::min(minDim,r);
-                    sendHead += 
+                    sendHead +=
                         (sendTrunc*sendTrunc+sendTrunc)/2*sizeof(Scalar);
 
                     qrPieceOffset += log2ParentTeamSize*(r*r+r);
                     tauPieceOffset += (log2ParentTeamSize+1)*r;
                 }
             }
-            
+
             // Exchange with our second partner
             mpi::SendRecv
             ( &sendBuffer[0], msgSize, secondPartner, 0,
               &recvBuffer[0], msgSize, secondPartner, 0, team );
-            
+
             // Unpack the recv messages and perform the QR factorizations, then
             // fill the local heights for the next step if there is one.
             recvHead = &recvBuffer[0];
@@ -456,7 +456,7 @@ DistHMat2d<Scalar>::MultiplyHMatParallelQR
             {
                 mpi::Comm parentTeam = teams_->Team(l);
                 const int log2ParentTeamSize = Log2(mpi::CommSize(parentTeam));
-                
+
                 bool rootOfNextStep = false;
                 const bool haveAnotherComm = ( l+1 < numSteps-step );
                 if( haveAnotherComm )
@@ -472,7 +472,7 @@ DistHMat2d<Scalar>::MultiplyHMatParallelQR
                 {
                     const Dense<Scalar>& X = *XLevel[k];
                     const int r = X.Width();
-                    const int halfHeightOffset 
+                    const int halfHeightOffset
                         = (k*log2ParentTeamSize+(passes+1))*2;
 
                     int s, t;
@@ -527,13 +527,13 @@ DistHMat2d<Scalar>::MultiplyHMatParallelQR
                         }
                     }
                     // Move past the padding for this recv piece
-                    const int recvTrunc = 
+                    const int recvTrunc =
                         ( secondRoot ? r-std::min(t,r) : r-std::min(s,r) );
-                    recvHead += 
+                    recvHead +=
                         (recvTrunc*recvTrunc+recvTrunc)/2*sizeof(Scalar);
 
                     hmat_tools::PackedQR
-                    ( r, s, t, &qrLevel[qrPieceOffset+(passes+1)*(r*r+r)], 
+                    ( r, s, t, &qrLevel[qrPieceOffset+(passes+1)*(r*r+r)],
                       &tauLevel[tauPieceOffset+(passes+2)*r], &qrWork[0] );
 
                     if( haveAnotherComm )

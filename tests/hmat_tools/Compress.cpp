@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -18,7 +18,7 @@ main( int argc, char* argv[] )
 
     std::cout << "----------------------------------------------------\n"
               << "Testing double-precision Compress                   \n"
-              << "----------------------------------------------------" 
+              << "----------------------------------------------------"
               << std::endl;
     try
     {
@@ -44,7 +44,7 @@ main( int argc, char* argv[] )
 
     std::cout << "----------------------------------------------------\n"
               << "Testing complex double-precision Compress           \n"
-              << "----------------------------------------------------" 
+              << "----------------------------------------------------"
               << std::endl;
     try
     {

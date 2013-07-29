@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -154,7 +154,7 @@ HMat2d<Scalar>::AdjointMultiply
         Vector<Scalar> xConj;
         hmat_tools::Conjugate( x, xConj );
         hmat_tools::Conjugate( y );
-        UpdateVectorWithNodeSymmetric( Conj(alpha), xConj, y ); 
+        UpdateVectorWithNodeSymmetric( Conj(alpha), xConj, y );
         hmat_tools::Conjugate( y );
         break;
     }
@@ -169,7 +169,7 @@ HMat2d<Scalar>::AdjointMultiply
     }
 }
 
-// Having a non-const x allows us to conjugate x in place for the 
+// Having a non-const x allows us to conjugate x in place for the
 // NODE_SYMMETRIC updates.
 template<typename Scalar>
 void
@@ -206,7 +206,7 @@ HMat2d<Scalar>::AdjointMultiply
     case NODE_SYMMETRIC:
         hmat_tools::Conjugate( x );
         hmat_tools::Conjugate( y );
-        UpdateVectorWithNodeSymmetric( Conj(alpha), x, y ); 
+        UpdateVectorWithNodeSymmetric( Conj(alpha), x, y );
         hmat_tools::Conjugate( x );
         hmat_tools::Conjugate( y );
         break;

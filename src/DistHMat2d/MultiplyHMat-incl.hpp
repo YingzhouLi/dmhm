@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -12,7 +12,9 @@
 
 #include "./MultiplyHMatMain-incl.hpp"
 #include "./MultiplyHMatFHH-incl.hpp"
+#include "./Truncation-incl.hpp"
 #include "./MultiplyHMatCompress-incl.hpp"
+//#include "./MultiplyHMatRandomCompress-incl.hpp"
 #include "./MultiplyHMatFHHCompress-incl.hpp"
 
 namespace dmhm {
@@ -62,7 +64,7 @@ DistHMat2d<Scalar>::MultiplyHMatFullAccumulate
     C.Clear();
 
 #ifdef TIME_MULTIPLY
-    Timer timer; 
+    Timer timer;
     mpi::Barrier( mpi::COMM_WORLD );
     timer.Start( 0 );
 #endif
@@ -173,7 +175,8 @@ DistHMat2d<Scalar>::MultiplyHMatFullAccumulate
 #ifdef TIME_MULTIPLY
     timer.Start( 13 );
 #endif
-    C.MultiplyHMatCompress( startLevel, endLevel );
+    C.MultiplyHMatCompress();
+    //C.MultiplyHMatRandomCompress();
 #ifdef TIME_MULTIPLY
     mpi::Barrier( mpi::COMM_WORLD );
     timer.Stop( 13 );
@@ -226,7 +229,7 @@ DistHMat2d<Scalar>::MultiplyHMatSingleLevelAccumulate
     C.Clear();
 
 #ifdef TIME_MULTIPLY
-    Timer timer; 
+    Timer timer;
     mpi::Barrier( mpi::COMM_WORLD );
     timer.Start( 0 );
 #endif
@@ -340,7 +343,8 @@ DistHMat2d<Scalar>::MultiplyHMatSingleLevelAccumulate
 #ifdef TIME_MULTIPLY
         timer.Start( 13 );
 #endif
-        C.MultiplyHMatCompress( 0, A.NumLevels());
+        C.MultiplyHMatCompress();
+        //C.MultiplyHMatRandomCompress();
 #ifdef TIME_MULTIPLY
         mpi::Barrier( mpi::COMM_WORLD );
         timer.Stop( 13 );
@@ -394,7 +398,7 @@ DistHMat2d<Scalar>::MultiplyHMatSingleUpdateAccumulate
     C.Clear();
 
 #ifdef TIME_MULTIPLY
-    Timer timer; 
+    Timer timer;
     mpi::Barrier( mpi::COMM_WORLD );
     timer.Start( 0 );
 #endif
@@ -510,7 +514,8 @@ DistHMat2d<Scalar>::MultiplyHMatSingleUpdateAccumulate
 #ifdef TIME_MULTIPLY
             timer.Start( 13 );
 #endif
-            C.MultiplyHMatCompress( 0, A.NumLevels() );
+            C.MultiplyHMatCompress();
+            //C.MultiplyHMatRandomCompress();
 #ifdef TIME_MULTIPLY
             mpi::Barrier( mpi::COMM_WORLD );
             timer.Stop( 13 );

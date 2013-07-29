@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -40,7 +40,7 @@ sInv( int k, int b, int size )
 template<typename Real>
 void
 FormRow
-( Real imagShift, 
+( Real imagShift,
   int x, int y, int xSize, int ySize, int pmlSize,
   Vector< std::complex<Real> >& row, Vector<int>& colIndices )
 {
@@ -73,7 +73,7 @@ FormRow
     // Compute the center term
     const Scalar alpha = 1;
     const Scalar centerTerm = -(xTermL+xTermR+yTermL+yTermR) +
-        (::omega*alpha)*(::omega*alpha)*s1InvM*s2InvM + 
+        (::omega*alpha)*(::omega*alpha)*s1InvM*s2InvM +
         std::complex<Real>(0,imagShift);
 
     row.Resize( 0 );
@@ -113,7 +113,7 @@ FormRow
 }
 
 template<typename Real>
-void 
+void
 CheckDistanceFromOnes( const Vector<std::complex<Real> >& z )
 {
     typedef std::complex<Real> Scalar;
@@ -217,7 +217,7 @@ main( int argc, char* argv[] )
         double fillStopTime = mpi::Time();
         if( rank == 0 )
         {
-            std::cout << "done: " << fillStopTime-fillStartTime << " seconds." 
+            std::cout << "done: " << fillStopTime-fillStartTime << " seconds."
                       << std::endl;
             if( print )
                 S.Print( "S" );
@@ -234,7 +234,7 @@ main( int argc, char* argv[] )
         double constructStopTime = mpi::Time();
         if( rank == 0 )
         {
-            std::cout << "done: " << constructStopTime-constructStartTime 
+            std::cout << "done: " << constructStopTime-constructStartTime
                       << " seconds." << std::endl;
             if( print )
                 H.Print( "H" );
@@ -265,7 +265,7 @@ main( int argc, char* argv[] )
         double matVecStopTime = mpi::Time();
         if( rank == 0 )
         {
-            std::cout << "done: " << matVecStopTime-matVecStartTime 
+            std::cout << "done: " << matVecStopTime-matVecStartTime
                       << " seconds." << std::endl;
             if( print )
                 y.Print( "y := H x ~= S x" );
@@ -285,7 +285,7 @@ main( int argc, char* argv[] )
             double copyStopTime = mpi::Time();
             if( rank == 0 )
             {
-                std::cout << "done: " << copyStopTime-copyStartTime 
+                std::cout << "done: " << copyStopTime-copyStartTime
                           << " seconds." << std::endl;
             }
 
@@ -300,7 +300,7 @@ main( int argc, char* argv[] )
             double invertStopTime = mpi::Time();
             if( rank == 0 )
             {
-                std::cout << "done: " << invertStopTime-invertStartTime 
+                std::cout << "done: " << invertStopTime-invertStartTime
                           << " seconds." << std::endl;
                 if( print )
                     invH.Print( "inv(H)" );
@@ -318,7 +318,7 @@ main( int argc, char* argv[] )
             matVecStopTime = mpi::Time();
             if( rank == 0 )
             {
-                std::cout << "done: " << matVecStopTime-matVecStartTime 
+                std::cout << "done: " << matVecStopTime-matVecStartTime
                           << " seconds." << std::endl;
                 if( print )
                 {
@@ -344,14 +344,14 @@ main( int argc, char* argv[] )
             double copyStopTime = mpi::Time();
             if( rank == 0 )
             {
-                std::cout << "done: " << copyStopTime-copyStartTime 
+                std::cout << "done: " << copyStopTime-copyStartTime
                           << " seconds." << std::endl;
             }
 
             // Perform the iterative inversion
             if( rank == 0 )
             {
-                std::cout << "Performing " << numIterations 
+                std::cout << "Performing " << numIterations
                           << " Schulz iterations...";
                 std::cout.flush();
             }
@@ -360,7 +360,7 @@ main( int argc, char* argv[] )
             double invertStopTime = mpi::Time();
             if( rank == 0 )
             {
-                std::cout << "done: " << invertStopTime-invertStartTime 
+                std::cout << "done: " << invertStopTime-invertStartTime
                           << " seconds." << std::endl;
                 if( print )
                     invH.Print( "inv(H)" );
@@ -378,7 +378,7 @@ main( int argc, char* argv[] )
             matVecStopTime = mpi::Time();
             if( rank == 0 )
             {
-                std::cout << "done: " << matVecStopTime-matVecStartTime 
+                std::cout << "done: " << matVecStopTime-matVecStartTime
                           << " seconds." << std::endl;
                 if( print )
                 {
@@ -392,13 +392,13 @@ main( int argc, char* argv[] )
     catch( ArgException& e ) { }
     catch( std::exception& e )
     {
-        std::cerr << "Process " << rank << " caught message: " << e.what() 
+        std::cerr << "Process " << rank << " caught message: " << e.what()
                   << std::endl;
 #ifndef RELEASE
         DumpCallStack();
 #endif
     }
-    
+
     Finalize();
     return 0;
 }

@@ -27,7 +27,7 @@ imagesc(B);
 % end
 % T=-log10(abs(E));
 % imagesc(-log10(abs(E)));
-% 
+%
 % %%
 % filename='./YLocal_';
 % Y=[];
@@ -35,7 +35,7 @@ imagesc(B);
 %     run([filename int2str(i) '.m']);
 %     Y=[Y;YLocal{i+1}];
 % end
-% 
+%
 % imagesc(Y);
 
 % %%
@@ -45,7 +45,7 @@ imagesc(B);
 %     run([filename int2str(i) '.m']);
 %     z=[z;zlocal{i+1}];
 % end
-% 
+%
 % %imagesc(z);
 % y=a*a;
 % e=abs(y-z);

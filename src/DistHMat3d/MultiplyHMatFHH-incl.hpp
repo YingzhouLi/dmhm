@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -14,7 +14,7 @@ void
 DistHMat3d<Scalar>::MultiplyHMatFHHPrecompute
 ( Scalar alpha, DistHMat3d<Scalar>& B,
                 DistHMat3d<Scalar>& C,
-  int startLevel, int endLevel, 
+  int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update )
 {
 #ifndef RELEASE
@@ -52,7 +52,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHPrecompute
                     update >= startUpdate && update < endUpdate )
                 {
                     C.colFHHContextMap_.Set( key, new MultiplyDenseContext );
-                    MultiplyDenseContext& colContext = 
+                    MultiplyDenseContext& colContext =
                         C.colFHHContextMap_.Get( key );
                     colContext.numRhs = sampleRank;
                     C.colXMap_.Set
@@ -64,7 +64,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHPrecompute
                     ( colContext, alpha, B.colT_, colX );
 
                     C.rowFHHContextMap_.Set( key, new MultiplyDenseContext );
-                    MultiplyDenseContext& rowContext = 
+                    MultiplyDenseContext& rowContext =
                         C.rowFHHContextMap_.Get( key );
                     rowContext.numRhs = sampleRank;
                     C.rowXMap_.Set
@@ -105,7 +105,7 @@ void
 DistHMat3d<Scalar>::MultiplyHMatFHHSums
 ( Scalar alpha, DistHMat3d<Scalar>& B,
                 DistHMat3d<Scalar>& C,
-  int startLevel, int endLevel, 
+  int startLevel, int endLevel,
   int startUpdate, int endUpdate )
 {
 #ifndef RELEASE
@@ -130,7 +130,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHSums
         offsets[i] = offset;
     Vector<int> offsetsCopy = offsets;
     A.MultiplyHMatFHHSumsPack
-    ( B, C, buffer, offsetsCopy, 
+    ( B, C, buffer, offsetsCopy,
       startLevel, endLevel, startUpdate, endUpdate, 0 );
 
     // Perform the reduces with log2(p) messages
@@ -249,7 +249,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHSumsPack
                     for( int s=0; s<8; ++s )
                         for( int r=0; r<8; ++r )
                             nodeA.Child(t,r).MultiplyHMatFHHSumsPack
-                            ( nodeB.Child(r,s), nodeC.Child(t,s), 
+                            ( nodeB.Child(r,s), nodeC.Child(t,s),
                               buffer, offsets, startLevel, endLevel,
                               startUpdate, endUpdate, r );
             }
@@ -312,7 +312,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHSumsUnpack
                     for( int s=0; s<8; ++s )
                         for( int r=0; r<8; ++r )
                             nodeA.Child(t,r).MultiplyHMatFHHSumsUnpack
-                            ( nodeB.Child(r,s), nodeC.Child(t,s), 
+                            ( nodeB.Child(r,s), nodeC.Child(t,s),
                               buffer, offsets, startLevel, endLevel,
                               startUpdate, endUpdate, r );
             }
@@ -332,7 +332,7 @@ void
 DistHMat3d<Scalar>::MultiplyHMatFHHPassData
 ( Scalar alpha, DistHMat3d<Scalar>& B,
                 DistHMat3d<Scalar>& C,
-  int startLevel, int endLevel, 
+  int startLevel, int endLevel,
   int startUpdate, int endUpdate )
 {
 #ifndef RELEASE
@@ -343,7 +343,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHPassData
     // Compute send and recv sizes
     std::map<int,int> sendSizes, recvSizes;
     A.MultiplyHMatFHHPassDataCount
-    ( B, C, sendSizes, recvSizes, 
+    ( B, C, sendSizes, recvSizes,
       startLevel, endLevel, startUpdate, endUpdate, 0 );
 
     // Compute the offsets
@@ -365,7 +365,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHPassData
     Vector<Scalar> sendBuffer(totalSendSize);
     std::map<int,int> offsets = sendOffsets;
     A.MultiplyHMatFHHPassDataPack
-    ( B, C, sendBuffer, offsets, 
+    ( B, C, sendBuffer, offsets,
       startLevel, endLevel, startUpdate, endUpdate, 0 );
 
     // Start the non-blocking recvs
@@ -399,7 +399,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHPassData
     // Unpack as soon as we have received our data
     mpi::WaitAll( numRecvs, &recvRequests[0] );
     A.MultiplyHMatFHHPassDataUnpack
-    ( B, C, recvBuffer, recvOffsets, 
+    ( B, C, recvBuffer, recvOffsets,
       startLevel, endLevel, startUpdate, endUpdate, 0 );
 
     // Don't exit until we know that the data was sent
@@ -407,13 +407,13 @@ DistHMat3d<Scalar>::MultiplyHMatFHHPassData
 }
 
 template<typename Scalar>
-void 
+void
 DistHMat3d<Scalar>::MultiplyHMatFHHPassDataCount
 ( const DistHMat3d<Scalar>& B,
         DistHMat3d<Scalar>& C,
         std::map<int,int>& sendSizes, std::map<int,int>& recvSizes,
   int startLevel, int endLevel,
-  int startUpdate, int endUpdate, int update ) const 
+  int startUpdate, int endUpdate, int update ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatFHHPassDataCount");
@@ -462,7 +462,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHPassDataCount
                     for( int s=0; s<8; ++s )
                         for( int r=0; r<8; ++r )
                             nodeA.Child(t,r).MultiplyHMatFHHPassDataCount
-                            ( nodeB.Child(r,s), nodeC.Child(t,s), 
+                            ( nodeB.Child(r,s), nodeC.Child(t,s),
                               sendSizes, recvSizes, startLevel, endLevel,
                               startUpdate, endUpdate, r );
             }
@@ -478,12 +478,12 @@ DistHMat3d<Scalar>::MultiplyHMatFHHPassDataCount
 }
 
 template<typename Scalar>
-void 
+void
 DistHMat3d<Scalar>::MultiplyHMatFHHPassDataPack
 ( DistHMat3d<Scalar>& B,
   DistHMat3d<Scalar>& C,
   Vector<Scalar>& sendBuffer, std::map<int,int>& offsets,
-  int startLevel, int endLevel, 
+  int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update )
 {
 #ifndef RELEASE
@@ -522,7 +522,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHPassDataPack
                     A.MultiplyDensePassDataPack
                     ( C.colFHHContextMap_.Get( key ), sendBuffer, offsets );
                     B.TransposeMultiplyDensePassDataPack
-                    ( C.rowFHHContextMap_.Get( key ), 
+                    ( C.rowFHHContextMap_.Get( key ),
                       A.rowT_, sendBuffer, offsets );
                 }
             }
@@ -535,7 +535,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHPassDataPack
                     for( int s=0; s<8; ++s )
                         for( int r=0; r<8; ++r )
                             nodeA.Child(t,r).MultiplyHMatFHHPassDataPack
-                            ( nodeB.Child(r,s), nodeC.Child(t,s), 
+                            ( nodeB.Child(r,s), nodeC.Child(t,s),
                               sendBuffer, offsets, startLevel, endLevel,
                               startUpdate, endUpdate, r );
             }
@@ -551,7 +551,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHPassDataPack
 }
 
 template<typename Scalar>
-void 
+void
 DistHMat3d<Scalar>::MultiplyHMatFHHPassDataUnpack
 ( DistHMat3d<Scalar>& B,
   DistHMat3d<Scalar>& C,
@@ -607,7 +607,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHPassDataUnpack
                     for( int s=0; s<8; ++s )
                         for( int r=0; r<8; ++r )
                             nodeA.Child(t,r).MultiplyHMatFHHPassDataUnpack
-                            ( nodeB.Child(r,s), nodeC.Child(t,s), 
+                            ( nodeB.Child(r,s), nodeC.Child(t,s),
                               recvBuffer, offsets, startLevel, endLevel,
                               startUpdate, endUpdate, r );
             }
@@ -653,7 +653,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHBroadcasts
         offsets[i] = offset;
     Vector<int> offsetsCopy = offsets;
     A.MultiplyHMatFHHBroadcastsPack
-    ( B, C, buffer, offsetsCopy, 
+    ( B, C, buffer, offsetsCopy,
       startLevel, endLevel, startUpdate, endUpdate, 0 );
 
     // Perform the broadcasts with log2(p) messages
@@ -773,7 +773,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHBroadcastsPack
                     for( int s=0; s<8; ++s )
                         for( int r=0; r<8; ++r )
                             nodeA.Child(t,r).MultiplyHMatFHHBroadcastsPack
-                            ( nodeB.Child(r,s), nodeC.Child(t,s), 
+                            ( nodeB.Child(r,s), nodeC.Child(t,s),
                               buffer, offsets, startLevel, endLevel,
                               startUpdate, endUpdate, r );
             }
@@ -836,7 +836,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHBroadcastsUnpack
                     for( int s=0; s<8; ++s )
                         for( int r=0; r<8; ++r )
                             nodeA.Child(t,r).MultiplyHMatFHHBroadcastsUnpack
-                            ( nodeB.Child(r,s), nodeC.Child(t,s), 
+                            ( nodeB.Child(r,s), nodeC.Child(t,s),
                               buffer, offsets, startLevel, endLevel,
                               startUpdate, endUpdate, r );
             }
@@ -856,7 +856,7 @@ void
 DistHMat3d<Scalar>::MultiplyHMatFHHPostcompute
 ( Scalar alpha, DistHMat3d<Scalar>& B,
                 DistHMat3d<Scalar>& C,
-  int startLevel, int endLevel, 
+  int startLevel, int endLevel,
   int startUpdate, int endUpdate )
 {
 #ifndef RELEASE
@@ -912,12 +912,12 @@ DistHMat3d<Scalar>::MultiplyHMatFHHPostcomputeC
                 {
                     // Finish computing A B Omega1
                     A.MultiplyDensePostcompute
-                    ( C.colFHHContextMap_.Get( key ), 
+                    ( C.colFHHContextMap_.Get( key ),
                       alpha, B.colT_, C.colXMap_.Get( key ) );
 
                     // Finish computing B' A' Omega2
                     B.AdjointMultiplyDensePostcompute
-                    ( C.rowFHHContextMap_.Get( key ), 
+                    ( C.rowFHHContextMap_.Get( key ),
                       Conj(alpha), A.rowT_, C.rowXMap_.Get( key ) );
                 }
             }
@@ -986,7 +986,7 @@ void
 DistHMat3d<Scalar>::MultiplyHMatFHHFinalize
 ( const DistHMat3d<Scalar>& B,
         DistHMat3d<Scalar>& C,
-  int startLevel, int endLevel, 
+  int startLevel, int endLevel,
   int startUpdate, int endUpdate ) const
 {
 #ifndef RELEASE
@@ -996,8 +996,8 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalize
 
     const int r = SampleRank( C.MaxRank() );
     const unsigned numTeamLevels = C.teams_->NumLevels();
-    Vector<int> numQRs(numTeamLevels,0), 
-                     numTargetFHH(numTeamLevels,0), 
+    Vector<int> numQRs(numTeamLevels,0),
+                     numTargetFHH(numTeamLevels,0),
                      numSourceFHH(numTeamLevels,0);
     C.MultiplyHMatFHHFinalizeCounts
     ( numQRs, numTargetFHH, numSourceFHH, startLevel, endLevel );
@@ -1028,11 +1028,11 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalize
     Vector<Scalar> qrBuffer( qrTotalSize ), tauBuffer( tauTotalSize ),
                         qrWork( lapack::QRWorkSize( r ) );
 
-    // Form our contributions to Omega2' (alpha A B Omega1) updates here, 
+    // Form our contributions to Omega2' (alpha A B Omega1) updates here,
     // before we overwrite the colXMap_ and rowXMap_ results.
     // The distributed summations will not occur until after the parallel
     // QR factorizations.
-    Vector<int> leftOffsets(numTeamLevels), middleOffsets(numTeamLevels), 
+    Vector<int> leftOffsets(numTeamLevels), middleOffsets(numTeamLevels),
                      rightOffsets(numTeamLevels);
     int totalAllReduceSize = 0;
     for( unsigned teamLevel=0; teamLevel<numTeamLevels; ++teamLevel )
@@ -1047,14 +1047,14 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalize
         totalAllReduceSize += numSourceFHH[teamLevel]*r*r;
     }
 
-    // Compute the local contributions to the middle updates, 
+    // Compute the local contributions to the middle updates,
     // Omega2' (alpha A B Omega1)
     Vector<Scalar> allReduceBuffer( totalAllReduceSize );
     {
         Vector<int> middleOffsetsCopy = middleOffsets;
 
         A.MultiplyHMatFHHFinalizeMiddleUpdates
-        ( B, C, allReduceBuffer, middleOffsetsCopy, 
+        ( B, C, allReduceBuffer, middleOffsetsCopy,
           startLevel, endLevel, startUpdate, endUpdate, 0 );
     }
 
@@ -1065,12 +1065,12 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalize
         tauOffsetsCopy = tauOffsets;
 
         C.MultiplyHMatFHHFinalizeLocalQR
-        ( Xs, XOffsetsCopy, tauBuffer, tauOffsetsCopy, qrWork, 
+        ( Xs, XOffsetsCopy, tauBuffer, tauOffsetsCopy, qrWork,
           startLevel, endLevel );
     }
 
     C.MultiplyHMatParallelQR
-    ( numQRs, Xs, XOffsets, halfHeights, halfHeightOffsets, 
+    ( numQRs, Xs, XOffsets, halfHeights, halfHeightOffsets,
       qrBuffer, qrOffsets, tauBuffer, tauOffsets, qrWork );
 
     // Explicitly form the Q's
@@ -1083,7 +1083,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalize
         const unsigned teamRank = mpi::CommRank( team );
 
         Dense<Scalar>** XLevel = &Xs[XOffsets[teamLevel]];
-        const int* halfHeightsLevel = 
+        const int* halfHeightsLevel =
             &halfHeights[halfHeightOffsets[teamLevel]];
         const Scalar* qrLevel = &qrBuffer[qrOffsets[teamLevel]];
         const Scalar* tauLevel = &tauBuffer[tauOffsets[teamLevel]];
@@ -1097,11 +1097,11 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalize
 
            if( log2TeamSize > 0 )
            {
-                const int* lastHalfHeightsStage = 
+                const int* lastHalfHeightsStage =
                     &halfHeightsPiece[(log2TeamSize-1)*2];
                 const Scalar* lastQRStage = &qrPiece[(log2TeamSize-1)*(r*r+r)];
                 const Scalar* lastTauStage = &tauPiece[log2TeamSize*r];
- 
+
                 const int sLast = lastHalfHeightsStage[0];
                 const int tLast = lastHalfHeightsStage[1];
 
@@ -1117,7 +1117,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalize
                 hmat_tools::ApplyPackedQFromLeft
                 ( r, sLast, tLast, lastQRStage, lastTauStage, Z, &qrWork[0] );
 
-                // Take care of the middle stages before handling the large 
+                // Take care of the middle stages before handling the large
                 // original stage.
                 int sPrev=sLast, tPrev=tLast;
                 for( int commStage=log2TeamSize-2; commStage>=0; --commStage )
@@ -1127,7 +1127,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalize
                     Z.Resize( sCurr+tCurr, r );
                     Z.Init();
 
-                    const bool rootOfPrevStage = 
+                    const bool rootOfPrevStage =
                         !(teamRank & (1u<<(commStage+1)));
                     if( rootOfPrevStage )
                     {
@@ -1138,7 +1138,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalize
                     else
                     {
                         // Move the bottom part to the top part and zero the
-                        // bottom 
+                        // bottom
                         for( int j=0; j<r; ++j )
                         {
                             MemCopy
@@ -1147,14 +1147,14 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalize
                         }
                     }
                     hmat_tools::ApplyPackedQFromLeft
-                    ( r, sCurr, tCurr, &qrPiece[commStage*(r*r+r)], 
+                    ( r, sCurr, tCurr, &qrPiece[commStage*(r*r+r)],
                       &tauPiece[(commStage+1)*r], Z, &qrWork[0] );
 
                     sPrev = sCurr;
                     tPrev = tCurr;
                 }
 
-                // Take care of the original stage. Do so by forming Y := X, 
+                // Take care of the original stage. Do so by forming Y := X,
                 // then zeroing X and placing our piece of Z at its top.
                 const int m = X.Height();
                 Dense<Scalar> Y;
@@ -1170,7 +1170,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalize
                 }
                 else
                 {
-                    // Copy the first tPrev rows of the bottom part of Z into 
+                    // Copy the first tPrev rows of the bottom part of Z into
                     // the top of X
                     for( int j=0; j<r; ++j )
                         MemCopy
@@ -1186,7 +1186,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalize
             {
                 // Make a copy of X and then form the left part of identity.
                 const int m = X.Height();
-                Dense<Scalar> Y; 
+                Dense<Scalar> Y;
                 hmat_tools::Copy( X, Y );
                 X.Init();
                 for( int j=0; j<std::min(m,r); ++j )
@@ -1233,18 +1233,18 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalize
     // Finish forming the low-rank approximation
     Vector<Scalar> U( r*r ), VH( r*r ),
                         svdWork( lapack::SVDWorkSize(r,r) );
-    Vector<Real> singularValues( r ), 
-                      svdRealWork( lapack::SVDRealWorkSize(r,r) ); 
+    Vector<Real> singularValues( r ),
+                      svdRealWork( lapack::SVDRealWorkSize(r,r) );
     A.MultiplyHMatFHHFinalizeFormLowRank
     ( B, C, allReduceBuffer, leftOffsets, middleOffsets, rightOffsets,
-      singularValues, U, VH, svdWork, svdRealWork, 
+      singularValues, U, VH, svdWork, svdRealWork,
       startLevel, endLevel, startUpdate, endUpdate, 0 );
 }
 
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatFHHFinalizeCounts
-( Vector<int>& numQRs, 
+( Vector<int>& numQRs,
   Vector<int>& numTargetFHH, Vector<int>& numSourceFHH,
   int startLevel, int endLevel )
 {
@@ -1266,7 +1266,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalizeCounts
             for( int t=0; t<8; ++t )
                 for( int s=0; s<8; ++s )
                     node.Child(t,s).MultiplyHMatFHHFinalizeCounts
-                    ( numQRs, numTargetFHH, numSourceFHH, 
+                    ( numQRs, numTargetFHH, numSourceFHH,
                       startLevel, endLevel );
         }
         break;
@@ -1274,7 +1274,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalizeCounts
     case DIST_LOW_RANK:
     case SPLIT_LOW_RANK:
     case LOW_RANK:
-        // TODO: Think about avoiding the expensive F += H H proceduce in the 
+        // TODO: Think about avoiding the expensive F += H H proceduce in the
         //       case where there is already a dense update. We could simply
         //       add H H onto the dense update.
         if( level_ >= startLevel && level_ < endLevel )
@@ -1334,16 +1334,16 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalizeMiddleUpdates
         case NODE_GHOST:
             if( C.Admissible() )
             {
-                if( C.inTargetTeam_ && 
+                if( C.inTargetTeam_ &&
                     C.level_ >= startLevel && C.level_ < endLevel &&
-                    update >= startUpdate && update < endUpdate ) 
+                    update >= startUpdate && update < endUpdate )
                 {
                     // Handle the middle update, Omega2' (alpha A B Omega1)
                     const int key = A.sourceOffset_;
                     const Dense<Scalar>& X = C.colXMap_.Get( key );
                     const Dense<Scalar>& Omega2 = A.rowOmega_;
                     const unsigned teamLevel = C.teams_->TeamLevel(C.level_);
-                    Scalar* middleUpdate = 
+                    Scalar* middleUpdate =
                         &allReduceBuffer[middleOffsets[teamLevel]];
                     blas::Gemm
                     ( 'C', 'N', rank, rank, X.Height(),
@@ -1363,8 +1363,8 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalizeMiddleUpdates
                         for( int r=0; r<8; ++r )
                             nodeA.Child(t,r).
                             MultiplyHMatFHHFinalizeMiddleUpdates
-                            ( nodeB.Child(r,s), nodeC.Child(t,s), 
-                              allReduceBuffer, middleOffsets, 
+                            ( nodeB.Child(r,s), nodeC.Child(t,s),
+                              allReduceBuffer, middleOffsets,
                               startLevel, endLevel, startUpdate, endUpdate, r );
             }
             break;
@@ -1429,8 +1429,8 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalizeLocalQR
                     Xs[XOffsets[teamLevel]++] = &X;
 
                     lapack::QR
-                    ( X.Height(), X.Width(), X.Buffer(), X.LDim(), 
-                      &tauBuffer[tauOffsets[teamLevel]], 
+                    ( X.Height(), X.Width(), X.Buffer(), X.LDim(),
+                      &tauBuffer[tauOffsets[teamLevel]],
                       &qrWork[0], qrWork.Size() );
                     tauOffsets[teamLevel] += (log2TeamSize+1)*r;
                 }
@@ -1443,10 +1443,10 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalizeLocalQR
                 {
                     Dense<Scalar>& X = *rowXMap_.CurrentEntry();
                     Xs[XOffsets[teamLevel]++] = &X;
-                
+
                     lapack::QR
-                    ( X.Height(), X.Width(), X.Buffer(), X.LDim(), 
-                      &tauBuffer[tauOffsets[teamLevel]], 
+                    ( X.Height(), X.Width(), X.Buffer(), X.LDim(),
+                      &tauBuffer[tauOffsets[teamLevel]],
                       &qrWork[0], qrWork.Size() );
                     tauOffsets[teamLevel] += (log2TeamSize+1)*r;
                 }
@@ -1501,12 +1501,12 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalizeOuterUpdates
                 {
                     const int key = A.sourceOffset_;
                     const unsigned teamLevel = C.teams_->TeamLevel(C.level_);
-                    if( C.inTargetTeam_ ) 
+                    if( C.inTargetTeam_ )
                     {
                         // Handle the left update, Q1' Omega2
                         const Dense<Scalar>& Q1 = C.colXMap_.Get( key );
                         const Dense<Scalar>& Omega2 = A.rowOmega_;
-                        Scalar* leftUpdate = 
+                        Scalar* leftUpdate =
                             &allReduceBuffer[leftOffsets[teamLevel]];
                         blas::Gemm
                         ( 'C', 'N', Q1.Width(), rank, A.LocalHeight(),
@@ -1520,7 +1520,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalizeOuterUpdates
                         // Handle the right update, Q2' Omega1
                         const Dense<Scalar>& Q2 = C.rowXMap_.Get( key );
                         const Dense<Scalar>& Omega1 = B.colOmega_;
-                        Scalar* rightUpdate = 
+                        Scalar* rightUpdate =
                             &allReduceBuffer[rightOffsets[teamLevel]];
 
                         blas::Gemm
@@ -1542,7 +1542,7 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalizeOuterUpdates
                         for( int r=0; r<8; ++r )
                             nodeA.Child(t,r).
                             MultiplyHMatFHHFinalizeOuterUpdates
-                            ( nodeB.Child(r,s), nodeC.Child(t,s), 
+                            ( nodeB.Child(r,s), nodeC.Child(t,s),
                               allReduceBuffer, leftOffsets, rightOffsets,
                               startLevel, endLevel, startUpdate, endUpdate, r );
             }
@@ -1604,27 +1604,27 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalizeFormLowRank
                 {
                     const int key = A.sourceOffset_;
                     const unsigned teamLevel = C.teams_->TeamLevel(C.level_);
-                    if( C.inTargetTeam_ ) 
+                    if( C.inTargetTeam_ )
                     {
                         // Form Q1 pinv(Q1' Omega2)' (Omega2' alpha A B Omega1)
                         // in the place of X.
                         Dense<Scalar>& X = C.colXMap_.Get( key );
-                        Scalar* leftUpdate = 
+                        Scalar* leftUpdate =
                             &allReduceBuffer[leftOffsets[teamLevel]];
-                        const Scalar* middleUpdate = 
+                        const Scalar* middleUpdate =
                             &allReduceBuffer[middleOffsets[teamLevel]];
 
                         lapack::AdjointPseudoInverse
                         ( X.Width(), rank, leftUpdate, rank, &singularValues[0],
-                          &U[0], rank, &VH[0], rank, &svdWork[0], 
+                          &U[0], rank, &VH[0], rank, &svdWork[0],
                           svdWork.Size(), &svdRealWork[0] );
 
-                        // We can use the VH space to hold the product 
+                        // We can use the VH space to hold the product
                         // pinv(Q1' Omega2)' (Omega2' alpha A B Omega1)
                         blas::Gemm
-                        ( 'N', 'N', X.Width(), rank, rank, 
-                          Scalar(1), leftUpdate,   rank, 
-                                     middleUpdate, rank, 
+                        ( 'N', 'N', X.Width(), rank, rank,
+                          Scalar(1), leftUpdate,   rank,
+                                     middleUpdate, rank,
                           Scalar(0), &VH[0],       rank );
 
                         // Q1 := X.
@@ -1633,12 +1633,12 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalizeFormLowRank
                         X.Resize( X.Height(), rank );
                         X.Init();
 
-                        // Form 
+                        // Form
                         // X := Q1 pinv(Q1' Omega2)' (Omega2' alpha A B Omega1)
                         blas::Gemm
                         ( 'N', 'N', Q1.Height(), rank, Q1.Width(),
                           Scalar(1), Q1.LockedBuffer(), Q1.LDim(),
-                                     &VH[0],            rank, 
+                                     &VH[0],            rank,
                           Scalar(0), X.Buffer(),        X.LDim() );
 
                         leftOffsets[teamLevel] += rank*rank;
@@ -1648,13 +1648,13 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalizeFormLowRank
                     {
                         // Form Q2 pinv(Q2' Omega1)' or its conjugate
                         Dense<Scalar>& X = C.rowXMap_.Get( key );
-                        Scalar* rightUpdate = 
+                        Scalar* rightUpdate =
                             &allReduceBuffer[rightOffsets[teamLevel]];
 
                         lapack::AdjointPseudoInverse
-                        ( X.Width(), rank, rightUpdate, rank, 
+                        ( X.Width(), rank, rightUpdate, rank,
                           &singularValues[0],
-                          &U[0], rank, &VH[0], rank, 
+                          &U[0], rank, &VH[0], rank,
                           &svdWork[0], svdWork.Size(), &svdRealWork[0] );
 
                         // Q2 := X
@@ -1682,9 +1682,9 @@ DistHMat3d<Scalar>::MultiplyHMatFHHFinalizeFormLowRank
                     for( int s=0; s<8; ++s )
                         for( int r=0; r<8; ++r )
                             nodeA.Child(t,r).MultiplyHMatFHHFinalizeFormLowRank
-                            ( nodeB.Child(r,s), nodeC.Child(t,s), 
+                            ( nodeB.Child(r,s), nodeC.Child(t,s),
                               allReduceBuffer,
-                              leftOffsets, middleOffsets, rightOffsets, 
+                              leftOffsets, middleOffsets, rightOffsets,
                               singularValues, U, VH, svdWork, svdRealWork,
                               startLevel, endLevel, startUpdate, endUpdate, r );
             }

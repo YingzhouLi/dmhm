@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -691,7 +691,7 @@ void AllReduce( const T* sbuf, T* rbuf, int count, Op op, Comm comm )
 
 template<typename R>
 void AllReduce
-( const std::complex<R>* sbuf, std::complex<R>* rbuf, 
+( const std::complex<R>* sbuf, std::complex<R>* rbuf,
   int count, Op op, Comm comm )
 {
 #ifndef RELEASE

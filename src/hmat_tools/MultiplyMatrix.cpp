@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -14,8 +14,8 @@ namespace hmat_tools {
 // Dense C := alpha A B
 template<typename Scalar>
 void Multiply
-( Scalar alpha, const Dense<Scalar>& A, 
-                const Dense<Scalar>& B, 
+( Scalar alpha, const Dense<Scalar>& A,
+                const Dense<Scalar>& B,
                       Dense<Scalar>& C )
 {
 #ifndef RELEASE
@@ -29,8 +29,8 @@ void Multiply
 // Dense C := alpha A B + beta C
 template<typename Scalar>
 void Multiply
-( Scalar alpha, const Dense<Scalar>& A, 
-                const Dense<Scalar>& B, 
+( Scalar alpha, const Dense<Scalar>& A,
+                const Dense<Scalar>& B,
   Scalar beta,        Dense<Scalar>& C )
 {
 #ifndef RELEASE
@@ -48,7 +48,7 @@ void Multiply
     {
         blas::Symm
         ( 'L', 'L', C.Height(), C.Width(),
-          alpha, A.LockedBuffer(), A.LDim(), B.LockedBuffer(), B.LDim(), 
+          alpha, A.LockedBuffer(), A.LDim(), B.LockedBuffer(), B.LDim(),
           beta, C.Buffer(), C.LDim() );
     }
     else if( B.Symmetric() )
@@ -70,8 +70,8 @@ void Multiply
 // Form a dense matrix from a dense matrix times a low-rank matrix
 template<typename Scalar>
 void Multiply
-( Scalar alpha, const Dense<Scalar>& A, 
-                const LowRank<Scalar>& B, 
+( Scalar alpha, const Dense<Scalar>& A,
+                const LowRank<Scalar>& B,
                       Dense<Scalar>& C )
 {
 #ifndef RELEASE
@@ -85,8 +85,8 @@ void Multiply
 // Form a dense matrix from a dense matrix times a low-rank matrix
 template<typename Scalar>
 void Multiply
-( Scalar alpha, const Dense<Scalar>& A, 
-                const LowRank<Scalar>& B, 
+( Scalar alpha, const Dense<Scalar>& A,
+                const LowRank<Scalar>& B,
   Scalar beta,        Dense<Scalar>& C )
 {
 #ifndef RELEASE
@@ -104,31 +104,31 @@ void Multiply
     {
         blas::Symm
         ( 'L', 'L', A.Height(), B.Rank(),
-          1, A.LockedBuffer(),   A.LDim(), 
-             B.U.LockedBuffer(), B.U.LDim(), 
+          1, A.LockedBuffer(),   A.LDim(),
+             B.U.LockedBuffer(), B.U.LDim(),
           0, W.Buffer(),         W.LDim() );
     }
     else
     {
         blas::Gemm
         ( 'N', 'N', A.Height(), B.Rank(), A.Width(),
-          1, A.LockedBuffer(),   A.LDim(), 
-             B.U.LockedBuffer(), B.U.LDim(), 
+          1, A.LockedBuffer(),   A.LDim(),
+             B.U.LockedBuffer(), B.U.LDim(),
           0, W.Buffer(),         W.LDim() );
     }
     // C := alpha W B.V^[T,H] + beta C
     blas::Gemm
     ( 'N', 'T', C.Height(), C.Width(), B.Rank(),
-      alpha, W.LockedBuffer(),   W.LDim(), 
-             B.V.LockedBuffer(), B.V.LDim(), 
+      alpha, W.LockedBuffer(),   W.LDim(),
+             B.V.LockedBuffer(), B.V.LDim(),
       beta,  C.Buffer(),         C.LDim() );
 }
 
 // Form a dense matrix from a low-rank matrix times a dense matrix
 template<typename Scalar>
 void Multiply
-( Scalar alpha, const LowRank<Scalar>& A, 
-                const Dense<Scalar>& B, 
+( Scalar alpha, const LowRank<Scalar>& A,
+                const Dense<Scalar>& B,
                       Dense<Scalar>& C )
 {
 #ifndef RELEASE
@@ -142,8 +142,8 @@ void Multiply
 // Form a dense matrix from a low-rank matrix times a dense matrix
 template<typename Scalar>
 void Multiply
-( Scalar alpha, const LowRank<Scalar>& A, 
-                const Dense<Scalar>& B, 
+( Scalar alpha, const LowRank<Scalar>& A,
+                const Dense<Scalar>& B,
   Scalar beta,        Dense<Scalar>& C )
 {
 #ifndef RELEASE
@@ -166,13 +166,13 @@ void Multiply
         Dense<Scalar> W( A.Width(), A.Rank() );
         blas::Symm
         ( 'L', 'L', A.Width(), A.Rank(),
-          1, B.LockedBuffer(),   B.LDim(), 
-             A.V.LockedBuffer(), A.V.LDim(), 
+          1, B.LockedBuffer(),   B.LDim(),
+             A.V.LockedBuffer(), A.V.LDim(),
           0, W.Buffer(),         W.LDim() );
         blas::Gemm
         ( 'N', 'T', A.Height(), A.Width(), A.Rank(),
-          alpha, A.U.LockedBuffer(), A.U.LDim(), 
-                 W.LockedBuffer(),   W.LDim(), 
+          alpha, A.U.LockedBuffer(), A.U.LDim(),
+                 W.LockedBuffer(),   W.LDim(),
           beta,  C.Buffer(),         C.LDim() );
     }
     else
@@ -185,13 +185,13 @@ void Multiply
         Dense<Scalar> W( A.Rank(), B.Width() );
         blas::Gemm
         ( 'T', 'N', A.Rank(), B.Width(), A.Width(),
-          1, A.V.LockedBuffer(), A.V.LDim(), 
-             B.LockedBuffer(),   B.LDim(), 
+          1, A.V.LockedBuffer(), A.V.LDim(),
+             B.LockedBuffer(),   B.LDim(),
           0, W.Buffer(),         W.LDim() );
         blas::Gemm
         ( 'N', 'N', A.Height(), B.Width(), A.Rank(),
-          alpha, A.U.LockedBuffer(), A.U.LDim(), 
-                 W.LockedBuffer(),   W.LDim(), 
+          alpha, A.U.LockedBuffer(), A.U.LDim(),
+                 W.LockedBuffer(),   W.LDim(),
           beta,  C.Buffer(),         C.LDim() );
     }
 }
@@ -243,8 +243,8 @@ void Multiply
 // Low-rank C := alpha A B
 template<typename Scalar>
 void Multiply
-( Scalar alpha, const LowRank<Scalar>& A, 
-                const LowRank<Scalar>& B, 
+( Scalar alpha, const LowRank<Scalar>& A,
+                const LowRank<Scalar>& B,
                       LowRank<Scalar>& C )
 {
 #ifndef RELEASE
@@ -298,13 +298,13 @@ void Multiply
         Dense<Scalar> W( Ar, Br );
         blas::Gemm
         ( 'T', 'N', Ar, Br, A.Width(),
-          1, A.V.LockedBuffer(), A.V.LDim(), 
-             B.U.LockedBuffer(), B.U.LDim(), 
+          1, A.V.LockedBuffer(), A.V.LDim(),
+             B.U.LockedBuffer(), B.U.LDim(),
           0, W.Buffer(),         W.LDim() );
         blas::Gemm
         ( 'N', 'N', m, Br, Ar,
-          alpha, A.U.LockedBuffer(), A.U.LDim(), 
-                 W.LockedBuffer(),   W.LDim(), 
+          alpha, A.U.LockedBuffer(), A.U.LDim(),
+                 W.LockedBuffer(),   W.LDim(),
           0,     C.U.Buffer(),       C.U.LDim() );
         Copy( B.V, C.V );
     }
@@ -313,8 +313,8 @@ void Multiply
 // Form a low-rank matrix from a dense matrix times a low-rank matrix
 template<typename Scalar>
 void Multiply
-( Scalar alpha, const Dense<Scalar>& A, 
-                const LowRank<Scalar>& B, 
+( Scalar alpha, const Dense<Scalar>& A,
+                const LowRank<Scalar>& B,
                       LowRank<Scalar>& C )
 {
 #ifndef RELEASE
@@ -333,17 +333,17 @@ void Multiply
     if( A.Symmetric() )
     {
         blas::Symm
-        ( 'L', 'L', m, r, 
-          alpha, A.LockedBuffer(),   A.LDim(), 
-                 B.U.LockedBuffer(), B.U.LDim(), 
+        ( 'L', 'L', m, r,
+          alpha, A.LockedBuffer(),   A.LDim(),
+                 B.U.LockedBuffer(), B.U.LDim(),
           0,     C.U.Buffer(),       C.U.LDim() );
     }
     else
     {
         blas::Gemm
         ( 'N', 'N', m, r, A.Width(),
-          alpha, A.LockedBuffer(),   A.LDim(), 
-                 B.U.LockedBuffer(), B.U.LDim(), 
+          alpha, A.LockedBuffer(),   A.LDim(),
+                 B.U.LockedBuffer(), B.U.LDim(),
           0,     C.U.Buffer(),       C.U.LDim() );
     }
 
@@ -354,8 +354,8 @@ void Multiply
 // Form a low-rank matrix from a low-rank matrix times a dense matrix
 template<typename Scalar>
 void Multiply
-( Scalar alpha, const LowRank<Scalar>& A, 
-                const Dense<Scalar>& B, 
+( Scalar alpha, const LowRank<Scalar>& A,
+                const Dense<Scalar>& B,
                       LowRank<Scalar>& C )
 {
 #ifndef RELEASE
@@ -381,8 +381,8 @@ void Multiply
         Copy( A.U, C.U );
         blas::Symm
         ( 'L', 'L', A.Width(), r,
-          alpha, B.LockedBuffer(),   B.LDim(), 
-                 A.V.LockedBuffer(), A.V.LDim(), 
+          alpha, B.LockedBuffer(),   B.LDim(),
+                 A.V.LockedBuffer(), A.V.LDim(),
           0,     C.V.Buffer(),       C.V.LDim() );
     }
     else
@@ -395,7 +395,7 @@ void Multiply
         Copy( A.U, C.U );
         blas::Gemm
         ( 'T', 'N', n, r, A.Width(),
-          alpha, B.LockedBuffer(),   B.LDim(), 
+          alpha, B.LockedBuffer(),   B.LDim(),
                  A.V.LockedBuffer(), A.V.LDim(),
           0,     C.V.Buffer(),       C.V.LDim() );
     }
@@ -403,7 +403,7 @@ void Multiply
 
 template<typename Real>
 void Multiply
-( int maxRank, Real alpha, 
+( int maxRank, Real alpha,
   const Dense<Real>& A,
   const Dense<Real>& B,
         LowRank<Real>& C )
@@ -425,7 +425,7 @@ void Multiply
     const int lwork = lapack::SVDWorkSize( m, n );
     std::vector<Real> work( lwork );
     lapack::SVD
-    ( 'O', 'S', m, n, C.U.Buffer(), C.U.LDim(), 
+    ( 'O', 'S', m, n, C.U.Buffer(), C.U.LDim(),
       s.Buffer(), 0, 1, VT.Buffer(), VT.LDim(),
       &work[0], lwork );
 
@@ -435,7 +435,7 @@ void Multiply
     VT.Resize( r, n );
 
     // Put (Sigma V^T)^T = V Sigma into C.V
-    C.V.SetType( GENERAL ); 
+    C.V.SetType( GENERAL );
     C.V.Resize( n, r );
     const int VTLDim = VT.LDim();
     for( int j=0; j<r; ++j )
@@ -450,7 +450,7 @@ void Multiply
 
 template<typename Real>
 void Multiply
-( int maxRank, std::complex<Real> alpha, 
+( int maxRank, std::complex<Real> alpha,
   const Dense<std::complex<Real> >& A,
   const Dense<std::complex<Real> >& B,
         LowRank<std::complex<Real> >& C )
@@ -475,7 +475,7 @@ void Multiply
     std::vector<Scalar> work( lwork );
     std::vector<Real> rwork( 5*minDim );
     lapack::SVD
-    ( 'O', 'S', m, n, C.U.Buffer(), C.U.LDim(), 
+    ( 'O', 'S', m, n, C.U.Buffer(), C.U.LDim(),
       s.Buffer(), 0, 1, VH.Buffer(), VH.LDim(),
       &work[0], lwork, &rwork[0] );
 
@@ -484,7 +484,7 @@ void Multiply
     s.Resize( r );
     VH.Resize( r, n );
 
-    C.V.SetType( GENERAL ); 
+    C.V.SetType( GENERAL );
     C.V.Resize( n, r );
     // Put (Sigma V^H)^T = (V^H)^T Sigma into C.V
     const int VHLDim = VH.LDim();
@@ -500,7 +500,7 @@ void Multiply
 
 template<typename Real>
 void Multiply
-( int maxRank, Real alpha, 
+( int maxRank, Real alpha,
   const Dense<Real>& A,
   const Dense<Real>& B,
   Real beta,
@@ -524,7 +524,7 @@ void Multiply
 
 template<typename Real>
 void Multiply
-( int maxRank, std::complex<Real> alpha, 
+( int maxRank, std::complex<Real> alpha,
   const Dense<std::complex<Real> >& A,
   const Dense<std::complex<Real> >& B,
   std::complex<Real> beta,
@@ -586,70 +586,70 @@ template void Multiply
 
 // Form a dense matrix from a dense matrix times a low-rank matrix
 template void Multiply
-( float alpha, const Dense<float>& A, 
-               const LowRank<float>& B, 
+( float alpha, const Dense<float>& A,
+               const LowRank<float>& B,
                      Dense<float>& C );
 template void Multiply
 ( double alpha, const Dense<double>& A,
                 const LowRank<double>& B,
                       Dense<double>& C );
 template void Multiply
-( std::complex<float> alpha, 
+( std::complex<float> alpha,
   const Dense<std::complex<float> >& A,
   const LowRank<std::complex<float> >& B,
         Dense<std::complex<float> >& C );
 template void Multiply
-( std::complex<double> alpha, 
+( std::complex<double> alpha,
   const Dense<std::complex<double> >& A,
   const LowRank<std::complex<double> >& B,
         Dense<std::complex<double> >& C );
 
 // Form a dense matrix from a dense matrix times a low-rank matrix
 template void Multiply
-( float alpha, const Dense<float>& A, 
-               const LowRank<float>& B, 
+( float alpha, const Dense<float>& A,
+               const LowRank<float>& B,
   float beta,        Dense<float>& C );
 template void Multiply
 ( double alpha, const Dense<double>& A,
                 const LowRank<double>& B,
   double beta,        Dense<double>& C );
 template void Multiply
-( std::complex<float> alpha, 
+( std::complex<float> alpha,
   const Dense<std::complex<float> >& A,
   const LowRank<std::complex<float> >& B,
-  std::complex<float> beta, 
+  std::complex<float> beta,
         Dense<std::complex<float> >& C );
 template void Multiply
-( std::complex<double> alpha, 
+( std::complex<double> alpha,
   const Dense<std::complex<double> >& A,
   const LowRank<std::complex<double> >& B,
-  std::complex<double> beta,        
+  std::complex<double> beta,
         Dense<std::complex<double> >& C );
 
 // Form a dense matrix from a low-rank matrix times a dense matrix
 template void Multiply
-( float alpha, const LowRank<float>& A, 
-               const Dense<float>& B, 
+( float alpha, const LowRank<float>& A,
+               const Dense<float>& B,
                      Dense<float>& C );
 template void Multiply
 ( double alpha, const LowRank<double>& A,
                 const Dense<double>& B,
                       Dense<double>& C );
 template void Multiply
-( std::complex<float> alpha, 
+( std::complex<float> alpha,
   const LowRank<std::complex<float> >& A,
   const Dense<std::complex<float> >& B,
         Dense<std::complex<float> >& C );
 template void Multiply
-( std::complex<double> alpha, 
+( std::complex<double> alpha,
   const LowRank<std::complex<double> >& A,
   const Dense<std::complex<double> >& B,
         Dense<std::complex<double> >& C );
 
 // Form a dense matrix from a low-rank matrix times a dense matrix
 template void Multiply
-( float alpha, const LowRank<float>& A, 
-               const Dense<float>& B, 
+( float alpha, const LowRank<float>& A,
+               const Dense<float>& B,
   float beta,        Dense<float>& C );
 template void Multiply
 ( double alpha, const LowRank<double>& A,
@@ -660,10 +660,10 @@ template void Multiply
                              const Dense<std::complex<float> >& B,
   std::complex<float> beta,        Dense<std::complex<float> >& C );
 template void Multiply
-( std::complex<double> alpha, 
+( std::complex<double> alpha,
   const LowRank<std::complex<double> >& A,
   const Dense<std::complex<double> >& B,
-  std::complex<double> beta,        
+  std::complex<double> beta,
         Dense<std::complex<double> >& C );
 
 template void Multiply
@@ -716,59 +716,59 @@ template void Multiply
                 const LowRank<double>& B,
                       LowRank<double>& C );
 template void Multiply
-( std::complex<float> alpha, 
+( std::complex<float> alpha,
   const LowRank<std::complex<float> >& A,
   const LowRank<std::complex<float> >& B,
         LowRank<std::complex<float> >& C );
 template void Multiply
-( std::complex<double> alpha, 
+( std::complex<double> alpha,
   const LowRank<std::complex<double> >& A,
   const LowRank<std::complex<double> >& B,
         LowRank<std::complex<double> >& C );
 
 // Form a low-rank matrix from a dense matrix times a low-rank matrix
 template void Multiply
-( float alpha, const Dense<float>& A, 
-               const LowRank<float>& B, 
+( float alpha, const Dense<float>& A,
+               const LowRank<float>& B,
                      LowRank<float>& C );
 template void Multiply
 ( double alpha, const Dense<double>& A,
                 const LowRank<double>& B,
                       LowRank<double>& C );
 template void Multiply
-( std::complex<float> alpha, 
+( std::complex<float> alpha,
   const Dense<std::complex<float> >& A,
   const LowRank<std::complex<float> >& B,
         LowRank<std::complex<float> >& C );
 template void Multiply
-( std::complex<double> alpha, 
+( std::complex<double> alpha,
   const Dense<std::complex<double> >& A,
   const LowRank<std::complex<double> >& B,
         LowRank<std::complex<double> >& C );
 
 // Form a low-rank matrix from a low-rank matrix times a dense matrix
 template void Multiply
-( float alpha, const LowRank<float>& A, 
-               const Dense<float>& B, 
+( float alpha, const LowRank<float>& A,
+               const Dense<float>& B,
                      LowRank<float>& C );
 template void Multiply
 ( double alpha, const LowRank<double >& A,
                 const Dense<double>& B,
                       LowRank<double >& C );
 template void Multiply
-( std::complex<float> alpha, 
+( std::complex<float> alpha,
   const LowRank<std::complex<float> >& A,
   const Dense<std::complex<float> >& B,
         LowRank<std::complex<float> >& C );
 template void Multiply
-( std::complex<double> alpha, 
+( std::complex<double> alpha,
   const LowRank<std::complex<double> >& A,
   const Dense<std::complex<double> >& B,
         LowRank<std::complex<double> >& C );
 
 // Generate a low-rank matrix from the product of two dense matrices
 template void Multiply
-( int maxRank, float alpha, 
+( int maxRank, float alpha,
   const Dense<float>& A,
   const Dense<float>& B,
         LowRank<float>& C );
@@ -790,7 +790,7 @@ template void Multiply
 
 // Update a low-rank matrix from the product of two dense matrices
 template void Multiply
-( int maxRank, float alpha, 
+( int maxRank, float alpha,
   const Dense<float>& A,
   const Dense<float>& B,
   float beta,

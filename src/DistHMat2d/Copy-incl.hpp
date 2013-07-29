@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -50,7 +50,7 @@ DistHMat2d<Scalar>::CopyFrom( const DistHMat2d<Scalar>& B )
     case SPLIT_NODE:
     case NODE:
     {
-        A.block_.data.N = A.NewNode();    
+        A.block_.data.N = A.NewNode();
         Node& nodeA = *A.block_.data.N;
         const Node& nodeB = *B.block_.data.N;
         for( int j=0; j<16; ++j )

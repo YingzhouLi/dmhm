@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -12,9 +12,9 @@
 
 namespace dmhm {
 
-template<typename T1,typename T2> 
-class MemoryMap 
-{   
+template<typename T1,typename T2>
+class MemoryMap
+{
 private:
     mutable unsigned currentIndex_;
     mutable typename std::map<T1,T2*>::iterator it_;
@@ -25,7 +25,7 @@ public:
     int CurrentIndex() const { return currentIndex_; }
 
     T1 CurrentKey() const
-    { 
+    {
 #ifndef RELEASE
         CallStackEntry entry("MemoryMap::CurrentKey");
         if( currentIndex_ >= baseMap_.size() )
@@ -33,7 +33,7 @@ public:
 #endif
         if( currentIndex_ == 0 )
             it_ = baseMap_.begin();
-        return it_->first; 
+        return it_->first;
     }
 
     T2& Get( int key )
@@ -48,7 +48,7 @@ public:
 #endif
         return *value;
     }
-    
+
     const T2& Get( int key ) const
     {
 #ifndef RELEASE
@@ -73,7 +73,7 @@ public:
         baseMap_[key] = value;
     }
 
-    T2* CurrentEntry() 
+    T2* CurrentEntry()
     {
 #ifndef RELEASE
         CallStackEntry entry("MemoryMap::CurrentEntry");
@@ -173,7 +173,7 @@ public:
         ++it_;
         ++currentIndex_;
     }
-    
+
     void Decrement()
     {
 #ifndef RELEASE
@@ -206,10 +206,10 @@ public:
         it_->second = 0;
         baseMap_.erase( it_++ );
     }
-    
+
     void Clear()
     {
-        typename std::map<T1,T2*>::iterator it; 
+        typename std::map<T1,T2*>::iterator it;
         for( it=baseMap_.begin(); it!=baseMap_.end(); it++ )
         {
             delete it->second;
@@ -220,7 +220,7 @@ public:
 
     MemoryMap() : currentIndex_(0) { }
     ~MemoryMap() { Clear(); }
-};  
+};
 
 } // namespace dmhm
 

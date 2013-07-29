@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -12,7 +12,7 @@ using namespace dmhm;
 template<typename Real>
 void
 FormRow
-( int x, int y, int xSize, int ySize, 
+( int x, int y, int xSize, int ySize,
   Vector<std::complex<Real> >& row, Vector<int>& colIndices )
 {
     typedef std::complex<Real> Scalar;
@@ -74,7 +74,7 @@ main( int argc, char* argv[] )
         const bool print = Input("--print","print matrices?",false);
         const bool multI = Input("--multI","multiply by identity?",false);
         const int oversample = Input("--oversample","num extra basis vecs",4);
-        const double midcomputeTol = 
+        const double midcomputeTol =
             Input("--midcomputeTol","tolerance for midcompute stage",1e-16);
         const double compressionTol =
             Input("--compressionTol","tolerance for compression",1e-16);
@@ -129,7 +129,7 @@ main( int argc, char* argv[] )
         double fillStopTime = mpi::Time();
         if( commRank == 0 )
         {
-            std::cout << "done: " << fillStopTime-fillStartTime << " seconds." 
+            std::cout << "done: " << fillStopTime-fillStartTime << " seconds."
                       << std::endl;
         }
 
@@ -145,15 +145,15 @@ main( int argc, char* argv[] )
         mpi::Barrier( mpi::COMM_WORLD );
         double constructStopTime = mpi::Time();
         if( commRank == 0 )
-            std::cout << "done: " << constructStopTime-constructStartTime 
+            std::cout << "done: " << constructStopTime-constructStartTime
                       << " seconds." << std::endl;
 
 
         // Set up our subcommunicators and compute the packed sizes
         DistHMat::Teams teams( mpi::COMM_WORLD );
         Vector<std::size_t> packedSizes;
-        DistHMat::PackedSizes( packedSizes, ASerial, teams ); 
-        const std::size_t myMaxSize = 
+        DistHMat::PackedSizes( packedSizes, ASerial, teams );
+        const std::size_t myMaxSize =
             *(std::max_element( packedSizes.Begin(), packedSizes.End() ));
 
         // Pack for a DistHMat2d
@@ -184,11 +184,11 @@ main( int argc, char* argv[] )
         }
         if( commRank == 0 )
         {
-            std::cout << "Maximum per-process message size: " 
-                      << ((double)intMaxSize)/(1024.*1024.) << " MB." 
+            std::cout << "Maximum per-process message size: "
+                      << ((double)intMaxSize)/(1024.*1024.) << " MB."
                       << std::endl;
         }
- 
+
         // AllToAll
         if( commRank == 0 )
         {
@@ -259,12 +259,12 @@ main( int argc, char* argv[] )
             XLocal.Resize( localHeight, numRhs );
             ParallelGaussianRandomVectors( XLocal );
         }
-        
+
         Dense<Scalar> YLocal, ZLocal;
         // Y := AZ := ABX
         A.Multiply( Scalar(1), XLocal, YLocal );
         B.Multiply( Scalar(1), XLocal, ZLocal );
-        
+
         // Check that AX = BX for an arbitrary X
         if( commRank == 0 )
             std::cout << "Checking consistency: " << std::endl;
@@ -288,8 +288,8 @@ main( int argc, char* argv[] )
         }
 
         // Compute the error norms and put ZLocal = YLocal-ZLocal
-        double myInfTruth=0, myInfError=0, 
-               myL1Truth=0, myL1Error=0, 
+        double myInfTruth=0, myInfError=0,
+               myL1Truth=0, myL1Error=0,
                myL2SquaredTruth=0, myL2SquaredError=0;
         for( int j=0; j<XLocal.Width(); ++j )
         {
@@ -311,8 +311,8 @@ main( int argc, char* argv[] )
                 myL2SquaredError += errorMag*errorMag;
             }
         }
-        double infTruth, infError, 
-               L1Truth, L1Error, 
+        double infTruth, infError,
+               L1Truth, L1Error,
                L2SquaredTruth, L2SquaredError;
         mpi::Reduce( &myInfTruth, &infTruth, 1, mpi::MAX, 0, mpi::COMM_WORLD );
         mpi::Reduce( &myInfError, &infError, 1, mpi::MAX, 0, mpi::COMM_WORLD );
@@ -329,7 +329,7 @@ main( int argc, char* argv[] )
                       << "||AX||_2     = " << sqrt(L2SquaredTruth) << "\n"
                       << "||AX-BX||_oo = " << infError << "\n"
                       << "||AX-BX||_1  = " << L1Error << "\n"
-                      << "||AX-BX||_2  = " << sqrt(L2SquaredError) 
+                      << "||AX-BX||_2  = " << sqrt(L2SquaredError)
                       << std::endl;
         }
 
@@ -347,13 +347,13 @@ main( int argc, char* argv[] )
     catch( ArgException& e ) { }
     catch( std::exception& e )
     {
-        std::cerr << "Process " << commRank << " caught message: " << e.what() 
+        std::cerr << "Process " << commRank << " caught message: " << e.what()
                   << std::endl;
 #ifndef RELEASE
         DumpCallStack();
 #endif
     }
-    
+
     Finalize();
     return 0;
 }

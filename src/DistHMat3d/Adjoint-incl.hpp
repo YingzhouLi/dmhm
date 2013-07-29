@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -202,7 +202,7 @@ DistHMat3d<Scalar>::AdjointPassData( const DistHMat3d<Scalar>& B )
 }
 
 template<typename Scalar>
-void 
+void
 DistHMat3d<Scalar>::AdjointPassDataCount
 ( const DistHMat3d<Scalar>& B,
   std::map<int,int>& sendSizes, std::map<int,int>& recvSizes ) const
@@ -242,7 +242,7 @@ DistHMat3d<Scalar>::AdjointPassDataCount
 }
 
 template<typename Scalar>
-void 
+void
 DistHMat3d<Scalar>::AdjointPassDataPack
 ( const DistHMat3d<Scalar>& B,
   Vector<Scalar>& buffer, std::map<int,int>& offsets ) const
@@ -286,7 +286,7 @@ DistHMat3d<Scalar>::AdjointPassDataPack
 }
 
 template<typename Scalar>
-void 
+void
 DistHMat3d<Scalar>::AdjointPassDataUnpack
 ( const DistHMat3d<Scalar>& B,
   const Vector<Scalar>& buffer, std::map<int,int>& offsets )
@@ -326,7 +326,7 @@ DistHMat3d<Scalar>::AdjointPassDataUnpack
             Scalar* RESTRICT ABuffer = SD.D.Buffer();
             for( int j=0; j<n; ++j)
                 for( int i=0; i<m; ++i)
-                    ABuffer[j+i*DLDim] = 
+                    ABuffer[j+i*DLDim] =
                         Conj(buffer[offsets[A.targetRoot_]+i+j*LDim]);
             offsets[A.targetRoot_] += m*n;
         }

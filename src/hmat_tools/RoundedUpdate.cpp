@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -15,7 +15,7 @@ namespace hmat_tools {
 template<typename Real>
 void RoundedUpdate
 ( int maxRank,
-  Real alpha, const LowRank<Real>& A, 
+  Real alpha, const LowRank<Real>& A,
   Real beta,        LowRank<Real>& B )
 {
 #ifndef RELEASE
@@ -77,7 +77,7 @@ void RoundedUpdate
         MemCopy( V.Buffer(0,j+Ar), B.V.LockedBuffer(0,j), n );
 
 #if defined(PIVOTED_QR)
-    // TODO 
+    // TODO
     throw std::logic_error("Pivoted QR is not yet supported.");
 #else
     // Perform an unpivoted QR decomposition on U
@@ -116,14 +116,14 @@ void RoundedUpdate
     const int lworkSVD = lapack::SVDWorkSize( minDimU, minDimV );
     std::vector<Real> workSVD( lworkSVD );
     lapack::SVD
-    ( 'O', 'S', minDimU, minDimV, W.Buffer(), W.LDim(), 
+    ( 'O', 'S', minDimU, minDimV, W.Buffer(), W.LDim(),
       &s[0], 0, 1, VT.Buffer(), VT.LDim(), &workSVD[0], lworkSVD );
 
     // Get B ready for the rounded low-rank matrices
     B.U.Resize( m, roundedRank );
     B.V.Resize( n, roundedRank );
 
-    // Form the rounded B.U by first filling it with 
+    // Form the rounded B.U by first filling it with
     //  | S*U_Left |, and then hitting it from the left with Q1
     //  |  0       |
     Scale( (Real)0, B.U );
@@ -138,10 +138,10 @@ void RoundedUpdate
     // Apply Q1
     workU.resize( std::max(1,m*roundedRank) );
     lapack::ApplyQ
-    ( 'L', 'N', m, roundedRank, minDimU, U.LockedBuffer(), U.LDim(), &tauU[0], 
+    ( 'L', 'N', m, roundedRank, minDimU, U.LockedBuffer(), U.LDim(), &tauU[0],
       B.U.Buffer(), B.U.LDim(), &workU[0], workU.size() );
 
-    // Form the rounded B.V by first filling it with 
+    // Form the rounded B.V by first filling it with
     //  | (VT_Top)^T |, and then hitting it from the left with Q2
     //  |      0     |
     Scale( (Real)0, B.V );
@@ -153,7 +153,7 @@ void RoundedUpdate
         for( int i=0; i<minDimV; ++i )
             VCol[i] = VTRow[i*VTLDim];
     }
-    // Apply Q2 
+    // Apply Q2
     workV.resize( std::max(1,n*roundedRank) );
     lapack::ApplyQ
     ( 'L', 'N', n, roundedRank, minDimV, V.LockedBuffer(), V.LDim(), &tauV[0],
@@ -164,9 +164,9 @@ void RoundedUpdate
 template<typename Real>
 void RoundedUpdate
 ( int maxRank,
-  std::complex<Real> alpha, 
+  std::complex<Real> alpha,
   const LowRank<std::complex<Real> >& A,
-  std::complex<Real> beta,        
+  std::complex<Real> beta,
         LowRank<std::complex<Real> >& B )
 {
     typedef std::complex<Real> Scalar;
@@ -229,7 +229,7 @@ void RoundedUpdate
         MemCopy( V.Buffer(0,j+Ar), B.V.LockedBuffer(0,j), n );
 
 #if defined(PIVOTED_QR)
-    // TODO 
+    // TODO
     throw std::logic_error("Pivoted QR is not yet supported.");
 #else
     // Perform an unpivoted QR decomposition on U
@@ -271,14 +271,14 @@ void RoundedUpdate
     std::vector<Real> realWorkSVD( 5*r );
     lapack::SVD
     ( 'O', 'S', minDimU, minDimV, W.Buffer(), W.LDim(),
-      &s[0], 0, 1, VH.Buffer(), VH.LDim(), &workSVD[0], lworkSVD, 
+      &s[0], 0, 1, VH.Buffer(), VH.LDim(), &workSVD[0], lworkSVD,
       &realWorkSVD[0] );
 
     // Get B ready for the rounded low-rank matrices
     B.U.Resize( m, roundedRank );
     B.V.Resize( n, roundedRank );
 
-    // Form the rounded B.U by first filling it with 
+    // Form the rounded B.U by first filling it with
     //  | S*U_Left |, and then hitting it from the left with Q1
     //  |  0       |
     Scale( Scalar(0), B.U );
@@ -293,10 +293,10 @@ void RoundedUpdate
     // Apply Q1
     workU.resize( std::max(1,m*roundedRank) );
     lapack::ApplyQ
-    ( 'L', 'N', m, roundedRank, minDimU, U.LockedBuffer(), U.LDim(), &tauU[0], 
+    ( 'L', 'N', m, roundedRank, minDimU, U.LockedBuffer(), U.LDim(), &tauU[0],
       B.U.Buffer(), B.U.LDim(), &workU[0], workU.size() );
 
-    // Form the rounded B.V by first filling it with 
+    // Form the rounded B.V by first filling it with
     //  | (VH_Top)^[T,H] |, and then hitting it from the left with Q2
     //  |      0         |
     Scale( Scalar(0), B.V );
@@ -326,15 +326,15 @@ template void RoundedUpdate
   double beta,        LowRank<double>& B );
 template void RoundedUpdate
 ( int maxRank,
-  std::complex<float> alpha, 
+  std::complex<float> alpha,
   const LowRank<std::complex<float> >& A,
-  std::complex<float> beta, 
+  std::complex<float> beta,
         LowRank<std::complex<float> >& B );
 template void RoundedUpdate
 ( int maxRank,
-  std::complex<double> alpha, 
+  std::complex<double> alpha,
   const LowRank<std::complex<double> >& A,
-  std::complex<double> beta, 
+  std::complex<double> beta,
         LowRank<std::complex<double> >& B );
 
 } // namespace hmat_tools

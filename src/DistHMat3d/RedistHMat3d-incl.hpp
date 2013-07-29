@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -16,7 +16,7 @@ namespace dmhm {
 template<typename Scalar>
 std::size_t
 DistHMat3d<Scalar>::PackedSizes
-( Vector<std::size_t>& packedSizes, 
+( Vector<std::size_t>& packedSizes,
   const HMat3d<Scalar>& H, const Teams& teams )
 {
 #ifndef RELEASE
@@ -51,7 +51,7 @@ DistHMat3d<Scalar>::PackedSizes
 template<typename Scalar>
 std::size_t
 DistHMat3d<Scalar>::Pack
-( Vector<byte*>& packedSubs, 
+( Vector<byte*>& packedSubs,
   const HMat3d<Scalar>& H, const Teams& teams )
 {
 #ifndef RELEASE
@@ -60,7 +60,7 @@ DistHMat3d<Scalar>::Pack
     mpi::Comm comm = teams.Team(0);
     const int p = mpi::CommSize( comm );
     Vector<byte*> heads = packedSubs;
-    Vector<byte**> headPointers(p); 
+    Vector<byte**> headPointers(p);
     for( int i=0; i<p; ++i )
         headPointers[i] = &heads[i];
 
@@ -172,13 +172,13 @@ void
 DistHMat3d<Scalar>::ComputeLocalSizes
 ( Vector<int>& localSizes, const HMat3d<Scalar>& H )
 {
-#ifndef RELEASE    
+#ifndef RELEASE
     CallStackEntry entry("DistHMat3d::ComputeLocalSizes");
     const int p = localSizes.Size();
     if( !(p && !(p & (p-1))) )
         throw std::logic_error("Must use a power of two number of processes");
-    if( (H.xSizeSource_ != H.xSizeTarget_) || 
-        (H.ySizeSource_ != H.ySizeTarget_) || 
+    if( (H.xSizeSource_ != H.xSizeTarget_) ||
+        (H.ySizeSource_ != H.ySizeTarget_) ||
         (H.zSizeSource_ != H.zSizeTarget_) )
         throw std::logic_error("Routine meant for square nodes");
 #endif
@@ -193,7 +193,7 @@ DistHMat3d<Scalar>::ComputeLocalSizes
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::PackedSizesRecursion
-( Vector<std::size_t>& packedSizes, 
+( Vector<std::size_t>& packedSizes,
   const Vector<int>& localSizes,
   int sourceRankOffset, int targetRankOffset, int teamSize,
   const HMat3d<Scalar>& H )
@@ -225,7 +225,7 @@ DistHMat3d<Scalar>::PackedSizesRecursion
         }
         else if( teamSize == 2 )
         {
-            // Give the upper-left 2x2 to the first halves of the teams 
+            // Give the upper-left 2x2 to the first halves of the teams
             // and the lower-right 2x2 to the second halves.
             for( int t=0; t<8; ++t )
                 for( int s=0; s<8; ++s )
@@ -236,7 +236,7 @@ DistHMat3d<Scalar>::PackedSizesRecursion
         }
         else if( teamSize == 4 )
         {
-            // Give the upper-left 4x4 to the first halves of the teams 
+            // Give the upper-left 4x4 to the first halves of the teams
             // and the lower-right 4x4 to the second halves.
             for( int t=0; t<8; ++t )
                 for( int s=0; s<8; ++s )
@@ -281,7 +281,7 @@ DistHMat3d<Scalar>::PackedSizesRecursion
             }
             else
             {
-                // Store a split low-rank matrix                
+                // Store a split low-rank matrix
 
                 // The source and target processes store the matrix rank and
                 // their factor's entries.
@@ -293,14 +293,14 @@ DistHMat3d<Scalar>::PackedSizesRecursion
         {
             if( sourceRankOffset == targetRankOffset )
             {
-                // Every process owns a piece of both U and V. Store those 
+                // Every process owns a piece of both U and V. Store those
                 // pieces along with the matrix rank.
                 std::cerr << "WARNING: Unlikely admissible case." << std::endl;
                 for( int i=0; i<teamSize; ++i )
                 {
                     const int sourceRank = sourceRankOffset + i;
                     const int localSize = localSizes[sourceRank];
-                    packedSizes[sourceRank] += 
+                    packedSizes[sourceRank] +=
                         sizeof(int) + 2*localSize*r*sizeof(Scalar);
                 }
             }
@@ -313,7 +313,7 @@ DistHMat3d<Scalar>::PackedSizesRecursion
                 for( int i=0; i<teamSize; ++i )
                 {
                     const int sourceRank = sourceRankOffset + i;
-                    packedSizes[sourceRank] += 
+                    packedSizes[sourceRank] +=
                         sizeof(int) + localSizes[sourceRank]*r*sizeof(Scalar);
                 }
 
@@ -321,7 +321,7 @@ DistHMat3d<Scalar>::PackedSizesRecursion
                 for( int i=0; i<teamSize; ++i )
                 {
                     const int targetRank = targetRankOffset + i;
-                    packedSizes[targetRank] += 
+                    packedSizes[targetRank] +=
                         sizeof(int) + localSizes[targetRank]*r*sizeof(Scalar);
                 }
             }
@@ -431,21 +431,21 @@ DistHMat3d<Scalar>::PackRecursion
                 for( int s=4; s<8; ++s )
                     PackRecursion
                     ( headPointers, localSizes,
-                      sourceRankOffset+newTeamSize, targetRankOffset, 
+                      sourceRankOffset+newTeamSize, targetRankOffset,
                       newTeamSize, node.Child(t,s) );
             // Bottom-left block
             for( int t=4; t<8; ++t )
                 for( int s=0; s<4; ++s )
                     PackRecursion
                     ( headPointers, localSizes,
-                      sourceRankOffset, targetRankOffset+newTeamSize, 
+                      sourceRankOffset, targetRankOffset+newTeamSize,
                       newTeamSize, node.Child(t,s) );
             // Bottom-right block
             for( int t=4; t<8; ++t )
                 for( int s=4; s<8; ++s )
                     PackRecursion
                     ( headPointers, localSizes,
-                      sourceRankOffset+newTeamSize, 
+                      sourceRankOffset+newTeamSize,
                       targetRankOffset+newTeamSize,
                       newTeamSize, node.Child(t,s) );
         }
@@ -464,8 +464,8 @@ DistHMat3d<Scalar>::PackRecursion
                 for( int s=0; s<4; ++s )
                     PackRecursion
                     ( headPointers, localSizes,
-                      sourceRankOffset+(s/2)*newTeamSize, 
-                      targetRankOffset+(t/2)*newTeamSize, 
+                      sourceRankOffset+(s/2)*newTeamSize,
+                      targetRankOffset+(t/2)*newTeamSize,
                       newTeamSize,
                       node.Child(t,s) );
             // Top-right block
@@ -473,24 +473,24 @@ DistHMat3d<Scalar>::PackRecursion
                 for( int s=4; s<8; ++s )
                     PackRecursion
                     ( headPointers, localSizes,
-                      sourceRankOffset+(s/2)*newTeamSize, 
-                      targetRankOffset+(t/2)*newTeamSize, 
+                      sourceRankOffset+(s/2)*newTeamSize,
+                      targetRankOffset+(t/2)*newTeamSize,
                       newTeamSize, node.Child(t,s) );
             // Bottom-left block
             for( int t=4; t<8; ++t )
                 for( int s=0; s<4; ++s )
                     PackRecursion
                     ( headPointers, localSizes,
-                      sourceRankOffset+(s/2)*newTeamSize, 
-                      targetRankOffset+(t/2)*newTeamSize, 
+                      sourceRankOffset+(s/2)*newTeamSize,
+                      targetRankOffset+(t/2)*newTeamSize,
                       newTeamSize, node.Child(t,s) );
             // Bottom-right block
             for( int t=4; t<8; ++t )
                 for( int s=4; s<8; ++s )
                     PackRecursion
                     ( headPointers, localSizes,
-                      sourceRankOffset+(s/2)*newTeamSize, 
-                      targetRankOffset+(t/2)*newTeamSize, 
+                      sourceRankOffset+(s/2)*newTeamSize,
+                      targetRankOffset+(t/2)*newTeamSize,
                       newTeamSize, node.Child(t,s) );
         }
         else
@@ -508,15 +508,15 @@ DistHMat3d<Scalar>::PackRecursion
                 for( int s=0; s<4; ++s )
                     PackRecursion
                     ( headPointers, localSizes,
-                      sourceRankOffset+s*newTeamSize, 
-                      targetRankOffset+t*newTeamSize, 
+                      sourceRankOffset+s*newTeamSize,
+                      targetRankOffset+t*newTeamSize,
                       newTeamSize, node.Child(t,s) );
             // Top-right block
             for( int t=0; t<4; ++t )
                 for( int s=4; s<8; ++s )
                     PackRecursion
                     ( headPointers, localSizes,
-                      sourceRankOffset+s*newTeamSize, 
+                      sourceRankOffset+s*newTeamSize,
                       targetRankOffset+t*newTeamSize,
                       newTeamSize, node.Child(t,s) );
             // Bottom-left block
@@ -524,15 +524,15 @@ DistHMat3d<Scalar>::PackRecursion
                 for( int s=0; s<4; ++s )
                     PackRecursion
                     ( headPointers, localSizes,
-                      sourceRankOffset+s*newTeamSize, 
-                      targetRankOffset+t*newTeamSize, 
+                      sourceRankOffset+s*newTeamSize,
+                      targetRankOffset+t*newTeamSize,
                       newTeamSize, node.Child(t,s) );
             // Bottom-right block
             for( int t=4; t<8; ++t )
                 for( int s=4; s<8; ++s )
                     PackRecursion
                     ( headPointers, localSizes,
-                      sourceRankOffset+s*newTeamSize, 
+                      sourceRankOffset+s*newTeamSize,
                       targetRankOffset+t*newTeamSize,
                       newTeamSize, node.Child(t,s) );
         }
@@ -642,7 +642,7 @@ DistHMat3d<Scalar>::PackRecursion
                 {
                     const int targetRank = targetRankOffset + i;
                     byte** hTarget = headPointers[targetRank];
-                    
+
                     Write( hTarget, DIST_LOW_RANK );
                     Write( hTarget, r );
 
@@ -787,11 +787,11 @@ DistHMat3d<Scalar>::ComputeFirstLocalIndexRecursion
 
         // Add on this level of offsets
         if( onRight && onTop && onBack )
-            firstLocalIndex += ( xSize*ySize*zFrontSize 
-                                 + xSize*yBottomSize*zBackSize 
+            firstLocalIndex += ( xSize*ySize*zFrontSize
+                                 + xSize*yBottomSize*zBackSize
                                  + xLeftSize*yTopSize*zBackSize );
         else if( onTop && onBack )
-            firstLocalIndex += ( xSize*ySize*zFrontSize 
+            firstLocalIndex += ( xSize*ySize*zFrontSize
                                  + xSize*yBottomSize*zBackSize );
         else if( onRight && onBack )
             firstLocalIndex += ( xSize*ySize*zFrontSize
@@ -799,7 +799,7 @@ DistHMat3d<Scalar>::ComputeFirstLocalIndexRecursion
         else if( onBack )
             firstLocalIndex += ( xSize*ySize*zFrontSize );
         else if( onRight && onTop )
-            firstLocalIndex += ( xSize*yBottomSize*zFrontSize 
+            firstLocalIndex += ( xSize*yBottomSize*zFrontSize
                                  + xLeftSize*yTopSize*zFrontSize );
         else if( onTop )
             firstLocalIndex += ( xSize*yBottomSize*zFrontSize );
@@ -827,7 +827,7 @@ DistHMat3d<Scalar>::ComputeFirstLocalIndexRecursion
 
         // Add on this level of offsets
         if( onTop && onBack )
-            firstLocalIndex += ( xSize*ySize*zFrontSize 
+            firstLocalIndex += ( xSize*ySize*zFrontSize
                                  + xSize*yBottomSize*zBackSize );
         else if( onBack )
             firstLocalIndex += ( xSize*ySize*zFrontSize );
@@ -861,7 +861,7 @@ DistHMat3d<Scalar>::ComputeFirstLocalIndexRecursion
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::ComputeLocalSizesRecursion
-( int* localSizes, int teamSize, int xSize, int ySize, int zSize ) 
+( int* localSizes, int teamSize, int xSize, int ySize, int zSize )
 {
     if( teamSize >=8 )
     {
@@ -877,31 +877,31 @@ DistHMat3d<Scalar>::ComputeLocalSizesRecursion
         ( localSizes, newTeamSize, xLeftSize, yBottomSize, zFrontSize );
         // Front-Bottom-right piece of 3d domain
         ComputeLocalSizesRecursion
-        ( &localSizes[newTeamSize], newTeamSize, 
+        ( &localSizes[newTeamSize], newTeamSize,
           xRightSize, yBottomSize, zFrontSize );
         // Front-Top-left piece of 3d domain
         ComputeLocalSizesRecursion
-        ( &localSizes[2*newTeamSize], newTeamSize, 
+        ( &localSizes[2*newTeamSize], newTeamSize,
           xLeftSize, yTopSize, zFrontSize );
         // Front-Top-right piece of 3d domain
         ComputeLocalSizesRecursion
-        ( &localSizes[3*newTeamSize], newTeamSize, 
+        ( &localSizes[3*newTeamSize], newTeamSize,
           xRightSize, yTopSize, zFrontSize );
         // Back-Bottom-left piece of 3d domain
         ComputeLocalSizesRecursion
-        ( &localSizes[4*newTeamSize], newTeamSize, 
+        ( &localSizes[4*newTeamSize], newTeamSize,
           xLeftSize, yBottomSize, zBackSize );
         // Back-Bottom-right piece of 3d domain
         ComputeLocalSizesRecursion
-        ( &localSizes[5*newTeamSize], newTeamSize, 
+        ( &localSizes[5*newTeamSize], newTeamSize,
           xRightSize, yBottomSize, zBackSize );
         // Back-Top-left piece of 3d domain
         ComputeLocalSizesRecursion
-        ( &localSizes[6*newTeamSize], newTeamSize, 
+        ( &localSizes[6*newTeamSize], newTeamSize,
           xLeftSize, yTopSize, zBackSize );
         // Back-Top-right piece of 3d domain
         ComputeLocalSizesRecursion
-        ( &localSizes[7*newTeamSize], newTeamSize, 
+        ( &localSizes[7*newTeamSize], newTeamSize,
           xRightSize, yTopSize, zBackSize );
     }
     else if( teamSize == 4 )
@@ -916,15 +916,15 @@ DistHMat3d<Scalar>::ComputeLocalSizesRecursion
         ( localSizes, newTeamSize, xSize, yBottomSize, zFrontSize );
         // Front-Top piece of 3d domain
         ComputeLocalSizesRecursion
-        ( &localSizes[1], newTeamSize, 
+        ( &localSizes[1], newTeamSize,
           xSize, yTopSize, zFrontSize );
         // Back-Bottom piece of 3d domain
         ComputeLocalSizesRecursion
-        ( &localSizes[2], newTeamSize, 
+        ( &localSizes[2], newTeamSize,
           xSize, yBottomSize, zBackSize );
         // Back-Top piece of 3d domain
         ComputeLocalSizesRecursion
-        ( &localSizes[3], newTeamSize, 
+        ( &localSizes[3], newTeamSize,
           xSize, yTopSize, zBackSize );
     }
     else if( teamSize == 2 )
@@ -976,7 +976,7 @@ DistHMat3d<Scalar>::Unpack
     targetRoot_ = 0;
 
     const byte* head = packedDistHMat;
-    
+
     // Read in the header information
     numLevels_          = Read<int>( head );
     maxRank_            = Read<int>( head );
@@ -1020,7 +1020,7 @@ DistHMat3d<Scalar>::UnpackRecursion( const byte*& head )
     switch( block_.type )
     {
     case DIST_NODE:
-    { 
+    {
         block_.data.N = NewNode();
         Node& node = *block_.data.N;
 
@@ -1037,7 +1037,7 @@ DistHMat3d<Scalar>::UnpackRecursion( const byte*& head )
                 {
                     const int sourceRoot = sourceRoot_ + s*(teamSize/8);
 
-                    node.children[s+8*t] = 
+                    node.children[s+8*t] =
                         new DistHMat3d<Scalar>
                         ( numLevels_-1, maxRank_, stronglyAdmissible_,
                           sourceOffset_+sOffset, targetOffset_+tOffset,
@@ -1059,12 +1059,12 @@ DistHMat3d<Scalar>::UnpackRecursion( const byte*& head )
             {
                 const int targetRoot = targetRoot_ + t*(teamSize/8);
                 for( int s=4,sOffset=node.sourceSizes[0]+node.sourceSizes[1]
-                                    +node.sourceSizes[2]+node.sourceSizes[3]; 
+                                    +node.sourceSizes[2]+node.sourceSizes[3];
                      s<8; sOffset+=node.sourceSizes[s],++s )
                 {
                     const int sourceRoot = sourceRoot_ + s*(teamSize/8);
 
-                    node.children[s+8*t] = 
+                    node.children[s+8*t] =
                         new DistHMat3d<Scalar>
                         ( numLevels_-1, maxRank_, stronglyAdmissible_,
                           sourceOffset_+sOffset, targetOffset_+tOffset,
@@ -1082,7 +1082,7 @@ DistHMat3d<Scalar>::UnpackRecursion( const byte*& head )
                 }
             }
             // Bottom-left block
-            for( int t=4,tOffset=node.targetSizes[0]+node.targetSizes[1] 
+            for( int t=4,tOffset=node.targetSizes[0]+node.targetSizes[1]
                                 +node.targetSizes[2]+node.targetSizes[3];
                  t<8; tOffset+=node.targetSizes[t],++t )
             {
@@ -1091,7 +1091,7 @@ DistHMat3d<Scalar>::UnpackRecursion( const byte*& head )
                 {
                     const int sourceRoot = sourceRoot_ + s*(teamSize/8);
 
-                    node.children[s+8*t] = 
+                    node.children[s+8*t] =
                         new DistHMat3d<Scalar>
                         ( numLevels_-1, maxRank_, stronglyAdmissible_,
                           sourceOffset_+sOffset, targetOffset_+tOffset,
@@ -1110,17 +1110,17 @@ DistHMat3d<Scalar>::UnpackRecursion( const byte*& head )
             }
             // Bottom-right block
             for( int t=4,tOffset=node.targetSizes[0]+node.targetSizes[1]
-                                +node.targetSizes[2]+node.targetSizes[3]; 
+                                +node.targetSizes[2]+node.targetSizes[3];
                  t<8; tOffset+=node.targetSizes[t],++t )
             {
                 const int targetRoot = targetRoot_ + t*(teamSize/8);
                 for( int s=4,sOffset=node.sourceSizes[0]+node.sourceSizes[1]
-                                    +node.sourceSizes[2]+node.sourceSizes[3]; 
+                                    +node.sourceSizes[2]+node.sourceSizes[3];
                      s<8; sOffset+=node.sourceSizes[s],++s )
                 {
                     const int sourceRoot = sourceRoot_ + s*(teamSize/8);
 
-                    node.children[s+8*t] = 
+                    node.children[s+8*t] =
                         new DistHMat3d<Scalar>
                         ( numLevels_-1, maxRank_, stronglyAdmissible_,
                           sourceOffset_+sOffset, targetOffset_+tOffset,
@@ -1146,7 +1146,7 @@ DistHMat3d<Scalar>::UnpackRecursion( const byte*& head )
                 for( int s=0,sOffset=0; s<4; sOffset+=node.sourceSizes[s],++s )
                 {
 
-                    node.children[s+8*t] = 
+                    node.children[s+8*t] =
                         new DistHMat3d<Scalar>
                         ( numLevels_-1, maxRank_, stronglyAdmissible_,
                           sourceOffset_+sOffset, targetOffset_+tOffset,
@@ -1167,11 +1167,11 @@ DistHMat3d<Scalar>::UnpackRecursion( const byte*& head )
             for( int t=0,tOffset=0; t<4; tOffset+=node.targetSizes[t],++t )
             {
                 for( int s=4,sOffset=node.sourceSizes[0]+node.sourceSizes[1]
-                                    +node.sourceSizes[2]+node.sourceSizes[3]; 
+                                    +node.sourceSizes[2]+node.sourceSizes[3];
                      s<8; sOffset+=node.sourceSizes[s],++s )
                 {
 
-                    node.children[s+8*t] = 
+                    node.children[s+8*t] =
                         new DistHMat3d<Scalar>
                         ( numLevels_-1, maxRank_, stronglyAdmissible_,
                           sourceOffset_+sOffset, targetOffset_+tOffset,
@@ -1189,14 +1189,14 @@ DistHMat3d<Scalar>::UnpackRecursion( const byte*& head )
                 }
             }
             // Bottom-left block
-            for( int t=4,tOffset=node.targetSizes[0]+node.targetSizes[1] 
+            for( int t=4,tOffset=node.targetSizes[0]+node.targetSizes[1]
                                 +node.targetSizes[2]+node.targetSizes[3];
                  t<8; tOffset+=node.targetSizes[t],++t )
             {
                 for( int s=0,sOffset=0; s<4; sOffset+=node.sourceSizes[s],++s )
                 {
 
-                    node.children[s+8*t] = 
+                    node.children[s+8*t] =
                         new DistHMat3d<Scalar>
                         ( numLevels_-1, maxRank_, stronglyAdmissible_,
                           sourceOffset_+sOffset, targetOffset_+tOffset,
@@ -1215,15 +1215,15 @@ DistHMat3d<Scalar>::UnpackRecursion( const byte*& head )
             }
             // Bottom-right block
             for( int t=4,tOffset=node.targetSizes[0]+node.targetSizes[1]
-                                +node.targetSizes[2]+node.targetSizes[3]; 
+                                +node.targetSizes[2]+node.targetSizes[3];
                  t<8; tOffset+=node.targetSizes[t],++t )
             {
                 for( int s=4,sOffset=node.sourceSizes[0]+node.sourceSizes[1]
-                                    +node.sourceSizes[2]+node.sourceSizes[3]; 
+                                    +node.sourceSizes[2]+node.sourceSizes[3];
                      s<8; sOffset+=node.sourceSizes[s],++s )
                 {
 
-                    node.children[s+8*t] = 
+                    node.children[s+8*t] =
                         new DistHMat3d<Scalar>
                         ( numLevels_-1, maxRank_, stronglyAdmissible_,
                           sourceOffset_+sOffset, targetOffset_+tOffset,
@@ -1254,7 +1254,7 @@ DistHMat3d<Scalar>::UnpackRecursion( const byte*& head )
                 for( int s=0,sOffset=0; s<4; sOffset+=node.sourceSizes[s],++s )
                 {
 
-                    node.children[s+8*t] = 
+                    node.children[s+8*t] =
                         new DistHMat3d<Scalar>
                         ( numLevels_-1, maxRank_, stronglyAdmissible_,
                           sourceOffset_+sOffset, targetOffset_+tOffset,
@@ -1275,11 +1275,11 @@ DistHMat3d<Scalar>::UnpackRecursion( const byte*& head )
             for( int t=0,tOffset=0; t<4; tOffset+=node.targetSizes[t],++t )
             {
                 for( int s=4,sOffset=node.sourceSizes[0]+node.sourceSizes[1]
-                                    +node.sourceSizes[2]+node.sourceSizes[3]; 
+                                    +node.sourceSizes[2]+node.sourceSizes[3];
                      s<8; sOffset+=node.sourceSizes[s],++s )
                 {
 
-                    node.children[s+8*t] = 
+                    node.children[s+8*t] =
                         new DistHMat3d<Scalar>
                         ( numLevels_-1, maxRank_, stronglyAdmissible_,
                           sourceOffset_+sOffset, targetOffset_+tOffset,
@@ -1297,14 +1297,14 @@ DistHMat3d<Scalar>::UnpackRecursion( const byte*& head )
                 }
             }
             // Bottom-left block
-            for( int t=4,tOffset=node.targetSizes[0]+node.targetSizes[1] 
+            for( int t=4,tOffset=node.targetSizes[0]+node.targetSizes[1]
                                 +node.targetSizes[2]+node.targetSizes[3];
                  t<8; tOffset+=node.targetSizes[t],++t )
             {
                 for( int s=0,sOffset=0; s<4; sOffset+=node.sourceSizes[s],++s )
                 {
 
-                    node.children[s+8*t] = 
+                    node.children[s+8*t] =
                         new DistHMat3d<Scalar>
                         ( numLevels_-1, maxRank_, stronglyAdmissible_,
                           sourceOffset_+sOffset, targetOffset_+tOffset,
@@ -1323,15 +1323,15 @@ DistHMat3d<Scalar>::UnpackRecursion( const byte*& head )
             }
             // Bottom-right block
             for( int t=4,tOffset=node.targetSizes[0]+node.targetSizes[1]
-                                +node.targetSizes[2]+node.targetSizes[3]; 
+                                +node.targetSizes[2]+node.targetSizes[3];
                  t<8; tOffset+=node.targetSizes[t],++t )
             {
                 for( int s=4,sOffset=node.sourceSizes[0]+node.sourceSizes[1]
-                                    +node.sourceSizes[2]+node.sourceSizes[3]; 
+                                    +node.sourceSizes[2]+node.sourceSizes[3];
                      s<8; sOffset+=node.sourceSizes[s],++s )
                 {
 
-                    node.children[s+8*t] = 
+                    node.children[s+8*t] =
                         new DistHMat3d<Scalar>
                         ( numLevels_-1, maxRank_, stronglyAdmissible_,
                           sourceOffset_+sOffset, targetOffset_+tOffset,
@@ -1361,7 +1361,7 @@ DistHMat3d<Scalar>::UnpackRecursion( const byte*& head )
         {
             for( int s=0,sOffset=0; s<8; sOffset+=node.sourceSizes[s],++s )
             {
-                node.children[s+8*t] = 
+                node.children[s+8*t] =
                     new DistHMat3d<Scalar>
                     ( numLevels_-1, maxRank_, stronglyAdmissible_,
                       sourceOffset_+sOffset, targetOffset_+tOffset,
@@ -1371,7 +1371,7 @@ DistHMat3d<Scalar>::UnpackRecursion( const byte*& head )
                       2*xSource_+(s&1), 2*xTarget_+(t&1),
                       2*ySource_+((s/2)&1), 2*yTarget_+((t/2)&1),
                       2*zSource_+(s/4), 2*zTarget_+(t/4),
-                      *teams_, level_+1, 
+                      *teams_, level_+1,
                       inSourceTeam_, inTargetTeam_,
                       sourceRoot_, targetRoot_ );
                 node.Child(t,s).UnpackRecursion( head );
@@ -1397,7 +1397,7 @@ DistHMat3d<Scalar>::UnpackRecursion( const byte*& head )
         }
         if( inTargetTeam_ )
         {
-            // Read in U 
+            // Read in U
             const int localHeight = LocalHeight();
             DF.ULocal.SetType( GENERAL );
             DF.ULocal.Resize( localHeight, DF.rank );
@@ -1462,14 +1462,14 @@ DistHMat3d<Scalar>::UnpackRecursion( const byte*& head )
         const int r = Read<int>( head );
 
         // Read in U
-        F.U.SetType( GENERAL ); 
+        F.U.SetType( GENERAL );
         F.U.Resize( m, r );
         F.U.Init();
         for( int j=0; j<r; ++j )
             Read( F.U.Buffer(0,j), head, m );
 
         // Read in V
-        F.V.SetType( GENERAL ); 
+        F.V.SetType( GENERAL );
         F.V.Resize( n, r );
         F.V.Init();
         for( int j=0; j<r; ++j )

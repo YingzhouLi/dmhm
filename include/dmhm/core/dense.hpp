@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -18,7 +18,7 @@ namespace dmhm {
 
 enum MatrixType { GENERAL, SYMMETRIC /*, HERMITIAN*/ };
 
-// A basic dense matrix representation that is used for storing blocks 
+// A basic dense matrix representation that is used for storing blocks
 // whose sources and targets are too close to represent as low rank
 template<typename Scalar>
 class Dense
@@ -44,10 +44,10 @@ public:
     Dense( int height, int width, MatrixType type=GENERAL );
     Dense( int height, int width, int ldim, MatrixType type=GENERAL );
     Dense
-    ( Scalar* buffer, int height, int width, int ldim, 
+    ( Scalar* buffer, int height, int width, int ldim,
       MatrixType type=GENERAL );
     Dense
-    ( const Scalar* lockedBuffer, int height, int width, int ldim, 
+    ( const Scalar* lockedBuffer, int height, int width, int ldim,
       MatrixType type=GENERAL );
     ~Dense();
 
@@ -94,7 +94,7 @@ public:
 template<typename Scalar>
 inline
 Dense<Scalar>::Dense( MatrixType type )
-: height_(0), width_(0), ldim_(1), 
+: height_(0), width_(0), ldim_(1),
   viewing_(false), lockedView_(false),
   memory_(), buffer_(0), lockedBuffer_(0),
   type_(type)
@@ -122,10 +122,10 @@ Dense<Scalar>::Dense
 }
 
 template<typename Scalar>
-inline 
+inline
 Dense<Scalar>::Dense
 ( int height, int width, int ldim, MatrixType type )
-: height_(height), width_(width), ldim_(ldim), 
+: height_(height), width_(width), ldim_(ldim),
   viewing_(false), lockedView_(false),
   memory_(ldim_*width_), buffer_(&memory_[0]), lockedBuffer_(0),
   type_(type)
@@ -145,10 +145,10 @@ Dense<Scalar>::Dense
 }
 
 template<typename Scalar>
-inline 
+inline
 Dense<Scalar>::Dense
 ( Scalar* buffer, int height, int width, int ldim, MatrixType type )
-: height_(height), width_(width), ldim_(ldim), 
+: height_(height), width_(width), ldim_(ldim),
   viewing_(true), lockedView_(false),
   memory_(), buffer_(buffer), lockedBuffer_(0),
   type_(type)
@@ -165,7 +165,7 @@ Dense<Scalar>::Dense
 }
 
 template<typename Scalar>
-inline 
+inline
 Dense<Scalar>::Dense
 ( const Scalar* lockedBuffer, int height, int width, int ldim, MatrixType type )
 : height_(height), width_(width), ldim_(ldim),
@@ -185,7 +185,7 @@ Dense<Scalar>::Dense
 }
 
 template<typename Scalar>
-inline 
+inline
 Dense<Scalar>::~Dense()
 { Clear(); }
 
@@ -220,7 +220,7 @@ Dense<Scalar>::Symmetric() const
 template<typename Scalar>
 inline bool
 Dense<Scalar>::Hermitian() const
-{ 
+{
     for( int i=0; i<height_; ++i )
         for( int j=i+1; j<width_; ++j )
             if( std::abs(std::abs(Get(i,j))-std::abs(Get(j,i)))>1e-6 )
@@ -359,7 +359,7 @@ Dense<Scalar>::EraseRows( int first, int last )
 #endif
     if( first <= last )
     {
-        height_ = height_-last+first-1;  
+        height_ = height_-last+first-1;
         for( int i=width_-1; i>=0; --i )
         {
             memory_.erase
@@ -382,7 +382,7 @@ Dense<Scalar>::Erase( int colfirst, int collast, int rowfirst, int rowlast )
     CallStackEntry entry("Dense::Erase");
     if( viewing_ )
         throw std::logic_error("Cannot erase views");
-    if( rowfirst < 0 || rowlast >= height_ || 
+    if( rowfirst < 0 || rowlast >= height_ ||
         colfirst<0 || collast >= width_ )
         throw std::logic_error("First and last must be in the range of matrix");
     if( type_ == SYMMETRIC && ( colfirst != rowfirst || collast != rowlast ) )
@@ -556,7 +556,7 @@ Dense<Scalar>::View( Dense<Scalar>& A, int i, int j, int height, int width )
     {
         std::ostringstream s;
         s << "Submatrix out of bounds: attempted to grab ["
-          << i << ":" << i+height-1 << "," << j << ":" << j+width-1 
+          << i << ":" << i+height-1 << "," << j << ":" << j+width-1
           << "] from " << A.Height() << " x " << A.Width() << " matrix.";
         throw std::logic_error( s.str().c_str() );
     }
@@ -601,7 +601,7 @@ Dense<Scalar>::LockedView
     {
         std::ostringstream s;
         s << "Submatrix out of bounds: attempted to grab ["
-          << i << ":" << i+height << "," << j << ":" << j+width 
+          << i << ":" << i+height << "," << j << ":" << j+width
           << "] from " << A.Height() << " x " << A.Width() << " matrix.";
         throw std::logic_error( s.str().c_str() );
     }
@@ -624,7 +624,7 @@ Dense<Scalar>::Init()
     if( ldim_ < 0 || width_ < 0 )
         throw std::logic_error("Invalid dense matrix");
 #endif
-    std::memset( &memory_[0], 0, ldim_*width_*sizeof(Scalar) );        
+    std::memset( &memory_[0], 0, ldim_*width_*sizeof(Scalar) );
 }
 
 } // namespace dmhm

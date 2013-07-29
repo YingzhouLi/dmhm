@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -35,45 +35,45 @@ namespace dmhm {
 template<typename Scalar>
 DistHMat3d<Scalar>::DistHMat3d
 ( const Teams& teams )
-: numLevels_(0), maxRank_(0), 
-  sourceOffset_(0), targetOffset_(0), 
-  stronglyAdmissible_(false), 
+: numLevels_(0), maxRank_(0),
+  sourceOffset_(0), targetOffset_(0),
+  stronglyAdmissible_(false),
   xSizeSource_(0), xSizeTarget_(0),
-  ySizeSource_(0), ySizeTarget_(0), 
-  zSizeSource_(0), zSizeTarget_(0), 
+  ySizeSource_(0), ySizeTarget_(0),
+  zSizeSource_(0), zSizeTarget_(0),
   xSource_(0), xTarget_(0),
-  ySource_(0), yTarget_(0), 
-  zSource_(0), zTarget_(0), 
+  ySource_(0), yTarget_(0),
+  zSource_(0), zTarget_(0),
   teams_(&teams), level_(0),
-  inSourceTeam_(true), inTargetTeam_(true), 
+  inSourceTeam_(true), inTargetTeam_(true),
   sourceRoot_(0), targetRoot_(0),
   haveDenseUpdate_(false), storedDenseUpdate_(false),
   beganRowSpaceComp_(false), finishedRowSpaceComp_(false),
   beganColSpaceComp_(false), finishedColSpaceComp_(false)
-{ 
+{
     block_.type = EMPTY;
 }
 
 template<typename Scalar>
 DistHMat3d<Scalar>::DistHMat3d
-( int numLevels, int maxRank, bool stronglyAdmissible, 
+( int numLevels, int maxRank, bool stronglyAdmissible,
   int xSize, int ySize, int zSize, const Teams& teams )
-: numLevels_(numLevels), maxRank_(maxRank), 
-  sourceOffset_(0), targetOffset_(0), 
-  stronglyAdmissible_(stronglyAdmissible), 
+: numLevels_(numLevels), maxRank_(maxRank),
+  sourceOffset_(0), targetOffset_(0),
+  stronglyAdmissible_(stronglyAdmissible),
   xSizeSource_(xSize), xSizeTarget_(xSize),
-  ySizeSource_(ySize), ySizeTarget_(ySize), 
-  zSizeSource_(zSize), zSizeTarget_(zSize), 
-  xSource_(0), xTarget_(0), 
-  ySource_(0), yTarget_(0), 
-  zSource_(0), zTarget_(0), 
+  ySizeSource_(ySize), ySizeTarget_(ySize),
+  zSizeSource_(zSize), zSizeTarget_(zSize),
+  xSource_(0), xTarget_(0),
+  ySource_(0), yTarget_(0),
+  zSource_(0), zTarget_(0),
   teams_(&teams), level_(0),
-  inSourceTeam_(true), inTargetTeam_(true), 
+  inSourceTeam_(true), inTargetTeam_(true),
   sourceRoot_(0), targetRoot_(0),
   haveDenseUpdate_(false), storedDenseUpdate_(false),
   beganRowSpaceComp_(false), finishedRowSpaceComp_(false),
   beganColSpaceComp_(false), finishedColSpaceComp_(false)
-{ 
+{
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::DistHMat3d");
 #endif
@@ -85,26 +85,26 @@ DistHMat3d<Scalar>::DistHMat3d
 
 template<typename Scalar>
 DistHMat3d<Scalar>::DistHMat3d
-( int numLevels, int maxRank, bool stronglyAdmissible, 
-  int xSizeSource, int xSizeTarget, 
+( int numLevels, int maxRank, bool stronglyAdmissible,
+  int xSizeSource, int xSizeTarget,
   int ySizeSource, int ySizeTarget,
   int zSizeSource, int zSizeTarget, const Teams& teams )
-: numLevels_(numLevels), maxRank_(maxRank), 
-  sourceOffset_(0), targetOffset_(0), 
-  stronglyAdmissible_(stronglyAdmissible), 
+: numLevels_(numLevels), maxRank_(maxRank),
+  sourceOffset_(0), targetOffset_(0),
+  stronglyAdmissible_(stronglyAdmissible),
   xSizeSource_(xSizeSource), xSizeTarget_(xSizeTarget),
-  ySizeSource_(ySizeSource), ySizeTarget_(ySizeTarget), 
-  zSizeSource_(zSizeSource), zSizeTarget_(zSizeTarget), 
-  xSource_(0), xTarget_(0), 
-  ySource_(0), yTarget_(0), 
-  zSource_(0), zTarget_(0), 
+  ySizeSource_(ySizeSource), ySizeTarget_(ySizeTarget),
+  zSizeSource_(zSizeSource), zSizeTarget_(zSizeTarget),
+  xSource_(0), xTarget_(0),
+  ySource_(0), yTarget_(0),
+  zSource_(0), zTarget_(0),
   teams_(&teams), level_(0),
-  inSourceTeam_(true), inTargetTeam_(true), 
+  inSourceTeam_(true), inTargetTeam_(true),
   sourceRoot_(0), targetRoot_(0),
   haveDenseUpdate_(false), storedDenseUpdate_(false),
   beganRowSpaceComp_(false), finishedRowSpaceComp_(false),
   beganColSpaceComp_(false), finishedColSpaceComp_(false)
-{ 
+{
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::DistHMat3d");
 #endif
@@ -129,7 +129,7 @@ DistHMat3d<Scalar>::DistHMat3d
   ySource_(0), yTarget_(0),
   zSource_(0), zTarget_(0),
   teams_(&teams), level_(0),
-  inSourceTeam_(true), inTargetTeam_(true), 
+  inSourceTeam_(true), inTargetTeam_(true),
   sourceRoot_(0), targetRoot_(0),
   haveDenseUpdate_(false), storedDenseUpdate_(false),
   beganRowSpaceComp_(false), finishedRowSpaceComp_(false),
@@ -141,7 +141,7 @@ DistHMat3d<Scalar>::DistHMat3d
     ImportSparse( S );
 }
 
-    
+
 template<typename Scalar>
 DistHMat3d<Scalar>::~DistHMat3d()
 { Clear(); }
@@ -256,7 +256,7 @@ DistHMat3d<Scalar>::FirstLocalRow() const
         int teamSize = mpi::CommSize( teams_->Team(level_) );
         int teamRank = mpi::CommRank( teams_->Team(level_) );
         ComputeFirstLocalIndexRecursion
-        ( firstLocalRow, xSizeTarget_, ySizeTarget_, zSizeTarget_, 
+        ( firstLocalRow, xSizeTarget_, ySizeTarget_, zSizeTarget_,
           teamSize, teamRank );
     }
     return firstLocalRow;
@@ -503,7 +503,7 @@ DistHMat3d<Scalar>::Rank() const
 
 template<typename Scalar>
 void
-DistHMat3d<Scalar>::SetGhostRank( int rank ) 
+DistHMat3d<Scalar>::SetGhostRank( int rank )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::SetGhostRank");
@@ -542,7 +542,7 @@ DistHMat3d<Scalar>::Admissible() const
 template<typename Scalar>
 bool
 DistHMat3d<Scalar>::Admissible
-( int xSource, int xTarget, 
+( int xSource, int xTarget,
   int ySource, int yTarget,
   int zSource, int zTarget ) const
 {
@@ -671,22 +671,22 @@ DistHMat3d<Scalar>::BlockTypeString( BlockType type )
 
 template<typename Scalar>
 DistHMat3d<Scalar>::DistHMat3d()
-: numLevels_(0), maxRank_(0), 
-  sourceOffset_(0), targetOffset_(0), 
-  stronglyAdmissible_(false), 
-  xSizeSource_(0), xSizeTarget_(0), 
+: numLevels_(0), maxRank_(0),
+  sourceOffset_(0), targetOffset_(0),
+  stronglyAdmissible_(false),
+  xSizeSource_(0), xSizeTarget_(0),
   ySizeSource_(0), ySizeTarget_(0),
   zSizeSource_(0), zSizeTarget_(0),
-  xSource_(0), xTarget_(0), 
-  ySource_(0), yTarget_(0), 
-  zSource_(0), zTarget_(0), 
+  xSource_(0), xTarget_(0),
+  ySource_(0), yTarget_(0),
+  zSource_(0), zTarget_(0),
   teams_(0), level_(0),
-  inSourceTeam_(true), inTargetTeam_(true), 
+  inSourceTeam_(true), inTargetTeam_(true),
   sourceRoot_(0), targetRoot_(0),
   haveDenseUpdate_(false), storedDenseUpdate_(false),
   beganRowSpaceComp_(false), finishedRowSpaceComp_(false),
   beganColSpaceComp_(false), finishedColSpaceComp_(false)
-{ 
+{
     block_.type = EMPTY;
 }
 
@@ -694,31 +694,31 @@ template<typename Scalar>
 DistHMat3d<Scalar>::DistHMat3d
 ( int numLevels, int maxRank, bool stronglyAdmissible,
   int sourceOffset, int targetOffset,
-  int xSizeSource, int xSizeTarget, 
+  int xSizeSource, int xSizeTarget,
   int ySizeSource, int ySizeTarget,
   int zSizeSource, int zSizeTarget,
-  int xSource, int xTarget, 
+  int xSource, int xTarget,
   int ySource, int yTarget,
   int zSource, int zTarget,
-  const Teams& teams, int level, 
-  bool inSourceTeam, bool inTargetTeam, 
+  const Teams& teams, int level,
+  bool inSourceTeam, bool inTargetTeam,
   int sourceRoot, int targetRoot )
-: numLevels_(numLevels), maxRank_(maxRank), 
-  sourceOffset_(sourceOffset), targetOffset_(targetOffset), 
-  stronglyAdmissible_(stronglyAdmissible), 
+: numLevels_(numLevels), maxRank_(maxRank),
+  sourceOffset_(sourceOffset), targetOffset_(targetOffset),
+  stronglyAdmissible_(stronglyAdmissible),
   xSizeSource_(xSizeSource), xSizeTarget_(xSizeTarget),
-  ySizeSource_(ySizeSource), ySizeTarget_(ySizeTarget), 
-  zSizeSource_(zSizeSource), zSizeTarget_(zSizeTarget), 
+  ySizeSource_(ySizeSource), ySizeTarget_(ySizeTarget),
+  zSizeSource_(zSizeSource), zSizeTarget_(zSizeTarget),
   xSource_(xSource), xTarget_(xTarget),
-  ySource_(ySource), yTarget_(yTarget), 
-  zSource_(zSource), zTarget_(zTarget), 
+  ySource_(ySource), yTarget_(yTarget),
+  zSource_(zSource), zTarget_(zTarget),
   teams_(&teams), level_(level),
   inSourceTeam_(inSourceTeam), inTargetTeam_(inTargetTeam),
   sourceRoot_(sourceRoot), targetRoot_(targetRoot),
   haveDenseUpdate_(false), storedDenseUpdate_(false),
   beganRowSpaceComp_(false), finishedRowSpaceComp_(false),
   beganColSpaceComp_(false), finishedColSpaceComp_(false)
-{ 
+{
     block_.type = EMPTY;
 }
 
@@ -727,24 +727,24 @@ DistHMat3d<Scalar>::DistHMat3d
 ( const Sparse<Scalar>& S,
   int numLevels, int maxRank, bool stronglyAdmissible,
   int sourceOffset, int targetOffset,
-  int xSizeSource, int xSizeTarget, 
+  int xSizeSource, int xSizeTarget,
   int ySizeSource, int ySizeTarget,
   int zSizeSource, int zSizeTarget,
-  int xSource, int xTarget, 
+  int xSource, int xTarget,
   int ySource, int yTarget,
   int zSource, int zTarget,
-  const Teams& teams, int level, 
-  bool inSourceTeam, bool inTargetTeam, 
+  const Teams& teams, int level,
+  bool inSourceTeam, bool inTargetTeam,
   int sourceRoot, int targetRoot )
-: numLevels_(numLevels), maxRank_(maxRank), 
-  sourceOffset_(sourceOffset), targetOffset_(targetOffset), 
-  stronglyAdmissible_(stronglyAdmissible), 
+: numLevels_(numLevels), maxRank_(maxRank),
+  sourceOffset_(sourceOffset), targetOffset_(targetOffset),
+  stronglyAdmissible_(stronglyAdmissible),
   xSizeSource_(xSizeSource), xSizeTarget_(xSizeTarget),
-  ySizeSource_(ySizeSource), ySizeTarget_(ySizeTarget), 
-  zSizeSource_(zSizeSource), zSizeTarget_(zSizeTarget), 
+  ySizeSource_(ySizeSource), ySizeTarget_(ySizeTarget),
+  zSizeSource_(zSizeSource), zSizeTarget_(zSizeTarget),
   xSource_(xSource), xTarget_(xTarget),
-  ySource_(ySource), yTarget_(yTarget), 
-  zSource_(zSource), zTarget_(zTarget), 
+  ySource_(ySource), yTarget_(yTarget),
+  zSource_(zSource), zTarget_(zTarget),
   teams_(&teams), level_(level),
   inSourceTeam_(inSourceTeam), inTargetTeam_(inTargetTeam),
   sourceRoot_(sourceRoot), targetRoot_(targetRoot),
@@ -811,7 +811,7 @@ DistHMat3d<Scalar>::BuildTree()
     else if( numLevels_ > 1 ) // recurse
     {
         block_.data.N = NewNode();
-        Node& node = *block_.data.N;        
+        Node& node = *block_.data.N;
 
         if( teamSize >= 8 )
         {
@@ -895,7 +895,7 @@ DistHMat3d<Scalar>::BuildTree()
                 }
             }
         }
-        else // teamSize == 1 
+        else // teamSize == 1
         {
             block_.type = ( sourceRoot_==targetRoot_ ? NODE : SPLIT_NODE );
 
@@ -976,10 +976,10 @@ DistHMat3d<Scalar>::ImportSparse
                 DF.VLocal.Init();
                 for( int j=0; j<DF.rank; ++j )
                     MemCopy
-                    ( DF.VLocal.Buffer(0,j), 
+                    ( DF.VLocal.Buffer(0,j),
                       Ftmp.V.LockedBuffer(firstLocalCol,j), LW );
             }
-        
+
             if( inTargetTeam_ )
             {
                 const int firstLocalRow = FirstLocalRow();
@@ -989,7 +989,7 @@ DistHMat3d<Scalar>::ImportSparse
                 DF.ULocal.Init();
                 for( int j=0; j<DF.rank; ++j )
                     MemCopy
-                    ( DF.ULocal.Buffer(0,j), 
+                    ( DF.ULocal.Buffer(0,j),
                       Ftmp.U.LockedBuffer(firstLocalRow,j), LH );
             }
         }
@@ -1018,7 +1018,7 @@ DistHMat3d<Scalar>::ImportSparse
     else if( numLevels_ > 1 ) // recurse
     {
         block_.data.N = NewNode();
-        Node& node = *block_.data.N;        
+        Node& node = *block_.data.N;
 
         if( teamSize >= 8 )
         {
@@ -1102,7 +1102,7 @@ DistHMat3d<Scalar>::ImportSparse
                 }
             }
         }
-        else // teamSize == 1 
+        else // teamSize == 1
         {
             block_.type = ( sourceRoot_==targetRoot_ ? NODE : SPLIT_NODE );
 
@@ -1164,7 +1164,7 @@ void FillBox
 }
 
 void FillBox
-( std::ofstream& file, 
+( std::ofstream& file,
   double hStart, double vStart, double hStop, double vStop,
   const std::string& fillColor )
 {
@@ -1192,7 +1192,7 @@ void DrawBox
 }
 
 void DrawBox
-( std::ofstream& file, 
+( std::ofstream& file,
   double hStart, double vStart, double hStop, double vStop,
   const std::string& drawColor )
 {
@@ -1266,7 +1266,7 @@ DistHMat3d<Scalar>::DisplayLocalRecursion
         FillBox( matrix, mStart, nStart, mStop, nStop, denseVal );
         DrawBox( matrix, mStart, nStart, mStop, nStop, borderVal );
         break;
-    
+
     case SPLIT_DENSE_GHOST:
     case DENSE_GHOST:
         FillBox( matrix, mStart, nStart, mStop, nStop, denseGhostVal );
@@ -1340,7 +1340,7 @@ DistHMat3d<Scalar>::LatexLocalStructureRecursion
         FillBox( file, hStart, vStart, hStop, vStop, denseColor );
         DrawBox( file, hStart, vStart, hStop, vStop, borderColor );
         break;
-    
+
     case SPLIT_DENSE_GHOST:
     case DENSE_GHOST:
         FillBox( file, hStart, vStart, hStop, vStop, denseGhostColor );
@@ -1366,7 +1366,7 @@ DistHMat3d<Scalar>::MScriptLocalStructureRecursion( std::ofstream& file ) const
     case NODE:
     case NODE_GHOST:
     {
-        file << "1 " 
+        file << "1 "
              << targetOffset_ << " " << sourceOffset_ << " "
              << Height() << " " << Width() << "\n";
         const Node& node = *block_.data.N;
@@ -1438,7 +1438,7 @@ DistHMat3d<Scalar>::MemoryInfo
     numBasic += sizeof( finishedRowSpaceComp_ );
     numBasic += sizeof( beganColSpaceComp_ );
     numBasic += sizeof( finishedColSpaceComp_ );
-    
+
     switch( block_.type )
     {
     case DIST_NODE:
@@ -1480,7 +1480,7 @@ DistHMat3d<Scalar>::MemoryInfo
             for( int s=0; s<8; ++s )
                 node.Child(t,s).MemoryInfo
                 ( numBasic, numNode, numNodeTmp,
-                  numLowRank, numLowRankTmp, 
+                  numLowRank, numLowRankTmp,
                   numDense, numDenseTmp );
         break;
     }
@@ -1642,7 +1642,7 @@ DistHMat3d<Scalar>::PrintMemoryInfo
 ( const std::string tag, std::ostream& os ) const
 {
     double numBasic = 0.0, numNode = 0.0, numNodeTmp = 0.0,
-           numLowRank = 0.0, numLowRankTmp = 0.0, 
+           numLowRank = 0.0, numLowRankTmp = 0.0,
            numDense = 0.0, numDenseTmp = 0.0;
     MemoryInfo
     ( numBasic, numNode, numNodeTmp, numLowRank, numLowRankTmp,

@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -13,7 +13,7 @@
 #include <complex>
 #include <cmath>
 #include <cstdlib> // for integer abs
-#include <vector> 
+#include <vector>
 
 #include "dmhm/core/timer.hpp"
 
@@ -46,7 +46,7 @@ namespace hmat_tools {
  */
 template<typename Real>
 void Compress
-( int maxRank, 
+( int maxRank,
   Dense<Real>& D, LowRank<Real>& F );
 template<typename Real>
 void Compress
@@ -122,7 +122,7 @@ void Update
   Scalar beta,        Dense<Scalar>& B );
 
 /*
- *  Generalized add of two low-rank matrices, C := alpha A + beta B, 
+ *  Generalized add of two low-rank matrices, C := alpha A + beta B,
  *  where C is then forced to be of rank at most 'maxRank'
  */
 template<typename Real>
@@ -134,14 +134,14 @@ void RoundedAdd
 template<typename Real>
 void RoundedAdd
 ( int maxRank,
-  std::complex<Real> alpha, 
+  std::complex<Real> alpha,
   const LowRank<std::complex<Real> >& A,
-  std::complex<Real> beta,  
+  std::complex<Real> beta,
   const LowRank<std::complex<Real> >& B,
         LowRank<std::complex<Real> >& C );
 
 /*
- *  Generalized update of a low-rank matrix, B := alpha A + beta B, 
+ *  Generalized update of a low-rank matrix, B := alpha A + beta B,
  *  where B is then forced to be of rank at most 'maxRank'
  */
 template<typename Real>
@@ -152,54 +152,54 @@ void RoundedUpdate
 template<typename Real>
 void RoundedUpdate
 ( int maxRank,
-  std::complex<Real> alpha, 
+  std::complex<Real> alpha,
   const LowRank<std::complex<Real> >& A,
-  std::complex<Real> beta, 
+  std::complex<Real> beta,
         LowRank<std::complex<Real> >& B );
 
 /*
  *  Matrix Matrix multiply, C := alpha A B
- * 
+ *
  *  When the resulting matrix is dense, an update form is also provided, i.e.,
  *  C := alpha A B + beta C
- * 
- *  A routine for forming a low-rank matrix from the product of two black-box 
+ *
+ *  A routine for forming a low-rank matrix from the product of two black-box
  *  matrix and matrix-transpose vector multiplication routines is also provided.
  */
 // D := alpha D D
 template<typename Scalar>
 void Multiply
-( Scalar alpha, const Dense<Scalar>& A, 
+( Scalar alpha, const Dense<Scalar>& A,
                 const Dense<Scalar>& B,
                       Dense<Scalar>& C );
 // D := alpha D D + beta D
 template<typename Scalar>
 void Multiply
-( Scalar alpha, const Dense<Scalar>& A, 
+( Scalar alpha, const Dense<Scalar>& A,
                 const Dense<Scalar>& B,
   Scalar beta,        Dense<Scalar>& C );
 // D := alpha D F
 template<typename Scalar>
 void Multiply
-( Scalar alpha, const Dense<Scalar>& A, 
+( Scalar alpha, const Dense<Scalar>& A,
                 const LowRank<Scalar>& B,
                       Dense<Scalar>& C );
 // D := alpha D F + beta D
 template<typename Scalar>
 void Multiply
-( Scalar alpha, const Dense<Scalar>& A, 
+( Scalar alpha, const Dense<Scalar>& A,
                 const LowRank<Scalar>& B,
   Scalar beta,        Dense<Scalar>& C );
 // D := alpha F D
 template<typename Scalar>
 void Multiply
-( Scalar alpha, const LowRank<Scalar>& A, 
+( Scalar alpha, const LowRank<Scalar>& A,
                 const Dense<Scalar>& B,
                       Dense<Scalar>& C );
 // D := alpha F D + beta D
 template<typename Scalar>
 void Multiply
-( Scalar alpha, const LowRank<Scalar>& A, 
+( Scalar alpha, const LowRank<Scalar>& A,
                 const Dense<Scalar>& B,
   Scalar beta,        Dense<Scalar>& C );
 // D := alpha F F
@@ -217,45 +217,45 @@ void Multiply
 // F := alpha F F
 template<typename Scalar>
 void Multiply
-( Scalar alpha, const LowRank<Scalar>& A, 
+( Scalar alpha, const LowRank<Scalar>& A,
                 const LowRank<Scalar>& B,
                       LowRank<Scalar>& C );
 // F := alpha D F
 template<typename Scalar>
 void Multiply
-( Scalar alpha, const Dense<Scalar>& A, 
+( Scalar alpha, const Dense<Scalar>& A,
                 const LowRank<Scalar>& B,
                       LowRank<Scalar>& C );
 // F := alpha F D
 template<typename Scalar>
 void Multiply
-( Scalar alpha, const LowRank<Scalar>& A, 
+( Scalar alpha, const LowRank<Scalar>& A,
                 const Dense<Scalar>& B,
                       LowRank<Scalar>& C );
 // F := alpha D D
 template<typename Real>
 void Multiply
-( int maxRank, Real alpha, 
+( int maxRank, Real alpha,
   const Dense<Real>& A,
   const Dense<Real>& B,
         LowRank<Real>& C );
 // F := alpha D D
 template<typename Real>
 void Multiply
-( int maxRank, std::complex<Real> alpha, 
+( int maxRank, std::complex<Real> alpha,
   const Dense< std::complex<Real> >& A,
   const Dense< std::complex<Real> >& B,
         LowRank<std::complex<Real> >& C );
 // F := alpha D D + beta F
 template<typename Real>
 void Multiply
-( int maxRank, 
+( int maxRank,
   Real alpha, const Dense<Real>& A, const Dense<Real>& B,
   Real beta, LowRank<Real>& C );
 // F := alpha D D + beta F
 template<typename Real>
 void Multiply
-( int maxRank, std::complex<Real> alpha, 
+( int maxRank, std::complex<Real> alpha,
   const Dense< std::complex<Real> >& A,
   const Dense< std::complex<Real> >& B,
   std::complex<Real> beta,
@@ -264,61 +264,61 @@ void Multiply
 template<typename Real>
 void Multiply
 ( int sampleRank,
-  Real alpha, 
+  Real alpha,
   const AbstractHMat<Real>& A,
   const AbstractHMat<Real>& B,
         LowRank<Real>& F );
 template<typename Real>
 void Multiply
 ( int sampleRank,
-  std::complex<Real> alpha, 
+  std::complex<Real> alpha,
   const AbstractHMat< std::complex<Real> >& A,
   const AbstractHMat< std::complex<Real> >& B,
         LowRank<std::complex<Real> >& F );
 
 /*
  *  Matrix Transpose Matrix Multiply, C := alpha A^T B
- * 
+ *
  *  When the resulting matrix is dense, an update form is also provided, i.e.,
  *  C := alpha A^T B + beta C
- * 
- *  A routine for forming a low-rank matrix from the product of two black-box 
+ *
+ *  A routine for forming a low-rank matrix from the product of two black-box
  *  matrix and matrix-transpose vector multiplication routines is also provided.
  */
 // D := alpha D^T D
 template<typename Scalar>
 void TransposeMultiply
-( Scalar alpha, const Dense<Scalar>& A, 
+( Scalar alpha, const Dense<Scalar>& A,
                 const Dense<Scalar>& B,
                       Dense<Scalar>& C );
 // D := alpha D^T D + beta D
 template<typename Scalar>
 void TransposeMultiply
-( Scalar alpha, const Dense<Scalar>& A, 
+( Scalar alpha, const Dense<Scalar>& A,
                 const Dense<Scalar>& B,
   Scalar beta,        Dense<Scalar>& C );
 // D := alpha D^T F
 template<typename Scalar>
 void TransposeMultiply
-( Scalar alpha, const Dense<Scalar>& A, 
+( Scalar alpha, const Dense<Scalar>& A,
                 const LowRank<Scalar>& B,
                       Dense<Scalar>& C );
 // D := alpha D^T F + beta D
 template<typename Scalar>
 void TransposeMultiply
-( Scalar alpha, const Dense<Scalar>& A, 
+( Scalar alpha, const Dense<Scalar>& A,
                 const LowRank<Scalar>& B,
   Scalar beta,        Dense<Scalar>& C );
 // D := alpha F^T D
 template<typename Scalar>
 void TransposeMultiply
-( Scalar alpha, const LowRank<Scalar>& A, 
+( Scalar alpha, const LowRank<Scalar>& A,
                 const Dense<Scalar>& B,
                       Dense<Scalar>& C );
 // D := alpha F^T D + beta D
 template<typename Scalar>
 void TransposeMultiply
-( Scalar alpha, const LowRank<Scalar>& A, 
+( Scalar alpha, const LowRank<Scalar>& A,
                 const Dense<Scalar>& B,
   Scalar beta,        Dense<Scalar>& C );
 // D := alpha F^T F
@@ -336,39 +336,39 @@ void TransposeMultiply
 // F := alpha F^T F
 template<typename Scalar>
 void TransposeMultiply
-( Scalar alpha, const LowRank<Scalar>& A, 
+( Scalar alpha, const LowRank<Scalar>& A,
                 const LowRank<Scalar>& B,
                       LowRank<Scalar>& C );
 // F := alpha D^T F
 template<typename Scalar>
 void TransposeMultiply
-( Scalar alpha, const Dense<Scalar>& A, 
+( Scalar alpha, const Dense<Scalar>& A,
                 const LowRank<Scalar>& B,
                       LowRank<Scalar>& C );
 // F := alpha F^T D
 template<typename Scalar>
 void TransposeMultiply
-( Scalar alpha, const LowRank<Scalar>& A, 
+( Scalar alpha, const LowRank<Scalar>& A,
                 const Dense<Scalar>& B,
                       LowRank<Scalar>& C );
 // F := alpha D^T D
 template<typename Real>
 void TransposeMultiply
-( int maxRank, Real alpha, 
+( int maxRank, Real alpha,
   const Dense<Real>& A,
   const Dense<Real>& B,
         LowRank<Real>& C );
 // F := alpha D^T D
 template<typename Real>
 void TransposeMultiply
-( int maxRank, std::complex<Real> alpha, 
+( int maxRank, std::complex<Real> alpha,
   const Dense< std::complex<Real> >& A,
   const Dense< std::complex<Real> >& B,
         LowRank<std::complex<Real> >& C );
 // F := alpha D^T D + beta F
 template<typename Real>
 void TransposeMultiply
-( int maxRank, Real alpha, 
+( int maxRank, Real alpha,
   const Dense<Real>& A,
   const Dense<Real>& B,
   Real beta,
@@ -376,7 +376,7 @@ void TransposeMultiply
 // F := alpha D^T D + beta F
 template<typename Real>
 void TransposeMultiply
-( int maxRank, std::complex<Real> alpha, 
+( int maxRank, std::complex<Real> alpha,
   const Dense< std::complex<Real> >& A,
   const Dense< std::complex<Real> >& B,
   std::complex<Real> beta,
@@ -385,61 +385,61 @@ void TransposeMultiply
 template<typename Real>
 void TransposeMultiply
 ( int sampleRank,
-  Real alpha, 
+  Real alpha,
   const AbstractHMat<Real>& A,
   const AbstractHMat<Real>& B,
         LowRank<Real>& F );
 template<typename Real>
 void TransposeMultiply
 ( int sampleRank,
-  std::complex<Real> alpha, 
+  std::complex<Real> alpha,
   const AbstractHMat< std::complex<Real> >& A,
   const AbstractHMat< std::complex<Real> >& B,
         LowRank<std::complex<Real> >& F );
 
 /*
  *  Matrix-Adjoint Matrix Multiply, C := alpha A^H B
- * 
+ *
  *  When the resulting matrix is dense, an update form is also provided, i.e.,
  *  C := alpha A^H B + beta C
- * 
- *  A routine for forming a low-rank matrix from the product of two black-box 
+ *
+ *  A routine for forming a low-rank matrix from the product of two black-box
  *  matrix and matrix-transpose vector multiplication routines is also provided.
  */
 // D := alpha D^H D
 template<typename Scalar>
 void AdjointMultiply
-( Scalar alpha, const Dense<Scalar>& A, 
+( Scalar alpha, const Dense<Scalar>& A,
                 const Dense<Scalar>& B,
                       Dense<Scalar>& C );
 // D := alpha D^H D + beta D
 template<typename Scalar>
 void AdjointMultiply
-( Scalar alpha, const Dense<Scalar>& A, 
+( Scalar alpha, const Dense<Scalar>& A,
                 const Dense<Scalar>& B,
   Scalar beta,        Dense<Scalar>& C );
 // D := alpha D^H F
 template<typename Scalar>
 void AdjointMultiply
-( Scalar alpha, const Dense<Scalar>& A, 
+( Scalar alpha, const Dense<Scalar>& A,
                 const LowRank<Scalar>& B,
                       Dense<Scalar>& C );
 // D := alpha D^H F + beta D
 template<typename Scalar>
 void AdjointMultiply
-( Scalar alpha, const Dense<Scalar>& A, 
+( Scalar alpha, const Dense<Scalar>& A,
                 const LowRank<Scalar>& B,
   Scalar beta,        Dense<Scalar>& C );
 // D := alpha F^H D
 template<typename Scalar>
 void AdjointMultiply
-( Scalar alpha, const LowRank<Scalar>& A, 
+( Scalar alpha, const LowRank<Scalar>& A,
                 const Dense<Scalar>& B,
                       Dense<Scalar>& C );
 // D := alpha F^H D + beta D
 template<typename Scalar>
 void AdjointMultiply
-( Scalar alpha, const LowRank<Scalar>& A, 
+( Scalar alpha, const LowRank<Scalar>& A,
                 const Dense<Scalar>& B,
   Scalar beta,        Dense<Scalar>& C );
 // D := alpha F^H F
@@ -457,39 +457,39 @@ void AdjointMultiply
 // F := alpha F^H F
 template<typename Scalar>
 void AdjointMultiply
-( Scalar alpha, const LowRank<Scalar>& A, 
+( Scalar alpha, const LowRank<Scalar>& A,
                 const LowRank<Scalar>& B,
                       LowRank<Scalar>& C );
 // F := alpha D^H F
 template<typename Scalar>
 void AdjointMultiply
-( Scalar alpha, const Dense<Scalar>& A, 
+( Scalar alpha, const Dense<Scalar>& A,
                 const LowRank<Scalar>& B,
                       LowRank<Scalar>& C );
 // F := alpha F^H D
 template<typename Scalar>
 void AdjointMultiply
-( Scalar alpha, const LowRank<Scalar>& A, 
+( Scalar alpha, const LowRank<Scalar>& A,
                 const Dense<Scalar>& B,
                       LowRank<Scalar>& C );
 // F := alpha D^H D
 template<typename Real>
 void AdjointMultiply
-( int maxRank, Real alpha, 
+( int maxRank, Real alpha,
   const Dense<Real>& A,
   const Dense<Real>& B,
         LowRank<Real>& C );
 // F := alpha D^H D
 template<typename Real>
 void AdjointMultiply
-( int maxRank, std::complex<Real> alpha, 
+( int maxRank, std::complex<Real> alpha,
   const Dense< std::complex<Real> >& A,
   const Dense< std::complex<Real> >& B,
         LowRank<std::complex<Real> >& C );
 // F := alpha D^H D + beta F
 template<typename Real>
 void AdjointMultiply
-( int maxRank, Real alpha, 
+( int maxRank, Real alpha,
   const Dense<Real>& A,
   const Dense<Real>& B,
   Real beta,
@@ -497,7 +497,7 @@ void AdjointMultiply
 // F := alpha D^H D + beta F
 template<typename Real>
 void AdjointMultiply
-( int maxRank, std::complex<Real> alpha, 
+( int maxRank, std::complex<Real> alpha,
   const Dense< std::complex<Real> >& A,
   const Dense< std::complex<Real> >& B,
   std::complex<Real> beta,
@@ -506,14 +506,14 @@ void AdjointMultiply
 template<typename Real>
 void AdjointMultiply
 ( int sampleRank,
-  Real alpha, 
+  Real alpha,
   const AbstractHMat<Real>& A,
   const AbstractHMat<Real>& B,
         LowRank<Real>& F );
 template<typename Real>
 void AdjointMultiply
 ( int sampleRank,
-  std::complex<Real> alpha, 
+  std::complex<Real> alpha,
   const AbstractHMat< std::complex<Real> >& A,
   const AbstractHMat< std::complex<Real> >& B,
         LowRank<std::complex<Real> >& F );
@@ -524,29 +524,29 @@ void AdjointMultiply
 // y := alpha D x + beta y
 template<typename Scalar>
 void Multiply
-( Scalar alpha, const Dense<Scalar>& D, 
+( Scalar alpha, const Dense<Scalar>& D,
                 const Vector<Scalar>& x,
   Scalar beta,        Vector<Scalar>& y );
 // y := alpha F x + beta y
 template<typename Scalar>
 void Multiply
-( Scalar alpha, const LowRank<Scalar>& F, 
+( Scalar alpha, const LowRank<Scalar>& F,
                 const Vector<Scalar>& x,
   Scalar beta,        Vector<Scalar>& y );
 
 /*
- *  Matrix-Vector multiply, y := alpha A x 
+ *  Matrix-Vector multiply, y := alpha A x
  */
 // y := alpha D x
 template<typename Scalar>
 void Multiply
-( Scalar alpha, const Dense<Scalar>& D, 
+( Scalar alpha, const Dense<Scalar>& D,
                 const Vector<Scalar>& x,
                       Vector<Scalar>& y );
 // y := alpha F x
 template<typename Scalar>
 void Multiply
-( Scalar alpha, const LowRank<Scalar>& F, 
+( Scalar alpha, const LowRank<Scalar>& F,
                 const Vector<Scalar>& x,
                       Vector<Scalar>& y );
 
@@ -556,29 +556,29 @@ void Multiply
 // y := alpha D^T x + beta y
 template<typename Scalar>
 void TransposeMultiply
-( Scalar alpha, const Dense<Scalar>& D, 
+( Scalar alpha, const Dense<Scalar>& D,
                 const Vector<Scalar>& x,
   Scalar beta,        Vector<Scalar>& y );
 // y := alpha F^T x + beta y
 template<typename Scalar>
 void TransposeMultiply
-( Scalar alpha, const LowRank<Scalar>& F, 
+( Scalar alpha, const LowRank<Scalar>& F,
                 const Vector<Scalar>& x,
   Scalar beta,        Vector<Scalar>& y );
 
 /*
- *  Matrix-Transpose-Vector multiply, y := alpha A^T x 
+ *  Matrix-Transpose-Vector multiply, y := alpha A^T x
  */
 // y := alpha D^T x
 template<typename Scalar>
 void TransposeMultiply
-( Scalar alpha, const Dense<Scalar>& D, 
+( Scalar alpha, const Dense<Scalar>& D,
                 const Vector<Scalar>& x,
                       Vector<Scalar>& y );
 // y := alpha F^T x
 template<typename Scalar>
 void TransposeMultiply
-( Scalar alpha, const LowRank<Scalar>& F, 
+( Scalar alpha, const LowRank<Scalar>& F,
                 const Vector<Scalar>& x,
                       Vector<Scalar>& y );
 
@@ -588,29 +588,29 @@ void TransposeMultiply
 // y := alpha D^H x + beta y
 template<typename Scalar>
 void AdjointMultiply
-( Scalar alpha, const Dense<Scalar>& D, 
+( Scalar alpha, const Dense<Scalar>& D,
                 const Vector<Scalar>& x,
   Scalar beta,        Vector<Scalar>& y );
 // y := alpha F^H x + beta y
 template<typename Scalar>
 void AdjointMultiply
-( Scalar alpha, const LowRank<Scalar>& F, 
+( Scalar alpha, const LowRank<Scalar>& F,
                 const Vector<Scalar>& x,
   Scalar beta,        Vector<Scalar>& y );
 
 /*
- *  Matrix-Hermitian-Transpose-Vector multiply, y := alpha A^H x 
+ *  Matrix-Hermitian-Transpose-Vector multiply, y := alpha A^H x
  */
 // y := alpha D^H x
 template<typename Scalar>
 void AdjointMultiply
-( Scalar alpha, const Dense<Scalar>& D, 
+( Scalar alpha, const Dense<Scalar>& D,
                 const Vector<Scalar>& x,
                       Vector<Scalar>& y );
 // y := alpha F^H x
 template<typename Scalar>
 void AdjointMultiply
-( Scalar alpha, const LowRank<Scalar>& F, 
+( Scalar alpha, const LowRank<Scalar>& F,
                 const Vector<Scalar>& x,
                       Vector<Scalar>& y );
 
@@ -678,7 +678,7 @@ void Conjugate
         Vector<Real>& y );
 template<typename Real>
 void Conjugate
-( const Vector< std::complex<Real> >& x, 
+( const Vector< std::complex<Real> >& x,
         Vector< std::complex<Real> >& y );
 
 template<typename Real>
@@ -753,14 +753,14 @@ template<typename Scalar>
 void Adjoint( const LowRank<Scalar>& A, LowRank<Scalar>& B );
 
 /*
- *  For computing the in-place QR decomposition of stacked s x r  and t x r 
+ *  For computing the in-place QR decomposition of stacked s x r  and t x r
  *  upper-triangular matrices with their nonzeros packed columnwise.
  *
  * tau should be of length min(r,s+t) and work must be of size t-1.
  */
 template<typename Scalar>
 void PackedQR
-( const int r, const int s, const int t, 
+( const int r, const int s, const int t,
   Scalar* RESTRICT packedA, Scalar* RESTRICT tau, Scalar* RESTRICT work );
 
 /*
@@ -771,12 +771,12 @@ void PackedQR
 template<typename Scalar>
 void ApplyPackedQFromLeft
 ( const int r, const int s, const int t,
-  const Scalar* RESTRICT packedA, const Scalar* RESTRICT tau, 
+  const Scalar* RESTRICT packedA, const Scalar* RESTRICT tau,
   Dense<Scalar>& B, Scalar* RESTRICT work );
 template<typename Scalar>
 void ApplyPackedQAdjointFromLeft
 ( const int r, const int s, const int t,
-  const Scalar* RESTRICT packedA, const Scalar* RESTRICT tau, 
+  const Scalar* RESTRICT packedA, const Scalar* RESTRICT tau,
   Dense<Scalar>& B, Scalar* RESTRICT work );
 
 /*
@@ -786,13 +786,13 @@ void ApplyPackedQAdjointFromLeft
  */
 template<typename Scalar>
 void ApplyPackedQFromRight
-( const int r, const int s, const int t, 
-  const Scalar* RESTRICT packedA, const Scalar* RESTRICT tau, 
+( const int r, const int s, const int t,
+  const Scalar* RESTRICT packedA, const Scalar* RESTRICT tau,
   Dense<Scalar>& B, Scalar* RESTRICT work );
 template<typename Scalar>
 void ApplyPackedQAdjointFromRight
 ( const int r, const int s, const int t,
-  const Scalar* RESTRICT packedA, const Scalar* RESTRICT tau, 
+  const Scalar* RESTRICT packedA, const Scalar* RESTRICT tau,
   Dense<Scalar>& B, Scalar* RESTRICT work );
 
 template<typename Scalar>
@@ -883,8 +883,8 @@ void Copy( const LowRank<Scalar>& A, LowRank<Scalar>& B )
  *  Conjugate a vector or matrix
  */
 
-template<typename Real> 
-void Conjugate( Vector<Real>& x ) 
+template<typename Real>
+void Conjugate( Vector<Real>& x )
 { }
 
 template<typename Real>
@@ -895,13 +895,13 @@ void Conjugate( Vector<std::complex<Real> >& x )
 #endif
     const int n = x.Height();
     std::complex<Real>* xBuffer = x.Buffer();
-    for( int i=0; i<n; ++i ) 
+    for( int i=0; i<n; ++i )
         xBuffer[i] = Conj( xBuffer[i] );
 }
 
 template<typename Real>
 void Conjugate( const Vector<Real>& x, Vector<Real>& y )
-{ 
+{
 #ifndef RELEASE
     CallStackEntry entry("hmat_tools::Conjugate (Vector,Vector)");
 #endif
@@ -1045,7 +1045,7 @@ void Conjugate( const Dense<Real>& D1, Dense<Real>& D2 )
 #endif
     const int m = D1.Height();
     const int n = D1.Width();
-    D2.SetType( D1.Type() ); 
+    D2.SetType( D1.Type() );
     D2.Resize( m, n );
     if( D1.Symmetric() )
     {
@@ -1235,20 +1235,20 @@ Real TwoNorm( const Vector<std::complex<Real> >& x )
 
 /*
  *  Estimate the two-norm of an abstract H-matrix
- * 
+ *
  *  We have that
  *      (x' (A'A)^k x)^{1/k} <= ||A'A||_2 <= theta^2 (x' (A'A)^k x)^{1/k},
  *  with probability at least 1 - 0.8 theta^{-k} n^{1/2}.
- *  
+ *
  *  Seek the minimum even k, given theta, such that 0.8 theta^{-k} n^{1/2}
  *  is <= 10^{-confidence}.
- * 
+ *
  *  Then
  *      x' (A'A)^k x = (A^k x)' (A^k x) = (||A^k x||_2)^2
  *  but ||A||_2 = sqrt(||A'A||_2), so our estimate is
  *      (||A^k x||_2)^{1/k} <= ||A||_2 <= theta (||A^k x||_2)^{1/k}
  *  so that k matrix-vector products are required.
- * 
+ *
  *  We can solve for such a k via the equations:
  *      k >= log_theta( 0.8 sqrt(n) 10^{confidence} )
  *         = log( 0.8 sqrt(n) 10^{confidence} ) / log( theta ),
@@ -1280,7 +1280,7 @@ Real EstimateTwoNorm( const AbstractHMat<Real>& A, Real theta, Real confidence )
         Scale( ((Real)1)/twoNorm, x );
     }
 
-    Real estimate = theta; 
+    Real estimate = theta;
     const Real root = ((Real)1) / ((Real)k);
     Vector<Real> y;
     for( int i=0; i<k; ++i )
@@ -1324,7 +1324,7 @@ Real EstimateTwoNorm
         Scale( Scalar(1)/twoNorm, x );
     }
 
-    Real estimate = theta; 
+    Real estimate = theta;
     const Real root = ((Real)1) / ((Real)k);
     Vector<Scalar> y;
     for( int i=0; i<k; ++i )
@@ -1411,9 +1411,9 @@ void Scale( Scalar alpha, LowRank<Scalar>& F )
 // F := alpha H H,
 template<typename Real>
 void Multiply
-( int sampleRank, 
-  Real alpha, 
-  const AbstractHMat<Real>& A, 
+( int sampleRank,
+  Real alpha,
+  const AbstractHMat<Real>& A,
   const AbstractHMat<Real>& B,
         LowRank<Real>& F )
 {
@@ -1452,7 +1452,7 @@ void Multiply
         std::vector<Real> tau( minDim );
         lapack::PivotedQR
         ( m, n, Y.Buffer(), Y.LDim(), &jpvt[0], &tau[0], &work[0], lwork );
-        
+
         // Form the Q from the QR decomposition
         lapack::FormQ
         ( m, minDim, minDim, Y.Buffer(), Y.LDim(), &tau[0], &work[0], lwork );
@@ -1464,7 +1464,7 @@ void Multiply
     B.TransposeMultiply( 1, X, F.V );
 
     // Compute the economic SVD of F.V = (Q^T (alpha A B))^T = U Sigma V^T,
-    // overwriting F.V with U, and X with V^T. Then truncate the SVD to rank 
+    // overwriting F.V with U, and X with V^T. Then truncate the SVD to rank
     // r and form V^T := Sigma V^T.
     {
         const int m = F.V.Height();
@@ -1472,7 +1472,7 @@ void Multiply
         std::vector<Real> s( std::min(m,n) );
         X.Resize( std::min(m,n), n );
         lapack::SVD
-        ( 'O', 'S', m, n, F.V.Buffer(), F.V.LDim(), &s[0], 0, 1, 
+        ( 'O', 'S', m, n, F.V.Buffer(), F.V.LDim(), &s[0], 0, 1,
           X.Buffer(), X.LDim(), &work[0], lwork );
 
         // Truncate the SVD in-place
@@ -1494,17 +1494,17 @@ void Multiply
     // F.U := Q (VT)^T = Q V
     F.U.Resize( Y.Height(), r );
     blas::Gemm
-    ( 'N', 'T', Y.Height(), r, Y.Width(), 
-      1, Y.LockedBuffer(), Y.LDim(), X.LockedBuffer(), X.LDim(), 
+    ( 'N', 'T', Y.Height(), r, Y.Width(),
+      1, Y.LockedBuffer(), Y.LDim(), X.LockedBuffer(), X.LDim(),
       0, F.U.Buffer(), F.U.LDim() );
 }
 
 // F := alpha H H,
 template<typename Real>
 void Multiply
-( int sampleRank, 
-  std::complex<Real> alpha, 
-  const AbstractHMat<std::complex<Real> >& A, 
+( int sampleRank,
+  std::complex<Real> alpha,
+  const AbstractHMat<std::complex<Real> >& A,
   const AbstractHMat<std::complex<Real> >& B,
         LowRank<std::complex<Real> >& F )
 {
@@ -1536,7 +1536,7 @@ void Multiply
     const int lwork = std::max( lworkPivotedQR, lworkSVD );
     std::vector<Scalar> work( lwork );
     std::vector<Real> rwork( std::max(lrworkPivotedQR,lrworkSVD) );
-    
+
     // Replace Y with an orthogonal matrix which spans its range
     {
         const int m = Y.Height();
@@ -1547,7 +1547,7 @@ void Multiply
         std::vector<int> jpvt( n );
         std::vector<Scalar> tau( minDim );
         lapack::PivotedQR
-        ( m, n, Y.Buffer(), Y.LDim(), &jpvt[0], &tau[0], 
+        ( m, n, Y.Buffer(), Y.LDim(), &jpvt[0], &tau[0],
           &work[0], lwork, &rwork[0] );
 
         // Form the Q from the QR decomposition
@@ -1561,9 +1561,9 @@ void Multiply
     A.TransposeMultiply( alpha, Y, X );
     B.TransposeMultiply( 1, X, F.V );
     Conjugate( Y );
-        
+
     // Compute the economic SVD of F.V, U Sigma V^H,
-    // overwriting F.V with U, and X with V^H. Then truncate the SVD to rank 
+    // overwriting F.V with U, and X with V^H. Then truncate the SVD to rank
     // r and form V^H := Sigma V^H.
     {
         const int m = F.V.Height();
@@ -1590,12 +1590,12 @@ void Multiply
         }
     }
 
-    // F.U := Q (V^H)^T/H 
+    // F.U := Q (V^H)^T/H
     const char option = 'T';
     F.U.Resize( Y.Height(), r );
     blas::Gemm
-    ( 'N', option, Y.Height(), r, Y.Width(), 
-      1, Y.LockedBuffer(), Y.LDim(), X.LockedBuffer(), X.LDim(), 
+    ( 'N', option, Y.Height(), r, Y.Width(),
+      1, Y.LockedBuffer(), Y.LDim(), X.LockedBuffer(), X.LDim(),
       0, F.U.Buffer(), F.U.LDim() );
 }
 
@@ -1603,7 +1603,7 @@ void Multiply
 template<typename Real>
 void TransposeMultiply
 ( int sampleRank,
-  Real alpha, 
+  Real alpha,
   const AbstractHMat<Real>& A,
   const AbstractHMat<Real>& B,
         LowRank<Real>& F )
@@ -1655,7 +1655,7 @@ void TransposeMultiply
     B.TransposeMultiply( 1, X, F.V );
 
     // Compute the economic SVD of F.V = (Q^T (alpha A^T B))^T = U Sigma V^T,
-    // overwriting F.V with U, and X with V^T. Then truncate the SVD to rank 
+    // overwriting F.V with U, and X with V^T. Then truncate the SVD to rank
     // r and form V^T := Sigma V^T.
     {
         const int m = F.V.Height();
@@ -1694,7 +1694,7 @@ void TransposeMultiply
 template<typename Real>
 void TransposeMultiply
 ( int sampleRank,
-  std::complex<Real> alpha, 
+  std::complex<Real> alpha,
   const AbstractHMat<std::complex<Real> >& A,
   const AbstractHMat<std::complex<Real> >& B,
         LowRank<std::complex<Real> >& F )
@@ -1727,7 +1727,7 @@ void TransposeMultiply
     const int lwork = std::max( lworkPivotedQR, lworkSVD );
     std::vector<Scalar> work( lwork );
     std::vector<Real> rwork( std::max(lrworkPivotedQR,lrworkSVD) );
-    
+
     // Replace Y with an orthogonal matrix which spans its range
     {
         const int m = Y.Height();
@@ -1738,7 +1738,7 @@ void TransposeMultiply
         std::vector<int> jpvt( n );
         std::vector<Scalar> tau( minDim );
         lapack::PivotedQR
-        ( m, n, Y.Buffer(), Y.LDim(), &jpvt[0], &tau[0], 
+        ( m, n, Y.Buffer(), Y.LDim(), &jpvt[0], &tau[0],
           &work[0], lwork, &rwork[0] );
 
         // Form the Q from the QR decomposition
@@ -1752,9 +1752,9 @@ void TransposeMultiply
     A.Multiply( alpha, Y, X );
     B.TransposeMultiply( 1, X, F.V );
     Conjugate( Y );
-        
+
     // Compute the economic SVD of F.V, U Sigma V^H,
-    // overwriting F.V with U, and X with V^H. Then truncate the SVD to rank 
+    // overwriting F.V with U, and X with V^H. Then truncate the SVD to rank
     // r and form V^H := Sigma V^H.
     {
         const int m = F.V.Height();
@@ -1785,16 +1785,16 @@ void TransposeMultiply
     const char option = 'T';
     F.U.Resize( Y.Height(), r );
     blas::Gemm
-    ( 'N', option, Y.Height(), r, Y.Width(), 
-      1, Y.LockedBuffer(), Y.LDim(), X.LockedBuffer(), X.LDim(), 
+    ( 'N', option, Y.Height(), r, Y.Width(),
+      1, Y.LockedBuffer(), Y.LDim(), X.LockedBuffer(), X.LDim(),
       0, F.U.Buffer(), F.U.LDim() );
 }
 
 // F := alpha H^H H,
 template<typename Real>
 void AdjointMultiply
-( int sampleRank, 
-  Real alpha, 
+( int sampleRank,
+  Real alpha,
   const AbstractHMat<Real>& A,
   const AbstractHMat<Real>& B,
         LowRank<Real>& F )
@@ -1808,8 +1808,8 @@ void AdjointMultiply
 // F := alpha H^H H
 template<typename Real>
 void AdjointMultiply
-( int sampleRank, 
-  std::complex<Real> alpha, 
+( int sampleRank,
+  std::complex<Real> alpha,
   const AbstractHMat<std::complex<Real> >& A,
   const AbstractHMat<std::complex<Real> >& B,
         LowRank<std::complex<Real> >& F )
@@ -1842,7 +1842,7 @@ void AdjointMultiply
     const int lwork = std::max( lworkPivotedQR, lworkSVD );
     std::vector<Scalar> work( lwork );
     std::vector<Real> rwork( std::max(lrworkPivotedQR,lrworkSVD) );
-    
+
     // Replace Y with an orthogonal matrix which spans its range
     {
         const int m = Y.Height();
@@ -1853,7 +1853,7 @@ void AdjointMultiply
         std::vector<int> jpvt( n );
         std::vector<Scalar> tau( minDim );
         lapack::PivotedQR
-        ( m, n, Y.Buffer(), Y.LDim(), &jpvt[0], &tau[0], 
+        ( m, n, Y.Buffer(), Y.LDim(), &jpvt[0], &tau[0],
           &work[0], lwork, &rwork[0] );
 
         // Form the Q from the QR decomposition
@@ -1867,9 +1867,9 @@ void AdjointMultiply
     A.Multiply( Conj(alpha), Y, X );
     B.AdjointMultiply( 1, X, F.V );
     Conjugate( F.V );
-        
+
     // Compute the economic SVD of F.V, U Sigma V^H,
-    // overwriting F.V with U, and X with V^H. Then truncate the SVD to rank 
+    // overwriting F.V with U, and X with V^H. Then truncate the SVD to rank
     // r and form V^H := Sigma V^H.
     {
         const int m = F.V.Height();
@@ -1900,8 +1900,8 @@ void AdjointMultiply
     const char option = 'T';
     F.U.Resize( Y.Height(), r );
     blas::Gemm
-    ( 'N', option, Y.Height(), r, Y.Width(), 
-      1, Y.LockedBuffer(), Y.LDim(), X.LockedBuffer(), X.LDim(), 
+    ( 'N', option, Y.Height(), r, Y.Width(),
+      1, Y.LockedBuffer(), Y.LDim(), X.LockedBuffer(), X.LDim(),
       0, F.U.Buffer(), F.U.LDim() );
 }
 

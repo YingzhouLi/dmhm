@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -24,7 +24,7 @@ public:
     /*
      * Public virtual member functions
      */
-    virtual int Height() const = 0; 
+    virtual int Height() const = 0;
     virtual int Width() const = 0;
     virtual int NumLevels() const = 0;
     virtual int MaxRank() const = 0;
@@ -39,7 +39,7 @@ public:
 
     // y := alpha A x + beta y
     virtual void Multiply
-    ( Scalar alpha, const Vector<Scalar>& x, Scalar beta, Vector<Scalar>& y ) 
+    ( Scalar alpha, const Vector<Scalar>& x, Scalar beta, Vector<Scalar>& y )
     const = 0;
 
     // y := alpha A x
@@ -48,7 +48,7 @@ public:
 
     // y := alpha A^T x + beta y
     virtual void TransposeMultiply
-    ( Scalar alpha, const Vector<Scalar>& x, Scalar beta, Vector<Scalar>& y ) 
+    ( Scalar alpha, const Vector<Scalar>& x, Scalar beta, Vector<Scalar>& y )
     const = 0;
 
     // y := alpha A^T x
@@ -57,7 +57,7 @@ public:
 
     // y := alpha A^H x + beta y
     virtual void AdjointMultiply
-    ( Scalar alpha, const Vector<Scalar>& x, Scalar beta, Vector<Scalar>& y ) 
+    ( Scalar alpha, const Vector<Scalar>& x, Scalar beta, Vector<Scalar>& y )
     const = 0;
 
     // y := alpha A^H x
@@ -66,25 +66,25 @@ public:
 
     // C := alpha A B + beta C
     virtual void Multiply
-    ( Scalar alpha, const Dense<Scalar>& B, 
+    ( Scalar alpha, const Dense<Scalar>& B,
       Scalar beta,        Dense<Scalar>& C ) const = 0;
 
     // C := alpha A B
     virtual void Multiply
     ( Scalar alpha, const Dense<Scalar>& B, Dense<Scalar>& C ) const = 0;
-    
+
     // C := alpha A^T B + beta C
     virtual void TransposeMultiply
-    ( Scalar alpha, const Dense<Scalar>& B, 
+    ( Scalar alpha, const Dense<Scalar>& B,
       Scalar beta,        Dense<Scalar>& C ) const = 0;
 
     // C := alpha A^T B
     virtual void TransposeMultiply
     ( Scalar alpha, const Dense<Scalar>& B, Dense<Scalar>& C ) const = 0;
-    
+
     // C := alpha A^H B + beta C
     virtual void AdjointMultiply
-    ( Scalar alpha, const Dense<Scalar>& B, 
+    ( Scalar alpha, const Dense<Scalar>& B,
       Scalar beta,        Dense<Scalar>& C ) const = 0;
 
     // C := alpha A^H B
@@ -92,6 +92,6 @@ public:
     ( Scalar alpha, const Dense<Scalar>& B, Dense<Scalar>& C ) const = 0;
 };
 
-} // namespace dmhm 
+} // namespace dmhm
 
 #endif // ifndef DMHM_ABSTRACT_HMAT_HPP

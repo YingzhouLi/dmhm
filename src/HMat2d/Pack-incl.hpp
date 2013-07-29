@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -42,7 +42,7 @@ HMat2d<Scalar>::Pack( byte* packedHMat ) const
     CallStackEntry entry("HMat2d::Pack");
 #endif
     byte* head = packedHMat;
-    
+
     // Write the header information
     Write( head, numLevels_ );
     Write( head, maxRank_ );
@@ -103,7 +103,7 @@ HMat2d<Scalar>::Unpack( const byte* packedHMat )
     CallStackEntry entry("HMat2d::Unpack");
 #endif
     const byte* head = packedHMat;
-    
+
     // Unpack the top-level header information
     numLevels_          = Read<int>( head );
     maxRank_            = Read<int>( head );
@@ -148,7 +148,7 @@ HMat2d<Scalar>::Unpack( const Vector<byte>& packedHMat )
     xTarget_            = Read<int>( head );
     ySource_            = Read<int>( head );
     yTarget_            = Read<int>( head );
-    
+
     UnpackRecursion( head );
     return head-&packedHMat[0];
 }
@@ -282,7 +282,7 @@ HMat2d<Scalar>::UnpackRecursion( const byte*& head )
         {
             for( int s=0,sOffset=0; s<4; sOffset+=node.sourceSizes[s],++s )
             {
-                node.children[s+4*t] = 
+                node.children[s+4*t] =
                     new HMat2d<Scalar>
                     ( numLevels_-1, maxRank_, symmetric_, stronglyAdmissible_,
                       node.xSourceSizes[s&1], node.xTargetSizes[t&1],
@@ -304,7 +304,7 @@ HMat2d<Scalar>::UnpackRecursion( const byte*& head )
         {
             for( int s=0,sOffset=0; s<=t; sOffset+=node.sizes[s],++s )
             {
-                node.children[child++] =  
+                node.children[child++] =
                     new HMat2d<Scalar>
                     ( numLevels_-1, maxRank_, symmetric_, stronglyAdmissible_,
                       node.xSizes[s&1], node.xSizes[t&1],
@@ -347,7 +347,7 @@ HMat2d<Scalar>::UnpackRecursion( const byte*& head )
         const int n = Width();
 
         const MatrixType type = Read<MatrixType>( head );
-        D.SetType( type ); 
+        D.SetType( type );
         D.Resize( m, n );
 
         // Read in the matrix

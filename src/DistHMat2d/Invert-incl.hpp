@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -28,7 +28,7 @@ DistHMat2d<Scalar>::SchulzInvert
     if( numIterations <= 0 )
         throw std::logic_error("Must use at least 1 iteration.");
 
-    const Scalar estimate = 
+    const Scalar estimate =
         ParallelEstimateTwoNorm( theta, confidence );
     const Scalar alpha = Scalar(2)/(estimate*estimate);
 

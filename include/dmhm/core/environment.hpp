@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -65,15 +65,15 @@ void DumpCallStack();
 class CallStackEntry
 {
 public:
-    CallStackEntry( std::string s ) 
-    { 
+    CallStackEntry( std::string s )
+    {
         if( !std::uncaught_exception() )
-            PushCallStack(s); 
+            PushCallStack(s);
     }
-    ~CallStackEntry() 
-    { 
+    ~CallStackEntry()
+    {
         if( !std::uncaught_exception() )
-            PopCallStack(); 
+            PopCallStack();
     }
 };
 #endif
@@ -108,6 +108,7 @@ template<>
 void SetMidcomputeTolerance<double>( double tolerance );
 
 #ifdef MEMORY_INFO
+void ResetMemoryCount();
 void AddToMemoryCount( double size );
 double MemoryUsage();
 double PeakMemoryUsage();
@@ -132,12 +133,12 @@ MemZero( T* buffer, std::size_t numEntries )
 }
 
 template<typename Real>
-inline Real 
+inline Real
 Abs( Real alpha )
 { return std::abs(alpha); }
 
 template<typename Real>
-inline Real 
+inline Real
 Abs( std::complex<Real> alpha )
 { return std::abs(alpha); }
 
@@ -210,7 +211,7 @@ inline void Read( T* writeHead, const byte** readHead, int n )
     *readHead += n*sizeof(T);
 }
 
-// For extracting the underlying real datatype, 
+// For extracting the underlying real datatype,
 // e.g., typename Base<Scalar>::type a = 3.0;
 template<typename Real>
 struct Base

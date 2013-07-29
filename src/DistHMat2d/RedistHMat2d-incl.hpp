@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -16,7 +16,7 @@ namespace dmhm {
 template<typename Scalar>
 std::size_t
 DistHMat2d<Scalar>::PackedSizes
-( Vector<std::size_t>& packedSizes, 
+( Vector<std::size_t>& packedSizes,
   const HMat2d<Scalar>& H, const Teams& teams )
 {
 #ifndef RELEASE
@@ -51,7 +51,7 @@ DistHMat2d<Scalar>::PackedSizes
 template<typename Scalar>
 std::size_t
 DistHMat2d<Scalar>::Pack
-( Vector<byte*>& packedSubs, 
+( Vector<byte*>& packedSubs,
   const HMat2d<Scalar>& H, const Teams& teams )
 {
 #ifndef RELEASE
@@ -60,7 +60,7 @@ DistHMat2d<Scalar>::Pack
     mpi::Comm comm = teams.Team(0);
     const int p = mpi::CommSize( comm );
     Vector<byte*> heads = packedSubs;
-    Vector<byte**> headPointers(p); 
+    Vector<byte**> headPointers(p);
     for( int i=0; i<p; ++i )
         headPointers[i] = &heads[i];
 
@@ -166,12 +166,12 @@ void
 DistHMat2d<Scalar>::ComputeLocalSizes
 ( Vector<int>& localSizes, const HMat2d<Scalar>& H )
 {
-#ifndef RELEASE    
+#ifndef RELEASE
     CallStackEntry entry("DistHMat2d::ComputeLocalSizes");
     const int p = localSizes.Size();
     if( !(p && !(p & (p-1))) )
         throw std::logic_error("Must use a power of two number of processes");
-    if( (H.xSizeSource_ != H.xSizeTarget_) || 
+    if( (H.xSizeSource_ != H.xSizeTarget_) ||
         (H.ySizeSource_ != H.ySizeTarget_) )
         throw std::logic_error("Routine meant for square nodes");
 #endif
@@ -186,7 +186,7 @@ DistHMat2d<Scalar>::ComputeLocalSizes
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::PackedSizesRecursion
-( Vector<std::size_t>& packedSizes, 
+( Vector<std::size_t>& packedSizes,
   const Vector<int>& localSizes,
   int sourceRankOffset, int targetRankOffset, int teamSize,
   const HMat2d<Scalar>& H )
@@ -218,7 +218,7 @@ DistHMat2d<Scalar>::PackedSizesRecursion
         }
         else if( teamSize == 2 )
         {
-            // Give the upper-left 2x2 to the first halves of the teams 
+            // Give the upper-left 2x2 to the first halves of the teams
             // and the lower-right 2x2 to the second halves.
             for( int t=0; t<4; ++t )
                 for( int s=0; s<4; ++s )
@@ -263,7 +263,7 @@ DistHMat2d<Scalar>::PackedSizesRecursion
             }
             else
             {
-                // Store a split low-rank matrix                
+                // Store a split low-rank matrix
 
                 // The source and target processes store the matrix rank and
                 // their factor's entries.
@@ -275,14 +275,14 @@ DistHMat2d<Scalar>::PackedSizesRecursion
         {
             if( sourceRankOffset == targetRankOffset )
             {
-                // Every process owns a piece of both U and V. Store those 
+                // Every process owns a piece of both U and V. Store those
                 // pieces along with the matrix rank.
                 std::cerr << "WARNING: Unlikely admissible case." << std::endl;
                 for( int i=0; i<teamSize; ++i )
                 {
                     const int sourceRank = sourceRankOffset + i;
                     const int localSize = localSizes[sourceRank];
-                    packedSizes[sourceRank] += 
+                    packedSizes[sourceRank] +=
                         sizeof(int) + 2*localSize*r*sizeof(Scalar);
                 }
             }
@@ -295,7 +295,7 @@ DistHMat2d<Scalar>::PackedSizesRecursion
                 for( int i=0; i<teamSize; ++i )
                 {
                     const int sourceRank = sourceRankOffset + i;
-                    packedSizes[sourceRank] += 
+                    packedSizes[sourceRank] +=
                         sizeof(int) + localSizes[sourceRank]*r*sizeof(Scalar);
                 }
 
@@ -303,7 +303,7 @@ DistHMat2d<Scalar>::PackedSizesRecursion
                 for( int i=0; i<teamSize; ++i )
                 {
                     const int targetRank = targetRankOffset + i;
-                    packedSizes[targetRank] += 
+                    packedSizes[targetRank] +=
                         sizeof(int) + localSizes[targetRank]*r*sizeof(Scalar);
                 }
             }
@@ -413,21 +413,21 @@ DistHMat2d<Scalar>::PackRecursion
                 for( int s=2; s<4; ++s )
                     PackRecursion
                     ( headPointers, localSizes,
-                      sourceRankOffset+newTeamSize, targetRankOffset, 
+                      sourceRankOffset+newTeamSize, targetRankOffset,
                       newTeamSize, node.Child(t,s) );
             // Bottom-left block
             for( int t=2; t<4; ++t )
                 for( int s=0; s<2; ++s )
                     PackRecursion
                     ( headPointers, localSizes,
-                      sourceRankOffset, targetRankOffset+newTeamSize, 
+                      sourceRankOffset, targetRankOffset+newTeamSize,
                       newTeamSize, node.Child(t,s) );
             // Bottom-right block
             for( int t=2; t<4; ++t )
                 for( int s=2; s<4; ++s )
                     PackRecursion
                     ( headPointers, localSizes,
-                      sourceRankOffset+newTeamSize, 
+                      sourceRankOffset+newTeamSize,
                       targetRankOffset+newTeamSize,
                       newTeamSize, node.Child(t,s) );
         }
@@ -446,15 +446,15 @@ DistHMat2d<Scalar>::PackRecursion
                 for( int s=0; s<2; ++s )
                     PackRecursion
                     ( headPointers, localSizes,
-                      sourceRankOffset+s*newTeamSize, 
-                      targetRankOffset+t*newTeamSize, 
+                      sourceRankOffset+s*newTeamSize,
+                      targetRankOffset+t*newTeamSize,
                       newTeamSize, node.Child(t,s) );
             // Top-right block
             for( int t=0; t<2; ++t )
                 for( int s=2; s<4; ++s )
                     PackRecursion
                     ( headPointers, localSizes,
-                      sourceRankOffset+s*newTeamSize, 
+                      sourceRankOffset+s*newTeamSize,
                       targetRankOffset+t*newTeamSize,
                       newTeamSize, node.Child(t,s) );
             // Bottom-left block
@@ -462,15 +462,15 @@ DistHMat2d<Scalar>::PackRecursion
                 for( int s=0; s<2; ++s )
                     PackRecursion
                     ( headPointers, localSizes,
-                      sourceRankOffset+s*newTeamSize, 
-                      targetRankOffset+t*newTeamSize, 
+                      sourceRankOffset+s*newTeamSize,
+                      targetRankOffset+t*newTeamSize,
                       newTeamSize, node.Child(t,s) );
             // Bottom-right block
             for( int t=2; t<4; ++t )
                 for( int s=2; s<4; ++s )
                     PackRecursion
                     ( headPointers, localSizes,
-                      sourceRankOffset+s*newTeamSize, 
+                      sourceRankOffset+s*newTeamSize,
                       targetRankOffset+t*newTeamSize,
                       newTeamSize, node.Child(t,s) );
         }
@@ -580,7 +580,7 @@ DistHMat2d<Scalar>::PackRecursion
                 {
                     const int targetRank = targetRankOffset + i;
                     byte** hTarget = headPointers[targetRank];
-                    
+
                     Write( hTarget, DIST_LOW_RANK );
                     Write( hTarget, r );
 
@@ -732,7 +732,7 @@ DistHMat2d<Scalar>::ComputeFirstLocalIndexRecursion
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::ComputeLocalSizesRecursion
-( int* localSizes, int teamSize, int xSize, int ySize ) 
+( int* localSizes, int teamSize, int xSize, int ySize )
 {
     if( teamSize >=4 )
     {
@@ -798,7 +798,7 @@ DistHMat2d<Scalar>::Unpack
     targetRoot_ = 0;
 
     const byte* head = packedDistHMat;
-    
+
     // Read in the header information
     numLevels_          = Read<int>( head );
     maxRank_            = Read<int>( head );
@@ -838,7 +838,7 @@ DistHMat2d<Scalar>::UnpackRecursion( const byte*& head )
     switch( block_.type )
     {
     case DIST_NODE:
-    { 
+    {
         block_.data.N = NewNode();
         Node& node = *block_.data.N;
 
@@ -855,7 +855,7 @@ DistHMat2d<Scalar>::UnpackRecursion( const byte*& head )
                 {
                     const int sourceRoot = sourceRoot_ + s*(teamSize/4);
 
-                    node.children[s+4*t] = 
+                    node.children[s+4*t] =
                         new DistHMat2d<Scalar>
                         ( numLevels_-1, maxRank_, stronglyAdmissible_,
                           sourceOffset_+sOffset, targetOffset_+tOffset,
@@ -874,12 +874,12 @@ DistHMat2d<Scalar>::UnpackRecursion( const byte*& head )
             for( int t=0,tOffset=0; t<2; tOffset+=node.targetSizes[t],++t )
             {
                 const int targetRoot = targetRoot_ + t*(teamSize/4);
-                for( int s=2,sOffset=node.sourceSizes[0]+node.sourceSizes[1]; 
+                for( int s=2,sOffset=node.sourceSizes[0]+node.sourceSizes[1];
                      s<4; sOffset+=node.sourceSizes[s],++s )
                 {
                     const int sourceRoot = sourceRoot_ + s*(teamSize/4);
 
-                    node.children[s+4*t] = 
+                    node.children[s+4*t] =
                         new DistHMat2d<Scalar>
                         ( numLevels_-1, maxRank_, stronglyAdmissible_,
                           sourceOffset_+sOffset, targetOffset_+tOffset,
@@ -895,7 +895,7 @@ DistHMat2d<Scalar>::UnpackRecursion( const byte*& head )
                 }
             }
             // Bottom-left block
-            for( int t=2,tOffset=node.targetSizes[0]+node.targetSizes[1]; 
+            for( int t=2,tOffset=node.targetSizes[0]+node.targetSizes[1];
                  t<4; tOffset+=node.targetSizes[t],++t )
             {
                 const int targetRoot = targetRoot_ + t*(teamSize/4);
@@ -903,7 +903,7 @@ DistHMat2d<Scalar>::UnpackRecursion( const byte*& head )
                 {
                     const int sourceRoot = sourceRoot_ + s*(teamSize/4);
 
-                    node.children[s+4*t] = 
+                    node.children[s+4*t] =
                         new DistHMat2d<Scalar>
                         ( numLevels_-1, maxRank_, stronglyAdmissible_,
                           sourceOffset_+sOffset, targetOffset_+tOffset,
@@ -919,16 +919,16 @@ DistHMat2d<Scalar>::UnpackRecursion( const byte*& head )
                 }
             }
             // Bottom-right block
-            for( int t=2,tOffset=node.targetSizes[0]+node.targetSizes[1]; 
+            for( int t=2,tOffset=node.targetSizes[0]+node.targetSizes[1];
                  t<4; tOffset+=node.targetSizes[t],++t )
             {
                 const int targetRoot = targetRoot_ + t*(teamSize/4);
-                for( int s=2,sOffset=node.sourceSizes[0]+node.sourceSizes[1]; 
+                for( int s=2,sOffset=node.sourceSizes[0]+node.sourceSizes[1];
                      s<4; sOffset+=node.sourceSizes[s],++s )
                 {
                     const int sourceRoot = sourceRoot_ + s*(teamSize/4);
 
-                    node.children[s+4*t] = 
+                    node.children[s+4*t] =
                         new DistHMat2d<Scalar>
                         ( numLevels_-1, maxRank_, stronglyAdmissible_,
                           sourceOffset_+sOffset, targetOffset_+tOffset,
@@ -961,7 +961,7 @@ DistHMat2d<Scalar>::UnpackRecursion( const byte*& head )
             {
                 for( int s=0,sOffset=0; s<2; sOffset+=node.sourceSizes[s],++s )
                 {
-                    node.children[s+4*t] = 
+                    node.children[s+4*t] =
                         new DistHMat2d<Scalar>
                         ( numLevels_-1, maxRank_, stronglyAdmissible_,
                           sourceOffset_+sOffset, targetOffset_+tOffset,
@@ -978,10 +978,10 @@ DistHMat2d<Scalar>::UnpackRecursion( const byte*& head )
             // Top-right block
             for( int t=0,tOffset=0; t<2; tOffset+=node.targetSizes[t],++t )
             {
-                for( int s=2,sOffset=node.sourceSizes[0]+node.sourceSizes[1]; 
+                for( int s=2,sOffset=node.sourceSizes[0]+node.sourceSizes[1];
                      s<4; sOffset+=node.sourceSizes[s],++s )
                 {
-                    node.children[s+4*t] = 
+                    node.children[s+4*t] =
                         new DistHMat2d<Scalar>
                         ( numLevels_-1, maxRank_, stronglyAdmissible_,
                           sourceOffset_+sOffset, targetOffset_+tOffset,
@@ -996,7 +996,7 @@ DistHMat2d<Scalar>::UnpackRecursion( const byte*& head )
                 }
             }
             // Bottom-left block
-            for( int t=2,tOffset=node.targetSizes[0]+node.targetSizes[1]; 
+            for( int t=2,tOffset=node.targetSizes[0]+node.targetSizes[1];
                  t<4; tOffset+=node.targetSizes[t],++t )
             {
                 for( int s=0,sOffset=0; s<2; sOffset+=node.sourceSizes[s],++s )
@@ -1016,13 +1016,13 @@ DistHMat2d<Scalar>::UnpackRecursion( const byte*& head )
                 }
             }
             // Bottom-right block
-            for( int t=2,tOffset=node.targetSizes[0]+node.targetSizes[1]; 
+            for( int t=2,tOffset=node.targetSizes[0]+node.targetSizes[1];
                  t<4; tOffset+=node.targetSizes[t],++t )
             {
-                for( int s=2,sOffset=node.sourceSizes[0]+node.sourceSizes[1]; 
+                for( int s=2,sOffset=node.sourceSizes[0]+node.sourceSizes[1];
                      s<4; sOffset+=node.sourceSizes[s],++s )
                 {
-                    node.children[s+4*t] = 
+                    node.children[s+4*t] =
                         new DistHMat2d<Scalar>
                         ( numLevels_-1, maxRank_, stronglyAdmissible_,
                           sourceOffset_+sOffset, targetOffset_+tOffset,
@@ -1049,7 +1049,7 @@ DistHMat2d<Scalar>::UnpackRecursion( const byte*& head )
         {
             for( int s=0,sOffset=0; s<4; sOffset+=node.sourceSizes[s],++s )
             {
-                node.children[s+4*t] = 
+                node.children[s+4*t] =
                     new DistHMat2d<Scalar>
                     ( numLevels_-1, maxRank_, stronglyAdmissible_,
                       sourceOffset_+sOffset, targetOffset_+tOffset,
@@ -1057,7 +1057,7 @@ DistHMat2d<Scalar>::UnpackRecursion( const byte*& head )
                       node.ySourceSizes[s/2], node.yTargetSizes[t/2],
                       2*xSource_+(s&1), 2*xTarget_+(t&1),
                       2*ySource_+(s/2), 2*yTarget_+(t/2),
-                      *teams_, level_+1, 
+                      *teams_, level_+1,
                       inSourceTeam_, inTargetTeam_,
                       sourceRoot_, targetRoot_ );
                 node.Child(t,s).UnpackRecursion( head );
@@ -1083,7 +1083,7 @@ DistHMat2d<Scalar>::UnpackRecursion( const byte*& head )
         }
         if( inTargetTeam_ )
         {
-            // Read in U 
+            // Read in U
             const int localHeight = LocalHeight();
             DF.ULocal.SetType( GENERAL );
             DF.ULocal.Resize( localHeight, DF.rank );
@@ -1148,14 +1148,14 @@ DistHMat2d<Scalar>::UnpackRecursion( const byte*& head )
         const int r = Read<int>( head );
 
         // Read in U
-        F.U.SetType( GENERAL ); 
+        F.U.SetType( GENERAL );
         F.U.Resize( m, r );
         F.U.Init();
         for( int j=0; j<r; ++j )
             Read( F.U.Buffer(0,j), head, m );
 
         // Read in V
-        F.V.SetType( GENERAL ); 
+        F.V.SetType( GENERAL );
         F.V.Resize( n, r );
         F.V.Init();
         for( int j=0; j<r; ++j )

@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -19,16 +19,16 @@ ComplexDisplayWindow::ComplexDisplayWindow( QWidget* parent )
     CallStackEntry entry("ComplexDisplayWindow::DisplayWindow");
 #endif
     matrix_ = 0;
- 
+
     // For the real matrix
-    QHBoxLayout* matrixLayout = new QHBoxLayout(); 
+    QHBoxLayout* matrixLayout = new QHBoxLayout();
     realDisplay_ = new DisplayWidget<std::complex<double> >();
     realScroll_ = new QScrollArea();
     realScroll_->setWidget( realDisplay_ );
     matrixLayout->addWidget( realScroll_ );
 
     // For the imaginary matrix
-    imagDisplay_ = new DisplayWidget<std::complex<double> >(); 
+    imagDisplay_ = new DisplayWidget<std::complex<double> >();
     imagScroll_ = new QScrollArea();
     imagScroll_->setWidget( imagDisplay_ );
     matrixLayout->addWidget( imagScroll_ );
@@ -43,7 +43,7 @@ ComplexDisplayWindow::ComplexDisplayWindow( QWidget* parent )
 ComplexDisplayWindow::~ComplexDisplayWindow()
 { delete matrix_; }
 
-void 
+void
 ComplexDisplayWindow::Display
 ( const Dense<std::complex<double> >* matrix, QString title )
 {

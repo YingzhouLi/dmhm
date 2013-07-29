@@ -41,7 +41,7 @@ if(USE_QT5)
   # Search for Qt5
   find_package(Qt5Widgets)
   if(Qt5Widgets_FOUND)
-    set(DMHM_HEADERS_PREMOC 
+    set(DMHM_HEADERS_PREMOC
         "include/dmhm/graphics/display_window.hpp;include/dmhm/graphics/complex_display_window.hpp")
     qt_wrap_cpp(dmhm DMHM_MOC_SRC ${DMHM_HEADERS_PREMOC})
     include_directories(${Qt5Widgets_INCLUDE_DIRS})
@@ -85,14 +85,14 @@ if(NOT MATH_LIBS)
     message(STATUS "MATH_LIBS=${MATH_LIBS}")
   else()
     set(MATH_LIBS "" CACHE STRING ${MATH_DESC})
-    message(FATAL_ERROR 
+    message(FATAL_ERROR
       "Could not find BLAS/LAPACK libs. Please provide the root directory of MKL with -DMKL_ROOT, the directory of reference implementations with -DREFERENCE_ROOT, or manually specify all math libraries with -DMATH_LIBS. There are numerous idiosyncratic library dependencies for BLAS/LAPACK, so you will almost certainly need to manually specify -DMATH_LIBS.")
   endif()
   # Append the standard math libraries to the link list.
   list(APPEND MATH_LIBS m)
 endif()
 
-# Attempt to detect the BLAS and LAPACK underscore conventions. 
+# Attempt to detect the BLAS and LAPACK underscore conventions.
 # We currently only handle whether or not there is an underscore appended.
 include(CheckFunctionExists)
 set(CMAKE_REQUIRED_LIBRARIES ${MATH_LIBS})
@@ -131,14 +131,14 @@ endif()
 include(CheckCSourceCompiles)
 set(MPI_IN_PLACE_CODE
     "#include \"mpi.h\"
-     int main( int argc, char* argv[] ) 
+     int main( int argc, char* argv[] )
      {
          MPI_Init( &argc, &argv );
          float a;
          MPI_Allreduce
          ( MPI_IN_PLACE, &a, 1, MPI_FLOAT, MPI_SUM, MPI_COMM_WORLD );
-         MPI_Finalize(); 
-         return 0; 
+         MPI_Finalize();
+         return 0;
      }")
 check_c_source_compiles("${MPI_IN_PLACE_CODE}" HAVE_MPI_IN_PLACE)
 if(NOT HAVE_MPI_IN_PLACE)
@@ -175,9 +175,9 @@ install(FILES ${PROJECT_BINARY_DIR}/include/dmhm/config.h
         DESTINATION include/dmhm)
 
 # Grab all of the .c, .cpp, .h, and .hpp DMHM files
-file(GLOB_RECURSE DMHM_CPP RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} 
+file(GLOB_RECURSE DMHM_CPP RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
      "src/*.c" "src/*.cpp" "src/*-incl.hpp")
-file(GLOB_RECURSE DMHM_HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} 
+file(GLOB_RECURSE DMHM_HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
      "include/*.h" "include/*.hpp")
 set(DMHM_SRC "${DMHM_CPP};${DMHM_HEADERS}")
 
@@ -221,24 +221,24 @@ if(BUILD_TESTS)
   set(core_TESTS MemoryMap ParallelLcg Timer)
   set(hmat_tools_TESTS MatrixAdd Compress ConvertSubmatrix PackedQR)
   set(HMat2d_TESTS Invert LowRankConstructor MultiplyHMat Pack)
-  set(DistHMat2d_TESTS Ghost ImportSparse MultiplyHMat Pack 
+  set(DistHMat2d_TESTS Ghost ImportSparse MultiplyHMat Pack
                             RandomMultiplyHMat RandomMultiplyVectors
                             InvertHMat SparseToHMat)
   set(HMat3d_TESTS Invert LowRankConstructor MultiplyHMat Pack)
-  set(DistHMat3d_TESTS Ghost ImportSparse MultiplyHMat Pack 
+  set(DistHMat3d_TESTS Ghost ImportSparse MultiplyHMat Pack
                             RandomMultiplyHMat RandomMultiplyVectors
                             InvertHMat SparseToHMat)
-  
+
   foreach(TYPE ${TEST_TYPES})
     set(OUTPUT_DIR "${PROJECT_BINARY_DIR}/bin/${TYPE}")
-    foreach(TEST ${${TYPE}_TESTS}) 
+    foreach(TEST ${${TYPE}_TESTS})
       add_executable(${TYPE}-${TEST} ${TEST_DIR}/${TYPE}/${TEST}.cpp)
       target_link_libraries(${TYPE}-${TEST} dmhm cmake-dummy-lib)
       set_target_properties(${TYPE}-${TEST}
                             PROPERTIES OUTPUT_NAME ${TEST}
                             RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIR})
       if(MPI_LINK_FLAGS)
-        set_target_properties(${TYPE}-${TEST} PROPERTIES 
+        set_target_properties(${TYPE}-${TEST} PROPERTIES
           LINK_FLAGS ${MPI_LINK_FLAGS})
       endif()
       install(TARGETS ${TYPE}-${TEST} DESTINATION bin/${TYPE})

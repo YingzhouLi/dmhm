@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -12,7 +12,7 @@ namespace dmhm {
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::Multiply
-( Scalar alpha, const Vector<Scalar>& xLocal, 
+( Scalar alpha, const Vector<Scalar>& xLocal,
                       Vector<Scalar>& yLocal ) const
 {
 #ifndef RELEASE
@@ -49,7 +49,7 @@ DistHMat2d<Scalar>::AdjointMultiply
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::Multiply
-( Scalar alpha, const Vector<Scalar>& xLocal, 
+( Scalar alpha, const Vector<Scalar>& xLocal,
   Scalar beta,        Vector<Scalar>& yLocal ) const
 {
 #ifndef RELEASE
@@ -71,7 +71,7 @@ DistHMat2d<Scalar>::Multiply
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::TransposeMultiply
-( Scalar alpha, const Vector<Scalar>& xLocal, 
+( Scalar alpha, const Vector<Scalar>& xLocal,
   Scalar beta, Vector<Scalar>& yLocal ) const
 {
 #ifndef RELEASE
@@ -94,7 +94,7 @@ DistHMat2d<Scalar>::TransposeMultiply
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::AdjointMultiply
-( Scalar alpha, const Vector<Scalar>& xLocal, 
+( Scalar alpha, const Vector<Scalar>& xLocal,
   Scalar beta,        Vector<Scalar>& yLocal ) const
 {
 #ifndef RELEASE
@@ -134,7 +134,7 @@ DistHMat2d<Scalar>::MultiplyVectorInitialize
         context.block.type = DIST_NODE;
         context.block.data.DN = new typename MultiplyVectorContext::DistNode;
 
-        typename MultiplyVectorContext::DistNode& nodeContext = 
+        typename MultiplyVectorContext::DistNode& nodeContext =
             *context.block.data.DN;
         const Node& node = *block_.data.N;
         for( int t=0; t<4; ++t )
@@ -148,7 +148,7 @@ DistHMat2d<Scalar>::MultiplyVectorInitialize
         context.block.type = SPLIT_NODE;
         context.block.data.SN = new typename MultiplyVectorContext::SplitNode;
 
-        typename MultiplyVectorContext::SplitNode& nodeContext = 
+        typename MultiplyVectorContext::SplitNode& nodeContext =
             *context.block.data.DN;
         const Node& node = *block_.data.N;
         for( int t=0; t<4; ++t )
@@ -216,7 +216,7 @@ DistHMat2d<Scalar>::MultiplyVectorPrecompute
     {
     case DIST_NODE:
     {
-        typename MultiplyVectorContext::DistNode& nodeContext = 
+        typename MultiplyVectorContext::DistNode& nodeContext =
             *context.block.data.DN;
         const Node& node = *block_.data.N;
 
@@ -238,7 +238,7 @@ DistHMat2d<Scalar>::MultiplyVectorPrecompute
                 Vector<Scalar> xLocalSub, yLocalSub;
                 if( teamRank == 0 )
                 {
-                    // Take care of the upper left block 
+                    // Take care of the upper left block
                     for( int t=0,tOffset=0; t<2;
                          tOffset+=node.targetSizes[t],++t )
                     {
@@ -336,7 +336,7 @@ DistHMat2d<Scalar>::MultiplyVectorPrecompute
     }
     case SPLIT_NODE:
     {
-        typename MultiplyVectorContext::SplitNode& nodeContext = 
+        typename MultiplyVectorContext::SplitNode& nodeContext =
             *context.block.data.SN;
         const Node& node = *block_.data.N;
         Vector<Scalar> xLocalSub;
@@ -372,8 +372,8 @@ DistHMat2d<Scalar>::MultiplyVectorPrecompute
         Vector<Scalar>& z = *context.block.data.z;
         z.Resize( DF.rank );
         blas::Gemv
-        ( 'T', DF.VLocal.Height(), DF.rank, 
-          alpha,     DF.VLocal.LockedBuffer(), DF.VLocal.LDim(), 
+        ( 'T', DF.VLocal.Height(), DF.rank,
+          alpha,     DF.VLocal.LockedBuffer(), DF.VLocal.LDim(),
                      xLocal.LockedBuffer(),    1,
           Scalar(0), z.Buffer(),               1 );
         break;
@@ -429,7 +429,7 @@ DistHMat2d<Scalar>::TransposeMultiplyVectorPrecompute
     {
     case DIST_NODE:
     {
-        typename MultiplyVectorContext::DistNode& nodeContext = 
+        typename MultiplyVectorContext::DistNode& nodeContext =
             *context.block.data.DN;
         const Node& node = *block_.data.N;
 
@@ -462,7 +462,7 @@ DistHMat2d<Scalar>::TransposeMultiplyVectorPrecompute
                         {
                             yLocalSub.View
                             ( yLocal, sOffset, node.sourceSizes[s] );
-                            node.Child(t,s).TransposeMultiplyVectorPrecompute  
+                            node.Child(t,s).TransposeMultiplyVectorPrecompute
                             ( nodeContext.Child(t,s),
                               alpha, xLocalSub, yLocalSub );
                         }
@@ -516,7 +516,7 @@ DistHMat2d<Scalar>::TransposeMultiplyVectorPrecompute
                 Vector<Scalar> xLocalSub;
                 if( teamRank == 0 )
                 {
-                    // Take care of the upper half 
+                    // Take care of the upper half
                     for( int t=0,tOffset=0; t<2;
                          tOffset+=node.targetSizes[t],++t )
                     {
@@ -548,7 +548,7 @@ DistHMat2d<Scalar>::TransposeMultiplyVectorPrecompute
     }
     case SPLIT_NODE:
     {
-        typename MultiplyVectorContext::SplitNode& nodeContext = 
+        typename MultiplyVectorContext::SplitNode& nodeContext =
             *context.block.data.SN;
         const Node& node = *block_.data.N;
         Vector<Scalar> xLocalSub;
@@ -584,8 +584,8 @@ DistHMat2d<Scalar>::TransposeMultiplyVectorPrecompute
         Vector<Scalar>& z = *context.block.data.z;
         z.Resize( DF.rank );
         blas::Gemv
-        ( 'T', DF.ULocal.Height(), DF.rank, 
-          alpha,     DF.ULocal.LockedBuffer(), DF.ULocal.LDim(), 
+        ( 'T', DF.ULocal.Height(), DF.rank,
+          alpha,     DF.ULocal.LockedBuffer(), DF.ULocal.LDim(),
                      xLocal.LockedBuffer(),    1,
           Scalar(0), z.Buffer(),               1 );
         break;
@@ -636,7 +636,7 @@ DistHMat2d<Scalar>::AdjointMultiplyVectorPrecompute
     {
     case DIST_NODE:
     {
-        typename MultiplyVectorContext::DistNode& nodeContext = 
+        typename MultiplyVectorContext::DistNode& nodeContext =
             *context.block.data.DN;
         const Node& node = *block_.data.N;
 
@@ -669,7 +669,7 @@ DistHMat2d<Scalar>::AdjointMultiplyVectorPrecompute
                         {
                             yLocalSub.View
                             ( yLocal, sOffset, node.sourceSizes[s] );
-                            node.Child(t,s).AdjointMultiplyVectorPrecompute  
+                            node.Child(t,s).AdjointMultiplyVectorPrecompute
                             ( nodeContext.Child(t,s),
                               alpha, xLocalSub, yLocalSub );
                         }
@@ -723,7 +723,7 @@ DistHMat2d<Scalar>::AdjointMultiplyVectorPrecompute
                 Vector<Scalar> xLocalSub;
                 if( teamRank == 0 )
                 {
-                    // Take care of the upper half 
+                    // Take care of the upper half
                     for( int t=0,tOffset=0; t<2;
                          tOffset+=node.targetSizes[t],++t )
                     {
@@ -755,7 +755,7 @@ DistHMat2d<Scalar>::AdjointMultiplyVectorPrecompute
     }
     case SPLIT_NODE:
     {
-        typename MultiplyVectorContext::SplitNode& nodeContext = 
+        typename MultiplyVectorContext::SplitNode& nodeContext =
             *context.block.data.SN;
         const Node& node = *block_.data.N;
         Vector<Scalar> xLocalSub;
@@ -791,8 +791,8 @@ DistHMat2d<Scalar>::AdjointMultiplyVectorPrecompute
         Vector<Scalar>& z = *context.block.data.z;
         z.Resize( DF.rank );
         blas::Gemv
-        ( 'C', DF.ULocal.Height(), DF.rank, 
-          alpha,     DF.ULocal.LockedBuffer(), DF.ULocal.LDim(), 
+        ( 'C', DF.ULocal.Height(), DF.rank,
+          alpha,     DF.ULocal.LockedBuffer(), DF.ULocal.LDim(),
                      xLocal.LockedBuffer(),    1,
           Scalar(0), z.Buffer(),               1 );
         break;
@@ -835,7 +835,7 @@ DistHMat2d<Scalar>::MultiplyVectorSums
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MultiplyVectorSums");
 #endif
-    // Compute the message sizes for each reduce 
+    // Compute the message sizes for each reduce
     const int numLevels = teams_->NumLevels();
     const int numReduces = numLevels-1;
     Vector<int> sizes( numReduces, 0 );
@@ -867,7 +867,7 @@ DistHMat2d<Scalar>::TransposeMultiplyVectorSums
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::TransposeMultiplyVectorSums");
 #endif
-    // Compute the message sizes for each reduce 
+    // Compute the message sizes for each reduce
     const int numLevels = teams_->NumLevels();
     const int numReduces = numLevels-1;
     Vector<int> sizes( numReduces, 0 );
@@ -964,7 +964,7 @@ DistHMat2d<Scalar>::TransposeMultiplyVectorSumsCount
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyVectorSumsPack
-( const MultiplyVectorContext& context, 
+( const MultiplyVectorContext& context,
   Vector<Scalar>& buffer, Vector<int>& offsets ) const
 {
 #ifndef RELEASE
@@ -978,7 +978,7 @@ DistHMat2d<Scalar>::MultiplyVectorSumsPack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        const typename MultiplyVectorContext::DistNode& nodeContext = 
+        const typename MultiplyVectorContext::DistNode& nodeContext =
             *context.block.data.DN;
         for( int t=0; t<4; ++t )
             for( int s=0; s<4; ++s )
@@ -1016,7 +1016,7 @@ DistHMat2d<Scalar>::TransposeMultiplyVectorSumsPack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        const typename MultiplyVectorContext::DistNode& nodeContext = 
+        const typename MultiplyVectorContext::DistNode& nodeContext =
             *context.block.data.DN;
         for( int t=0; t<4; ++t )
             for( int s=0; s<4; ++s )
@@ -1054,7 +1054,7 @@ DistHMat2d<Scalar>::MultiplyVectorSumsUnpack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyVectorContext::DistNode& nodeContext = 
+        typename MultiplyVectorContext::DistNode& nodeContext =
             *context.block.data.DN;
         for( int t=0; t<4; ++t )
             for( int s=0; s<4; ++s )
@@ -1097,7 +1097,7 @@ DistHMat2d<Scalar>::TransposeMultiplyVectorSumsUnpack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyVectorContext::DistNode& nodeContext = 
+        typename MultiplyVectorContext::DistNode& nodeContext =
             *context.block.data.DN;
         for( int t=0; t<4; ++t )
             for( int s=0; s<4; ++s )
@@ -1581,7 +1581,7 @@ DistHMat2d<Scalar>::TransposeMultiplyVectorPassDataPack
             const int teamRank = mpi::CommRank( team );
             if( teamRank == 0 )
             {
-                // Take care of the upper half 
+                // Take care of the upper half
                 for( int t=0,tOffset=0; t<2;
                      tOffset+=node.targetSizes[t],++t )
                 {
@@ -1797,7 +1797,7 @@ DistHMat2d<Scalar>::MultiplyVectorBroadcasts
     // Perform the broadcasts with log2(p) messages
     teams_->TreeBroadcasts( buffer, sizes );
 
-    // Unpack the broadcasted buffers 
+    // Unpack the broadcasted buffers
     MultiplyVectorBroadcastsUnpack( context, buffer, offsets );
 }
 
@@ -1830,7 +1830,7 @@ DistHMat2d<Scalar>::TransposeMultiplyVectorBroadcasts
     // Perform the broadcasts with log2(p) messages
     teams_->TreeBroadcasts( buffer, sizes );
 
-    // Unpack the broadcasted buffers 
+    // Unpack the broadcasted buffers
     TransposeMultiplyVectorBroadcastsUnpack( context, buffer, offsets );
 }
 
@@ -1922,7 +1922,7 @@ DistHMat2d<Scalar>::MultiplyVectorBroadcastsPack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        const typename MultiplyVectorContext::DistNode& nodeContext = 
+        const typename MultiplyVectorContext::DistNode& nodeContext =
             *context.block.data.DN;
         for( int t=0; t<4; ++t )
             for( int s=0; s<4; ++s )
@@ -1965,7 +1965,7 @@ DistHMat2d<Scalar>::TransposeMultiplyVectorBroadcastsPack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        const typename MultiplyVectorContext::DistNode& nodeContext = 
+        const typename MultiplyVectorContext::DistNode& nodeContext =
             *context.block.data.DN;
         for( int t=0; t<4; ++t )
             for( int s=0; s<4; ++s )
@@ -2008,7 +2008,7 @@ DistHMat2d<Scalar>::MultiplyVectorBroadcastsUnpack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyVectorContext::DistNode& nodeContext = 
+        typename MultiplyVectorContext::DistNode& nodeContext =
             *context.block.data.DN;
         for( int t=0; t<4; ++t )
             for( int s=0; s<4; ++s )
@@ -2047,7 +2047,7 @@ DistHMat2d<Scalar>::TransposeMultiplyVectorBroadcastsUnpack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyVectorContext::DistNode& nodeContext = 
+        typename MultiplyVectorContext::DistNode& nodeContext =
             *context.block.data.DN;
         for( int t=0; t<4; ++t )
             for( int s=0; s<4; ++s )
@@ -2073,7 +2073,7 @@ template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyVectorPostcompute
 ( MultiplyVectorContext& context,
-  Scalar alpha, const Vector<Scalar>& xLocal, 
+  Scalar alpha, const Vector<Scalar>& xLocal,
                       Vector<Scalar>& yLocal ) const
 {
 #ifndef RELEASE
@@ -2087,7 +2087,7 @@ DistHMat2d<Scalar>::MultiplyVectorPostcompute
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyVectorContext::DistNode& nodeContext = 
+        typename MultiplyVectorContext::DistNode& nodeContext =
             *context.block.data.DN;
 
         mpi::Comm team = teams_->Team( level_ );
@@ -2108,7 +2108,7 @@ DistHMat2d<Scalar>::MultiplyVectorPostcompute
                 Vector<Scalar> xLocalSub, yLocalSub;
                 if( teamRank == 0 )
                 {
-                    // Take care of the upper left block 
+                    // Take care of the upper left block
                     for( int t=0,tOffset=0; t<2;
                          tOffset+=node.targetSizes[t],++t )
                     {
@@ -2202,7 +2202,7 @@ DistHMat2d<Scalar>::MultiplyVectorPostcompute
     case SPLIT_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyVectorContext::SplitNode& nodeContext = 
+        typename MultiplyVectorContext::SplitNode& nodeContext =
             *context.block.data.SN;
         Vector<Scalar> yLocalSub;
         for( int t=0,tOffset=0; t<4; tOffset+=node.targetSizes[t],++t )
@@ -2252,7 +2252,7 @@ template<typename Scalar>
 void
 DistHMat2d<Scalar>::TransposeMultiplyVectorPostcompute
 ( MultiplyVectorContext& context,
-  Scalar alpha, const Vector<Scalar>& xLocal, 
+  Scalar alpha, const Vector<Scalar>& xLocal,
                       Vector<Scalar>& yLocal ) const
 {
 #ifndef RELEASE
@@ -2266,7 +2266,7 @@ DistHMat2d<Scalar>::TransposeMultiplyVectorPostcompute
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyVectorContext::DistNode& nodeContext = 
+        typename MultiplyVectorContext::DistNode& nodeContext =
             *context.block.data.DN;
         mpi::Comm team = teams_->Team( level_ );
         const int teamSize = mpi::CommSize( team );
@@ -2286,7 +2286,7 @@ DistHMat2d<Scalar>::TransposeMultiplyVectorPostcompute
                 Vector<Scalar> xLocalSub, yLocalSub;
                 if( teamRank == 0 )
                 {
-                    // Take care of the upper left block 
+                    // Take care of the upper left block
                     for( int s=0,sOffset=0; s<2;
                          sOffset+=node.sourceSizes[s],++s )
                     {
@@ -2380,7 +2380,7 @@ DistHMat2d<Scalar>::TransposeMultiplyVectorPostcompute
     case SPLIT_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyVectorContext::SplitNode& nodeContext = 
+        typename MultiplyVectorContext::SplitNode& nodeContext =
             *context.block.data.SN;
         Vector<Scalar> yLocalSub;
         for( int s=0,sOffset=0; s<4; sOffset+=node.sourceSizes[s],++s )
@@ -2442,7 +2442,7 @@ DistHMat2d<Scalar>::AdjointMultiplyVectorPostcompute
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyVectorContext::DistNode& nodeContext = 
+        typename MultiplyVectorContext::DistNode& nodeContext =
             *context.block.data.DN;
 
         mpi::Comm team = teams_->Team( level_ );
@@ -2463,7 +2463,7 @@ DistHMat2d<Scalar>::AdjointMultiplyVectorPostcompute
                 Vector<Scalar> xLocalSub, yLocalSub;
                 if( teamRank == 0 )
                 {
-                    // Take care of the upper left block 
+                    // Take care of the upper left block
                     for( int s=0,sOffset=0; s<2;
                          sOffset+=node.sourceSizes[s],++s )
                     {
@@ -2558,7 +2558,7 @@ DistHMat2d<Scalar>::AdjointMultiplyVectorPostcompute
     case SPLIT_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyVectorContext::SplitNode& nodeContext = 
+        typename MultiplyVectorContext::SplitNode& nodeContext =
             *context.block.data.SN;
         Vector<Scalar> yLocalSub;
         for( int s=0,sOffset=0; s<4; sOffset+=node.sourceSizes[s],++s )

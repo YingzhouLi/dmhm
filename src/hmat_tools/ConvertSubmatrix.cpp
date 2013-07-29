@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -13,7 +13,7 @@ namespace hmat_tools {
 
 template<typename Scalar>
 void ConvertSubmatrix
-( Dense<Scalar>& D, const Sparse<Scalar>& S, 
+( Dense<Scalar>& D, const Sparse<Scalar>& S,
   int iStart, int jStart, int height, int width )
 {
 #ifndef RELEASE
@@ -22,7 +22,7 @@ void ConvertSubmatrix
     // Initialize the dense matrix to all zeros
     if( S.symmetric && iStart == jStart )
         D.SetType( SYMMETRIC );
-    else 
+    else
         D.SetType( GENERAL );
     D.Resize( height, width );
     Scale( Scalar(0), D );
@@ -88,7 +88,7 @@ void ConvertSubmatrix
     Scale( Scalar(0), F.V );
 
     // Fill in the representation of each nonzero using the appropriate column
-    // of identity in F.U and the appropriate scaled column of identity in 
+    // of identity in F.U and the appropriate scaled column of identity in
     // F.V
     rankCounter = 0;
     for( int iOffset=0; iOffset<height; ++iOffset )
@@ -119,15 +119,15 @@ void ConvertSubmatrix
 }
 
 template void ConvertSubmatrix
-(       Dense<float>& D, 
+(       Dense<float>& D,
   const Sparse<float>& S,
   int iStart, int iEnd, int jStart, int jEnd );
 template void ConvertSubmatrix
-(       Dense<double>& D, 
+(       Dense<double>& D,
   const Sparse<double>& S,
   int iStart, int iEnd, int jStart, int jEnd );
 template void ConvertSubmatrix
-(       Dense<std::complex<float> >& D, 
+(       Dense<std::complex<float> >& D,
   const Sparse<std::complex<float> >& S,
   int iStart, int iEnd, int jStart, int jEnd );
 template void ConvertSubmatrix

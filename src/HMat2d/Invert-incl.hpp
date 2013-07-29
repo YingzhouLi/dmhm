@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -67,7 +67,7 @@ HMat2d<Scalar>::DirectInvert()
                 {
                     // A_ij -= B_il A_lj
                     nodeB.Child(i,l).Multiply
-                    ( Scalar(-1), nodeA.Child(l,j), 
+                    ( Scalar(-1), nodeA.Child(l,j),
                       Scalar(1),  nodeA.Child(i,j) );
                 }
                 // NOTE: Can be skipped for either lower or upper-triangular
@@ -141,7 +141,7 @@ HMat2d<Scalar>::SchulzInvert
     if( numIterations <= 0 )
         throw std::logic_error("Must use at least 1 iteration.");
 
-    const Scalar estimate = 
+    const Scalar estimate =
         hmat_tools::EstimateTwoNorm( *this, theta, confidence );
     const Scalar alpha = Scalar(2)/(estimate*estimate);
 

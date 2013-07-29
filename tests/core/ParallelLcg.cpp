@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -16,7 +16,7 @@ main( int argc, char* argv[] )
     int rank = mpi::CommRank( mpi::COMM_WORLD );
     int commSize = mpi::CommSize( mpi::COMM_WORLD );
 
-    // Print the first 3*commSize entries of the serial RNG and the first 
+    // Print the first 3*commSize entries of the serial RNG and the first
     // 3 entries from each process from the parallel RNG.
     try
     {
@@ -39,7 +39,7 @@ main( int argc, char* argv[] )
             myValues[2*i] = state[0];
             myValues[2*i+1] = state[1];
         }
-        // We're treating the unsigned data as signed, but since we are only 
+        // We're treating the unsigned data as signed, but since we are only
         // gathering the bits, it doesn't matter
         mpi::AllGather
         ( (int*)&myValues[0], 6, (int*)&values[0], 6, mpi::COMM_WORLD );

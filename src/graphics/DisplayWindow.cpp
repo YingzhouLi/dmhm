@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -19,9 +19,9 @@ DisplayWindow::DisplayWindow( QWidget* parent )
     CallStackEntry entry("DisplayWindow::DisplayWindow");
 #endif
     matrix_ = 0;
- 
+
     // For the real matrix
-    QHBoxLayout* matrixLayout = new QHBoxLayout(); 
+    QHBoxLayout* matrixLayout = new QHBoxLayout();
     display_ = new DisplayWidget<double>();
     scroll_ = new QScrollArea();
     scroll_->setWidget( display_ );
@@ -37,7 +37,7 @@ DisplayWindow::DisplayWindow( QWidget* parent )
 DisplayWindow::~DisplayWindow()
 { delete matrix_; }
 
-void 
+void
 DisplayWindow::Display( const Dense<double>* matrix, QString title )
 {
 #ifndef RELEASE

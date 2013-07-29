@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -51,7 +51,7 @@ main( int argc, char* argv[] )
         double constructStopTime = mpi::Time();
         if( rank == 0 )
         {
-            std::cout << "done: " << constructStopTime-constructStartTime 
+            std::cout << "done: " << constructStopTime-constructStartTime
                       << " seconds." << std::endl;
             if( print )
                 H.Print("H");
@@ -83,10 +83,10 @@ main( int argc, char* argv[] )
         double hmatMatStopTime = mpi::Time();
         if( rank == 0 )
         {
-            std::cout << "done: " << hmatMatStopTime-hmatMatStartTime 
+            std::cout << "done: " << hmatMatStopTime-hmatMatStartTime
                       << " seconds." << std::endl;
         }
-        
+
         // Store the result of a serial hmat-trans-mat
         if( rank == 0 )
         {
@@ -101,16 +101,16 @@ main( int argc, char* argv[] )
         double hmatAdjointMatStopTime = mpi::Time();
         if( rank == 0 )
         {
-            std::cout << "done: " 
-                      << hmatAdjointMatStopTime-hmatAdjointMatStartTime 
+            std::cout << "done: "
+                      << hmatAdjointMatStopTime-hmatAdjointMatStartTime
                       << " seconds." << std::endl;
         }
 
         // Set up our subcommunicators and compute the packed sizes
         DistHMat::Teams teams( mpi::COMM_WORLD );
         Vector<std::size_t> packedSizes;
-        DistHMat::PackedSizes( packedSizes, H, teams ); 
-        const std::size_t myMaxSize = 
+        DistHMat::PackedSizes( packedSizes, H, teams );
+        const std::size_t myMaxSize =
             *(std::max_element( packedSizes.Begin(), packedSizes.End() ));
 
         // Pack for a DistHMatHMat
@@ -143,11 +143,11 @@ main( int argc, char* argv[] )
         }
         if( rank == 0 )
         {
-            std::cout << "Maximum per-process message size: " 
-                      << ((double)intMaxSize)/(1024.*1024.) << " MB." 
+            std::cout << "Maximum per-process message size: "
+                      << ((double)intMaxSize)/(1024.*1024.) << " MB."
                       << std::endl;
         }
- 
+
         // AllToAll
         if( rank == 0 )
         {
@@ -233,7 +233,7 @@ main( int argc, char* argv[] )
                 if( error > 1e-8 )
                 {
                     std::ostringstream ss;
-                    ss << "Answer differed at local index (" 
+                    ss << "Answer differed at local index ("
                         << i << "," << j << "), truth was "
                        << YLocalTruth.Get(i,j) << ", computed was "
                        << YLocal.Get(i,j) << std::endl;
@@ -245,7 +245,7 @@ main( int argc, char* argv[] )
         mpi::Barrier( mpi::COMM_WORLD );
         if( rank == 0 )
             std::cout << "done" << std::endl;
- 
+
         // Apply the adjoint of distributed H-matrix
         if( rank == 0 )
         {
@@ -262,7 +262,7 @@ main( int argc, char* argv[] )
         double distHmatAdjointMatStopTime = mpi::Time();
         if( rank == 0 )
         {
-            std::cout << "done: " 
+            std::cout << "done: "
                       << distHmatAdjointMatStopTime-
                          distHmatAdjointMatStartTime
                       << " seconds." << std::endl;
@@ -285,7 +285,7 @@ main( int argc, char* argv[] )
                 if( error > 1e-8 )
                 {
                     std::ostringstream ss;
-                    ss << "Answer differed at local index (" 
+                    ss << "Answer differed at local index ("
                         << i << "," << j << "), truth was "
                        << ZLocalTruth.Get(i,j) << ", computed was "
                        << ZLocal.Get(i,j) << std::endl;
@@ -301,13 +301,13 @@ main( int argc, char* argv[] )
     catch( ArgException& e ) { }
     catch( std::exception& e )
     {
-        std::cerr << "Process " << rank << " caught message: " << e.what() 
+        std::cerr << "Process " << rank << " caught message: " << e.what()
                   << std::endl;
 #ifndef RELEASE
         DumpCallStack();
 #endif
     }
-    
+
     Finalize();
     return 0;
 }

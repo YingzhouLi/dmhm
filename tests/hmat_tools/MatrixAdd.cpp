@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -18,7 +18,7 @@ main( int argc, char* argv[] )
 
     std::cout << "----------------------------------------------------\n"
               << "Testing double-precision dense Add                  \n"
-              << "----------------------------------------------------" 
+              << "----------------------------------------------------"
               << std::endl;
     try
     {
@@ -52,7 +52,7 @@ main( int argc, char* argv[] )
 
     std::cout << "----------------------------------------------------\n"
               << "Testing complex single-precision dense Add          \n"
-              << "----------------------------------------------------" 
+              << "----------------------------------------------------"
               << std::endl;
     try
     {
@@ -87,11 +87,11 @@ main( int argc, char* argv[] )
 
     std::cout << "----------------------------------------------------\n"
               << "Testing double-precision low-rank Add               \n"
-              << "----------------------------------------------------" 
+              << "----------------------------------------------------"
               << std::endl;
     try
     {
-        LowRank<double> A, B, C; 
+        LowRank<double> A, B, C;
 
         A.U.Resize( m, r );
         A.V.Resize( n, r );

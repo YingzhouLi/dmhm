@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -12,7 +12,7 @@ namespace dmhm {
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::Multiply
-( Scalar alpha, const Dense<Scalar>& XLocal, 
+( Scalar alpha, const Dense<Scalar>& XLocal,
                       Dense<Scalar>& YLocal ) const
 {
 #ifndef RELEASE
@@ -26,7 +26,7 @@ DistHMat3d<Scalar>::Multiply
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::TransposeMultiply
-( Scalar alpha, const Dense<Scalar>& XLocal, 
+( Scalar alpha, const Dense<Scalar>& XLocal,
                       Dense<Scalar>& YLocal ) const
 {
 #ifndef RELEASE
@@ -40,7 +40,7 @@ DistHMat3d<Scalar>::TransposeMultiply
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::AdjointMultiply
-( Scalar alpha, const Dense<Scalar>& XLocal, 
+( Scalar alpha, const Dense<Scalar>& XLocal,
                       Dense<Scalar>& YLocal ) const
 {
 #ifndef RELEASE
@@ -54,7 +54,7 @@ DistHMat3d<Scalar>::AdjointMultiply
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::Multiply
-( Scalar alpha, const Dense<Scalar>& XLocal, 
+( Scalar alpha, const Dense<Scalar>& XLocal,
   Scalar beta,        Dense<Scalar>& YLocal ) const
 {
 #ifndef RELEASE
@@ -76,7 +76,7 @@ DistHMat3d<Scalar>::Multiply
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::TransposeMultiply
-( Scalar alpha, const Dense<Scalar>& XLocal, 
+( Scalar alpha, const Dense<Scalar>& XLocal,
   Scalar beta,        Dense<Scalar>& YLocal ) const
 {
 #ifndef RELEASE
@@ -101,7 +101,7 @@ DistHMat3d<Scalar>::TransposeMultiply
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::AdjointMultiply
-( Scalar alpha, const Dense<Scalar>& XLocal, 
+( Scalar alpha, const Dense<Scalar>& XLocal,
   Scalar beta,        Dense<Scalar>& YLocal ) const
 {
 #ifndef RELEASE
@@ -144,7 +144,7 @@ DistHMat3d<Scalar>::MultiplyDenseInitialize
         context.block.type = DIST_NODE;
         context.block.data.DN = new typename MultiplyDenseContext::DistNode;
 
-        typename MultiplyDenseContext::DistNode& nodeContext = 
+        typename MultiplyDenseContext::DistNode& nodeContext =
             *context.block.data.DN;
         const Node& node = *block_.data.N;
         for( int t=0; t<8; ++t )
@@ -158,7 +158,7 @@ DistHMat3d<Scalar>::MultiplyDenseInitialize
         context.block.type = SPLIT_NODE;
         context.block.data.SN = new typename MultiplyDenseContext::SplitNode;
 
-        typename MultiplyDenseContext::SplitNode& nodeContext = 
+        typename MultiplyDenseContext::SplitNode& nodeContext =
             *context.block.data.SN;
         const Node& node = *block_.data.N;
         for( int t=0; t<8; ++t )
@@ -213,7 +213,7 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyDensePrecompute
 ( MultiplyDenseContext& context,
-  Scalar alpha, const Dense<Scalar>& XLocal, 
+  Scalar alpha, const Dense<Scalar>& XLocal,
                       Dense<Scalar>& YLocal ) const
 {
 #ifndef RELEASE
@@ -227,7 +227,7 @@ DistHMat3d<Scalar>::MultiplyDensePrecompute
     {
     case DIST_NODE:
     {
-        typename MultiplyDenseContext::DistNode& nodeContext = 
+        typename MultiplyDenseContext::DistNode& nodeContext =
             *context.block.data.DN;
         const Node& node = *block_.data.N;
 
@@ -264,55 +264,55 @@ DistHMat3d<Scalar>::MultiplyDensePrecompute
                 Dense<Scalar> XLocalSub, YLocalSub;
 
                 //Take care of the diagonal block
-                for( int t=t_start,tOffset=0; t<t_end; 
-                     tOffset+=node.targetSizes[t],++t )                         
-                {                                                               
-                    YLocalSub.View                                              
-                    ( YLocal, tOffset, 0, node.targetSizes[t], numRhs );        
-                    for( int s=s_start,sOffset=0; s<s_end;                      
-                         sOffset+=node.sourceSizes[s],++s )                     
-                    {                                                           
-                        XLocalSub.LockedView                                    
-                        ( XLocal, sOffset, 0, node.sourceSizes[s], numRhs );    
-                        node.Child(t,s).MultiplyDensePrecompute                 
-                        ( nodeContext.Child(t,s),                               
-                          alpha, XLocalSub, YLocalSub );                        
-                    }                                                           
-                }                                                               
-                // Take care of the non-diagonal block                            
-                YLocalSub.View( YLocal, 0, 0, 0, numRhs );                      
-                for( int s=s_start,sOffset=0; s<s_end;                          
-                     sOffset+=node.sourceSizes[s],++s )                         
-                {                                                               
-                    XLocalSub.LockedView                                        
-                    ( XLocal, sOffset, 0, node.sourceSizes[s], numRhs );        
-                    for( int t=0; t<8; ++t )                                    
-                        if( t < t_start || t>=t_end )                           
-                            node.Child(t,s).MultiplyDensePrecompute                 
-                            ( nodeContext.Child(t,s),                               
-                              alpha, XLocalSub, YLocalSub );                        
-                }                                                               
+                for( int t=t_start,tOffset=0; t<t_end;
+                     tOffset+=node.targetSizes[t],++t )
+                {
+                    YLocalSub.View
+                    ( YLocal, tOffset, 0, node.targetSizes[t], numRhs );
+                    for( int s=s_start,sOffset=0; s<s_end;
+                         sOffset+=node.sourceSizes[s],++s )
+                    {
+                        XLocalSub.LockedView
+                        ( XLocal, sOffset, 0, node.sourceSizes[s], numRhs );
+                        node.Child(t,s).MultiplyDensePrecompute
+                        ( nodeContext.Child(t,s),
+                          alpha, XLocalSub, YLocalSub );
+                    }
+                }
+                // Take care of the non-diagonal block
+                YLocalSub.View( YLocal, 0, 0, 0, numRhs );
+                for( int s=s_start,sOffset=0; s<s_end;
+                     sOffset+=node.sourceSizes[s],++s )
+                {
+                    XLocalSub.LockedView
+                    ( XLocal, sOffset, 0, node.sourceSizes[s], numRhs );
+                    for( int t=0; t<8; ++t )
+                        if( t < t_start || t>=t_end )
+                            node.Child(t,s).MultiplyDensePrecompute
+                            ( nodeContext.Child(t,s),
+                              alpha, XLocalSub, YLocalSub );
+                }
             }
             else
             {
                 Dense<Scalar> XLocalSub;
-                for( int s=s_start,sOffset=0; s<s_end;                   
-                     sOffset+=node.sourceSizes[s],++s )                     
-                {                                                           
-                    XLocalSub.LockedView                                    
-                    ( XLocal, sOffset, 0, node.sourceSizes[s], numRhs );    
-                    for( int t=0; t<8; ++t )                                
-                        node.Child(t,s).MultiplyDensePrecompute             
-                        ( nodeContext.Child(t,s),                           
-                          alpha, XLocalSub, YLocal );                       
-                }                                                           
+                for( int s=s_start,sOffset=0; s<s_end;
+                     sOffset+=node.sourceSizes[s],++s )
+                {
+                    XLocalSub.LockedView
+                    ( XLocal, sOffset, 0, node.sourceSizes[s], numRhs );
+                    for( int t=0; t<8; ++t )
+                        node.Child(t,s).MultiplyDensePrecompute
+                        ( nodeContext.Child(t,s),
+                          alpha, XLocalSub, YLocal );
+                }
             }
         }
         break;
     }
     case SPLIT_NODE:
     {
-        typename MultiplyDenseContext::SplitNode& nodeContext = 
+        typename MultiplyDenseContext::SplitNode& nodeContext =
             *context.block.data.SN;
         const Node& node = *block_.data.N;
         Dense<Scalar> XLocalSub;
@@ -392,7 +392,7 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::TransposeMultiplyDensePrecompute
 ( MultiplyDenseContext& context,
-  Scalar alpha, const Dense<Scalar>& XLocal, 
+  Scalar alpha, const Dense<Scalar>& XLocal,
                       Dense<Scalar>& YLocal ) const
 {
 #ifndef RELEASE
@@ -406,7 +406,7 @@ DistHMat3d<Scalar>::TransposeMultiplyDensePrecompute
     {
     case DIST_NODE:
     {
-        typename MultiplyDenseContext::DistNode& nodeContext = 
+        typename MultiplyDenseContext::DistNode& nodeContext =
             *context.block.data.DN;
         const Node& node = *block_.data.N;
 
@@ -443,55 +443,55 @@ DistHMat3d<Scalar>::TransposeMultiplyDensePrecompute
                 Dense<Scalar> XLocalSub, YLocalSub;
 
                 //Take care of the diagonal block
-                for( int t=t_start,tOffset=0; t<t_end; 
-                     tOffset+=node.targetSizes[t],++t )                         
-                {                                                               
-                    XLocalSub.LockedView                                              
-                    ( XLocal, tOffset, 0, node.targetSizes[t], numRhs );        
-                    for( int s=s_start,sOffset=0; s<s_end;                      
-                         sOffset+=node.sourceSizes[s],++s )                     
-                    {                                                           
-                        YLocalSub.View                                    
-                        ( YLocal, sOffset, 0, node.sourceSizes[s], numRhs );    
-                        node.Child(t,s).TransposeMultiplyDensePrecompute                 
-                        ( nodeContext.Child(t,s),                               
-                          alpha, XLocalSub, YLocalSub );                        
-                    }                                                           
-                }                                                               
-                // Take care of the non-diagonal block                            
-                YLocalSub.View( YLocal, 0, 0, 0, numRhs );                      
-                for( int t=t_start,tOffset=0; t<t_end;                          
-                     tOffset+=node.targetSizes[t],++t )                         
-                {                                                               
-                    XLocalSub.LockedView                                        
-                    ( XLocal, tOffset, 0, node.targetSizes[t], numRhs );        
-                    for( int s=0; s<8; ++s )                                    
-                        if( s < s_start || s>=s_end )                           
-                            node.Child(t,s).TransposeMultiplyDensePrecompute                 
-                            ( nodeContext.Child(t,s),                               
-                              alpha, XLocalSub, YLocalSub );                        
-                }                                                               
+                for( int t=t_start,tOffset=0; t<t_end;
+                     tOffset+=node.targetSizes[t],++t )
+                {
+                    XLocalSub.LockedView
+                    ( XLocal, tOffset, 0, node.targetSizes[t], numRhs );
+                    for( int s=s_start,sOffset=0; s<s_end;
+                         sOffset+=node.sourceSizes[s],++s )
+                    {
+                        YLocalSub.View
+                        ( YLocal, sOffset, 0, node.sourceSizes[s], numRhs );
+                        node.Child(t,s).TransposeMultiplyDensePrecompute
+                        ( nodeContext.Child(t,s),
+                          alpha, XLocalSub, YLocalSub );
+                    }
+                }
+                // Take care of the non-diagonal block
+                YLocalSub.View( YLocal, 0, 0, 0, numRhs );
+                for( int t=t_start,tOffset=0; t<t_end;
+                     tOffset+=node.targetSizes[t],++t )
+                {
+                    XLocalSub.LockedView
+                    ( XLocal, tOffset, 0, node.targetSizes[t], numRhs );
+                    for( int s=0; s<8; ++s )
+                        if( s < s_start || s>=s_end )
+                            node.Child(t,s).TransposeMultiplyDensePrecompute
+                            ( nodeContext.Child(t,s),
+                              alpha, XLocalSub, YLocalSub );
+                }
             }
             else
             {
                 Dense<Scalar> XLocalSub;
-                for( int t=t_start,tOffset=0; t<t_end;                   
-                     tOffset+=node.targetSizes[t],++t )                     
-                {                                                           
-                    XLocalSub.LockedView                                    
-                    ( XLocal, tOffset, 0, node.targetSizes[t], numRhs );    
-                    for( int s=0; s<8; ++s )                                
-                        node.Child(t,s).TransposeMultiplyDensePrecompute             
-                        ( nodeContext.Child(t,s),                           
-                          alpha, XLocalSub, YLocal );                       
-                }                                                           
+                for( int t=t_start,tOffset=0; t<t_end;
+                     tOffset+=node.targetSizes[t],++t )
+                {
+                    XLocalSub.LockedView
+                    ( XLocal, tOffset, 0, node.targetSizes[t], numRhs );
+                    for( int s=0; s<8; ++s )
+                        node.Child(t,s).TransposeMultiplyDensePrecompute
+                        ( nodeContext.Child(t,s),
+                          alpha, XLocalSub, YLocal );
+                }
             }
         }
         break;
     }
     case SPLIT_NODE:
     {
-        typename MultiplyDenseContext::SplitNode& nodeContext = 
+        typename MultiplyDenseContext::SplitNode& nodeContext =
             *context.block.data.SN;
         const Node& node = *block_.data.N;
         Dense<Scalar> XLocalSub;
@@ -569,7 +569,7 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::AdjointMultiplyDensePrecompute
 ( MultiplyDenseContext& context,
-  Scalar alpha, const Dense<Scalar>& XLocal, 
+  Scalar alpha, const Dense<Scalar>& XLocal,
                       Dense<Scalar>& YLocal ) const
 {
 #ifndef RELEASE
@@ -583,7 +583,7 @@ DistHMat3d<Scalar>::AdjointMultiplyDensePrecompute
     {
     case DIST_NODE:
     {
-        typename MultiplyDenseContext::DistNode& nodeContext = 
+        typename MultiplyDenseContext::DistNode& nodeContext =
             *context.block.data.DN;
         const Node& node = *block_.data.N;
 
@@ -620,55 +620,55 @@ DistHMat3d<Scalar>::AdjointMultiplyDensePrecompute
                 Dense<Scalar> XLocalSub, YLocalSub;
 
                 //Take care of the diagonal block
-                for( int t=t_start,tOffset=0; t<t_end; 
-                     tOffset+=node.targetSizes[t],++t )                         
-                {                                                               
-                    XLocalSub.LockedView                                              
-                    ( XLocal, tOffset, 0, node.targetSizes[t], numRhs );        
-                    for( int s=s_start,sOffset=0; s<s_end;                      
-                         sOffset+=node.sourceSizes[s],++s )                     
-                    {                                                           
-                        YLocalSub.View                                    
-                        ( YLocal, sOffset, 0, node.sourceSizes[s], numRhs );    
-                        node.Child(t,s).AdjointMultiplyDensePrecompute                 
-                        ( nodeContext.Child(t,s),                               
-                          alpha, XLocalSub, YLocalSub );                        
-                    }                                                           
-                }                                                               
-                // Take care of the non-diagonal block                            
-                YLocalSub.View( YLocal, 0, 0, 0, numRhs );                      
-                for( int t=t_start,tOffset=0; t<t_end;                          
-                     tOffset+=node.targetSizes[t],++t )                         
-                {                                                               
-                    XLocalSub.LockedView                                        
-                    ( XLocal, tOffset, 0, node.targetSizes[t], numRhs );        
-                    for( int s=0; s<8; ++s )                                    
-                        if( s < s_start || s>=s_end )                           
-                            node.Child(t,s).AdjointMultiplyDensePrecompute                 
-                            ( nodeContext.Child(t,s),                               
-                              alpha, XLocalSub, YLocalSub );                        
-                }                                                               
+                for( int t=t_start,tOffset=0; t<t_end;
+                     tOffset+=node.targetSizes[t],++t )
+                {
+                    XLocalSub.LockedView
+                    ( XLocal, tOffset, 0, node.targetSizes[t], numRhs );
+                    for( int s=s_start,sOffset=0; s<s_end;
+                         sOffset+=node.sourceSizes[s],++s )
+                    {
+                        YLocalSub.View
+                        ( YLocal, sOffset, 0, node.sourceSizes[s], numRhs );
+                        node.Child(t,s).AdjointMultiplyDensePrecompute
+                        ( nodeContext.Child(t,s),
+                          alpha, XLocalSub, YLocalSub );
+                    }
+                }
+                // Take care of the non-diagonal block
+                YLocalSub.View( YLocal, 0, 0, 0, numRhs );
+                for( int t=t_start,tOffset=0; t<t_end;
+                     tOffset+=node.targetSizes[t],++t )
+                {
+                    XLocalSub.LockedView
+                    ( XLocal, tOffset, 0, node.targetSizes[t], numRhs );
+                    for( int s=0; s<8; ++s )
+                        if( s < s_start || s>=s_end )
+                            node.Child(t,s).AdjointMultiplyDensePrecompute
+                            ( nodeContext.Child(t,s),
+                              alpha, XLocalSub, YLocalSub );
+                }
             }
             else
             {
                 Dense<Scalar> XLocalSub;
-                for( int t=t_start,tOffset=0; t<t_end;                   
-                     tOffset+=node.targetSizes[t],++t )                     
-                {                                                           
-                    XLocalSub.LockedView                                    
-                    ( XLocal, tOffset, 0, node.targetSizes[t], numRhs );    
-                    for( int s=0; s<8; ++s )                                
-                        node.Child(t,s).AdjointMultiplyDensePrecompute             
-                        ( nodeContext.Child(t,s),                           
-                          alpha, XLocalSub, YLocal );                       
-                }                                                           
+                for( int t=t_start,tOffset=0; t<t_end;
+                     tOffset+=node.targetSizes[t],++t )
+                {
+                    XLocalSub.LockedView
+                    ( XLocal, tOffset, 0, node.targetSizes[t], numRhs );
+                    for( int s=0; s<8; ++s )
+                        node.Child(t,s).AdjointMultiplyDensePrecompute
+                        ( nodeContext.Child(t,s),
+                          alpha, XLocalSub, YLocal );
+                }
             }
         }
         break;
     }
     case SPLIT_NODE:
     {
-        typename MultiplyDenseContext::SplitNode& nodeContext = 
+        typename MultiplyDenseContext::SplitNode& nodeContext =
             *context.block.data.SN;
         const Node& node = *block_.data.N;
         Dense<Scalar> XLocalSub;
@@ -747,7 +747,7 @@ DistHMat3d<Scalar>::MultiplyDenseSums
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyDenseSums");
 #endif
-    // Compute the message sizes for each reduce 
+    // Compute the message sizes for each reduce
     const int numLevels = teams_->NumLevels();
     const int numReduces = numLevels-1;
     if( numReduces == 0 )
@@ -783,7 +783,7 @@ DistHMat3d<Scalar>::TransposeMultiplyDenseSums
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::TransposeMultiplyDenseSums");
 #endif
-    // Compute the message sizes for each reduce 
+    // Compute the message sizes for each reduce
     const int numLevels = teams_->NumLevels();
     const int numReduces = numLevels-1;
     Vector<int> sizes( numReduces, 0 );
@@ -834,7 +834,7 @@ DistHMat3d<Scalar>::MultiplyDenseSumsCount
     {
     case DIST_NODE:
     {
-        // We can avoid passing the child contexts because the data we 
+        // We can avoid passing the child contexts because the data we
         // want is invariant
         const Node& node = *block_.data.N;
         for( int t=0; t<8; ++t )
@@ -883,7 +883,7 @@ DistHMat3d<Scalar>::TransposeMultiplyDenseSumsCount
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyDenseSumsPack
-( const MultiplyDenseContext& context, 
+( const MultiplyDenseContext& context,
   Vector<Scalar>& buffer, Vector<int>& offsets ) const
 {
 #ifndef RELEASE
@@ -898,7 +898,7 @@ DistHMat3d<Scalar>::MultiplyDenseSumsPack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        const typename MultiplyDenseContext::DistNode& nodeContext = 
+        const typename MultiplyDenseContext::DistNode& nodeContext =
             *context.block.data.DN;
         for( int t=0; t<8; ++t )
             for( int s=0; s<8; ++s )
@@ -944,7 +944,7 @@ DistHMat3d<Scalar>::TransposeMultiplyDenseSumsPack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        const typename MultiplyDenseContext::DistNode& nodeContext = 
+        const typename MultiplyDenseContext::DistNode& nodeContext =
             *context.block.data.DN;
         for( int t=0; t<8; ++t )
             for( int s=0; s<8; ++s )
@@ -975,7 +975,7 @@ DistHMat3d<Scalar>::TransposeMultiplyDenseSumsPack
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyDenseSumsUnpack
-( MultiplyDenseContext& context, 
+( MultiplyDenseContext& context,
   const Vector<Scalar>& buffer, Vector<int>& offsets ) const
 {
 #ifndef RELEASE
@@ -990,7 +990,7 @@ DistHMat3d<Scalar>::MultiplyDenseSumsUnpack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyDenseContext::DistNode& nodeContext = 
+        typename MultiplyDenseContext::DistNode& nodeContext =
             *context.block.data.DN;
         for( int t=0; t<8; ++t )
             for( int s=0; s<8; ++s )
@@ -1008,7 +1008,7 @@ DistHMat3d<Scalar>::MultiplyDenseSumsUnpack
         {
             if( Z.Height() == Z.LDim() )
                 MemCopy
-                ( Z.Buffer(), &buffer[offsets[level_]], 
+                ( Z.Buffer(), &buffer[offsets[level_]],
                   DF.rank*numRhs );
             else if( DF.rank > 0 )
                 for( int j=0; j<numRhs; ++j )
@@ -1042,7 +1042,7 @@ DistHMat3d<Scalar>::TransposeMultiplyDenseSumsUnpack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyDenseContext::DistNode& nodeContext = 
+        typename MultiplyDenseContext::DistNode& nodeContext =
             *context.block.data.DN;
         for( int t=0; t<8; ++t )
             for( int s=0; s<8; ++s )
@@ -1135,7 +1135,7 @@ DistHMat3d<Scalar>::MultiplyDensePassData
     // Unpack as soon as we have received our data
     mpi::WaitAll( numRecvs, &recvRequests[0] );
     MultiplyDensePassDataUnpack( context, recvBuffer, recvOffsets );
-    
+
     // Don't exit until we know that the data was sent
     mpi::WaitAll( numSends, &sendRequests[0] );
 }
@@ -1219,7 +1219,7 @@ DistHMat3d<Scalar>::MultiplyDensePassDataPack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyDenseContext::DistNode& nodeContext = 
+        typename MultiplyDenseContext::DistNode& nodeContext =
             *context.block.data.DN;
         for( int t=0; t<8; ++t )
             for( int s=0; s<8; ++s )
@@ -1230,7 +1230,7 @@ DistHMat3d<Scalar>::MultiplyDensePassDataPack
     case SPLIT_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyDenseContext::SplitNode& nodeContext = 
+        typename MultiplyDenseContext::SplitNode& nodeContext =
             *context.block.data.SN;
         for( int t=0; t<8; ++t )
             for( int s=0; s<8; ++s )
@@ -1324,7 +1324,7 @@ DistHMat3d<Scalar>::MultiplyDensePassDataUnpack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyDenseContext::DistNode& nodeContext = 
+        typename MultiplyDenseContext::DistNode& nodeContext =
             *context.block.data.DN;
         for( int t=0; t<8; ++t )
             for( int s=0; s<8; ++s )
@@ -1335,7 +1335,7 @@ DistHMat3d<Scalar>::MultiplyDensePassDataUnpack
     case SPLIT_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyDenseContext::SplitNode& nodeContext = 
+        typename MultiplyDenseContext::SplitNode& nodeContext =
             *context.block.data.SN;
         for( int t=0; t<8; ++t )
             for( int s=0; s<8; ++s )
@@ -1457,7 +1457,7 @@ DistHMat3d<Scalar>::TransposeMultiplyDensePassData
     // Unpack as soon as we have received our data
     mpi::WaitAll( numRecvs, &recvRequests[0] );
     TransposeMultiplyDensePassDataUnpack( context, recvBuffer, recvOffsets );
-    
+
     // Don't exit until we know that the data was sent
     mpi::WaitAll( numSends, &sendRequests[0] );
 }
@@ -1541,7 +1541,7 @@ DistHMat3d<Scalar>::TransposeMultiplyDensePassDataPack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyDenseContext::DistNode& nodeContext = 
+        typename MultiplyDenseContext::DistNode& nodeContext =
             *context.block.data.DN;
 
         mpi::Comm team = teams_->Team( level_ );
@@ -1569,22 +1569,22 @@ DistHMat3d<Scalar>::TransposeMultiplyDensePassDataPack
                 t_end = teamRank*4+4;
             }
 
-            for( int t=t_start,tOffset=0; t<t_end;                          
-                 tOffset+=node.targetSizes[t],++t )                            
-            {                                                                  
-                XLocalSub.LockedView                                           
-                ( XLocal, tOffset, 0, node.targetSizes[t], numRhs );           
-                for( int s=0; s<8; ++s )                                       
-                    node.Child(t,s).TransposeMultiplyDensePassDataPack         
-                    ( nodeContext.Child(t,s), XLocalSub, buffer, offsets );    
-            }                                                                  
+            for( int t=t_start,tOffset=0; t<t_end;
+                 tOffset+=node.targetSizes[t],++t )
+            {
+                XLocalSub.LockedView
+                ( XLocal, tOffset, 0, node.targetSizes[t], numRhs );
+                for( int s=0; s<8; ++s )
+                    node.Child(t,s).TransposeMultiplyDensePassDataPack
+                    ( nodeContext.Child(t,s), XLocalSub, buffer, offsets );
+            }
         }
         break;
     }
     case SPLIT_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyDenseContext::SplitNode& nodeContext = 
+        typename MultiplyDenseContext::SplitNode& nodeContext =
             *context.block.data.SN;
         Dense<Scalar> XLocalSub;
         for( int t=0,tOffset=0; t<8; tOffset+=node.targetSizes[t],++t )
@@ -1662,7 +1662,7 @@ DistHMat3d<Scalar>::TransposeMultiplyDensePassDataPack
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::TransposeMultiplyDensePassDataUnpack
-( MultiplyDenseContext& context, 
+( MultiplyDenseContext& context,
   const Vector<Scalar>& buffer, std::map<int,int>& offsets ) const
 {
 #ifndef RELEASE
@@ -1677,7 +1677,7 @@ DistHMat3d<Scalar>::TransposeMultiplyDensePassDataUnpack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyDenseContext::DistNode& nodeContext = 
+        typename MultiplyDenseContext::DistNode& nodeContext =
             *context.block.data.DN;
         for( int t=0; t<8; ++t )
             for( int s=0; s<8; ++s )
@@ -1688,7 +1688,7 @@ DistHMat3d<Scalar>::TransposeMultiplyDensePassDataUnpack
     case SPLIT_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyDenseContext::SplitNode& nodeContext = 
+        typename MultiplyDenseContext::SplitNode& nodeContext =
             *context.block.data.SN;
         for( int t=0; t<8; ++t )
             for( int s=0; s<8; ++s )
@@ -1791,7 +1791,7 @@ DistHMat3d<Scalar>::MultiplyDenseBroadcasts
     // Perform the broadcasts with log2(p) messages
     teams_->TreeBroadcasts( buffer, sizes );
 
-    // Unpack the broadcasted buffers 
+    // Unpack the broadcasted buffers
     MultiplyDenseBroadcastsUnpack( context, buffer, offsets );
 }
 
@@ -1824,7 +1824,7 @@ DistHMat3d<Scalar>::TransposeMultiplyDenseBroadcasts
     // Perform the broadcasts with log2(p) messages
     teams_->TreeBroadcasts( buffer, sizes );
 
-    // Unpack the broadcasted buffers 
+    // Unpack the broadcasted buffers
     TransposeMultiplyDenseBroadcastsUnpack( context, buffer, offsets );
 }
 
@@ -1917,12 +1917,12 @@ DistHMat3d<Scalar>::MultiplyDenseBroadcastsPack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        const typename MultiplyDenseContext::DistNode& nodeContext = 
+        const typename MultiplyDenseContext::DistNode& nodeContext =
             *context.block.data.DN;
         for( int t=0; t<8; ++t )
             for( int s=0; s<8; ++s )
                 node.Child(t,s).MultiplyDenseBroadcastsPack
-                ( nodeContext.Child(t,s), buffer, offsets ); 
+                ( nodeContext.Child(t,s), buffer, offsets );
         break;
     }
     case DIST_LOW_RANK:
@@ -1966,7 +1966,7 @@ DistHMat3d<Scalar>::TransposeMultiplyDenseBroadcastsPack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        const typename MultiplyDenseContext::DistNode& nodeContext = 
+        const typename MultiplyDenseContext::DistNode& nodeContext =
             *context.block.data.DN;
         for( int t=0; t<8; ++t )
             for( int s=0; s<8; ++s )
@@ -2011,7 +2011,7 @@ DistHMat3d<Scalar>::MultiplyDenseBroadcastsUnpack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyDenseContext::DistNode& nodeContext = 
+        typename MultiplyDenseContext::DistNode& nodeContext =
             *context.block.data.DN;
         for( int t=0; t<8; ++t )
             for( int s=0; s<8; ++s )
@@ -2055,7 +2055,7 @@ DistHMat3d<Scalar>::TransposeMultiplyDenseBroadcastsUnpack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyDenseContext::DistNode& nodeContext = 
+        typename MultiplyDenseContext::DistNode& nodeContext =
             *context.block.data.DN;
         for( int t=0; t<8; ++t )
             for( int s=0; s<8; ++s )
@@ -2085,7 +2085,7 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyDensePostcompute
 ( MultiplyDenseContext& context,
-  Scalar alpha, const Dense<Scalar>& XLocal, 
+  Scalar alpha, const Dense<Scalar>& XLocal,
                       Dense<Scalar>& YLocal ) const
 {
 #ifndef RELEASE
@@ -2100,7 +2100,7 @@ DistHMat3d<Scalar>::MultiplyDensePostcompute
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyDenseContext::DistNode& nodeContext = 
+        typename MultiplyDenseContext::DistNode& nodeContext =
             *context.block.data.DN;
 
         mpi::Comm team = teams_->Team( level_ );
@@ -2134,50 +2134,50 @@ DistHMat3d<Scalar>::MultiplyDensePostcompute
             {
                 // Split XLocal and YLocal
                 Dense<Scalar> XLocalSub, YLocalSub;
-                // Take care of the diagonal block                           
-                for( int t=t_start,tOffset=0; t<t_end;                          
-                     tOffset+=node.targetSizes[t],++t )                         
-                {                                                               
-                    YLocalSub.View                                              
-                    ( YLocal, tOffset, 0, node.targetSizes[t], numRhs );        
-                    for( int s=s_start,sOffset=0; s<s_end;                      
-                         sOffset+=node.sourceSizes[s],++s )                     
-                    {                                                           
-                        XLocalSub.LockedView                                    
-                        ( XLocal, sOffset, 0, node.sourceSizes[s], numRhs );    
-                        node.Child(t,s).MultiplyDensePostcompute                
-                        ( nodeContext.Child(t,s),                               
-                          alpha, XLocalSub, YLocalSub );                        
-                    }                                                           
-                }                                                               
-                // Take care of the non-diagonal block                          
-                XLocalSub.LockedView( XLocal, 0, 0, 0, numRhs );                
-                for( int t=t_start,tOffset=0; t<t_end;                          
-                     tOffset+=node.targetSizes[t],++t )                         
-                {                                                               
-                    YLocalSub.View                                              
-                    ( YLocal, tOffset, 0, node.targetSizes[t], numRhs );        
-                    for( int s=0; s<8; ++s )                                    
-                        if( s<s_start || s>=s_end )                             
-                            node.Child(t,s).MultiplyDensePostcompute            
-                            ( nodeContext.Child(t,s),                           
-                              alpha, XLocalSub, YLocalSub );                    
-                }                                                               
+                // Take care of the diagonal block
+                for( int t=t_start,tOffset=0; t<t_end;
+                     tOffset+=node.targetSizes[t],++t )
+                {
+                    YLocalSub.View
+                    ( YLocal, tOffset, 0, node.targetSizes[t], numRhs );
+                    for( int s=s_start,sOffset=0; s<s_end;
+                         sOffset+=node.sourceSizes[s],++s )
+                    {
+                        XLocalSub.LockedView
+                        ( XLocal, sOffset, 0, node.sourceSizes[s], numRhs );
+                        node.Child(t,s).MultiplyDensePostcompute
+                        ( nodeContext.Child(t,s),
+                          alpha, XLocalSub, YLocalSub );
+                    }
+                }
+                // Take care of the non-diagonal block
+                XLocalSub.LockedView( XLocal, 0, 0, 0, numRhs );
+                for( int t=t_start,tOffset=0; t<t_end;
+                     tOffset+=node.targetSizes[t],++t )
+                {
+                    YLocalSub.View
+                    ( YLocal, tOffset, 0, node.targetSizes[t], numRhs );
+                    for( int s=0; s<8; ++s )
+                        if( s<s_start || s>=s_end )
+                            node.Child(t,s).MultiplyDensePostcompute
+                            ( nodeContext.Child(t,s),
+                              alpha, XLocalSub, YLocalSub );
+                }
             }
             else
             {
                 // Only split YLocal
                 Dense<Scalar> YLocalSub;
-                for( int t=t_start,tOffset=0; t<t_end;                   
-                     tOffset+=node.targetSizes[t],++t )                     
-                {                                                           
-                    YLocalSub.View                                          
-                    ( YLocal, tOffset, 0, node.targetSizes[t], numRhs );    
-                    for( int s=0; s<8; ++s )                                
-                        node.Child(t,s).MultiplyDensePostcompute            
-                        ( nodeContext.Child(t,s),                           
-                          alpha, XLocal, YLocalSub );                       
-                }                                                           
+                for( int t=t_start,tOffset=0; t<t_end;
+                     tOffset+=node.targetSizes[t],++t )
+                {
+                    YLocalSub.View
+                    ( YLocal, tOffset, 0, node.targetSizes[t], numRhs );
+                    for( int s=0; s<8; ++s )
+                        node.Child(t,s).MultiplyDensePostcompute
+                        ( nodeContext.Child(t,s),
+                          alpha, XLocal, YLocalSub );
+                }
             }
         }
         break;
@@ -2185,7 +2185,7 @@ DistHMat3d<Scalar>::MultiplyDensePostcompute
     case SPLIT_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyDenseContext::SplitNode& nodeContext = 
+        typename MultiplyDenseContext::SplitNode& nodeContext =
             *context.block.data.SN;
         Dense<Scalar> YLocalSub;
         for( int t=0,tOffset=0; t<8; tOffset+=node.targetSizes[t],++t )
@@ -2200,7 +2200,7 @@ DistHMat3d<Scalar>::MultiplyDensePostcompute
     }
     case DIST_LOW_RANK:
     {
-        // YLocal += ULocal Z 
+        // YLocal += ULocal Z
         const DistLowRank& DF = *block_.data.DF;
         if( DF.rank != 0 )
         {
@@ -2244,7 +2244,7 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::TransposeMultiplyDensePostcompute
 ( MultiplyDenseContext& context,
-  Scalar alpha, const Dense<Scalar>& XLocal, 
+  Scalar alpha, const Dense<Scalar>& XLocal,
                       Dense<Scalar>& YLocal ) const
 {
 #ifndef RELEASE
@@ -2259,7 +2259,7 @@ DistHMat3d<Scalar>::TransposeMultiplyDensePostcompute
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyDenseContext::DistNode& nodeContext = 
+        typename MultiplyDenseContext::DistNode& nodeContext =
             *context.block.data.DN;
         mpi::Comm team = teams_->Team( level_ );
         const int teamSize = mpi::CommSize( team );
@@ -2292,50 +2292,50 @@ DistHMat3d<Scalar>::TransposeMultiplyDensePostcompute
             {
                 // Split XLocal and YLocal
                 Dense<Scalar> XLocalSub, YLocalSub;
-                // Take care of the diagonal block                            
-                for( int s=s_start,sOffset=0; s<s_end;                           
-                     sOffset+=node.sourceSizes[s],++s )                          
-                {                                                                
-                    YLocalSub.View                                               
-                    ( YLocal, sOffset, 0, node.sourceSizes[s], numRhs );         
-                    for( int t=t_start,tOffset=0; t<t_end;                       
-                         tOffset+=node.targetSizes[t],++t )                      
-                    {                                                            
-                        XLocalSub.LockedView                                     
-                        ( XLocal, tOffset, 0, node.targetSizes[t], numRhs );     
-                        node.Child(t,s).TransposeMultiplyDensePostcompute        
-                        ( nodeContext.Child(t,s),                                
-                          alpha, XLocalSub, YLocalSub );                         
-                    }                                                            
-                }                                                                
-                // Take care of the lower left block                             
-                XLocalSub.LockedView( XLocal, 0, 0, 0, numRhs );                 
-                for( int s=s_start,sOffset=0; s<s_end;                           
-                     sOffset+=node.sourceSizes[s],++s )                          
-                {                                                                
-                    YLocalSub.View                                               
-                    ( YLocal, sOffset, 0, node.sourceSizes[s], numRhs );         
-                    for( int t=0; t<8; ++t )                                     
-                        if( t<t_start || t>=t_end)                               
-                            node.Child(t,s).TransposeMultiplyDensePostcompute    
-                            ( nodeContext.Child(t,s),                            
-                              alpha, XLocalSub, YLocalSub );                     
-                }                                                                
+                // Take care of the diagonal block
+                for( int s=s_start,sOffset=0; s<s_end;
+                     sOffset+=node.sourceSizes[s],++s )
+                {
+                    YLocalSub.View
+                    ( YLocal, sOffset, 0, node.sourceSizes[s], numRhs );
+                    for( int t=t_start,tOffset=0; t<t_end;
+                         tOffset+=node.targetSizes[t],++t )
+                    {
+                        XLocalSub.LockedView
+                        ( XLocal, tOffset, 0, node.targetSizes[t], numRhs );
+                        node.Child(t,s).TransposeMultiplyDensePostcompute
+                        ( nodeContext.Child(t,s),
+                          alpha, XLocalSub, YLocalSub );
+                    }
+                }
+                // Take care of the lower left block
+                XLocalSub.LockedView( XLocal, 0, 0, 0, numRhs );
+                for( int s=s_start,sOffset=0; s<s_end;
+                     sOffset+=node.sourceSizes[s],++s )
+                {
+                    YLocalSub.View
+                    ( YLocal, sOffset, 0, node.sourceSizes[s], numRhs );
+                    for( int t=0; t<8; ++t )
+                        if( t<t_start || t>=t_end)
+                            node.Child(t,s).TransposeMultiplyDensePostcompute
+                            ( nodeContext.Child(t,s),
+                              alpha, XLocalSub, YLocalSub );
+                }
             }
             else
             {
                 // Only split YLocal
                 Dense<Scalar> YLocalSub;
-                for( int s=s_start,sOffset=0; s<s_end;                    
-                     sOffset+=node.sourceSizes[s],++s )                      
-                {                                                            
-                    YLocalSub.View                                           
-                    ( YLocal, sOffset, 0, node.sourceSizes[s], numRhs );     
-                    for( int t=0; t<8; ++t )                                 
-                        node.Child(t,s).TransposeMultiplyDensePostcompute    
-                        ( nodeContext.Child(t,s),                            
-                          alpha, XLocal, YLocalSub );                        
-                }                                                            
+                for( int s=s_start,sOffset=0; s<s_end;
+                     sOffset+=node.sourceSizes[s],++s )
+                {
+                    YLocalSub.View
+                    ( YLocal, sOffset, 0, node.sourceSizes[s], numRhs );
+                    for( int t=0; t<8; ++t )
+                        node.Child(t,s).TransposeMultiplyDensePostcompute
+                        ( nodeContext.Child(t,s),
+                          alpha, XLocal, YLocalSub );
+                }
             }
         }
         break;
@@ -2358,7 +2358,7 @@ DistHMat3d<Scalar>::TransposeMultiplyDensePostcompute
     }
     case DIST_LOW_RANK:
     {
-        // YLocal += (VLocal^[T/H])^T Z 
+        // YLocal += (VLocal^[T/H])^T Z
         const DistLowRank& DF = *block_.data.DF;
         if( DF.rank != 0 )
         {
@@ -2411,7 +2411,7 @@ DistHMat3d<Scalar>::AdjointMultiplyDensePostcompute
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyDenseContext::DistNode& nodeContext = 
+        typename MultiplyDenseContext::DistNode& nodeContext =
             *context.block.data.DN;
 
         mpi::Comm team = teams_->Team( level_ );
@@ -2445,50 +2445,50 @@ DistHMat3d<Scalar>::AdjointMultiplyDensePostcompute
             {
                 // Split XLocal and YLocal
                 Dense<Scalar> XLocalSub, YLocalSub;
-                // Take care of the diagonal block                           
-                for( int s=s_start,sOffset=0; s<s_end;                          
-                     sOffset+=node.sourceSizes[s],++s )                         
-                {                                                               
-                    YLocalSub.View                                              
-                    ( YLocal, sOffset, 0, node.sourceSizes[s], numRhs );        
-                    for( int t=t_start,tOffset=0; t<t_end;                      
-                         tOffset+=node.targetSizes[t],++t )                     
-                    {                                                           
-                        XLocalSub.LockedView                                    
-                        ( XLocal, tOffset, 0, node.targetSizes[t], numRhs );    
-                        node.Child(t,s).AdjointMultiplyDensePostcompute         
-                        ( nodeContext.Child(t,s),                               
-                          alpha, XLocalSub, YLocalSub );                        
-                    }                                                           
-                }                                                               
-                // Take care of the non-diagonal block                          
-                XLocalSub.LockedView( XLocal, 0, 0, 0, numRhs );                
-                for( int s=s_start,sOffset=0; s<s_end;                          
-                     sOffset+=node.sourceSizes[s],++s )                         
-                {                                                               
-                    YLocalSub.View                                              
-                    ( YLocal, sOffset, 0, node.sourceSizes[s], numRhs );        
-                    for( int t=0; t<8; ++t )                                    
-                        if( t<t_start || t>=t_end )                             
-                            node.Child(t,s).AdjointMultiplyDensePostcompute     
-                            ( nodeContext.Child(t,s),                           
-                              alpha, XLocalSub, YLocalSub );                    
-                }                                                               
+                // Take care of the diagonal block
+                for( int s=s_start,sOffset=0; s<s_end;
+                     sOffset+=node.sourceSizes[s],++s )
+                {
+                    YLocalSub.View
+                    ( YLocal, sOffset, 0, node.sourceSizes[s], numRhs );
+                    for( int t=t_start,tOffset=0; t<t_end;
+                         tOffset+=node.targetSizes[t],++t )
+                    {
+                        XLocalSub.LockedView
+                        ( XLocal, tOffset, 0, node.targetSizes[t], numRhs );
+                        node.Child(t,s).AdjointMultiplyDensePostcompute
+                        ( nodeContext.Child(t,s),
+                          alpha, XLocalSub, YLocalSub );
+                    }
+                }
+                // Take care of the non-diagonal block
+                XLocalSub.LockedView( XLocal, 0, 0, 0, numRhs );
+                for( int s=s_start,sOffset=0; s<s_end;
+                     sOffset+=node.sourceSizes[s],++s )
+                {
+                    YLocalSub.View
+                    ( YLocal, sOffset, 0, node.sourceSizes[s], numRhs );
+                    for( int t=0; t<8; ++t )
+                        if( t<t_start || t>=t_end )
+                            node.Child(t,s).AdjointMultiplyDensePostcompute
+                            ( nodeContext.Child(t,s),
+                              alpha, XLocalSub, YLocalSub );
+                }
             }
             else
             {
                 // Only split YLocal
                 Dense<Scalar> YLocalSub;
-                for( int s=s_start,sOffset=0; s<s_end;                   
-                     sOffset+=node.sourceSizes[s],++s )                     
-                {                                                           
-                    YLocalSub.View                                          
-                    ( YLocal, sOffset, 0, node.sourceSizes[s], numRhs );    
-                    for( int t=0; t<8; ++t )                                
-                        node.Child(t,s).AdjointMultiplyDensePostcompute     
-                        ( nodeContext.Child(t,s),                           
-                          alpha, XLocal, YLocalSub );                       
-                }                                                           
+                for( int s=s_start,sOffset=0; s<s_end;
+                     sOffset+=node.sourceSizes[s],++s )
+                {
+                    YLocalSub.View
+                    ( YLocal, sOffset, 0, node.sourceSizes[s], numRhs );
+                    for( int t=0; t<8; ++t )
+                        node.Child(t,s).AdjointMultiplyDensePostcompute
+                        ( nodeContext.Child(t,s),
+                          alpha, XLocal, YLocalSub );
+                }
             }
         }
         break;

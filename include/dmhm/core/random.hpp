@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -15,18 +15,18 @@
 namespace dmhm {
 
 // C++98 does not have 64-bit integer support. We instead store each 16-bits
-// as a 32-bit unsigned integer in order to allow for multiplication and 
+// as a 32-bit unsigned integer in order to allow for multiplication and
 // addition without overflow.
 typedef unsigned UInt32;
-struct UInt64 
-{ 
-    UInt32 d[2]; 
+struct UInt64
+{
+    UInt32 d[2];
     UInt32& operator[]( int i ) { return d[i]; }
     const UInt32& operator[]( int i ) const { return d[i]; }
 };
-struct ExpandedUInt64 
-{ 
-    UInt32 d[4]; 
+struct ExpandedUInt64
+{
+    UInt32 d[4];
     UInt32& operator[]( int i ) { return d[i]; }
     const UInt32& operator[]( int i ) const { return d[i]; }
 };
@@ -161,17 +161,17 @@ CarryUpper16Bits( ExpandedUInt64& c )
 // where a_j, b_j < 2^16.
 //
 // Then,
-// a b = 
-//   2^96 ( a3 b3 ) + 
-//   2^80 ( a3 b2 + b3 a2 ) + 
+// a b =
+//   2^96 ( a3 b3 ) +
+//   2^80 ( a3 b2 + b3 a2 ) +
 //   2^64 ( a3 b1 + a2 b2 + a1 b3 ) +
 //   2^48 ( a3 b0 + a2 b1 + a1 b2 + a0 b3 ) +
-//   2^32 ( a2 b0 + a1 b1 + a0 b2 ) + 
+//   2^32 ( a2 b0 + a1 b1 + a0 b2 ) +
 //   2^16 ( a1 b0 + a0 b1 ) +
 //   2^0  ( a0 b0 )
 //
 // Since c := a b (mod 2^64), only the last four terms must be computed.
-inline ExpandedUInt64 
+inline ExpandedUInt64
 MultiplyWith64BitMod( ExpandedUInt64 a, ExpandedUInt64 b )
 {
     UInt32 temp;
@@ -215,7 +215,7 @@ MultiplyWith64BitMod( ExpandedUInt64 a, ExpandedUInt64 b )
     return c;
 }
 
-inline ExpandedUInt64 
+inline ExpandedUInt64
 AddWith64BitMod( ExpandedUInt64 a, ExpandedUInt64 b )
 {
     ExpandedUInt64 c;

@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -12,7 +12,7 @@ namespace dmhm {
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::Multiply
-( Scalar alpha, const Dense<Scalar>& XLocal, 
+( Scalar alpha, const Dense<Scalar>& XLocal,
                       Dense<Scalar>& YLocal ) const
 {
 #ifndef RELEASE
@@ -26,7 +26,7 @@ DistHMat2d<Scalar>::Multiply
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::TransposeMultiply
-( Scalar alpha, const Dense<Scalar>& XLocal, 
+( Scalar alpha, const Dense<Scalar>& XLocal,
                       Dense<Scalar>& YLocal ) const
 {
 #ifndef RELEASE
@@ -40,7 +40,7 @@ DistHMat2d<Scalar>::TransposeMultiply
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::AdjointMultiply
-( Scalar alpha, const Dense<Scalar>& XLocal, 
+( Scalar alpha, const Dense<Scalar>& XLocal,
                       Dense<Scalar>& YLocal ) const
 {
 #ifndef RELEASE
@@ -54,7 +54,7 @@ DistHMat2d<Scalar>::AdjointMultiply
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::Multiply
-( Scalar alpha, const Dense<Scalar>& XLocal, 
+( Scalar alpha, const Dense<Scalar>& XLocal,
   Scalar beta,        Dense<Scalar>& YLocal ) const
 {
 #ifndef RELEASE
@@ -76,7 +76,7 @@ DistHMat2d<Scalar>::Multiply
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::TransposeMultiply
-( Scalar alpha, const Dense<Scalar>& XLocal, 
+( Scalar alpha, const Dense<Scalar>& XLocal,
   Scalar beta,        Dense<Scalar>& YLocal ) const
 {
 #ifndef RELEASE
@@ -101,7 +101,7 @@ DistHMat2d<Scalar>::TransposeMultiply
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::AdjointMultiply
-( Scalar alpha, const Dense<Scalar>& XLocal, 
+( Scalar alpha, const Dense<Scalar>& XLocal,
   Scalar beta,        Dense<Scalar>& YLocal ) const
 {
 #ifndef RELEASE
@@ -144,7 +144,7 @@ DistHMat2d<Scalar>::MultiplyDenseInitialize
         context.block.type = DIST_NODE;
         context.block.data.DN = new typename MultiplyDenseContext::DistNode;
 
-        typename MultiplyDenseContext::DistNode& nodeContext = 
+        typename MultiplyDenseContext::DistNode& nodeContext =
             *context.block.data.DN;
         const Node& node = *block_.data.N;
         for( int t=0; t<4; ++t )
@@ -158,7 +158,7 @@ DistHMat2d<Scalar>::MultiplyDenseInitialize
         context.block.type = SPLIT_NODE;
         context.block.data.SN = new typename MultiplyDenseContext::SplitNode;
 
-        typename MultiplyDenseContext::SplitNode& nodeContext = 
+        typename MultiplyDenseContext::SplitNode& nodeContext =
             *context.block.data.SN;
         const Node& node = *block_.data.N;
         for( int t=0; t<4; ++t )
@@ -213,7 +213,7 @@ template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyDensePrecompute
 ( MultiplyDenseContext& context,
-  Scalar alpha, const Dense<Scalar>& XLocal, 
+  Scalar alpha, const Dense<Scalar>& XLocal,
                       Dense<Scalar>& YLocal ) const
 {
 #ifndef RELEASE
@@ -227,7 +227,7 @@ DistHMat2d<Scalar>::MultiplyDensePrecompute
     {
     case DIST_NODE:
     {
-        typename MultiplyDenseContext::DistNode& nodeContext = 
+        typename MultiplyDenseContext::DistNode& nodeContext =
             *context.block.data.DN;
         const Node& node = *block_.data.N;
 
@@ -249,56 +249,56 @@ DistHMat2d<Scalar>::MultiplyDensePrecompute
                 Dense<Scalar> XLocalSub, YLocalSub;
                 if( teamRank == 0 )
                 {
-                    // Take care of the upper left block 
-                    for( int t=0,tOffset=0; t<2; 
+                    // Take care of the upper left block
+                    for( int t=0,tOffset=0; t<2;
                          tOffset+=node.targetSizes[t],++t )
                     {
                         YLocalSub.View
                         ( YLocal, tOffset, 0, node.targetSizes[t], numRhs );
-                        for( int s=0,sOffset=0; s<2; 
+                        for( int s=0,sOffset=0; s<2;
                              sOffset+=node.sourceSizes[s],++s )
                         {
                             XLocalSub.LockedView
                             ( XLocal, sOffset, 0, node.sourceSizes[s], numRhs );
                             node.Child(t,s).MultiplyDensePrecompute
-                            ( nodeContext.Child(t,s), 
+                            ( nodeContext.Child(t,s),
                               alpha, XLocalSub, YLocalSub );
                         }
                     }
                     // Take care of the lower-left block
                     YLocalSub.View( YLocal, 0, 0, 0, numRhs );
-                    for( int s=0,sOffset=0; s<2; 
+                    for( int s=0,sOffset=0; s<2;
                          sOffset+=node.sourceSizes[s],++s )
                     {
                         XLocalSub.LockedView
                         ( XLocal, sOffset, 0, node.sourceSizes[s], numRhs );
                         for( int t=2; t<4; ++t )
                             node.Child(t,s).MultiplyDensePrecompute
-                            ( nodeContext.Child(t,s), 
+                            ( nodeContext.Child(t,s),
                               alpha, XLocalSub, YLocalSub );
                     }
                 }
                 else // teamRank == 1
                 {
                     // Bottom-right block
-                    for( int t=2,tOffset=0; t<4; 
+                    for( int t=2,tOffset=0; t<4;
                          tOffset+=node.targetSizes[t],++t )
                     {
                         YLocalSub.View
                         ( YLocal, tOffset, 0, node.targetSizes[t], numRhs );
-                        for( int s=2,sOffset=0; s<4; 
+                        for( int s=2,sOffset=0; s<4;
                              sOffset+=node.sourceSizes[s],++s )
                         {
                             XLocalSub.LockedView
                             ( XLocal, sOffset, 0, node.sourceSizes[s], numRhs );
                             node.Child(t,s).MultiplyDensePrecompute
-                            ( nodeContext.Child(t,s), 
+                            ( nodeContext.Child(t,s),
                               alpha, XLocalSub, YLocalSub );
                         }
                     }
                     // Upper-right block
                     YLocalSub.View( YLocal, 0, 0, 0, numRhs );
-                    for( int s=2,sOffset=0; s<4; 
+                    for( int s=2,sOffset=0; s<4;
                          sOffset+=node.sourceSizes[s],++s )
                     {
                         XLocalSub.LockedView
@@ -317,21 +317,21 @@ DistHMat2d<Scalar>::MultiplyDensePrecompute
                 if( teamRank == 0 )
                 {
                     // Take care of the left half
-                    for( int s=0,sOffset=0; s<2; 
+                    for( int s=0,sOffset=0; s<2;
                          sOffset+=node.sourceSizes[s],++s )
                     {
                         XLocalSub.LockedView
                         ( XLocal, sOffset, 0, node.sourceSizes[s], numRhs );
                         for( int t=0; t<4; ++t )
                             node.Child(t,s).MultiplyDensePrecompute
-                            ( nodeContext.Child(t,s), 
+                            ( nodeContext.Child(t,s),
                               alpha, XLocalSub, YLocal );
                     }
                 }
                 else // teamRank == 1
                 {
                     // Take care of the right half
-                    for( int s=2,sOffset=0; s<4; 
+                    for( int s=2,sOffset=0; s<4;
                          sOffset+=node.sourceSizes[s],++s )
                     {
                         XLocalSub.LockedView
@@ -348,7 +348,7 @@ DistHMat2d<Scalar>::MultiplyDensePrecompute
     }
     case SPLIT_NODE:
     {
-        typename MultiplyDenseContext::SplitNode& nodeContext = 
+        typename MultiplyDenseContext::SplitNode& nodeContext =
             *context.block.data.SN;
         const Node& node = *block_.data.N;
         Dense<Scalar> XLocalSub;
@@ -428,7 +428,7 @@ template<typename Scalar>
 void
 DistHMat2d<Scalar>::TransposeMultiplyDensePrecompute
 ( MultiplyDenseContext& context,
-  Scalar alpha, const Dense<Scalar>& XLocal, 
+  Scalar alpha, const Dense<Scalar>& XLocal,
                       Dense<Scalar>& YLocal ) const
 {
 #ifndef RELEASE
@@ -442,7 +442,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePrecompute
     {
     case DIST_NODE:
     {
-        typename MultiplyDenseContext::DistNode& nodeContext = 
+        typename MultiplyDenseContext::DistNode& nodeContext =
             *context.block.data.DN;
         const Node& node = *block_.data.N;
 
@@ -530,7 +530,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePrecompute
                 Dense<Scalar> XLocalSub;
                 if( teamRank == 0 )
                 {
-                    // Take care of the upper half 
+                    // Take care of the upper half
                     for( int t=0,tOffset=0; t<2;
                          tOffset+=node.targetSizes[t],++t )
                     {
@@ -562,7 +562,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePrecompute
     }
     case SPLIT_NODE:
     {
-        typename MultiplyDenseContext::SplitNode& nodeContext = 
+        typename MultiplyDenseContext::SplitNode& nodeContext =
             *context.block.data.SN;
         const Node& node = *block_.data.N;
         Dense<Scalar> XLocalSub;
@@ -640,7 +640,7 @@ template<typename Scalar>
 void
 DistHMat2d<Scalar>::AdjointMultiplyDensePrecompute
 ( MultiplyDenseContext& context,
-  Scalar alpha, const Dense<Scalar>& XLocal, 
+  Scalar alpha, const Dense<Scalar>& XLocal,
                       Dense<Scalar>& YLocal ) const
 {
 #ifndef RELEASE
@@ -654,7 +654,7 @@ DistHMat2d<Scalar>::AdjointMultiplyDensePrecompute
     {
     case DIST_NODE:
     {
-        typename MultiplyDenseContext::DistNode& nodeContext = 
+        typename MultiplyDenseContext::DistNode& nodeContext =
             *context.block.data.DN;
         const Node& node = *block_.data.N;
 
@@ -742,7 +742,7 @@ DistHMat2d<Scalar>::AdjointMultiplyDensePrecompute
                 Dense<Scalar> XLocalSub;
                 if( teamRank == 0 )
                 {
-                    // Take care of the upper half 
+                    // Take care of the upper half
                     for( int t=0,tOffset=0; t<2;
                          tOffset+=node.targetSizes[t],++t )
                     {
@@ -774,7 +774,7 @@ DistHMat2d<Scalar>::AdjointMultiplyDensePrecompute
     }
     case SPLIT_NODE:
     {
-        typename MultiplyDenseContext::SplitNode& nodeContext = 
+        typename MultiplyDenseContext::SplitNode& nodeContext =
             *context.block.data.SN;
         const Node& node = *block_.data.N;
         Dense<Scalar> XLocalSub;
@@ -853,7 +853,7 @@ DistHMat2d<Scalar>::MultiplyDenseSums
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MultiplyDenseSums");
 #endif
-    // Compute the message sizes for each reduce 
+    // Compute the message sizes for each reduce
     const int numLevels = teams_->NumLevels();
     const int numReduces = numLevels-1;
     if( numReduces == 0 )
@@ -889,7 +889,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDenseSums
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::TransposeMultiplyDenseSums");
 #endif
-    // Compute the message sizes for each reduce 
+    // Compute the message sizes for each reduce
     const int numLevels = teams_->NumLevels();
     const int numReduces = numLevels-1;
     Vector<int> sizes( numReduces, 0 );
@@ -940,7 +940,7 @@ DistHMat2d<Scalar>::MultiplyDenseSumsCount
     {
     case DIST_NODE:
     {
-        // We can avoid passing the child contexts because the data we 
+        // We can avoid passing the child contexts because the data we
         // want is invariant
         const Node& node = *block_.data.N;
         for( int t=0; t<4; ++t )
@@ -989,7 +989,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDenseSumsCount
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyDenseSumsPack
-( const MultiplyDenseContext& context, 
+( const MultiplyDenseContext& context,
   Vector<Scalar>& buffer, Vector<int>& offsets ) const
 {
 #ifndef RELEASE
@@ -1004,7 +1004,7 @@ DistHMat2d<Scalar>::MultiplyDenseSumsPack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        const typename MultiplyDenseContext::DistNode& nodeContext = 
+        const typename MultiplyDenseContext::DistNode& nodeContext =
             *context.block.data.DN;
         for( int t=0; t<4; ++t )
             for( int s=0; s<4; ++s )
@@ -1050,7 +1050,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDenseSumsPack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        const typename MultiplyDenseContext::DistNode& nodeContext = 
+        const typename MultiplyDenseContext::DistNode& nodeContext =
             *context.block.data.DN;
         for( int t=0; t<4; ++t )
             for( int s=0; s<4; ++s )
@@ -1081,7 +1081,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDenseSumsPack
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyDenseSumsUnpack
-( MultiplyDenseContext& context, 
+( MultiplyDenseContext& context,
   const Vector<Scalar>& buffer, Vector<int>& offsets ) const
 {
 #ifndef RELEASE
@@ -1096,7 +1096,7 @@ DistHMat2d<Scalar>::MultiplyDenseSumsUnpack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyDenseContext::DistNode& nodeContext = 
+        typename MultiplyDenseContext::DistNode& nodeContext =
             *context.block.data.DN;
         for( int t=0; t<4; ++t )
             for( int s=0; s<4; ++s )
@@ -1114,7 +1114,7 @@ DistHMat2d<Scalar>::MultiplyDenseSumsUnpack
         {
             if( Z.Height() == Z.LDim() )
                 MemCopy
-                ( Z.Buffer(), &buffer[offsets[level_]], 
+                ( Z.Buffer(), &buffer[offsets[level_]],
                   DF.rank*numRhs );
             else if( DF.rank > 0 )
                 for( int j=0; j<numRhs; ++j )
@@ -1148,7 +1148,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDenseSumsUnpack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyDenseContext::DistNode& nodeContext = 
+        typename MultiplyDenseContext::DistNode& nodeContext =
             *context.block.data.DN;
         for( int t=0; t<4; ++t )
             for( int s=0; s<4; ++s )
@@ -1241,7 +1241,7 @@ DistHMat2d<Scalar>::MultiplyDensePassData
     // Unpack as soon as we have received our data
     mpi::WaitAll( numRecvs, &recvRequests[0] );
     MultiplyDensePassDataUnpack( context, recvBuffer, recvOffsets );
-    
+
     // Don't exit until we know that the data was sent
     mpi::WaitAll( numSends, &sendRequests[0] );
 }
@@ -1325,7 +1325,7 @@ DistHMat2d<Scalar>::MultiplyDensePassDataPack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyDenseContext::DistNode& nodeContext = 
+        typename MultiplyDenseContext::DistNode& nodeContext =
             *context.block.data.DN;
         for( int t=0; t<4; ++t )
             for( int s=0; s<4; ++s )
@@ -1336,7 +1336,7 @@ DistHMat2d<Scalar>::MultiplyDensePassDataPack
     case SPLIT_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyDenseContext::SplitNode& nodeContext = 
+        typename MultiplyDenseContext::SplitNode& nodeContext =
             *context.block.data.SN;
         for( int t=0; t<4; ++t )
             for( int s=0; s<4; ++s )
@@ -1430,7 +1430,7 @@ DistHMat2d<Scalar>::MultiplyDensePassDataUnpack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyDenseContext::DistNode& nodeContext = 
+        typename MultiplyDenseContext::DistNode& nodeContext =
             *context.block.data.DN;
         for( int t=0; t<4; ++t )
             for( int s=0; s<4; ++s )
@@ -1441,7 +1441,7 @@ DistHMat2d<Scalar>::MultiplyDensePassDataUnpack
     case SPLIT_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyDenseContext::SplitNode& nodeContext = 
+        typename MultiplyDenseContext::SplitNode& nodeContext =
             *context.block.data.SN;
         for( int t=0; t<4; ++t )
             for( int s=0; s<4; ++s )
@@ -1563,7 +1563,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePassData
     // Unpack as soon as we have received our data
     mpi::WaitAll( numRecvs, &recvRequests[0] );
     TransposeMultiplyDensePassDataUnpack( context, recvBuffer, recvOffsets );
-    
+
     // Don't exit until we know that the data was sent
     mpi::WaitAll( numSends, &sendRequests[0] );
 }
@@ -1647,7 +1647,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePassDataPack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyDenseContext::DistNode& nodeContext = 
+        typename MultiplyDenseContext::DistNode& nodeContext =
             *context.block.data.DN;
 
         mpi::Comm team = teams_->Team( level_ );
@@ -1665,7 +1665,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePassDataPack
             const int teamRank = mpi::CommRank( team );
             if( teamRank == 0 )
             {
-                // Take care of the upper half 
+                // Take care of the upper half
                 for( int t=0,tOffset=0; t<2;
                      tOffset+=node.targetSizes[t],++t )
                 {
@@ -1695,7 +1695,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePassDataPack
     case SPLIT_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyDenseContext::SplitNode& nodeContext = 
+        typename MultiplyDenseContext::SplitNode& nodeContext =
             *context.block.data.SN;
         Dense<Scalar> XLocalSub;
         for( int t=0,tOffset=0; t<4; tOffset+=node.targetSizes[t],++t )
@@ -1773,7 +1773,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePassDataPack
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::TransposeMultiplyDensePassDataUnpack
-( MultiplyDenseContext& context, 
+( MultiplyDenseContext& context,
   const Vector<Scalar>& buffer, std::map<int,int>& offsets ) const
 {
 #ifndef RELEASE
@@ -1788,7 +1788,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePassDataUnpack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyDenseContext::DistNode& nodeContext = 
+        typename MultiplyDenseContext::DistNode& nodeContext =
             *context.block.data.DN;
         for( int t=0; t<4; ++t )
             for( int s=0; s<4; ++s )
@@ -1799,7 +1799,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePassDataUnpack
     case SPLIT_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyDenseContext::SplitNode& nodeContext = 
+        typename MultiplyDenseContext::SplitNode& nodeContext =
             *context.block.data.SN;
         for( int t=0; t<4; ++t )
             for( int s=0; s<4; ++s )
@@ -1902,7 +1902,7 @@ DistHMat2d<Scalar>::MultiplyDenseBroadcasts
     // Perform the broadcasts with log2(p) messages
     teams_->TreeBroadcasts( buffer, sizes );
 
-    // Unpack the broadcasted buffers 
+    // Unpack the broadcasted buffers
     MultiplyDenseBroadcastsUnpack( context, buffer, offsets );
 }
 
@@ -1935,7 +1935,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDenseBroadcasts
     // Perform the broadcasts with log2(p) messages
     teams_->TreeBroadcasts( buffer, sizes );
 
-    // Unpack the broadcasted buffers 
+    // Unpack the broadcasted buffers
     TransposeMultiplyDenseBroadcastsUnpack( context, buffer, offsets );
 }
 
@@ -2028,12 +2028,12 @@ DistHMat2d<Scalar>::MultiplyDenseBroadcastsPack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        const typename MultiplyDenseContext::DistNode& nodeContext = 
+        const typename MultiplyDenseContext::DistNode& nodeContext =
             *context.block.data.DN;
         for( int t=0; t<4; ++t )
             for( int s=0; s<4; ++s )
                 node.Child(t,s).MultiplyDenseBroadcastsPack
-                ( nodeContext.Child(t,s), buffer, offsets ); 
+                ( nodeContext.Child(t,s), buffer, offsets );
         break;
     }
     case DIST_LOW_RANK:
@@ -2077,7 +2077,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDenseBroadcastsPack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        const typename MultiplyDenseContext::DistNode& nodeContext = 
+        const typename MultiplyDenseContext::DistNode& nodeContext =
             *context.block.data.DN;
         for( int t=0; t<4; ++t )
             for( int s=0; s<4; ++s )
@@ -2122,7 +2122,7 @@ DistHMat2d<Scalar>::MultiplyDenseBroadcastsUnpack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyDenseContext::DistNode& nodeContext = 
+        typename MultiplyDenseContext::DistNode& nodeContext =
             *context.block.data.DN;
         for( int t=0; t<4; ++t )
             for( int s=0; s<4; ++s )
@@ -2166,7 +2166,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDenseBroadcastsUnpack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyDenseContext::DistNode& nodeContext = 
+        typename MultiplyDenseContext::DistNode& nodeContext =
             *context.block.data.DN;
         for( int t=0; t<4; ++t )
             for( int s=0; s<4; ++s )
@@ -2196,7 +2196,7 @@ template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyDensePostcompute
 ( MultiplyDenseContext& context,
-  Scalar alpha, const Dense<Scalar>& XLocal, 
+  Scalar alpha, const Dense<Scalar>& XLocal,
                       Dense<Scalar>& YLocal ) const
 {
 #ifndef RELEASE
@@ -2211,7 +2211,7 @@ DistHMat2d<Scalar>::MultiplyDensePostcompute
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyDenseContext::DistNode& nodeContext = 
+        typename MultiplyDenseContext::DistNode& nodeContext =
             *context.block.data.DN;
 
         mpi::Comm team = teams_->Team( level_ );
@@ -2232,7 +2232,7 @@ DistHMat2d<Scalar>::MultiplyDensePostcompute
                 Dense<Scalar> XLocalSub, YLocalSub;
                 if( teamRank == 0 )
                 {
-                    // Take care of the upper left block 
+                    // Take care of the upper left block
                     for( int t=0,tOffset=0; t<2;
                          tOffset+=node.targetSizes[t],++t )
                     {
@@ -2332,7 +2332,7 @@ DistHMat2d<Scalar>::MultiplyDensePostcompute
     case SPLIT_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyDenseContext::SplitNode& nodeContext = 
+        typename MultiplyDenseContext::SplitNode& nodeContext =
             *context.block.data.SN;
         Dense<Scalar> YLocalSub;
         for( int t=0,tOffset=0; t<4; tOffset+=node.targetSizes[t],++t )
@@ -2347,7 +2347,7 @@ DistHMat2d<Scalar>::MultiplyDensePostcompute
     }
     case DIST_LOW_RANK:
     {
-        // YLocal += ULocal Z 
+        // YLocal += ULocal Z
         const DistLowRank& DF = *block_.data.DF;
         if( DF.rank != 0 )
         {
@@ -2391,7 +2391,7 @@ template<typename Scalar>
 void
 DistHMat2d<Scalar>::TransposeMultiplyDensePostcompute
 ( MultiplyDenseContext& context,
-  Scalar alpha, const Dense<Scalar>& XLocal, 
+  Scalar alpha, const Dense<Scalar>& XLocal,
                       Dense<Scalar>& YLocal ) const
 {
 #ifndef RELEASE
@@ -2406,7 +2406,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePostcompute
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyDenseContext::DistNode& nodeContext = 
+        typename MultiplyDenseContext::DistNode& nodeContext =
             *context.block.data.DN;
         mpi::Comm team = teams_->Team( level_ );
         const int teamSize = mpi::CommSize( team );
@@ -2426,7 +2426,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePostcompute
                 Dense<Scalar> XLocalSub, YLocalSub;
                 if( teamRank == 0 )
                 {
-                    // Take care of the upper left block 
+                    // Take care of the upper left block
                     for( int s=0,sOffset=0; s<2;
                          sOffset+=node.sourceSizes[s],++s )
                     {
@@ -2541,7 +2541,7 @@ DistHMat2d<Scalar>::TransposeMultiplyDensePostcompute
     }
     case DIST_LOW_RANK:
     {
-        // YLocal += (VLocal^[T/H])^T Z 
+        // YLocal += (VLocal^[T/H])^T Z
         const DistLowRank& DF = *block_.data.DF;
         if( DF.rank != 0 )
         {
@@ -2594,7 +2594,7 @@ DistHMat2d<Scalar>::AdjointMultiplyDensePostcompute
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyDenseContext::DistNode& nodeContext = 
+        typename MultiplyDenseContext::DistNode& nodeContext =
             *context.block.data.DN;
 
         mpi::Comm team = teams_->Team( level_ );
@@ -2615,7 +2615,7 @@ DistHMat2d<Scalar>::AdjointMultiplyDensePostcompute
                 Dense<Scalar> XLocalSub, YLocalSub;
                 if( teamRank == 0 )
                 {
-                    // Take care of the upper left block 
+                    // Take care of the upper left block
                     for( int s=0,sOffset=0; s<2;
                          sOffset+=node.sourceSizes[s],++s )
                     {

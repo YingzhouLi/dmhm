@@ -4,6 +4,6 @@
  */
 void CMakeDummyFunction( int* a )
 {
-    *a = 42;  
+    *a = 42;
 }
 

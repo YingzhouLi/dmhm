@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -12,7 +12,7 @@ namespace dmhm {
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::Multiply
-( Scalar alpha, const Vector<Scalar>& xLocal, 
+( Scalar alpha, const Vector<Scalar>& xLocal,
                       Vector<Scalar>& yLocal ) const
 {
 #ifndef RELEASE
@@ -49,7 +49,7 @@ DistHMat3d<Scalar>::AdjointMultiply
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::Multiply
-( Scalar alpha, const Vector<Scalar>& xLocal, 
+( Scalar alpha, const Vector<Scalar>& xLocal,
   Scalar beta,        Vector<Scalar>& yLocal ) const
 {
 #ifndef RELEASE
@@ -71,7 +71,7 @@ DistHMat3d<Scalar>::Multiply
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::TransposeMultiply
-( Scalar alpha, const Vector<Scalar>& xLocal, 
+( Scalar alpha, const Vector<Scalar>& xLocal,
   Scalar beta, Vector<Scalar>& yLocal ) const
 {
 #ifndef RELEASE
@@ -94,7 +94,7 @@ DistHMat3d<Scalar>::TransposeMultiply
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::AdjointMultiply
-( Scalar alpha, const Vector<Scalar>& xLocal, 
+( Scalar alpha, const Vector<Scalar>& xLocal,
   Scalar beta,        Vector<Scalar>& yLocal ) const
 {
 #ifndef RELEASE
@@ -134,7 +134,7 @@ DistHMat3d<Scalar>::MultiplyVectorInitialize
         context.block.type = DIST_NODE;
         context.block.data.DN = new typename MultiplyVectorContext::DistNode;
 
-        typename MultiplyVectorContext::DistNode& nodeContext = 
+        typename MultiplyVectorContext::DistNode& nodeContext =
             *context.block.data.DN;
         const Node& node = *block_.data.N;
         for( int t=0; t<8; ++t )
@@ -148,7 +148,7 @@ DistHMat3d<Scalar>::MultiplyVectorInitialize
         context.block.type = SPLIT_NODE;
         context.block.data.SN = new typename MultiplyVectorContext::SplitNode;
 
-        typename MultiplyVectorContext::SplitNode& nodeContext = 
+        typename MultiplyVectorContext::SplitNode& nodeContext =
             *context.block.data.DN;
         const Node& node = *block_.data.N;
         for( int t=0; t<8; ++t )
@@ -216,7 +216,7 @@ DistHMat3d<Scalar>::MultiplyVectorPrecompute
     {
     case DIST_NODE:
     {
-        typename MultiplyVectorContext::DistNode& nodeContext = 
+        typename MultiplyVectorContext::DistNode& nodeContext =
             *context.block.data.DN;
         const Node& node = *block_.data.N;
 
@@ -251,57 +251,57 @@ DistHMat3d<Scalar>::MultiplyVectorPrecompute
             {
                 // Split xLocal and yLocal
                 Vector<Scalar> xLocalSub, yLocalSub;
-                // Take care of the diagonal block                          
-                for( int t=tStart,tOffset=0; t<tStop;                          
-                     tOffset+=node.targetSizes[t],++t )                        
-                {                                                              
-                    yLocalSub.View( yLocal, tOffset, node.targetSizes[t] );    
-                    for( int s=sStart,sOffset=0; s<sStop;                      
-                         sOffset+=node.sourceSizes[s],++s )                    
-                    {                                                          
-                        xLocalSub.LockedView                                   
-                        ( xLocal, sOffset, node.sourceSizes[s] );              
-                        node.Child(t,s).MultiplyVectorPrecompute               
-                        ( nodeContext.Child(t,s),                              
-                          alpha, xLocalSub, yLocalSub );                       
-                    }                                                          
-                }                                                              
-                // Take care of the non-diagonal block                         
-                yLocalSub.View( yLocal, 0, 0 );                                
-                for( int s=sStart,sOffset=0; s<sStop;                          
-                     sOffset+=node.sourceSizes[s],++s )                        
-                {                                                              
-                    xLocalSub.LockedView                                       
-                    ( xLocal, sOffset, node.sourceSizes[s] );                  
-                    for( int t=0; t<8; ++t )                                   
-                        if( t<tStart || t>=tStop )                             
-                            node.Child(t,s).MultiplyVectorPrecompute           
-                            ( nodeContext.Child(t,s),                          
-                              alpha, xLocalSub, yLocalSub );                   
-                }                                                              
+                // Take care of the diagonal block
+                for( int t=tStart,tOffset=0; t<tStop;
+                     tOffset+=node.targetSizes[t],++t )
+                {
+                    yLocalSub.View( yLocal, tOffset, node.targetSizes[t] );
+                    for( int s=sStart,sOffset=0; s<sStop;
+                         sOffset+=node.sourceSizes[s],++s )
+                    {
+                        xLocalSub.LockedView
+                        ( xLocal, sOffset, node.sourceSizes[s] );
+                        node.Child(t,s).MultiplyVectorPrecompute
+                        ( nodeContext.Child(t,s),
+                          alpha, xLocalSub, yLocalSub );
+                    }
+                }
+                // Take care of the non-diagonal block
+                yLocalSub.View( yLocal, 0, 0 );
+                for( int s=sStart,sOffset=0; s<sStop;
+                     sOffset+=node.sourceSizes[s],++s )
+                {
+                    xLocalSub.LockedView
+                    ( xLocal, sOffset, node.sourceSizes[s] );
+                    for( int t=0; t<8; ++t )
+                        if( t<tStart || t>=tStop )
+                            node.Child(t,s).MultiplyVectorPrecompute
+                            ( nodeContext.Child(t,s),
+                              alpha, xLocalSub, yLocalSub );
+                }
 
             }
             else
             {
                 // Only split xLocal
                 Vector<Scalar> xLocalSub;
-                for( int s=sStart,sOffset=0; s<sStop;            
-                     sOffset+=node.sourceSizes[s],++s )             
-                {                                                   
-                    xLocalSub.LockedView                            
-                    ( xLocal, sOffset, node.sourceSizes[s] );       
-                    for( int t=0; t<8; ++t )                        
-                        node.Child(t,s).MultiplyVectorPrecompute    
-                        ( nodeContext.Child(t,s),                   
-                          alpha, xLocalSub, yLocal );               
-                }                                                   
+                for( int s=sStart,sOffset=0; s<sStop;
+                     sOffset+=node.sourceSizes[s],++s )
+                {
+                    xLocalSub.LockedView
+                    ( xLocal, sOffset, node.sourceSizes[s] );
+                    for( int t=0; t<8; ++t )
+                        node.Child(t,s).MultiplyVectorPrecompute
+                        ( nodeContext.Child(t,s),
+                          alpha, xLocalSub, yLocal );
+                }
             }
         }
         break;
     }
     case SPLIT_NODE:
     {
-        typename MultiplyVectorContext::SplitNode& nodeContext = 
+        typename MultiplyVectorContext::SplitNode& nodeContext =
             *context.block.data.SN;
         const Node& node = *block_.data.N;
         Vector<Scalar> xLocalSub;
@@ -337,8 +337,8 @@ DistHMat3d<Scalar>::MultiplyVectorPrecompute
         Vector<Scalar>& z = *context.block.data.z;
         z.Resize( DF.rank );
         blas::Gemv
-        ( 'T', DF.VLocal.Height(), DF.rank, 
-          alpha,     DF.VLocal.LockedBuffer(), DF.VLocal.LDim(), 
+        ( 'T', DF.VLocal.Height(), DF.rank,
+          alpha,     DF.VLocal.LockedBuffer(), DF.VLocal.LDim(),
                      xLocal.LockedBuffer(),    1,
           Scalar(0), z.Buffer(),               1 );
         break;
@@ -394,7 +394,7 @@ DistHMat3d<Scalar>::TransposeMultiplyVectorPrecompute
     {
     case DIST_NODE:
     {
-        typename MultiplyVectorContext::DistNode& nodeContext = 
+        typename MultiplyVectorContext::DistNode& nodeContext =
             *context.block.data.DN;
         const Node& node = *block_.data.N;
 
@@ -429,57 +429,57 @@ DistHMat3d<Scalar>::TransposeMultiplyVectorPrecompute
             {
                 // Split xLocal and yLocal
                 Vector<Scalar> xLocalSub, yLocalSub;
-                // Take care of the diagonal block                            
-                for( int t=tStart,tOffset=0; t<tStop;                            
-                     tOffset+=node.targetSizes[t],++t )                          
-                {                                                                
-                    xLocalSub.LockedView                                         
-                    ( xLocal, tOffset, node.targetSizes[t] );                    
-                    for( int s=sStart,sOffset=0; s<sStop;                        
-                         sOffset+=node.sourceSizes[s],++s )                      
-                    {                                                            
-                        yLocalSub.View                                           
-                        ( yLocal, sOffset, node.sourceSizes[s] );                
-                        node.Child(t,s).TransposeMultiplyVectorPrecompute        
-                        ( nodeContext.Child(t,s),                                
-                          alpha, xLocalSub, yLocalSub );                         
-                    }                                                            
-                }                                                                
-                // Take care of the non-diagonal block                           
-                yLocalSub.View( yLocal, 0, 0 );                                  
-                for( int t=tStart,tOffset=0; t<tStop;                            
-                     tOffset+=node.targetSizes[t],++t )                          
-                {                                                                
-                    xLocalSub.LockedView                                         
-                    ( xLocal, tOffset, node.targetSizes[t] );                    
-                    for( int s=0; s<8; ++s )                                     
-                        if( s<sStart || s>=sStop )                               
-                            node.Child(t,s).TransposeMultiplyVectorPrecompute    
-                            ( nodeContext.Child(t,s),                            
-                              alpha, xLocalSub, yLocalSub );                     
-                }                                                                
+                // Take care of the diagonal block
+                for( int t=tStart,tOffset=0; t<tStop;
+                     tOffset+=node.targetSizes[t],++t )
+                {
+                    xLocalSub.LockedView
+                    ( xLocal, tOffset, node.targetSizes[t] );
+                    for( int s=sStart,sOffset=0; s<sStop;
+                         sOffset+=node.sourceSizes[s],++s )
+                    {
+                        yLocalSub.View
+                        ( yLocal, sOffset, node.sourceSizes[s] );
+                        node.Child(t,s).TransposeMultiplyVectorPrecompute
+                        ( nodeContext.Child(t,s),
+                          alpha, xLocalSub, yLocalSub );
+                    }
+                }
+                // Take care of the non-diagonal block
+                yLocalSub.View( yLocal, 0, 0 );
+                for( int t=tStart,tOffset=0; t<tStop;
+                     tOffset+=node.targetSizes[t],++t )
+                {
+                    xLocalSub.LockedView
+                    ( xLocal, tOffset, node.targetSizes[t] );
+                    for( int s=0; s<8; ++s )
+                        if( s<sStart || s>=sStop )
+                            node.Child(t,s).TransposeMultiplyVectorPrecompute
+                            ( nodeContext.Child(t,s),
+                              alpha, xLocalSub, yLocalSub );
+                }
             }
             else // !inSourceTeam_
             {
                 // Only split xLocal
                 Vector<Scalar> xLocalSub;
-                for( int t=tStart,tOffset=0; t<tStop;                     
-                     tOffset+=node.targetSizes[t],++t )                      
-                {                                                            
-                    xLocalSub.LockedView                                     
-                    ( xLocal, tOffset, node.targetSizes[t] );                
-                    for( int s=0; s<8; ++s )                                 
-                        node.Child(t,s).TransposeMultiplyVectorPrecompute    
-                        ( nodeContext.Child(t,s),                            
-                          alpha, xLocalSub, yLocal );                        
-                }                                                            
+                for( int t=tStart,tOffset=0; t<tStop;
+                     tOffset+=node.targetSizes[t],++t )
+                {
+                    xLocalSub.LockedView
+                    ( xLocal, tOffset, node.targetSizes[t] );
+                    for( int s=0; s<8; ++s )
+                        node.Child(t,s).TransposeMultiplyVectorPrecompute
+                        ( nodeContext.Child(t,s),
+                          alpha, xLocalSub, yLocal );
+                }
             }
         }
         break;
     }
     case SPLIT_NODE:
     {
-        typename MultiplyVectorContext::SplitNode& nodeContext = 
+        typename MultiplyVectorContext::SplitNode& nodeContext =
             *context.block.data.SN;
         const Node& node = *block_.data.N;
         Vector<Scalar> xLocalSub;
@@ -515,8 +515,8 @@ DistHMat3d<Scalar>::TransposeMultiplyVectorPrecompute
         Vector<Scalar>& z = *context.block.data.z;
         z.Resize( DF.rank );
         blas::Gemv
-        ( 'T', DF.ULocal.Height(), DF.rank, 
-          alpha,     DF.ULocal.LockedBuffer(), DF.ULocal.LDim(), 
+        ( 'T', DF.ULocal.Height(), DF.rank,
+          alpha,     DF.ULocal.LockedBuffer(), DF.ULocal.LDim(),
                      xLocal.LockedBuffer(),    1,
           Scalar(0), z.Buffer(),               1 );
         break;
@@ -567,7 +567,7 @@ DistHMat3d<Scalar>::AdjointMultiplyVectorPrecompute
     {
     case DIST_NODE:
     {
-        typename MultiplyVectorContext::DistNode& nodeContext = 
+        typename MultiplyVectorContext::DistNode& nodeContext =
             *context.block.data.DN;
         const Node& node = *block_.data.N;
 
@@ -602,57 +602,57 @@ DistHMat3d<Scalar>::AdjointMultiplyVectorPrecompute
             {
                 // Split xLocal and yLocal
                 Vector<Scalar> xLocalSub, yLocalSub;
-                // Take care of the diagonal block                          
-                for( int t=tStart,tOffset=0; t<tStop;                          
-                     tOffset+=node.targetSizes[t],++t )                        
-                {                                                              
-                    xLocalSub.LockedView                                       
-                    ( xLocal, tOffset, node.targetSizes[t] );                  
-                    for( int s=sStart,sOffset=0; s<sStop;                      
-                         sOffset+=node.sourceSizes[s],++s )                    
-                    {                                                          
-                        yLocalSub.View                                         
-                        ( yLocal, sOffset, node.sourceSizes[s] );              
-                        node.Child(t,s).AdjointMultiplyVectorPrecompute        
-                        ( nodeContext.Child(t,s),                              
-                          alpha, xLocalSub, yLocalSub );                       
-                    }                                                          
-                }                                                              
-                // Take care of the non-diagonal block                         
-                yLocalSub.View( yLocal, 0, 0 );                                
-                for( int t=tStart,tOffset=0; t<tStop;                          
-                     tOffset+=node.targetSizes[t],++t )                        
-                {                                                              
-                    xLocalSub.LockedView                                       
-                    ( xLocal, tOffset, node.targetSizes[t] );                  
-                    for( int s=0; s<8; ++s )                                   
-                        if( s<sStart || s>=sStop )                             
-                            node.Child(t,s).AdjointMultiplyVectorPrecompute    
-                            ( nodeContext.Child(t,s),                          
-                              alpha, xLocalSub, yLocalSub );                   
-                }                                                              
+                // Take care of the diagonal block
+                for( int t=tStart,tOffset=0; t<tStop;
+                     tOffset+=node.targetSizes[t],++t )
+                {
+                    xLocalSub.LockedView
+                    ( xLocal, tOffset, node.targetSizes[t] );
+                    for( int s=sStart,sOffset=0; s<sStop;
+                         sOffset+=node.sourceSizes[s],++s )
+                    {
+                        yLocalSub.View
+                        ( yLocal, sOffset, node.sourceSizes[s] );
+                        node.Child(t,s).AdjointMultiplyVectorPrecompute
+                        ( nodeContext.Child(t,s),
+                          alpha, xLocalSub, yLocalSub );
+                    }
+                }
+                // Take care of the non-diagonal block
+                yLocalSub.View( yLocal, 0, 0 );
+                for( int t=tStart,tOffset=0; t<tStop;
+                     tOffset+=node.targetSizes[t],++t )
+                {
+                    xLocalSub.LockedView
+                    ( xLocal, tOffset, node.targetSizes[t] );
+                    for( int s=0; s<8; ++s )
+                        if( s<sStart || s>=sStop )
+                            node.Child(t,s).AdjointMultiplyVectorPrecompute
+                            ( nodeContext.Child(t,s),
+                              alpha, xLocalSub, yLocalSub );
+                }
             }
             else // !inSourceTeam_
             {
                 // Only split xLocal
                 Vector<Scalar> xLocalSub;
-                for( int t=tStart,tOffset=0; t<tStop;                   
-                     tOffset+=node.targetSizes[t],++t )                    
-                {                                                          
-                    xLocalSub.LockedView                                   
-                    ( xLocal, tOffset, node.targetSizes[t] );              
-                    for( int s=0; s<8; ++s )                               
-                        node.Child(t,s).AdjointMultiplyVectorPrecompute    
-                        ( nodeContext.Child(t,s),                          
-                          alpha, xLocalSub, yLocal );                      
-                }                                                          
+                for( int t=tStart,tOffset=0; t<tStop;
+                     tOffset+=node.targetSizes[t],++t )
+                {
+                    xLocalSub.LockedView
+                    ( xLocal, tOffset, node.targetSizes[t] );
+                    for( int s=0; s<8; ++s )
+                        node.Child(t,s).AdjointMultiplyVectorPrecompute
+                        ( nodeContext.Child(t,s),
+                          alpha, xLocalSub, yLocal );
+                }
             }
         }
         break;
     }
     case SPLIT_NODE:
     {
-        typename MultiplyVectorContext::SplitNode& nodeContext = 
+        typename MultiplyVectorContext::SplitNode& nodeContext =
             *context.block.data.SN;
         const Node& node = *block_.data.N;
         Vector<Scalar> xLocalSub;
@@ -688,8 +688,8 @@ DistHMat3d<Scalar>::AdjointMultiplyVectorPrecompute
         Vector<Scalar>& z = *context.block.data.z;
         z.Resize( DF.rank );
         blas::Gemv
-        ( 'C', DF.ULocal.Height(), DF.rank, 
-          alpha,     DF.ULocal.LockedBuffer(), DF.ULocal.LDim(), 
+        ( 'C', DF.ULocal.Height(), DF.rank,
+          alpha,     DF.ULocal.LockedBuffer(), DF.ULocal.LDim(),
                      xLocal.LockedBuffer(),    1,
           Scalar(0), z.Buffer(),               1 );
         break;
@@ -732,7 +732,7 @@ DistHMat3d<Scalar>::MultiplyVectorSums
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyVectorSums");
 #endif
-    // Compute the message sizes for each reduce 
+    // Compute the message sizes for each reduce
     const int numLevels = teams_->NumLevels();
     const int numReduces = numLevels-1;
     Vector<int> sizes( numReduces, 0 );
@@ -764,7 +764,7 @@ DistHMat3d<Scalar>::TransposeMultiplyVectorSums
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::TransposeMultiplyVectorSums");
 #endif
-    // Compute the message sizes for each reduce 
+    // Compute the message sizes for each reduce
     const int numLevels = teams_->NumLevels();
     const int numReduces = numLevels-1;
     Vector<int> sizes( numReduces, 0 );
@@ -861,7 +861,7 @@ DistHMat3d<Scalar>::TransposeMultiplyVectorSumsCount
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyVectorSumsPack
-( const MultiplyVectorContext& context, 
+( const MultiplyVectorContext& context,
   Vector<Scalar>& buffer, Vector<int>& offsets ) const
 {
 #ifndef RELEASE
@@ -875,7 +875,7 @@ DistHMat3d<Scalar>::MultiplyVectorSumsPack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        const typename MultiplyVectorContext::DistNode& nodeContext = 
+        const typename MultiplyVectorContext::DistNode& nodeContext =
             *context.block.data.DN;
         for( int t=0; t<8; ++t )
             for( int s=0; s<8; ++s )
@@ -913,7 +913,7 @@ DistHMat3d<Scalar>::TransposeMultiplyVectorSumsPack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        const typename MultiplyVectorContext::DistNode& nodeContext = 
+        const typename MultiplyVectorContext::DistNode& nodeContext =
             *context.block.data.DN;
         for( int t=0; t<8; ++t )
             for( int s=0; s<8; ++s )
@@ -951,7 +951,7 @@ DistHMat3d<Scalar>::MultiplyVectorSumsUnpack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyVectorContext::DistNode& nodeContext = 
+        typename MultiplyVectorContext::DistNode& nodeContext =
             *context.block.data.DN;
         for( int t=0; t<8; ++t )
             for( int s=0; s<8; ++s )
@@ -994,7 +994,7 @@ DistHMat3d<Scalar>::TransposeMultiplyVectorSumsUnpack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyVectorContext::DistNode& nodeContext = 
+        typename MultiplyVectorContext::DistNode& nodeContext =
             *context.block.data.DN;
         for( int t=0; t<8; ++t )
             for( int s=0; s<8; ++s )
@@ -1487,16 +1487,16 @@ DistHMat3d<Scalar>::TransposeMultiplyVectorPassDataPack
                 tStart = teamRank*4;
                 tStop = teamRank*4+4;
             }
-            // Take care of the upper half                                  
-            for( int t=tStart,tOffset=0; t<tStop;                              
-                 tOffset+=node.targetSizes[t],++t )                            
-            {                                                                  
-                xLocalSub.LockedView                                           
-                ( xLocal, tOffset, node.targetSizes[t] );                      
-                for( int s=0; s<8; ++s )                                       
-                    node.Child(t,s).TransposeMultiplyVectorPassDataPack        
-                    ( nodeContext.Child(t,s), xLocalSub, buffer, offsets );    
-            }                                                                  
+            // Take care of the upper half
+            for( int t=tStart,tOffset=0; t<tStop;
+                 tOffset+=node.targetSizes[t],++t )
+            {
+                xLocalSub.LockedView
+                ( xLocal, tOffset, node.targetSizes[t] );
+                for( int s=0; s<8; ++s )
+                    node.Child(t,s).TransposeMultiplyVectorPassDataPack
+                    ( nodeContext.Child(t,s), xLocalSub, buffer, offsets );
+            }
         }
         break;
     }
@@ -1689,7 +1689,7 @@ DistHMat3d<Scalar>::MultiplyVectorBroadcasts
     // Perform the broadcasts with log2(p) messages
     teams_->TreeBroadcasts( buffer, sizes );
 
-    // Unpack the broadcasted buffers 
+    // Unpack the broadcasted buffers
     MultiplyVectorBroadcastsUnpack( context, buffer, offsets );
 }
 
@@ -1722,7 +1722,7 @@ DistHMat3d<Scalar>::TransposeMultiplyVectorBroadcasts
     // Perform the broadcasts with log2(p) messages
     teams_->TreeBroadcasts( buffer, sizes );
 
-    // Unpack the broadcasted buffers 
+    // Unpack the broadcasted buffers
     TransposeMultiplyVectorBroadcastsUnpack( context, buffer, offsets );
 }
 
@@ -1814,7 +1814,7 @@ DistHMat3d<Scalar>::MultiplyVectorBroadcastsPack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        const typename MultiplyVectorContext::DistNode& nodeContext = 
+        const typename MultiplyVectorContext::DistNode& nodeContext =
             *context.block.data.DN;
         for( int t=0; t<8; ++t )
             for( int s=0; s<8; ++s )
@@ -1857,7 +1857,7 @@ DistHMat3d<Scalar>::TransposeMultiplyVectorBroadcastsPack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        const typename MultiplyVectorContext::DistNode& nodeContext = 
+        const typename MultiplyVectorContext::DistNode& nodeContext =
             *context.block.data.DN;
         for( int t=0; t<8; ++t )
             for( int s=0; s<8; ++s )
@@ -1900,7 +1900,7 @@ DistHMat3d<Scalar>::MultiplyVectorBroadcastsUnpack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyVectorContext::DistNode& nodeContext = 
+        typename MultiplyVectorContext::DistNode& nodeContext =
             *context.block.data.DN;
         for( int t=0; t<8; ++t )
             for( int s=0; s<8; ++s )
@@ -1939,7 +1939,7 @@ DistHMat3d<Scalar>::TransposeMultiplyVectorBroadcastsUnpack
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyVectorContext::DistNode& nodeContext = 
+        typename MultiplyVectorContext::DistNode& nodeContext =
             *context.block.data.DN;
         for( int t=0; t<8; ++t )
             for( int s=0; s<8; ++s )
@@ -1965,7 +1965,7 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyVectorPostcompute
 ( MultiplyVectorContext& context,
-  Scalar alpha, const Vector<Scalar>& xLocal, 
+  Scalar alpha, const Vector<Scalar>& xLocal,
                       Vector<Scalar>& yLocal ) const
 {
 #ifndef RELEASE
@@ -1979,7 +1979,7 @@ DistHMat3d<Scalar>::MultiplyVectorPostcompute
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyVectorContext::DistNode& nodeContext = 
+        typename MultiplyVectorContext::DistNode& nodeContext =
             *context.block.data.DN;
 
         mpi::Comm team = teams_->Team( level_ );
@@ -2013,47 +2013,47 @@ DistHMat3d<Scalar>::MultiplyVectorPostcompute
             {
                 // Split xLocal and yLocal
                 Vector<Scalar> xLocalSub, yLocalSub;
-                // Take care of the diagonal block                          
-                for( int t=tStart,tOffset=0; t<tStop;                          
-                     tOffset+=node.targetSizes[t],++t )                        
-                {                                                              
-                    yLocalSub.View( yLocal, tOffset, node.targetSizes[t] );    
-                    for( int s=sStart,sOffset=0; s<sStop;                      
-                         sOffset+=node.sourceSizes[s],++s )                    
-                    {                                                          
-                        xLocalSub.LockedView                                   
-                        ( xLocal, sOffset, node.sourceSizes[s] );              
-                        node.Child(t,s).MultiplyVectorPostcompute              
-                        ( nodeContext.Child(t,s),                              
-                          alpha, xLocalSub, yLocalSub );                       
-                    }                                                          
-                }                                                              
-                // Take care of the non-diagonal block                         
-                xLocalSub.LockedView( xLocal, 0, 0 );                          
-                for( int t=tStart,tOffset=0; t<tStop;                          
-                     tOffset+=node.targetSizes[t],++t )                        
-                {                                                              
-                    yLocalSub.View( yLocal, tOffset, node.targetSizes[t] );    
-                    for( int s=0; s<8; ++s )                                   
-                        if( s<sStart || s>=sStop )                             
-                            node.Child(t,s).MultiplyVectorPostcompute          
-                            ( nodeContext.Child(t,s),                          
-                              alpha, xLocalSub, yLocalSub );                   
-                }                                                              
+                // Take care of the diagonal block
+                for( int t=tStart,tOffset=0; t<tStop;
+                     tOffset+=node.targetSizes[t],++t )
+                {
+                    yLocalSub.View( yLocal, tOffset, node.targetSizes[t] );
+                    for( int s=sStart,sOffset=0; s<sStop;
+                         sOffset+=node.sourceSizes[s],++s )
+                    {
+                        xLocalSub.LockedView
+                        ( xLocal, sOffset, node.sourceSizes[s] );
+                        node.Child(t,s).MultiplyVectorPostcompute
+                        ( nodeContext.Child(t,s),
+                          alpha, xLocalSub, yLocalSub );
+                    }
+                }
+                // Take care of the non-diagonal block
+                xLocalSub.LockedView( xLocal, 0, 0 );
+                for( int t=tStart,tOffset=0; t<tStop;
+                     tOffset+=node.targetSizes[t],++t )
+                {
+                    yLocalSub.View( yLocal, tOffset, node.targetSizes[t] );
+                    for( int s=0; s<8; ++s )
+                        if( s<sStart || s>=sStop )
+                            node.Child(t,s).MultiplyVectorPostcompute
+                            ( nodeContext.Child(t,s),
+                              alpha, xLocalSub, yLocalSub );
+                }
             }
             else
             {
                 // Only split yLocal
                 Vector<Scalar> yLocalSub;
-                for( int t=tStart,tOffset=0; t<tStop;                       
-                     tOffset+=node.targetSizes[t],++t )                        
-                {                                                              
-                    yLocalSub.View( yLocal, tOffset, node.targetSizes[t] );    
-                    for( int s=0; s<8; ++s )                                   
-                        node.Child(t,s).MultiplyVectorPostcompute              
-                        ( nodeContext.Child(t,s),                              
-                          alpha, xLocal, yLocalSub );                          
-                }                                                              
+                for( int t=tStart,tOffset=0; t<tStop;
+                     tOffset+=node.targetSizes[t],++t )
+                {
+                    yLocalSub.View( yLocal, tOffset, node.targetSizes[t] );
+                    for( int s=0; s<8; ++s )
+                        node.Child(t,s).MultiplyVectorPostcompute
+                        ( nodeContext.Child(t,s),
+                          alpha, xLocal, yLocalSub );
+                }
             }
         }
         break;
@@ -2061,7 +2061,7 @@ DistHMat3d<Scalar>::MultiplyVectorPostcompute
     case SPLIT_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyVectorContext::SplitNode& nodeContext = 
+        typename MultiplyVectorContext::SplitNode& nodeContext =
             *context.block.data.SN;
         Vector<Scalar> yLocalSub;
         for( int t=0,tOffset=0; t<8; tOffset+=node.targetSizes[t],++t )
@@ -2111,7 +2111,7 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::TransposeMultiplyVectorPostcompute
 ( MultiplyVectorContext& context,
-  Scalar alpha, const Vector<Scalar>& xLocal, 
+  Scalar alpha, const Vector<Scalar>& xLocal,
                       Vector<Scalar>& yLocal ) const
 {
 #ifndef RELEASE
@@ -2125,7 +2125,7 @@ DistHMat3d<Scalar>::TransposeMultiplyVectorPostcompute
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyVectorContext::DistNode& nodeContext = 
+        typename MultiplyVectorContext::DistNode& nodeContext =
             *context.block.data.DN;
         mpi::Comm team = teams_->Team( level_ );
         const int teamSize = mpi::CommSize( team );
@@ -2158,47 +2158,47 @@ DistHMat3d<Scalar>::TransposeMultiplyVectorPostcompute
             {
                 // Split xLocal and yLocal
                 Vector<Scalar> xLocalSub, yLocalSub;
-                // Take care of the diagonal block                             
-                for( int s=sStart,sOffset=0; s<sStop;                             
-                     sOffset+=node.sourceSizes[s],++s )                           
-                {                                                                 
-                    yLocalSub.View( yLocal, sOffset, node.sourceSizes[s] );       
-                    for( int t=tStart,tOffset=0; t<tStop;                         
-                         tOffset+=node.targetSizes[t],++t )                       
-                    {                                                             
-                        xLocalSub.LockedView                                      
-                        ( xLocal, tOffset, node.targetSizes[t] );                 
-                        node.Child(t,s).TransposeMultiplyVectorPostcompute        
-                        ( nodeContext.Child(t,s),                                 
-                          alpha, xLocalSub, yLocalSub );                          
-                    }                                                             
-                }                                                                 
-                // Take care of the non-diagonal block                            
-                xLocalSub.LockedView( xLocal, 0, 0 );                             
-                for( int s=sStart,sOffset=0; s<sStop;                             
-                     sOffset+=node.sourceSizes[s],++s )                           
-                {                                                                 
-                    yLocalSub.View( yLocal, sOffset, node.sourceSizes[s] );       
-                    for( int t=0; t<8; ++t )                                      
-                        if( t<tStart || t>=tStop )                                
-                            node.Child(t,s).TransposeMultiplyVectorPostcompute    
-                            ( nodeContext.Child(t,s),                             
-                              alpha, xLocalSub, yLocalSub );                      
-                }                                                                 
+                // Take care of the diagonal block
+                for( int s=sStart,sOffset=0; s<sStop;
+                     sOffset+=node.sourceSizes[s],++s )
+                {
+                    yLocalSub.View( yLocal, sOffset, node.sourceSizes[s] );
+                    for( int t=tStart,tOffset=0; t<tStop;
+                         tOffset+=node.targetSizes[t],++t )
+                    {
+                        xLocalSub.LockedView
+                        ( xLocal, tOffset, node.targetSizes[t] );
+                        node.Child(t,s).TransposeMultiplyVectorPostcompute
+                        ( nodeContext.Child(t,s),
+                          alpha, xLocalSub, yLocalSub );
+                    }
+                }
+                // Take care of the non-diagonal block
+                xLocalSub.LockedView( xLocal, 0, 0 );
+                for( int s=sStart,sOffset=0; s<sStop;
+                     sOffset+=node.sourceSizes[s],++s )
+                {
+                    yLocalSub.View( yLocal, sOffset, node.sourceSizes[s] );
+                    for( int t=0; t<8; ++t )
+                        if( t<tStart || t>=tStop )
+                            node.Child(t,s).TransposeMultiplyVectorPostcompute
+                            ( nodeContext.Child(t,s),
+                              alpha, xLocalSub, yLocalSub );
+                }
             }
             else
             {
                 // Only split yLocal
                 Vector<Scalar> yLocalSub;
-                for( int s=sStart,sOffset=0; s<sStop;                       
-                     sOffset+=node.sourceSizes[s],++s )                        
-                {                                                              
-                    yLocalSub.View( yLocal, sOffset, node.sourceSizes[s] );    
-                    for( int t=0; t<8; ++t )                                   
-                        node.Child(t,s).TransposeMultiplyVectorPostcompute     
-                        ( nodeContext.Child(t,s),                              
-                          alpha, xLocal, yLocalSub );                          
-                }                                                              
+                for( int s=sStart,sOffset=0; s<sStop;
+                     sOffset+=node.sourceSizes[s],++s )
+                {
+                    yLocalSub.View( yLocal, sOffset, node.sourceSizes[s] );
+                    for( int t=0; t<8; ++t )
+                        node.Child(t,s).TransposeMultiplyVectorPostcompute
+                        ( nodeContext.Child(t,s),
+                          alpha, xLocal, yLocalSub );
+                }
             }
         }
         break;
@@ -2206,7 +2206,7 @@ DistHMat3d<Scalar>::TransposeMultiplyVectorPostcompute
     case SPLIT_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyVectorContext::SplitNode& nodeContext = 
+        typename MultiplyVectorContext::SplitNode& nodeContext =
             *context.block.data.SN;
         Vector<Scalar> yLocalSub;
         for( int s=0,sOffset=0; s<8; sOffset+=node.sourceSizes[s],++s )
@@ -2268,7 +2268,7 @@ DistHMat3d<Scalar>::AdjointMultiplyVectorPostcompute
     case DIST_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyVectorContext::DistNode& nodeContext = 
+        typename MultiplyVectorContext::DistNode& nodeContext =
             *context.block.data.DN;
 
         mpi::Comm team = teams_->Team( level_ );
@@ -2302,47 +2302,47 @@ DistHMat3d<Scalar>::AdjointMultiplyVectorPostcompute
             {
                 // Split xLocal and yLocal
                 Vector<Scalar> xLocalSub, yLocalSub;
-                // Take care of the diagonal block                           
-                for( int s=sStart,sOffset=0; s<sStop;                           
-                     sOffset+=node.sourceSizes[s],++s )                         
-                {                                                               
-                    yLocalSub.View( yLocal, sOffset, node.sourceSizes[s] );     
-                    for( int t=tStart,tOffset=0; t<tStop;                       
-                         tOffset+=node.targetSizes[t],++t )                     
-                    {                                                           
-                        xLocalSub.LockedView                                    
-                        ( xLocal, tOffset, node.targetSizes[t] );               
-                        node.Child(t,s).AdjointMultiplyVectorPostcompute        
-                        ( nodeContext.Child(t,s),                               
-                          alpha, xLocalSub, yLocalSub );                        
-                    }                                                           
-                }                                                               
-                // Take care of the non-diagonal block                          
-                xLocalSub.LockedView( xLocal, 0, 0 );                           
-                for( int s=sStart,sOffset=0; s<sStop;                           
-                     sOffset+=node.sourceSizes[s],++s )                         
-                {                                                               
-                    yLocalSub.View( yLocal, sOffset, node.sourceSizes[s] );     
-                    for( int t=0; t<8; ++t )                                    
-                        if( t<tStart || t>= tStop )                             
-                            node.Child(t,s).AdjointMultiplyVectorPostcompute    
-                            ( nodeContext.Child(t,s),                           
-                              alpha, xLocalSub, yLocalSub );                    
-                }                                                               
+                // Take care of the diagonal block
+                for( int s=sStart,sOffset=0; s<sStop;
+                     sOffset+=node.sourceSizes[s],++s )
+                {
+                    yLocalSub.View( yLocal, sOffset, node.sourceSizes[s] );
+                    for( int t=tStart,tOffset=0; t<tStop;
+                         tOffset+=node.targetSizes[t],++t )
+                    {
+                        xLocalSub.LockedView
+                        ( xLocal, tOffset, node.targetSizes[t] );
+                        node.Child(t,s).AdjointMultiplyVectorPostcompute
+                        ( nodeContext.Child(t,s),
+                          alpha, xLocalSub, yLocalSub );
+                    }
+                }
+                // Take care of the non-diagonal block
+                xLocalSub.LockedView( xLocal, 0, 0 );
+                for( int s=sStart,sOffset=0; s<sStop;
+                     sOffset+=node.sourceSizes[s],++s )
+                {
+                    yLocalSub.View( yLocal, sOffset, node.sourceSizes[s] );
+                    for( int t=0; t<8; ++t )
+                        if( t<tStart || t>= tStop )
+                            node.Child(t,s).AdjointMultiplyVectorPostcompute
+                            ( nodeContext.Child(t,s),
+                              alpha, xLocalSub, yLocalSub );
+                }
             }
             else
             {
                 // Only split yLocal
                 Vector<Scalar> yLocalSub;
-                for( int s=sStart,sOffset=0; s<sStop;                       
-                     sOffset+=node.sourceSizes[s],++s )                        
-                {                                                              
-                    yLocalSub.View( yLocal, sOffset, node.sourceSizes[s] );    
-                    for( int t=0; t<8; ++t )                                   
-                        node.Child(t,s).AdjointMultiplyVectorPostcompute       
-                        ( nodeContext.Child(t,s),                              
-                          alpha, xLocal, yLocalSub );                          
-                }                                                              
+                for( int s=sStart,sOffset=0; s<sStop;
+                     sOffset+=node.sourceSizes[s],++s )
+                {
+                    yLocalSub.View( yLocal, sOffset, node.sourceSizes[s] );
+                    for( int t=0; t<8; ++t )
+                        node.Child(t,s).AdjointMultiplyVectorPostcompute
+                        ( nodeContext.Child(t,s),
+                          alpha, xLocal, yLocalSub );
+                }
             }
         }
 
@@ -2351,7 +2351,7 @@ DistHMat3d<Scalar>::AdjointMultiplyVectorPostcompute
     case SPLIT_NODE:
     {
         const Node& node = *block_.data.N;
-        typename MultiplyVectorContext::SplitNode& nodeContext = 
+        typename MultiplyVectorContext::SplitNode& nodeContext =
             *context.block.data.SN;
         Vector<Scalar> yLocalSub;
         for( int s=0,sOffset=0; s<8; sOffset+=node.sourceSizes[s],++s )

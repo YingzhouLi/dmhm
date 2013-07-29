@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -12,7 +12,7 @@ using namespace dmhm;
 template<typename Real>
 void
 FormRow
-( int x, int y, int z, int xSize, int ySize, int zSize, 
+( int x, int y, int z, int xSize, int ySize, int zSize,
   Vector<std::complex<Real> >& row, Vector<int>& colIndices )
 {
     typedef std::complex<Real> Scalar;
@@ -91,7 +91,7 @@ main( int argc, char* argv[] )
         const bool multI = Input("--multI","multiply by identity?",false);
         const int schuN = Input("--schuN","Iteration number of Schulz invert",15);
         const int oversample = Input("--oversample","num extra basis vecs",4);
-        const double midcomputeTol = 
+        const double midcomputeTol =
             Input("--midcomputeTol","tolerance for midcompute stage",1e-16);
         const double compressionTol =
             Input("--compressionTol","tolerance for compression",1e-16);
@@ -148,7 +148,7 @@ main( int argc, char* argv[] )
         double fillStopTime = mpi::Time();
         if( commRank == 0 )
         {
-            std::cout << "done: " << fillStopTime-fillStartTime << " seconds." 
+            std::cout << "done: " << fillStopTime-fillStartTime << " seconds."
                       << std::endl;
         }
 
@@ -166,9 +166,9 @@ main( int argc, char* argv[] )
         mpi::Barrier( mpi::COMM_WORLD );
         double constructStopTime = mpi::Time();
         if( commRank == 0 )
-            std::cout << "done: " << constructStopTime-constructStartTime 
+            std::cout << "done: " << constructStopTime-constructStartTime
                       << " seconds." << std::endl;
-        
+
         //Clear all sparse part
         S.Clear();
         map.Clear();
@@ -225,7 +225,7 @@ main( int argc, char* argv[] )
             XLocal.Resize( localHeight, numRhs );
             ParallelGaussianRandomVectors( XLocal );
         }
-        
+
         Dense<Scalar> YLocal, ZLocal;
         // Y := AZ := ABX
         B.Multiply( Scalar(1), XLocal, ZLocal );
@@ -269,7 +269,7 @@ main( int argc, char* argv[] )
         }
 #ifdef MEMORY_INFO
         C.PrintMemoryInfo("Memory info of C");
-        std::cout << "Memory of block now: " 
+        std::cout << "Memory of block now: "
                   << MemoryUsage()/1024./1024. << "MB" << std::endl;
         std::cout << "Peak memory of block: "
                   << PeakMemoryUsage()/1024./1024. << "MB" << std::endl;
@@ -312,8 +312,8 @@ main( int argc, char* argv[] )
         }
 
         // Compute the error norms and put ZLocal = YLocal-ZLocal
-        double myInfTruth=0, myInfError=0, 
-               myL1Truth=0, myL1Error=0, 
+        double myInfTruth=0, myInfError=0,
+               myL1Truth=0, myL1Error=0,
                myL2SquaredTruth=0, myL2SquaredError=0;
         for( int j=0; j<XLocal.Width(); ++j )
         {
@@ -335,8 +335,8 @@ main( int argc, char* argv[] )
                 myL2SquaredError += errorMag*errorMag;
             }
         }
-        double infTruth, infError, 
-               L1Truth, L1Error, 
+        double infTruth, infError,
+               L1Truth, L1Error,
                L2SquaredTruth, L2SquaredError;
         mpi::Reduce( &myInfTruth, &infTruth, 1, mpi::MAX, 0, mpi::COMM_WORLD );
         mpi::Reduce( &myInfError, &infError, 1, mpi::MAX, 0, mpi::COMM_WORLD );
@@ -353,7 +353,7 @@ main( int argc, char* argv[] )
                       << "||ABX||_2     = " << sqrt(L2SquaredTruth) << "\n"
                       << "||CX-ABX||_oo = " << infError << "\n"
                       << "||CX-ABX||_1  = " << L1Error << "\n"
-                      << "||CX-ABX||_2  = " << sqrt(L2SquaredError) 
+                      << "||CX-ABX||_2  = " << sqrt(L2SquaredError)
                       << std::endl;
         }
 
@@ -371,13 +371,13 @@ main( int argc, char* argv[] )
     catch( ArgException& e ) { }
     catch( std::exception& e )
     {
-        std::cerr << "Process " << commRank << " caught message: " << e.what() 
+        std::cerr << "Process " << commRank << " caught message: " << e.what()
                   << std::endl;
 #ifndef RELEASE
         DumpCallStack();
 #endif
     }
-    
+
     Finalize();
     return 0;
 }

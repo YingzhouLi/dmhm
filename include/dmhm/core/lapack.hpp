@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -106,7 +106,7 @@ void LAPACK(zgeqp3)
   int* info );
 
 void LAPACK(sormqr)
-( const char* side, const char* trans, 
+( const char* side, const char* trans,
   const int* m, const int* n, const int* k,
   const float* A, const int* lda,
   const float* tau,
@@ -129,7 +129,7 @@ void LAPACK(cunmqr)
   const scomplex* A, const int* lda,
   const scomplex* tau,
   scomplex* C, const int* ldc,
-  scomplex* work, const int* lwork, 
+  scomplex* work, const int* lwork,
   int* info );
 
 void LAPACK(zunmqr)
@@ -159,7 +159,7 @@ void LAPACK(cungqr)
 ( const int* m, const int* n, const int* k,
         scomplex* A, const int* lda,
   const scomplex* tau,
-        scomplex* work, const int* lwork, 
+        scomplex* work, const int* lwork,
   int* info );
 
 void LAPACK(zungqr)
@@ -170,7 +170,7 @@ void LAPACK(zungqr)
   int* info );
 
 void LAPACK(sgesvd)
-( const char* jobu, const char* jobvh, 
+( const char* jobu, const char* jobvh,
   const int* m, const int* n,
   float* A, const int* lda,
   float* s,
@@ -215,34 +215,34 @@ float LAPACK(slamch)( const char* cmach );
 double LAPACK(dlamch)( const char* cmach );
 
 void LAPACK(sgetrf)
-( const int* m, const int* n, 
-  float* A, const int* lda, 
-  int* ipiv, 
+( const int* m, const int* n,
+  float* A, const int* lda,
+  int* ipiv,
   int* info );
 
 void LAPACK(dgetrf)
-( const int* m, const int* n, 
-  double* A, const int* lda, 
-  int* ipiv, 
+( const int* m, const int* n,
+  double* A, const int* lda,
+  int* ipiv,
   int* info );
 
 void LAPACK(cgetrf)
-( const int* m, const int* n, 
-  scomplex* A, const int* lda, 
-  int* ipiv, 
+( const int* m, const int* n,
+  scomplex* A, const int* lda,
+  int* ipiv,
   int* info );
 
 void LAPACK(zgetrf)
 ( const int* m, const int* n,
-  dcomplex* A, const int* lda, 
-  int* ipiv, 
+  dcomplex* A, const int* lda,
+  int* ipiv,
   int* info );
 
 void LAPACK(sgetri)
-( const int* n, 
-  float* A, const int* lda, 
-  const int* ipiv, 
-  float* work, const int* lwork, 
+( const int* n,
+  float* A, const int* lda,
+  const int* ipiv,
+  float* work, const int* lwork,
   int* info );
 
 void LAPACK(dgetri)
@@ -323,7 +323,7 @@ void LAPACK(zsytri)
   int* info );
 
 void LAPACK(ssyevd)
-( const char* jobz, const char* uplo, 
+( const char* jobz, const char* uplo,
   const int* n,
   float* A, const int* lda,
   float* w,
@@ -371,14 +371,14 @@ namespace lapack {
 
 template<typename Real> Real MachineEpsilon();
 
-template<> 
+template<>
 inline float MachineEpsilon<float>()
 {
     const char cmach = 'E';
     return LAPACK(slamch)( &cmach );
 }
 
-template<> 
+template<>
 inline double MachineEpsilon<double>()
 {
     const char cmach = 'E';
@@ -405,7 +405,7 @@ inline double MachineSafeMin()
 // Safe Norms (avoid under/over-flow)                                         //
 //----------------------------------------------------------------------------//
 
-inline float SafeNorm( float alpha, float beta ) 
+inline float SafeNorm( float alpha, float beta )
 { return LAPACK(slapy2)( &alpha, &beta ); }
 
 inline double SafeNorm( double alpha, double beta )
@@ -428,9 +428,9 @@ inline int QRWorkSize( int n )
 }
 
 inline void QR
-( int m, int n, 
-  float* A, int lda, 
-  float* tau, 
+( int m, int n,
+  float* A, int lda,
+  float* tau,
   float* work, int lwork )
 {
 #ifndef RELEASE
@@ -453,9 +453,9 @@ inline void QR
 }
 
 inline void QR
-( int m, int n, 
-  double* A, int lda, 
-  double* tau, 
+( int m, int n,
+  double* A, int lda,
+  double* tau,
   double* work, int lwork )
 {
 #ifndef RELEASE
@@ -478,9 +478,9 @@ inline void QR
 }
 
 inline void QR
-( int m, int n, 
-  std::complex<float>* A, int lda, 
-  std::complex<float>* tau, 
+( int m, int n,
+  std::complex<float>* A, int lda,
+  std::complex<float>* tau,
   std::complex<float>* work, int lwork )
 {
 #ifndef RELEASE
@@ -503,9 +503,9 @@ inline void QR
 }
 
 inline void QR
-( int m, int n, 
-  std::complex<double>* A, int lda, 
-  std::complex<double>* tau, 
+( int m, int n,
+  std::complex<double>* A, int lda,
+  std::complex<double>* tau,
   std::complex<double>* work, int lwork )
 {
 #ifndef RELEASE
@@ -543,10 +543,10 @@ inline int PivotedQRRealWorkSize( int n )
 }
 
 inline void PivotedQR
-( int m, int n, 
-  float* A, int lda, 
+( int m, int n,
+  float* A, int lda,
   int* jpvt,
-  float* tau, 
+  float* tau,
   float* work, int lwork )
 {
 #ifndef RELEASE
@@ -567,10 +567,10 @@ inline void PivotedQR
 }
 
 inline void PivotedQR
-( int m, int n, 
-  double* A, int lda, 
+( int m, int n,
+  double* A, int lda,
   int* jpvt,
-  double* tau, 
+  double* tau,
   double* work, int lwork )
 {
 #ifndef RELEASE
@@ -591,10 +591,10 @@ inline void PivotedQR
 }
 
 inline void PivotedQR
-( int m, int n, 
-  std::complex<float>* A, int lda, 
+( int m, int n,
+  std::complex<float>* A, int lda,
   int* jpvt,
-  std::complex<float>* tau, 
+  std::complex<float>* tau,
   std::complex<float>* work, int lwork,
   float* rwork )
 {
@@ -616,10 +616,10 @@ inline void PivotedQR
 }
 
 inline void PivotedQR
-( int m, int n, 
-  std::complex<double>* A, int lda, 
+( int m, int n,
+  std::complex<double>* A, int lda,
   int* jpvt,
-  std::complex<double>* tau, 
+  std::complex<double>* tau,
   std::complex<double>* work, int lwork,
   double* rwork )
 {
@@ -662,9 +662,9 @@ inline int ApplyQWorkSize( char side, int m, int n )
 }
 
 inline void ApplyQ
-( char side, char trans, int m, int n, int k, 
+( char side, char trans, int m, int n, int k,
   const float* A, int lda,
-  const float* tau, 
+  const float* tau,
         float* C, int ldc,
         float* work, int lwork )
 {
@@ -693,9 +693,9 @@ inline void ApplyQ
 }
 
 inline void ApplyQ
-( char side, char trans, int m, int n, int k, 
+( char side, char trans, int m, int n, int k,
   const double* A, int lda,
-  const double* tau, 
+  const double* tau,
         double* C, int ldc,
         double* work, int lwork )
 {
@@ -724,9 +724,9 @@ inline void ApplyQ
 }
 
 inline void ApplyQ
-( char side, char trans, int m, int n, int k, 
+( char side, char trans, int m, int n, int k,
   const std::complex<float>* A, int lda,
-  const std::complex<float>* tau, 
+  const std::complex<float>* tau,
         std::complex<float>* C, int ldc,
         std::complex<float>* work, int lwork )
 {
@@ -751,9 +751,9 @@ inline void ApplyQ
 }
 
 inline void ApplyQ
-( char side, char trans, int m, int n, int k, 
+( char side, char trans, int m, int n, int k,
   const std::complex<double>* A, int lda,
-  const std::complex<double>* tau, 
+  const std::complex<double>* tau,
         std::complex<double>* C, int ldc,
         std::complex<double>* work, int lwork )
 {
@@ -788,10 +788,10 @@ inline int FormQWorkSize( int n )
 }
 
 inline void FormQ
-( int m, int n, int k, 
+( int m, int n, int k,
         float* A, int lda,
-  const float* tau, 
-        float* work, int lwork ) 
+  const float* tau,
+        float* work, int lwork )
 {
 #ifndef RELEASE
     CallStackEntry entry("lapack::FormQ");
@@ -895,10 +895,10 @@ inline int SVDRealWorkSize( int m, int n )
 }
 
 inline void SVD
-( char jobu, char jobvh, int m, int n, 
+( char jobu, char jobvh, int m, int n,
   float* A, int lda,
-  float* s, 
-  float* U, int ldu, 
+  float* s,
+  float* U, int ldu,
   float* VH, int ldvh,
   float* work, int lwork, float* rwork=0 )
 {
@@ -934,10 +934,10 @@ inline void SVD
 }
 
 inline void SVD
-( char jobu, char jobvh, int m, int n, 
+( char jobu, char jobvh, int m, int n,
   double* A, int lda,
-  double* s, 
-  double* U, int ldu, 
+  double* s,
+  double* U, int ldu,
   double* VH, int ldvh,
   double* work, int lwork, double* rwork=0 )
 {
@@ -973,12 +973,12 @@ inline void SVD
 }
 
 inline void SVD
-( char jobu, char jobvh, int m, int n, 
+( char jobu, char jobvh, int m, int n,
   std::complex<float>* A, int lda,
-  float* s, 
-  std::complex<float>* U, int ldu, 
+  float* s,
+  std::complex<float>* U, int ldu,
   std::complex<float>* VH, int ldvh,
-  std::complex<float>* work, int lwork, 
+  std::complex<float>* work, int lwork,
   float* rwork )
 {
 #ifndef RELEASE
@@ -1013,12 +1013,12 @@ inline void SVD
 }
 
 inline void SVD
-( char jobu, char jobvh, int m, int n, 
+( char jobu, char jobvh, int m, int n,
   std::complex<double>* A, int lda,
-  double* s, 
-  std::complex<double>* U, int ldu, 
+  double* s,
+  std::complex<double>* U, int ldu,
   std::complex<double>* VH, int ldvh,
-  std::complex<double>* work, int lwork, 
+  std::complex<double>* work, int lwork,
   double* rwork )
 {
 #ifndef RELEASE
@@ -1052,15 +1052,84 @@ inline void SVD
 #endif
 }
 
+inline void SVD
+( char jobu, char jobvh, int m, int n,
+  float* A, int lda,
+  float* s,
+  float* U, int ldu,
+  float* VH, int ldvh )
+{
+#ifndef RELEASE
+    CallStackEntry entry("lapack::SVD");
+#endif
+    const int lwork = SVDWorkSize( m, n );
+    std::vector<float> work(lwork);
+    SVD( jobu, jobvh, m, n, A, lda, s, U, ldu, VH, ldvh, &work[0], lwork );
+}
+
+inline void SVD
+( char jobu, char jobvh, int m, int n,
+  double* A, int lda,
+  double* s,
+  double* U, int ldu,
+  double* VH, int ldvh )
+{
+#ifndef RELEASE
+    CallStackEntry entry("lapack::SVD");
+#endif
+    const int lwork = SVDWorkSize( m, n );
+    std::vector<double> work(lwork);
+    SVD
+    ( jobu, jobvh, m, n, A, lda, s, U, ldu, VH, ldvh,
+      &work[0], lwork );
+}
+
+inline void SVD
+( char jobu, char jobvh, int m, int n,
+  std::complex<float>* A, int lda,
+  float* s,
+  std::complex<float>* U, int ldu,
+  std::complex<float>* VH, int ldvh )
+{
+#ifndef RELEASE
+    CallStackEntry entry("lapack::SVD");
+#endif
+    const int lwork = SVDWorkSize( m, n );
+    const int lrwork = SVDRealWorkSize( m, n );
+    std::vector<std::complex<float> > work(lwork);
+    std::vector<float> rwork(lrwork);
+    SVD
+    ( jobu, jobvh, m, n, A, lda, s, U, ldu, VH, ldvh,
+      &work[0], lwork, &rwork[0] );
+}
+
+inline void SVD
+( char jobu, char jobvh, int m, int n,
+  std::complex<double>* A, int lda,
+  double* s,
+  std::complex<double>* U, int ldu,
+  std::complex<double>* VH, int ldvh )
+{
+#ifndef RELEASE
+    CallStackEntry entry("lapack::SVD");
+#endif
+    const int lwork = SVDWorkSize( m, n );
+    const int lrwork = SVDRealWorkSize( m, n );
+    std::vector<std::complex<double> > work(lwork);
+    std::vector<double> rwork(lrwork);
+    SVD
+    ( jobu, jobvh, m, n, A, lda, s, U, ldu, VH, ldvh,
+      &work[0], lwork, &rwork[0] );
+}
 //----------------------------------------------------------------------------//
 // Adjoint Pseudo-inverse (using an SVD)                                      //
 //----------------------------------------------------------------------------//
 
 inline void AdjointPseudoInverse
-( int m, int n, 
+( int m, int n,
   float* A, int lda,
-  float* s, 
-  float* U, int ldu, 
+  float* s,
+  float* U, int ldu,
   float* VH, int ldvh,
   float* work, int lwork,
   float* realWork, float epsilon )
@@ -1082,7 +1151,7 @@ inline void AdjointPseudoInverse
     for( cutoff=0; cutoff<minDim; ++cutoff )
     {
         if( s[cutoff] > tolerance )
-            for( int i=0; i<m; ++i ) 
+            for( int i=0; i<m; ++i )
                 U[i+cutoff*ldu] /= s[cutoff];
         else
             break;
@@ -1093,10 +1162,10 @@ inline void AdjointPseudoInverse
 }
 
 inline void AdjointPseudoInverse
-( int m, int n, 
+( int m, int n,
   double* A, int lda,
-  double* s, 
-  double* U, int ldu, 
+  double* s,
+  double* U, int ldu,
   double* VH, int ldvh,
   double* work, int lwork,
   double* realWork, double epsilon )
@@ -1118,7 +1187,7 @@ inline void AdjointPseudoInverse
     for( cutoff=0; cutoff<minDim; ++cutoff )
     {
         if( s[cutoff] > tolerance )
-            for( int i=0; i<m; ++i ) 
+            for( int i=0; i<m; ++i )
                 U[i+cutoff*ldu] /= s[cutoff];
         else
             break;
@@ -1129,12 +1198,12 @@ inline void AdjointPseudoInverse
 }
 
 inline void AdjointPseudoInverse
-( int m, int n, 
+( int m, int n,
   std::complex<float>* A, int lda,
-  float* s, 
-  std::complex<float>* U, int ldu, 
+  float* s,
+  std::complex<float>* U, int ldu,
   std::complex<float>* VH, int ldvh,
-  std::complex<float>* work, int lwork, 
+  std::complex<float>* work, int lwork,
   float* rwork, float epsilon )
 {
 #ifndef RELEASE
@@ -1155,7 +1224,7 @@ inline void AdjointPseudoInverse
     for( cutoff=0; cutoff<minDim; ++cutoff )
     {
         if( s[cutoff] > tolerance )
-            for( int i=0; i<m; ++i ) 
+            for( int i=0; i<m; ++i )
                 U[i+cutoff*ldu] /= s[cutoff];
         else
             break;
@@ -1166,12 +1235,12 @@ inline void AdjointPseudoInverse
 }
 
 inline void AdjointPseudoInverse
-( int m, int n, 
+( int m, int n,
   std::complex<double>* A, int lda,
-  double* s, 
-  std::complex<double>* U, int ldu, 
+  double* s,
+  std::complex<double>* U, int ldu,
   std::complex<double>* VH, int ldvh,
-  std::complex<double>* work, int lwork, 
+  std::complex<double>* work, int lwork,
   double* rwork, double epsilon )
 {
 #ifndef RELEASE
@@ -1192,7 +1261,7 @@ inline void AdjointPseudoInverse
     for( cutoff=0; cutoff<minDim; ++cutoff )
     {
         if( s[cutoff] > tolerance )
-            for( int i=0; i<m; ++i ) 
+            for( int i=0; i<m; ++i )
                 U[i+cutoff*ldu] /= s[cutoff];
         else
             break;
@@ -1203,10 +1272,10 @@ inline void AdjointPseudoInverse
 }
 
 inline void AdjointPseudoInverse
-( int m, int n, 
+( int m, int n,
   float* A, int lda,
-  float* s, 
-  float* U, int ldu, 
+  float* s,
+  float* U, int ldu,
   float* VH, int ldvh,
   float* work, int lwork,
   float* realWork=0 )
@@ -1220,10 +1289,10 @@ inline void AdjointPseudoInverse
 }
 
 inline void AdjointPseudoInverse
-( int m, int n, 
+( int m, int n,
   double* A, int lda,
-  double* s, 
-  double* U, int ldu, 
+  double* s,
+  double* U, int ldu,
   double* VH, int ldvh,
   double* work, int lwork,
   double* realWork=0 )
@@ -1237,12 +1306,12 @@ inline void AdjointPseudoInverse
 }
 
 inline void AdjointPseudoInverse
-( int m, int n, 
+( int m, int n,
   std::complex<float>* A, int lda,
-  float* s, 
-  std::complex<float>* U, int ldu, 
+  float* s,
+  std::complex<float>* U, int ldu,
   std::complex<float>* VH, int ldvh,
-  std::complex<float>* work, int lwork, 
+  std::complex<float>* work, int lwork,
   float* rwork )
 {
 #ifndef RELEASE
@@ -1254,12 +1323,12 @@ inline void AdjointPseudoInverse
 }
 
 inline void AdjointPseudoInverse
-( int m, int n, 
+( int m, int n,
   std::complex<double>* A, int lda,
-  double* s, 
-  std::complex<double>* U, int ldu, 
+  double* s,
+  std::complex<double>* U, int ldu,
   std::complex<double>* VH, int ldvh,
-  std::complex<double>* work, int lwork, 
+  std::complex<double>* work, int lwork,
   double* rwork )
 {
 #ifndef RELEASE
@@ -1284,7 +1353,7 @@ inline void AdjointPseudoInverse
     std::vector<float> s(minDim), U(m*minDim), VH(minDim*n),
                        work(lwork);
     AdjointPseudoInverse
-    ( m, n, A, lda, &s[0], &U[0], m, &VH[0], minDim, 
+    ( m, n, A, lda, &s[0], &U[0], m, &VH[0], minDim,
       &work[0], lwork, 0, epsilon );
 }
 
@@ -1302,7 +1371,7 @@ inline void AdjointPseudoInverse
     std::vector<double> s(minDim), U(m*minDim), VH(minDim*n),
                         work(lwork);
     AdjointPseudoInverse
-    ( m, n, A, lda, &s[0], &U[0], m, &VH[0], minDim, 
+    ( m, n, A, lda, &s[0], &U[0], m, &VH[0], minDim,
       &work[0], lwork, 0, epsilon );
 }
 
@@ -1321,7 +1390,7 @@ inline void AdjointPseudoInverse
     std::vector<float> s(minDim), rwork(lrwork);
     std::vector<std::complex<float> > U(m*minDim), VH(minDim*n), work(lwork);
     AdjointPseudoInverse
-    ( m, n, A, lda, &s[0], &U[0], m, &VH[0], minDim, 
+    ( m, n, A, lda, &s[0], &U[0], m, &VH[0], minDim,
       &work[0], lwork, &rwork[0], epsilon );
 }
 
@@ -1340,7 +1409,7 @@ inline void AdjointPseudoInverse
     std::vector<double> s(minDim), rwork(lrwork);
     std::vector<std::complex<double> > U(m*minDim), VH(minDim*n), work(lwork);
     AdjointPseudoInverse
-    ( m, n, A, lda, &s[0], &U[0], m, &VH[0], minDim, 
+    ( m, n, A, lda, &s[0], &U[0], m, &VH[0], minDim,
       &work[0], lwork, &rwork[0], epsilon );
 }
 
@@ -1475,7 +1544,7 @@ inline void InvertLU
 }
 
 inline void InvertLU
-( int n, std::complex<float>* A, int lda, int* ipiv, 
+( int n, std::complex<float>* A, int lda, int* ipiv,
   std::complex<float>* work, int lwork )
 {
 #ifndef RELEASE
@@ -1496,7 +1565,7 @@ inline void InvertLU
 }
 
 inline void InvertLU
-( int n, std::complex<double>* A, int lda, int* ipiv, 
+( int n, std::complex<double>* A, int lda, int* ipiv,
   std::complex<double>* work, int lwork )
 {
 #ifndef RELEASE
@@ -1527,7 +1596,7 @@ inline int LDLTWorkSize( int n )
 }
 
 inline void LDLT
-( char uplo, int n, float* A, int lda, int* ipiv, 
+( char uplo, int n, float* A, int lda, int* ipiv,
   float* work, int lwork )
 {
 #ifndef RELEASE
@@ -1548,7 +1617,7 @@ inline void LDLT
 }
 
 inline void LDLT
-( char uplo, int n, double* A, int lda, int* ipiv, 
+( char uplo, int n, double* A, int lda, int* ipiv,
   double* work, int lwork )
 {
 #ifndef RELEASE
@@ -1569,7 +1638,7 @@ inline void LDLT
 }
 
 inline void LDLT
-( char uplo, int n, std::complex<float>* A, int lda, int* ipiv, 
+( char uplo, int n, std::complex<float>* A, int lda, int* ipiv,
   std::complex<float>* work, int lwork )
 {
 #ifndef RELEASE
@@ -1590,7 +1659,7 @@ inline void LDLT
 }
 
 inline void LDLT
-( char uplo, int n, std::complex<double>* A, int lda, int* ipiv, 
+( char uplo, int n, std::complex<double>* A, int lda, int* ipiv,
   std::complex<double>* work, int lwork )
 {
 #ifndef RELEASE
@@ -1660,7 +1729,7 @@ inline void InvertLDLT
 }
 
 inline void InvertLDLT
-( char uplo, int n, std::complex<float>* A, int lda, int* ipiv, 
+( char uplo, int n, std::complex<float>* A, int lda, int* ipiv,
   std::complex<float>* work )
 {
 #ifndef RELEASE
@@ -1681,7 +1750,7 @@ inline void InvertLDLT
 }
 
 inline void InvertLDLT
-( char uplo, int n, std::complex<double>* A, int lda, int* ipiv, 
+( char uplo, int n, std::complex<double>* A, int lda, int* ipiv,
   std::complex<double>* work )
 {
 #ifndef RELEASE
@@ -1722,7 +1791,7 @@ inline int EVDIntWorkSize( int n )
 }
 
 inline void EVD
-( char jobz, char uplo, int n, 
+( char jobz, char uplo, int n,
   float* A, int lda,
   float* w,
   float* work, int lwork,
@@ -1749,7 +1818,7 @@ inline void EVD
 }
 
 inline void EVD
-( char jobz, char uplo, int n, 
+( char jobz, char uplo, int n,
   double* A, int lda,
   double* w,
   double* work, int lwork,
@@ -1776,7 +1845,7 @@ inline void EVD
 }
 
 inline void EVD
-( char jobz, char uplo, int n, 
+( char jobz, char uplo, int n,
   std::complex<float>* A, int lda,
   float* w,
   std::complex<float>* work, int lwork,
@@ -1803,10 +1872,10 @@ inline void EVD
 }
 
 inline void EVD
-( char jobz, char uplo, int n, 
+( char jobz, char uplo, int n,
   std::complex<double>* A, int lda,
-  double* w, 
-  std::complex<double>* work, int lwork, 
+  double* w,
+  std::complex<double>* work, int lwork,
   int* iwork, int liwork,
   double* rwork, int lrwork )
 {
@@ -1875,7 +1944,7 @@ inline void EVD
     std::vector<int> iwork( liwork );
     std::vector<float> rwork( lrwork );
     EVD
-    ( jobz, uplo, n, A, lda, w, 
+    ( jobz, uplo, n, A, lda, w,
       &work[0], lwork, &iwork[0], liwork, &rwork[0], lrwork );
 }
 
@@ -1897,6 +1966,6 @@ inline void EVD
 }
 
 } // namespace lapack
-} // namespace dmhm 
+} // namespace dmhm
 
 #endif // ifndef DMHM_LAPACK_HPP
