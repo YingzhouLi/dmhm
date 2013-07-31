@@ -193,7 +193,8 @@ public:
     Real ParallelEstimateTwoNorm( Real theta, Real confidence);
 
     // A := inv(A)
-    void SchulzInvert( int numIterations, Real theta=1.5, Real confidence=6 );
+    void SchulzInvert
+    ( int numIterations, int multType=2, Real theta=1.5, Real confidence=6 );
 
     // A := conj(A)
     void Conjugate();

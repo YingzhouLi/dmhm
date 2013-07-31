@@ -236,7 +236,7 @@ void AddToMemoryCount( double size )
     ::memoryUsage += size;
     if( ::memoryUsage > ::peakMemoryUsage )
         ::peakMemoryUsage = ::memoryUsage;
-    typename std::map<int,double>::iterator it;
+    std::map<int,double>::iterator it;
     for( it=::memoryUsageMap.begin(); it!=::memoryUsageMap.end(); ++it )
     {
         it->second += size;

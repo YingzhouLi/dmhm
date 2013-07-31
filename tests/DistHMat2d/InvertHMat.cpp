@@ -184,7 +184,7 @@ main( int argc, char* argv[] )
         }
         mpi::Barrier( mpi::COMM_WORLD );
         double SchulzInvertStartTime = mpi::Time();
-        A.SchulzInvert(schuN);
+        A.SchulzInvert(schuN, multType);
         mpi::Barrier( mpi::COMM_WORLD );
         double SchulzInvertStopTime = mpi::Time();
         if( commRank == 0 )

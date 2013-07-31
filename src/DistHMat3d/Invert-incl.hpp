@@ -14,7 +14,7 @@ namespace dmhm {
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::SchulzInvert
-( int numIterations, BASE(Scalar) theta, BASE(Scalar) confidence )
+( int numIterations, int multType, BASE(Scalar) theta, BASE(Scalar) confidence )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::SchulzInvert");
@@ -49,12 +49,12 @@ DistHMat3d<Scalar>::SchulzInvert
 #endif
         // Form Z := 2I - X_k A
         DistHMat3d<Scalar> Z;
-        X.Multiply( Scalar(-1), *this, Z, 2 );
+        X.Multiply( Scalar(-1), *this, Z, multType );
         Z.AddConstantToDiagonal( Scalar(2) );
         // Form X_k+1 := Z X_k = (2I - X_k A) X_k
         DistHMat3d<Scalar> XCopy;
         XCopy.CopyFrom( X );
-        Z.Multiply( Scalar(1), XCopy, X, 2 );
+        Z.Multiply( Scalar(1), XCopy, X, multType );
     }
 
     CopyFrom( X );
