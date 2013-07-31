@@ -108,11 +108,16 @@ template<>
 void SetMidcomputeTolerance<double>( double tolerance );
 
 #ifdef MEMORY_INFO
-void ResetMemoryCount();
+void ResetMemoryCount( int key = -1 );
+void NewMemoryCount( int key );
+void EraseMemoryCount( int key );
 void AddToMemoryCount( double size );
-double MemoryUsage();
-double PeakMemoryUsage();
+double MemoryUsage( int key = -1 );
+double PeakMemoryUsage( int key = -1 );
 #endif
+
+void PrintGlobal
+( double num, const std::string tag = "", std::ostream& os = std::cout );
 
 typedef unsigned char byte;
 

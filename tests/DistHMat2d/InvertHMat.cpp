@@ -251,11 +251,9 @@ main( int argc, char* argv[] )
                       << " seconds." << std::endl;
         }
 #ifdef MEMORY_INFO
-        C.PrintMemoryInfo("Memory info of C");
-        std::cout << "Memory of block now: "
-                  << MemoryUsage()/1024./1024. << "MB" << std::endl;
-        std::cout << "Peak memory of block: "
-                  << PeakMemoryUsage()/1024./1024. << "MB" << std::endl;
+        //C.PrintMemoryInfo("Memory info of C");
+        PrintGlobal( MemoryUsage()/1024./1024., "Memory of block now(MB): " );
+        PrintGlobal( PeakMemoryUsage()/1024./1024., "Peak memory of block now(MB): " );
 #endif
         if( structure )
         {

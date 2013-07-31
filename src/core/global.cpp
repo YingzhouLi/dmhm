@@ -36,6 +36,8 @@ double compressionTolDouble=1e-16;
 #ifdef MEMORY_INFO
 double memoryUsage=0;
 double peakMemoryUsage=0;
+std::map<int,double> memoryUsageMap;
+std::map<int,double> peakMemoryUsageMap;
 #endif
 }
 
@@ -200,22 +202,89 @@ void SetMidcomputeTolerance<double>( double tolerance )
 { ::midcomputeTolDouble = tolerance; }
 
 #ifdef MEMORY_INFO
-void ResetMemoryCount()
-{   ::memoryUsage = 0;
-    ::peakMemoryUsage = 0;
+void ResetMemoryCount( int key )
+{
+    if( key < 0 )
+    {
+        ::memoryUsage = 0;
+        ::peakMemoryUsage = 0;
+    }
+    else
+    {
+        std::map<int,double>::iterator it;
+        it = ::peakMemoryUsageMap.find( key );
+        if( it != ::peakMemoryUsageMap.end() )
+        {
+            ::memoryUsageMap[key] = 0;
+            ::peakMemoryUsageMap[key] = 0;
+        }
+    }
+}
+
+void NewMemoryCount( int key )
+{
+    ::memoryUsageMap[key] = 0;
+}
+
+void EraseMemoryCount( int key )
+{
+    ::memoryUsageMap.erase( key );
 }
 
 void AddToMemoryCount( double size )
-{   ::memoryUsage += size;
+{
+    ::memoryUsage += size;
     if( ::memoryUsage > ::peakMemoryUsage )
         ::peakMemoryUsage = ::memoryUsage;
+    typename std::map<int,double>::iterator it;
+    for( it=::memoryUsageMap.begin(); it!=::memoryUsageMap.end(); ++it )
+    {
+        it->second += size;
+        if( it->second > ::peakMemoryUsageMap[it->first] )
+            ::peakMemoryUsageMap[it->first] = it->second;
+    }
 }
 
-double MemoryUsage()
-{ return ::memoryUsage; }
+double MemoryUsage( int key )
+{
+    if( key < 0 )
+        return ::memoryUsage;
+    else
+    {
+        std::map<int,double>::iterator it;
+        it = ::memoryUsageMap.find( key );
+        if( it == ::memoryUsageMap.end() )
+            return 0;
+        else
+            return ::memoryUsageMap[key];
+    }
+}
 
-double PeakMemoryUsage()
-{ return ::peakMemoryUsage; }
+double PeakMemoryUsage( int key )
+{
+    if( key < 0 )
+        return ::peakMemoryUsage;
+    else
+    {
+        std::map<int,double>::iterator it;
+        it = ::peakMemoryUsageMap.find( key );
+        if( it == ::peakMemoryUsageMap.end() )
+            return 0;
+        else
+            return ::peakMemoryUsageMap[key];
+    }
+}
 #endif
+
+void PrintGlobal( double num, const std::string tag, std::ostream& os )
+{
+    mpi::Comm team = mpi::COMM_WORLD;
+    const int teamRank = mpi::CommRank( team );
+    double maxnum, minnum;
+    mpi::Reduce( &num, &maxnum, 1, mpi::MAX, 0, team );
+    mpi::Reduce( &num, &minnum, 1, mpi::MIN, 0, team );
+    if( teamRank == 0 )
+        os << tag << maxnum << "(max), " << minnum << "(min).\n";
+}
 
 } // namespace dhmhm

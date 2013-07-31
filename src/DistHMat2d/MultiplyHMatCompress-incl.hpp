@@ -25,17 +25,18 @@ DistHMat2d<Scalar>::MultiplyHMatCompress()
     // vectors of U'U, and USqrEig_ to store the eigenvalues of U'U.
     // Everything about V are same in VSqr_ and VSqrEig_.
 
+#ifdef MEMORY_INFO
+    //PrintMemoryInfo( "MemoryInfo before Compression" );
+#endif
+
     MultiplyHMatCompressLowRankCountAndResize(0);
     MultiplyHMatCompressLowRankImport(0);
 
 #ifdef MEMORY_INFO
-    ResetMemoryCount();
+    NewMemoryCount( 1 );
 #endif
 
     MultiplyHMatCompressFPrecompute();
-#ifdef MEMORY_INFO
-//    PrintMemoryInfo( "MemoryInfo before Compression Reduce" );
-#endif
     MultiplyHMatCompressFReduces();
 
     evdCount=0;
@@ -52,9 +53,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompress()
     //
     const Real midcomputeTol = MidcomputeTolerance<Real>();
     MultiplyHMatCompressFMidcompute( midcomputeTol );
-#ifdef MEMORY_INFO
-//    PrintMemoryInfo( "MemoryInfo Compression after Midcompute" );
-#endif
     MultiplyHMatCompressFPassbackNum();
     MultiplyHMatCompressFPassbackData();
 
@@ -73,7 +71,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompress()
     MultiplyHMatCompressFFinalcompute();
 
 #ifdef MEMORY_INFO
-    std::cout << "Temp Peak Memory: " << PeakMemoryUsage() << std::endl;
+    PrintGlobal( PeakMemoryUsage()/1024./1024., "Peak Memory(MB): " );
+    PrintGlobal( PeakMemoryUsage( 1 )/1024./1024.,
+                 "Temp Peak Memory(MB): " );
+    EraseMemoryCount( 1 );
 #endif
     // Clean up all the space used in this file
     // Also, clean up the colXMap_, rowXMap_, UMap_, VMap_, ZMap_
