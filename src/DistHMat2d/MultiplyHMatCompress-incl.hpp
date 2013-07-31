@@ -1335,6 +1335,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFEigenDecomp()
                 evdCount++;
             }
         }
+        break;
     }
     case LOW_RANK:
     {
