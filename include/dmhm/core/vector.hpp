@@ -21,7 +21,7 @@ namespace dmhm {
 template<typename T>
 class Vector
 {
-    int height_;
+    size_t height_;
     bool viewing_;
     bool lockedView_;
     std::vector<T> memory_;
@@ -30,22 +30,23 @@ class Vector
 
 public:
     Vector();
-    Vector( int height );
-    Vector( int height, const T x );
-    Vector( int height, T* buffer );
-    Vector( int height, const T* lockedBuffer );
+    Vector( size_t height );
+    Vector( size_t height, const T x );
+    Vector( size_t height, T* buffer );
+    Vector( size_t height, const T* lockedBuffer );
     Vector( const Vector<T>& x );
     ~Vector();
 
-    int Height() const;
-    int Size() const;
-    void Resize( int height );
+    size_t Height() const;
+    size_t Size() const;
+    size_t size() const;
+    void Resize( size_t height );
     void Clear();
 
-    void Set( int i, T value );
-    T Get( int i ) const;
-    T & operator[]( int i );
-    const T & operator[]( int i ) const;
+    void Set( size_t i, T value );
+    T Get( size_t i ) const;
+    T & operator[]( size_t i );
+    const T & operator[]( size_t i ) const;
 
     typedef typename std::vector<T>::iterator iterator;
     iterator Begin()
@@ -65,14 +66,14 @@ public:
 
     void Print( const std::string tag, std::ostream& os=std::cout ) const;
 
-    T* Buffer( int i=0 );
-    const T* LockedBuffer( int i=0 ) const;
+    T* Buffer( size_t i=0 );
+    const T* LockedBuffer( size_t i=0 ) const;
 
     void View( Vector<T>& x );
-    void View( Vector<T>& x, int i, int height );
+    void View( Vector<T>& x, size_t i, size_t height );
 
     void LockedView( const Vector<T>& x );
-    void LockedView( const Vector<T>& x, int i, int height );
+    void LockedView( const Vector<T>& x, size_t i, size_t height );
 };
 
 //----------------------------------------------------------------------------//
@@ -88,7 +89,7 @@ Vector<T>::Vector()
 
 template<typename T>
 inline
-Vector<T>::Vector( int height )
+Vector<T>::Vector( size_t height )
 : height_(height), viewing_(false), lockedView_(false),
   memory_(height), buffer_(&memory_[0]), lockedBuffer_(0)
 {
@@ -99,11 +100,11 @@ Vector<T>::Vector( int height )
 
 template<typename T>
 inline
-Vector<T>::Vector( int height, const T x )
+Vector<T>::Vector( size_t height, const T x )
 : height_(height), viewing_(false), lockedView_(false),
   memory_(height), buffer_(&memory_[0]), lockedBuffer_(0)
 {
-    for( int i=0; i<height; ++i )
+    for( size_t i=0; i<height; ++i )
         memory_[i]=x;
 #ifdef MEMORY_INFO
     AddToMemoryCount( memory_.size()*sizeof(T) );
@@ -112,14 +113,14 @@ Vector<T>::Vector( int height, const T x )
 
 template<typename T>
 inline
-Vector<T>::Vector( int height, T* buffer )
+Vector<T>::Vector( size_t height, T* buffer )
 : height_(height), viewing_(true), lockedView_(false),
   memory_(), buffer_(buffer), lockedBuffer_(0)
 { }
 
 template<typename T>
 inline
-Vector<T>::Vector( int height, const T* lockedBuffer )
+Vector<T>::Vector( size_t height, const T* lockedBuffer )
 : height_(height), viewing_(true), lockedView_(true),
   memory_(), buffer_(0), lockedBuffer_(lockedBuffer)
 { }
@@ -139,18 +140,23 @@ Vector<T>::~Vector()
 }
 
 template<typename T>
-inline int
+inline size_t
 Vector<T>::Height() const
 { return height_; }
 
 template<typename T>
-inline int
+inline size_t
 Vector<T>::Size() const
 { return height_; }
 
 template<typename T>
+inline size_t
+Vector<T>::size() const
+{ return height_; }
+
+template<typename T>
 inline void
-Vector<T>::Resize( int height )
+Vector<T>::Resize( size_t height )
 {
 #ifndef RELEASE
     CallStackEntry entry("Vector::Resize");
@@ -189,7 +195,7 @@ Vector<T>::Clear()
 
 template<typename T>
 inline void
-Vector<T>::Set( int i, T value )
+Vector<T>::Set( size_t i, T value )
 {
 #ifndef RELEASE
     CallStackEntry entry("Vector::Set");
@@ -205,7 +211,7 @@ Vector<T>::Set( int i, T value )
 
 template<typename T>
 inline T
-Vector<T>::Get( int i ) const
+Vector<T>::Get( size_t i ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("Vector::Get");
@@ -222,7 +228,7 @@ Vector<T>::Get( int i ) const
 
 template<typename T>
 inline T &
-Vector<T>::operator[]( int i )
+Vector<T>::operator[]( size_t i )
 {
 #ifndef RELEASE
     CallStackEntry entry("Vector::operator[]");
@@ -238,7 +244,7 @@ Vector<T>::operator[]( int i )
 
 template<typename T>
 inline const T &
-Vector<T>::operator[]( int i ) const
+Vector<T>::operator[]( size_t i ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("Vector::operator[]");
@@ -337,12 +343,12 @@ Vector<T>::Print( const std::string tag, std::ostream& os ) const
     os << tag << "\n";
     if( lockedView_ )
     {
-        for( int i=0; i<height_; ++i )
+        for( size_t i=0; i<height_; ++i )
             os << WrapScalar(lockedBuffer_[i]) << "\n";
     }
     else
     {
-        for( int i=0; i<height_; ++i )
+        for( size_t i=0; i<height_; ++i )
             os << WrapScalar(buffer_[i]) << "\n";
     }
     os << std::endl;
@@ -350,12 +356,13 @@ Vector<T>::Print( const std::string tag, std::ostream& os ) const
 
 template<typename T>
 inline T*
-Vector<T>::Buffer( int i )
+Vector<T>::Buffer( size_t i )
 {
 #ifndef RELEASE
     CallStackEntry entry("Vector::Buffer");
     if( lockedView_ )
-        throw std::logic_error("Cannot get modifiable buffer from locked view");
+        throw std::logic_error
+                ("Cannot get modifiable buffer from locked view");
     if( i < 0 )
         throw std::logic_error("Negative buffer offset is nonsensical");
     if( i > height_ )
@@ -366,7 +373,7 @@ Vector<T>::Buffer( int i )
 
 template<typename T>
 inline const T*
-Vector<T>::LockedBuffer( int i ) const
+Vector<T>::LockedBuffer( size_t i ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("Vector::LockedBuffer");
@@ -396,7 +403,7 @@ Vector<T>::View( Vector<T>& x )
 
 template<typename T>
 inline void
-Vector<T>::View( Vector<T>& x, int i, int height )
+Vector<T>::View( Vector<T>& x, size_t i, size_t height )
 {
 #ifndef RELEASE
     CallStackEntry entry("Vector::View");
@@ -426,7 +433,7 @@ Vector<T>::LockedView( const Vector<T>& x )
 
 template<typename T>
 inline void
-Vector<T>::LockedView( const Vector<T>& x, int i, int height )
+Vector<T>::LockedView( const Vector<T>& x, size_t i, size_t height )
 {
 #ifndef RELEASE
     CallStackEntry entry("Vector::LockedView");

@@ -229,7 +229,7 @@ main( int argc, char* argv[] )
                       << " seconds." << std::endl;
             if( print )
                 z.Print("z := HCopy x ~= S x");
-            for( int i=0; i<z.Height(); ++i )
+            for( unsigned i=0; i<z.Height(); ++i )
             {
                 if( z.Get(i) != y.Get(i) )
                 {

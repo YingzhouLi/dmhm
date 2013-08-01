@@ -315,7 +315,7 @@ main( int argc, char* argv[] )
         double myInfTruth=0, myInfError=0,
                myL1Truth=0, myL1Error=0,
                myL2SquaredTruth=0, myL2SquaredError=0;
-        for( int j=0; j<XLocal.Width(); ++j )
+        for( unsigned j=0; j<XLocal.Width(); ++j )
         {
             for( int i=0; i<localHeight; ++i )
             {

@@ -27,6 +27,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompress()
 
 #ifdef MEMORY_INFO
     //PrintMemoryInfo( "MemoryInfo before Compression" );
+    PrintGlobal( PeakMemoryUsage()/1024./1024.,
+                 "Peak Memory Before Compress(MB): " );
 #endif
 
     MultiplyHMatCompressLowRankCountAndResize(0);

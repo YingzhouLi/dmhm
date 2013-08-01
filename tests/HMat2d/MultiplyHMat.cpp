@@ -232,7 +232,7 @@ main( int argc, char* argv[] )
         double infTruth=0, infError=0,
                L1Truth=0, L1Error=0,
                L2SquaredTruth=0, L2SquaredError=0;
-        for( int j=0; j<X.Width(); ++j )
+        for( unsigned j=0; j<X.Width(); ++j )
         {
             for( int i=0; i<m; ++i )
             {

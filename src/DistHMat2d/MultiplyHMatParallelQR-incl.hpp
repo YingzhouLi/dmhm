@@ -77,7 +77,7 @@ DistHMat2d<Scalar>::MultiplyHMatParallelQR
                 if( step == 0 )
                 {
                     // The first iteration bootstraps the local height from X
-                    halfHeight = std::min(X.Height(),r);
+                    halfHeight = std::min((int)X.Height(),r);
                     if( firstRoot )
                         halfHeightLevel[halfHeightOffset] = halfHeight;
                     else
