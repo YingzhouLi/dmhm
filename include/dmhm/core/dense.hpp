@@ -364,7 +364,7 @@ Dense<Scalar>::EraseRows( size_t first, size_t last )
     if( first <= last )
     {
         height_ = height_-last+first-1;
-        for( size_t i=width_-1; i>=0; --i )
+        for( int i=width_-1; i>=0; --i )
         {
             memory_.erase
             ( memory_.begin()+i*ldim_+first, memory_.begin()+i*ldim_+last+1 );

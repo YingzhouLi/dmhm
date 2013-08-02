@@ -168,6 +168,9 @@ public:
     void PrintMemoryInfo
     ( const std::string tag = "", std::ostream& os = std::cout ) const;
 
+    void PrintGlobalMemoryInfo
+    ( const std::string tag = "", std::ostream& os = std::cout ) const;
+
     // Unpack this process's portion of the DistHMat3d
     std::size_t Unpack
     ( const byte* packedDistHMat, const Teams& teams );
