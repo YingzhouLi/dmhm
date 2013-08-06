@@ -182,6 +182,8 @@ DistHMat2d<Scalar>::MultiplyHMatFullAccumulate
     timer.Stop( 13 );
 #endif
 
+    C.PruneGhostNodes();
+
 #ifdef TIME_MULTIPLY
     const int commRank = mpi::CommRank( mpi::COMM_WORLD );
     std::ostringstream os;
@@ -350,6 +352,7 @@ DistHMat2d<Scalar>::MultiplyHMatSingleLevelAccumulate
         timer.Stop( 13 );
 #endif
     }
+    C.PruneGhostNodes();
 
 #ifdef TIME_MULTIPLY
     const int commRank = mpi::CommRank( mpi::COMM_WORLD );
@@ -522,6 +525,7 @@ DistHMat2d<Scalar>::MultiplyHMatSingleUpdateAccumulate
 #endif
         }
     }
+    C.PruneGhostNodes();
 
 #ifdef TIME_MULTIPLY
     const int commRank = mpi::CommRank( mpi::COMM_WORLD );
@@ -542,7 +546,7 @@ DistHMat2d<Scalar>::MultiplyHMatSingleUpdateAccumulate
          << "FHH broadcasts:   " << timer.GetTime( 10 ) << " seconds.\n"
          << "FHH postcompute:  " << timer.GetTime( 11 ) << " seconds.\n"
          << "FHH finalize:     " << timer.GetTime( 12 ) << " seconds.\n"
-         << "Compress:          " << timer.GetTime( 13 ) << " seconds.\n"
+         << "Compress:         " << timer.GetTime( 13 ) << " seconds.\n"
          << std::endl;
     file.close();
 #endif

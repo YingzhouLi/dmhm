@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying, 
+   Copyright (c) 2011-2013 Jack Poulson, Lexing Ying,
    The University of Texas at Austin, and Stanford University
 
    This file is part of Distributed-Memory Hierarchical Matrices (DMHM) and is
@@ -46,7 +46,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainSetUp
     C.inSourceTeam_ = B.inSourceTeam_;
     C.targetRoot_ = A.targetRoot_;
     C.sourceRoot_ = B.sourceRoot_;
-    
+
     mpi::Comm team = teams_->Team( A.level_ );
     const int teamSize = mpi::CommSize( team );
     if( C.Admissible() ) // C is low-rank
@@ -154,7 +154,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainSetUp
                     C.block_.data.N = C.NewNode();
                     Node& node = *C.block_.data.N;
                     for( int j=0; j<64; ++j )
-                        node.children[j] = 
+                        node.children[j] =
                             new DistHMat3d<Scalar>;
                 }
                 else
@@ -163,7 +163,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainSetUp
                     C.block_.data.N = C.NewNode();
                     Node& node = *C.block_.data.N;
                     for( int j=0; j<64; ++j )
-                        node.children[j] = 
+                        node.children[j] =
                             new DistHMat3d<Scalar>;
                 }
             }
@@ -175,7 +175,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainSetUp
                     C.block_.data.N = C.NewNode();
                     Node& node = *C.block_.data.N;
                     for( int j=0; j<64; ++j )
-                        node.children[j] = 
+                        node.children[j] =
                             new DistHMat3d<Scalar>;
                 }
                 else
@@ -184,7 +184,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainSetUp
                     C.block_.data.N = C.NewNode();
                     Node& node = *C.block_.data.N;
                     for( int j=0; j<64; ++j )
-                        node.children[j] = 
+                        node.children[j] =
                             new DistHMat3d<Scalar>;
                 }
             }
@@ -227,7 +227,7 @@ void
 DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
 ( Scalar alpha, DistHMat3d<Scalar>& B,
                 DistHMat3d<Scalar>& C,
-  int startLevel, int endLevel, 
+  int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update )
 {
 #ifndef RELEASE
@@ -235,10 +235,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
 #endif
     DistHMat3d<Scalar>& A = *this;
     if( !A.inTargetTeam_ && !A.inSourceTeam_ && !B.inSourceTeam_ )
-    {
-        C.block_.type = EMPTY;
         return;
-    }
     if( C.block_.type == EMPTY )
         A.MultiplyHMatMainSetUp( B, C );
 
@@ -290,7 +287,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
             break;
         }
     }
-    else if( A.level_ >= startLevel && A.level_ < endLevel && 
+    else if( A.level_ >= startLevel && A.level_ < endLevel &&
              update >= startUpdate && update < endUpdate )
     {
         // Handle precomputation of A's row space
@@ -351,7 +348,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
                 case SPLIT_NODE:
                 case NODE:
                 {
-                    B.colOmega_.Resize( B.LocalWidth(), sampleRank ); 
+                    B.colOmega_.Resize( B.LocalWidth(), sampleRank );
                     B.colOmega_.Init();
                     ParallelGaussianRandomVectors( B.colOmega_ );
 
@@ -375,7 +372,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
         }
     }
 
-    if( A.level_ < startLevel || A.level_ >= endLevel || 
+    if( A.level_ < startLevel || A.level_ >= endLevel ||
         update < startUpdate  || update >= endUpdate )
         return;
 
@@ -417,7 +414,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -501,7 +498,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -553,7 +550,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -608,7 +605,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -639,7 +636,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -680,7 +677,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
             // We are the middle and right process
             C.VMap_.Set( key, new Dense<Scalar>( B.Width(), SFA.rank ) );
             Dense<Scalar>& CV = C.VMap_.Get( key );
-                
+
             CV.Init();
             C.mainContextMap_.Set( key, new MultiplyDenseContext );
             MultiplyDenseContext& context = C.mainContextMap_.Get( key );
@@ -739,7 +736,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -770,7 +767,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -851,7 +848,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -882,7 +879,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -966,7 +963,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -1045,7 +1042,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPrecompute
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -1098,7 +1095,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainSums
     A.MultiplyHMatMainSumsPackA( buffer, offsetsCopy, startLevel, endLevel );
     B.MultiplyHMatMainSumsPackB( buffer, offsetsCopy, startLevel, endLevel );
     A.MultiplyHMatMainSumsPackC
-    ( B, C, buffer, offsetsCopy, 
+    ( B, C, buffer, offsetsCopy,
       startLevel, endLevel, startUpdate, endUpdate, 0 );
 
     // Perform the reduces with log2(p) messages
@@ -1146,7 +1143,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainSumsCountA
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatMainSumsPackA
-( Vector<Scalar>& buffer, Vector<int>& offsets, 
+( Vector<Scalar>& buffer, Vector<int>& offsets,
   int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
@@ -1157,8 +1154,8 @@ DistHMat3d<Scalar>::MultiplyHMatMainSumsPackA
     case DIST_NODE:
     case DIST_NODE_GHOST:
     {
-        if( level_ >= startLevel && level_ < endLevel && 
-            beganRowSpaceComp_ && !finishedRowSpaceComp_ )   
+        if( level_ >= startLevel && level_ < endLevel &&
+            beganRowSpaceComp_ && !finishedRowSpaceComp_ )
             TransposeMultiplyDenseSumsPack( rowContext_, buffer, offsets );
 
         if( level_+1 < endLevel )
@@ -1312,8 +1309,8 @@ void
 DistHMat3d<Scalar>::MultiplyHMatMainSumsCountC
 ( const DistHMat3d<Scalar>& B,
   const DistHMat3d<Scalar>& C,
-  Vector<int>& sizes, 
-  int startLevel, int endLevel, 
+  Vector<int>& sizes,
+  int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update ) const
 {
 #ifndef RELEASE
@@ -1394,7 +1391,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainSumsCountC
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatMainSumsPackC
-( const DistHMat3d<Scalar>& B, 
+( const DistHMat3d<Scalar>& B,
         DistHMat3d<Scalar>& C,
   Vector<Scalar>& buffer, Vector<int>& offsets,
   int startLevel, int endLevel,
@@ -1422,7 +1419,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainSumsPackC
                     for( int s=0; s<8; ++s )
                         for( int r=0; r<8; ++r )
                             nodeA.Child(t,r).MultiplyHMatMainSumsPackC
-                            ( nodeB.Child(r,s), nodeC.Child(t,s), 
+                            ( nodeB.Child(r,s), nodeC.Child(t,s),
                               buffer, offsets, startLevel, endLevel,
                               startUpdate, endUpdate, r );
             }
@@ -1463,7 +1460,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainSumsPackC
                 {
                     const unsigned teamLevel = A.teams_->TeamLevel(A.level_);
                     MemCopy
-                    ( &buffer[offsets[teamLevel]], 
+                    ( &buffer[offsets[teamLevel]],
                       C.ZMap_.Get( key ).LockedBuffer(), DFA.rank*DFB.rank );
                     offsets[teamLevel] += DFA.rank*DFB.rank;
                 }
@@ -1486,7 +1483,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainSumsUnpackC
         DistHMat3d<Scalar>& C,
   const Vector<Scalar>& buffer, Vector<int>& offsets,
   int startLevel, int endLevel,
-  int startUpdate, int endUpdate, int update ) const 
+  int startUpdate, int endUpdate, int update ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatMainSumsUnpackC");
@@ -1510,7 +1507,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainSumsUnpackC
                     for( int s=0; s<8; ++s )
                         for( int r=0; r<8; ++r )
                             nodeA.Child(t,r).MultiplyHMatMainSumsUnpackC
-                            ( nodeB.Child(r,s), nodeC.Child(t,s), 
+                            ( nodeB.Child(r,s), nodeC.Child(t,s),
                               buffer, offsets, startLevel, endLevel,
                               startUpdate, endUpdate, r );
             }
@@ -1580,7 +1577,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassData
     DistHMat3d<Scalar>& A = *this;
 
 #ifdef TIME_MULTIPLY
-    Timer timer;    
+    Timer timer;
     timer.Start( 0 );
 #endif
 
@@ -1591,7 +1588,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassData
     B.MultiplyHMatMainPassDataCountB
     ( sendSizes, recvSizes, startLevel, endLevel );
     A.MultiplyHMatMainPassDataCountC
-    ( B, C, sendSizes, recvSizes, 
+    ( B, C, sendSizes, recvSizes,
       startLevel, endLevel, startUpdate, endUpdate, 0 );
 
 #ifdef TIME_MULTIPLY
@@ -1623,7 +1620,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassData
     B.MultiplyHMatMainPassDataPackB
     ( sendBuffer, offsets, startLevel, endLevel );
     A.MultiplyHMatMainPassDataPackC
-    ( B, C, sendBuffer, offsets, 
+    ( B, C, sendBuffer, offsets,
       startLevel, endLevel, startUpdate, endUpdate, 0 );
 
 #ifdef TIME_MULTIPLY
@@ -1687,7 +1684,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassData
     B.MultiplyHMatMainPassDataUnpackB
     ( recvBuffer, recvOffsets, startLevel, endLevel );
     A.MultiplyHMatMainPassDataUnpackC
-    ( B, C, recvBuffer, recvOffsets, 
+    ( B, C, recvBuffer, recvOffsets,
       startLevel, endLevel, startUpdate, endUpdate, 0 );
 
 #ifdef TIME_MULTIPLY
@@ -1757,7 +1754,7 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatMainPassDataPackA
 ( Vector<Scalar>& sendBuffer, std::map<int,int>& offsets,
-  int startLevel, int endLevel ) 
+  int startLevel, int endLevel )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatMainPassDataPackA");
@@ -1791,7 +1788,7 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatMainPassDataUnpackA
 ( const Vector<Scalar>& recvBuffer, std::map<int,int>& offsets,
-  int startLevel, int endLevel ) 
+  int startLevel, int endLevel )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatMainPassDataUnpackA");
@@ -1927,7 +1924,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataCountC
 ( const DistHMat3d<Scalar>& B,
   const DistHMat3d<Scalar>& C,
   std::map<int,int>& sendSizes, std::map<int,int>& recvSizes,
-  int startLevel, int endLevel, 
+  int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update ) const
 {
 #ifndef RELEASE
@@ -1969,7 +1966,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataCountC
                         for( int s=0; s<8; ++s )
                             for( int r=0; r<8; ++r )
                                 nodeA.Child(t,r).MultiplyHMatMainPassDataCountC
-                                ( nodeB.Child(r,s), nodeC.Child(t,s), 
+                                ( nodeB.Child(r,s), nodeC.Child(t,s),
                                   sendSizes, recvSizes, startLevel, endLevel,
                                   startUpdate, endUpdate, r );
                 }
@@ -2021,7 +2018,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataCountC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -2075,7 +2072,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataCountC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -2134,7 +2131,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataCountC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -2162,7 +2159,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataCountC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -2238,7 +2235,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataCountC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -2251,7 +2248,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataCountC
     }
     case SPLIT_LOW_RANK_GHOST:
     {
-        const SplitLowRankGhost& SFGA = *A.block_.data.SFG; 
+        const SplitLowRankGhost& SFGA = *A.block_.data.SFG;
         switch( B.block_.type )
         {
         case SPLIT_NODE:
@@ -2270,7 +2267,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataCountC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -2307,7 +2304,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataCountC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -2339,7 +2336,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataCountC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -2401,7 +2398,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataCountC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -2425,7 +2422,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataCountC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -2452,7 +2449,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataCountC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -2476,7 +2473,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataCountC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -2498,7 +2495,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataPackC
 ( const DistHMat3d<Scalar>& B,
         DistHMat3d<Scalar>& C,
   Vector<Scalar>& sendBuffer, std::map<int,int>& offsets,
-  int startLevel, int endLevel, 
+  int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update ) const
 {
 #ifndef RELEASE
@@ -2541,7 +2538,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataPackC
                         for( int s=0; s<8; ++s )
                             for( int r=0; r<8; ++r )
                                 nodeA.Child(t,r).MultiplyHMatMainPassDataPackC
-                                ( nodeB.Child(r,s), nodeC.Child(t,s), 
+                                ( nodeB.Child(r,s), nodeC.Child(t,s),
                                   sendBuffer, offsets, startLevel, endLevel,
                                   startUpdate, endUpdate, r );
                 }
@@ -2584,7 +2581,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataPackC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -2618,7 +2615,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataPackC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -2650,7 +2647,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataPackC
             // Pass data for H/F += F H
             if( A.inSourceTeam_ )
                 B.TransposeMultiplyDensePassDataPack
-                ( C.mainContextMap_.Get( key ), 
+                ( C.mainContextMap_.Get( key ),
                   DFA.VLocal, sendBuffer, offsets );
             break;
         case DIST_NODE_GHOST:
@@ -2680,7 +2677,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataPackC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -2771,7 +2768,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataPackC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -2818,7 +2815,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataPackC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -2861,7 +2858,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataPackC
             {
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
                 MemCopy
-                ( &sendBuffer[offsets[A.targetRoot_]], ZC.LockedBuffer(), 
+                ( &sendBuffer[offsets[A.targetRoot_]], ZC.LockedBuffer(),
                   A.Height()*FB.Rank() );
                 offsets[A.targetRoot_] += A.Height()*FB.Rank();
                 ZC.Clear();
@@ -2891,7 +2888,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataPackC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -2930,7 +2927,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataPackC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -2996,7 +2993,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataUnpackC
                         for( int s=0; s<8; ++s )
                             for( int r=0; r<8; ++r )
                                 nodeA.Child(t,r).MultiplyHMatMainPassDataUnpackC
-                                ( nodeB.Child(r,s), nodeC.Child(t,s), 
+                                ( nodeB.Child(r,s), nodeC.Child(t,s),
                                   recvBuffer, offsets, startLevel, endLevel,
                                   startUpdate, endUpdate, r );
                 }
@@ -3041,7 +3038,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataUnpackC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -3077,7 +3074,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataUnpackC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -3111,7 +3108,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataUnpackC
                     C.ZMap_.Set( key, new Dense<Scalar>( DFA.rank, DFB.rank ) );
                     if( teamRank == 0 )
                     {
-                        Dense<Scalar>& ZC = C.ZMap_.Get( key ); 
+                        Dense<Scalar>& ZC = C.ZMap_.Get( key );
                         MemCopy
                         ( ZC.Buffer(), &recvBuffer[offsets[A.sourceRoot_]],
                           DFA.rank*DFB.rank );
@@ -3142,7 +3139,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataUnpackC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -3169,7 +3166,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataUnpackC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -3266,7 +3263,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataUnpackC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -3279,7 +3276,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataUnpackC
     }
     case SPLIT_LOW_RANK_GHOST:
     {
-        const SplitLowRankGhost& SFGA = *A.block_.data.SFG; 
+        const SplitLowRankGhost& SFGA = *A.block_.data.SFG;
         switch( B.block_.type )
         {
         case SPLIT_NODE:
@@ -3306,7 +3303,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataUnpackC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -3348,7 +3345,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataUnpackC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -3415,7 +3412,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataUnpackC
         case SPLIT_DENSE:
         {
             // Pass data for D/F += D D
-            const int m = A.Height();    
+            const int m = A.Height();
             const int k = A.Width();
             if( m != 0 && k != 0 )
             {
@@ -3423,7 +3420,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataUnpackC
                 {
                     C.ZMap_.Set( key, new Dense<Scalar>( m, k ) );
                     MemCopy
-                    ( C.ZMap_.Get( key ).Buffer(), 
+                    ( C.ZMap_.Get( key ).Buffer(),
                       &recvBuffer[offsets[B.targetRoot_]], m*k );
                     offsets[B.targetRoot_] += m*k;
                 }
@@ -3439,7 +3436,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataUnpackC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -3465,9 +3462,9 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataUnpackC
             {
                 C.ZMap_.Set( key, new Dense<Scalar>( m, k ) );
                 MemCopy
-                ( C.ZMap_.Get( key ).Buffer(), 
+                ( C.ZMap_.Get( key ).Buffer(),
                   &recvBuffer[offsets[B.targetRoot_]], m*k );
-                offsets[B.targetRoot_] += m*k; 
+                offsets[B.targetRoot_] += m*k;
             }
             break;
         }
@@ -3475,7 +3472,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPassDataUnpackC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -3501,7 +3498,7 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatMainBroadcasts
 ( DistHMat3d<Scalar>& B,
-  DistHMat3d<Scalar>& C, 
+  DistHMat3d<Scalar>& C,
   int startLevel, int endLevel, int startUpdate, int endUpdate )
 {
 #ifndef RELEASE
@@ -3533,7 +3530,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainBroadcasts
     B.MultiplyHMatMainBroadcastsPackB
     ( buffer, offsetsCopy, startLevel, endLevel );
     A.MultiplyHMatMainBroadcastsPackC
-    ( B, C, buffer, offsetsCopy, 
+    ( B, C, buffer, offsetsCopy,
       startLevel, endLevel, startUpdate, endUpdate, 0 );
 
     // Perform the broadcasts with log2(p) messages
@@ -3683,7 +3680,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainBroadcastsCountB
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatMainBroadcastsPackB
-( Vector<Scalar>& buffer, Vector<int>& offsets, 
+( Vector<Scalar>& buffer, Vector<int>& offsets,
   int startLevel, int endLevel ) const
 {
 #ifndef RELEASE
@@ -3750,9 +3747,9 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatMainBroadcastsCountC
 ( const DistHMat3d<Scalar>& B,
-  const DistHMat3d<Scalar>& C, 
-  Vector<int>& sizes, 
-  int startLevel, int endLevel, 
+  const DistHMat3d<Scalar>& C,
+  Vector<int>& sizes,
+  int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update ) const
 {
 #ifndef RELEASE
@@ -3793,7 +3790,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainBroadcastsCountC
                         for( int s=0; s<8; ++s )
                             for( int r=0; r<8; ++r )
                                 nodeA.Child(t,r).MultiplyHMatMainBroadcastsCountC
-                                ( nodeB.Child(r,s), nodeC.Child(t,s), 
+                                ( nodeB.Child(r,s), nodeC.Child(t,s),
                                   sizes, startLevel, endLevel,
                                   startUpdate, endUpdate, r );
                 }
@@ -3915,7 +3912,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainBroadcastsCountC
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatMainBroadcastsPackC
-( const DistHMat3d<Scalar>& B, 
+( const DistHMat3d<Scalar>& B,
         DistHMat3d<Scalar>& C,
   Vector<Scalar>& buffer, Vector<int>& offsets,
   int startLevel, int endLevel,
@@ -3960,7 +3957,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainBroadcastsPackC
                         for( int s=0; s<8; ++s )
                             for( int r=0; r<8; ++r )
                                 nodeA.Child(t,r).MultiplyHMatMainBroadcastsPackC
-                                ( nodeB.Child(r,s), nodeC.Child(t,s), 
+                                ( nodeB.Child(r,s), nodeC.Child(t,s),
                                   buffer, offsets, startLevel, endLevel,
                                   startUpdate, endUpdate, r );
                 }
@@ -4021,7 +4018,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainBroadcastsPackC
                 {
                     const unsigned teamLevel = A.teams_->TeamLevel(A.level_);
                     MemCopy
-                    ( &buffer[offsets[teamLevel]], 
+                    ( &buffer[offsets[teamLevel]],
                       C.ZMap_.Get( key ).LockedBuffer(), DFA.rank*DFB.rank );
                     offsets[teamLevel] += DFA.rank*DFB.rank;
                 }
@@ -4075,7 +4072,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainBroadcastsPackC
                 {
                     const unsigned teamLevel = A.teams_->TeamLevel(A.level_);
                     MemCopy
-                    ( &buffer[offsets[teamLevel]], 
+                    ( &buffer[offsets[teamLevel]],
                       C.ZMap_.Get( key ).LockedBuffer(), DFA.rank*DFB.rank );
                     offsets[teamLevel] += DFA.rank*DFB.rank;
                 }
@@ -4097,7 +4094,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainBroadcastsUnpackC
 ( const DistHMat3d<Scalar>& B,
         DistHMat3d<Scalar>& C,
   const Vector<Scalar>& buffer, Vector<int>& offsets,
-  int startLevel, int endLevel, 
+  int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update ) const
 {
 #ifndef RELEASE
@@ -4139,7 +4136,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainBroadcastsUnpackC
                         for( int s=0; s<8; ++s )
                             for( int r=0; r<8; ++r )
                                 nodeA.Child(t,r).MultiplyHMatMainBroadcastsUnpackC
-                                ( nodeB.Child(r,s), nodeC.Child(t,s), 
+                                ( nodeB.Child(r,s), nodeC.Child(t,s),
                                   buffer, offsets, startLevel, endLevel,
                                   startUpdate, endUpdate, r );
                 }
@@ -4368,7 +4365,7 @@ void
 DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
 ( Scalar alpha, const DistHMat3d<Scalar>& B,
                       DistHMat3d<Scalar>& C,
-  int startLevel, int endLevel, 
+  int startLevel, int endLevel,
   int startUpdate, int endUpdate, int update ) const
 {
 #ifndef RELEASE
@@ -4444,7 +4441,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
         {
             const DistLowRank& DFB = *B.block_.data.DF;
             A.MultiplyDensePostcompute
-            ( C.mainContextMap_.Get( key ), 
+            ( C.mainContextMap_.Get( key ),
               alpha, DFB.ULocal, C.UMap_.Get( key ) );
             C.mainContextMap_.Get( key ).Clear();
             C.mainContextMap_.Erase( key );
@@ -4455,7 +4452,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
         }
         case DIST_LOW_RANK_GHOST:
         {
-            const DistLowRankGhost& DFGB = *B.block_.data.DFG; 
+            const DistLowRankGhost& DFGB = *B.block_.data.DFG;
             Dense<Scalar> dummy( 0, DFGB.rank );
             C.UMap_.Set( key, new Dense<Scalar>(LocalHeight(), DFGB.rank) );
             C.UMap_.Get( key ).Init();
@@ -4469,7 +4466,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -4497,7 +4494,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -4527,7 +4524,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
                 C.UMap_.Get( key ).Init();
                 Dense<Scalar> dummy( 0, SFB.rank );
                 A.MultiplyDensePostcompute
-                ( C.mainContextMap_.Get( key ), 
+                ( C.mainContextMap_.Get( key ),
                   alpha, dummy, C.UMap_.Get( key ) );
 
                 C.VMap_.Set( key, new Dense<Scalar>( C.Width(), SFB.rank ) );
@@ -4575,7 +4572,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -4605,7 +4602,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -4625,7 +4622,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
             break;
         case SPLIT_LOW_RANK:
         {
-            const SplitLowRank& SFB = *B.block_.data.SF; 
+            const SplitLowRank& SFB = *B.block_.data.SF;
             C.VMap_.Set( key, new Dense<Scalar>( B.LocalWidth(), SFB.rank ) );
             hmat_tools::Copy( SFB.D, C.VMap_.Get( key ) );
             break;
@@ -4634,7 +4631,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -4690,10 +4687,10 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
         }
         case DIST_LOW_RANK_GHOST:
         {
-            const DistLowRankGhost& DFGB = *B.block_.data.DFG; 
+            const DistLowRankGhost& DFGB = *B.block_.data.DFG;
             C.UMap_.Set( key, new Dense<Scalar>( A.LocalHeight(), DFGB.rank ) );
             Dense<Scalar>& UC = C.UMap_.Get( key );
-            
+
             if( DFA.rank != 0 && DFGB.rank != 0 )
             {
                 Dense<Scalar>& ZC = C.ZMap_.Get( key );
@@ -4709,7 +4706,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -4726,7 +4723,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
         switch( B.block_.type )
         {
         case DIST_NODE:
-        { 
+        {
             MultiplyDenseContext& context = C.mainContextMap_.Get( key );
             Dense<Scalar> dummy( 0, DFGA.rank );
             C.VMap_.Set( key, new Dense<Scalar>(C.LocalWidth(),DFGA.rank) );
@@ -4748,7 +4745,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -4765,7 +4762,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
         switch( B.block_.type )
         {
         case SPLIT_NODE:
-            // We are either the middle process or both the left and the 
+            // We are either the middle process or both the left and the
             // right. The middle process doesn't have any work left.
             if( A.inTargetTeam_ )
             {
@@ -4897,7 +4894,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -4953,7 +4950,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -5035,7 +5032,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -5091,7 +5088,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -5114,7 +5111,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
             if( A.inTargetTeam_ )
             {
                 const SplitLowRank& SFB = *B.block_.data.SF;
-                C.UMap_.Set( key, new Dense<Scalar> ); 
+                C.UMap_.Set( key, new Dense<Scalar> );
                 Dense<Scalar>& UC = C.UMap_.Get( key );
                 if( A.Height() != 0 && SFB.rank != 0 )
                     hmat_tools::Copy( C.ZMap_.Get( key ), UC );
@@ -5146,7 +5143,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
         case LOW_RANK:
         {
             // We are the middle and right process
-            const LowRank<Scalar>& FB = *B.block_.data.F;    
+            const LowRank<Scalar>& FB = *B.block_.data.F;
             C.VMap_.Set( key, new Dense<Scalar> );
             hmat_tools::Copy( FB.V, C.VMap_.Get( key ) );
             break;
@@ -5155,7 +5152,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
         {
             // We are the left process
             const LowRankGhost& FGB = *B.block_.data.FG;
-            C.UMap_.Set( key, new Dense<Scalar> ); 
+            C.UMap_.Set( key, new Dense<Scalar> );
             Dense<Scalar>& UC = C.UMap_.Get( key );
             // TODO: This could be removed by modifying the PassData
             //       unpacking routine to perform this step.
@@ -5226,7 +5223,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -5297,7 +5294,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);
@@ -5370,7 +5367,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainPostcomputeC
         {
 #ifndef RELEASE
             std::ostringstream s;
-            s << "Invalid H-matrix combination: " 
+            s << "Invalid H-matrix combination: "
               << BlockTypeString(A.block_.type) << ", "
               << BlockTypeString(B.block_.type) << ", "
               << BlockTypeString(C.block_.type);

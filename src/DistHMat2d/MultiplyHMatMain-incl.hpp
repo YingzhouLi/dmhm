@@ -231,10 +231,7 @@ DistHMat2d<Scalar>::MultiplyHMatMainPrecompute
 #endif
     DistHMat2d<Scalar>& A = *this;
     if( !A.inTargetTeam_ && !A.inSourceTeam_ && !B.inSourceTeam_ )
-    {
-        C.block_.type = EMPTY;
         return;
-    }
     if( C.block_.type == EMPTY )
         A.MultiplyHMatMainSetUp( B, C );
 
