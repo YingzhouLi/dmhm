@@ -224,11 +224,13 @@ void ResetMemoryCount( int key )
 void NewMemoryCount( int key )
 {
     ::memoryUsageMap[key] = 0;
+    ::peakMemoryUsageMap[key] = 0;
 }
 
 void EraseMemoryCount( int key )
 {
     ::memoryUsageMap.erase( key );
+    ::peakMemoryUsageMap.erase( key );
 }
 
 void AddToMemoryCount( double size )
