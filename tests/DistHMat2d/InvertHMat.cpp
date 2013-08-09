@@ -185,6 +185,7 @@ main( int argc, char* argv[] )
         mpi::Barrier( mpi::COMM_WORLD );
         double SchulzInvertStartTime = mpi::Time();
         A.SchulzInvert(schuN, multType);
+        A.PrintGlobalMemoryInfo("Matrix Memory: ");
         mpi::Barrier( mpi::COMM_WORLD );
         double SchulzInvertStopTime = mpi::Time();
         if( commRank == 0 )
