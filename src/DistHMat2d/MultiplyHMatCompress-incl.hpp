@@ -29,12 +29,19 @@ DistHMat2d<Scalar>::MultiplyHMatCompress()
     //PrintMemoryInfo( "MemoryInfo before Compression" );
     PrintGlobal( PeakMemoryUsage()/1024./1024.,
                  "Peak Memory Before Compress(MB): " );
+    NewMemoryCount( 2 );
 #endif
 
     MultiplyHMatCompressLowRankCountAndResize(0);
     MultiplyHMatCompressLowRankImport(0);
 
 #ifdef MEMORY_INFO
+    PrintGlobal( PeakMemoryUsage( 2 )/1024./1024.,
+                 "Peak Memory Of Resize And Import(MB): " );
+    PrintGlobal( PeakMemoryUsage()/1024./1024.,
+                 "Peak Memory After Import(MB): " );
+    PrintGlobalMemoryInfo();
+    EraseMemoryCount( 2 );
     NewMemoryCount( 1 );
 #endif
 

@@ -1761,6 +1761,13 @@ DistHMat2d<Scalar>::PrintMemoryInfo
     MemoryInfo
     ( numBasic, numNode, numNodeTmp, numLowRank, numLowRankTmp,
       numDense, numDenseTmp );
+    numBasic = numBasic/1024/1024;
+    numNode = numNode/1024/1024;
+    numNodeTmp = numNodeTmp/1024/1024;
+    numLowRank = numLowRank/1024/1024;
+    numLowRankTmp = numLowRankTmp/1024/1024;
+    numDense = numDense/1024/1024;
+    numDenseTmp = numDenseTmp/1024/1024;
     mpi::Comm team = teams_->Team(0);
     const int teamRank = mpi::CommRank( team );
     os << "Process " << teamRank << ": " << tag << "\n";
@@ -1793,6 +1800,13 @@ DistHMat2d<Scalar>::PrintGlobalMemoryInfo
     MemoryInfo
     ( numBasic, numNode, numNodeTmp, numLowRank, numLowRankTmp,
       numDense, numDenseTmp );
+    numBasic = numBasic/1024/1024;
+    numNode = numNode/1024/1024;
+    numNodeTmp = numNodeTmp/1024/1024;
+    numLowRank = numLowRank/1024/1024;
+    numLowRankTmp = numLowRankTmp/1024/1024;
+    numDense = numDense/1024/1024;
+    numDenseTmp = numDenseTmp/1024/1024;
     double sendbuffer[10], maxrecvbuffer[10], minrecvbuffer[10];
     sendbuffer[0] = numBasic;
     sendbuffer[1] = numNode;

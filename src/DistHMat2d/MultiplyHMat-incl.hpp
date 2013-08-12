@@ -34,6 +34,9 @@ DistHMat2d<Scalar>::Multiply
 #endif
     DistHMat2d<Scalar>& A = *this;
 
+#ifdef MEMORY_INFO
+    ResetMemoryCount();
+#endif
     if( multType == 0 )
         A.MultiplyHMatSingleUpdateAccumulate( alpha, B, C );
     else if( multType == 1 )
@@ -79,6 +82,11 @@ DistHMat2d<Scalar>::MultiplyHMatFullAccumulate
 #ifdef TIME_MULTIPLY
     mpi::Barrier( mpi::COMM_WORLD );
     timer.Stop( 1 );
+#endif
+
+#ifdef MEMORY_INFO
+    A.PrintGlobalMemoryInfo("Matrix A before loop: ");
+    B.PrintGlobalMemoryInfo("Matrix B before loop: ");
 #endif
 
     const int startLevel = 0;
@@ -246,6 +254,11 @@ DistHMat2d<Scalar>::MultiplyHMatSingleLevelAccumulate
 #ifdef TIME_MULTIPLY
     mpi::Barrier( mpi::COMM_WORLD );
     timer.Stop( 1 );
+#endif
+
+#ifdef MEMORY_INFO
+    A.PrintGlobalMemoryInfo("Matrix A before loop: ");
+    B.PrintGlobalMemoryInfo("Matrix B before loop: ");
 #endif
 
     const int startUpdate = 0;
@@ -416,6 +429,11 @@ DistHMat2d<Scalar>::MultiplyHMatSingleUpdateAccumulate
 #ifdef TIME_MULTIPLY
     mpi::Barrier( mpi::COMM_WORLD );
     timer.Stop( 1 );
+#endif
+
+#ifdef MEMORY_INFO
+    A.PrintGlobalMemoryInfo("Matrix A before loop: ");
+    B.PrintGlobalMemoryInfo("Matrix B before loop: ");
 #endif
 
     const int numLevels = A.NumLevels();
