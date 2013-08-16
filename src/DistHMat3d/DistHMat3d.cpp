@@ -1647,6 +1647,13 @@ DistHMat3d<Scalar>::PrintMemoryInfo
     MemoryInfo
     ( numBasic, numNode, numNodeTmp, numLowRank, numLowRankTmp,
       numDense, numDenseTmp );
+    numBasic = numBasic/1024/1024;
+    numNode = numNode/1024/1024;
+    numNodeTmp = numNodeTmp/1024/1024;
+    numLowRank = numLowRank/1024/1024;
+    numLowRankTmp = numLowRankTmp/1024/1024;
+    numDense = numDense/1024/1024;
+    numDenseTmp = numDenseTmp/1024/1024;
     mpi::Comm team = teams_->Team(0);
     const int teamRank = mpi::CommRank( team );
     os << "Process " << teamRank << ": " << tag << "\n";
@@ -1679,6 +1686,13 @@ DistHMat3d<Scalar>::PrintGlobalMemoryInfo
     MemoryInfo
     ( numBasic, numNode, numNodeTmp, numLowRank, numLowRankTmp,
       numDense, numDenseTmp );
+    numBasic = numBasic/1024/1024;
+    numNode = numNode/1024/1024;
+    numNodeTmp = numNodeTmp/1024/1024;
+    numLowRank = numLowRank/1024/1024;
+    numLowRankTmp = numLowRankTmp/1024/1024;
+    numDense = numDense/1024/1024;
+    numDenseTmp = numDenseTmp/1024/1024;
     double sendbuffer[10], maxrecvbuffer[10], minrecvbuffer[10];
     sendbuffer[0] = numBasic;
     sendbuffer[1] = numNode;
@@ -1692,32 +1706,36 @@ DistHMat3d<Scalar>::PrintGlobalMemoryInfo
     sendbuffer[9] = numBasic+numNode+numLowRank+numDense
                     +numNodeTmp+numLowRankTmp+numDenseTmp;
     mpi::Comm team = teams_->Team(0);
+    const int commRank = mpi::CommRank( team );
     mpi::Reduce( sendbuffer, maxrecvbuffer, 10, mpi::MAX, 0, team );
     mpi::Reduce( sendbuffer, minrecvbuffer, 10, mpi::MIN, 0, team );
 
-    os << "Global Memory Info: " << tag << "\n";
-    os << "Basic      Memory Usage: " << maxrecvbuffer[0] << "(max), "
+    if( commRank == 0 )
+    {
+        os << "Global Memory Info: " << tag << "\n";
+        os << "Basic      Memory Usage: " << maxrecvbuffer[0] << "(max), "
                                       << minrecvbuffer[0] << "(min)."<< "\n";
-    os << "Node       Memory Usage: " << maxrecvbuffer[1] << "(max), "
+        os << "Node       Memory Usage: " << maxrecvbuffer[1] << "(max), "
                                       << minrecvbuffer[1] << "(min)."<< "\n";
-    os << "NodeTmp    Memory Usage: " << maxrecvbuffer[2] << "(max), "
+        os << "NodeTmp    Memory Usage: " << maxrecvbuffer[2] << "(max), "
                                       << minrecvbuffer[2] << "(min)."<< "\n";
-    os << "LowRank    Memory Usage: " << maxrecvbuffer[3] << "(max), "
+        os << "LowRank    Memory Usage: " << maxrecvbuffer[3] << "(max), "
                                       << minrecvbuffer[3] << "(min)."<< "\n";
-    os << "LowRankTmp Memory Usage: " << maxrecvbuffer[4] << "(max), "
+        os << "LowRankTmp Memory Usage: " << maxrecvbuffer[4] << "(max), "
                                       << minrecvbuffer[4] << "(min)."<< "\n";
-    os << "Dense      Memory Usage: " << maxrecvbuffer[5] << "(max), "
+        os << "Dense      Memory Usage: " << maxrecvbuffer[5] << "(max), "
                                       << minrecvbuffer[5] << "(min)."<< "\n";
-    os << "DenseTmp   Memory Usage: " << maxrecvbuffer[6] << "(max), "
+        os << "DenseTmp   Memory Usage: " << maxrecvbuffer[6] << "(max), "
                                       << minrecvbuffer[6] << "(min)."<< "\n";
-    os << "Matrix     Memory Usage: " << maxrecvbuffer[7] << "(max), "
+        os << "Matrix     Memory Usage: " << maxrecvbuffer[7] << "(max), "
                                       << minrecvbuffer[7] << "(min)."<< "\n";
-    os << "Temporary  Memory Usage: " << maxrecvbuffer[8] << "(max), "
+        os << "Temporary  Memory Usage: " << maxrecvbuffer[8] << "(max), "
                                       << minrecvbuffer[8] << "(min)."<< "\n";
-    os << "Total      Memory Usage: " << maxrecvbuffer[9] << "(max), "
+        os << "Total      Memory Usage: " << maxrecvbuffer[9] << "(max), "
                                       << minrecvbuffer[9] << "(min)."<< "\n";
-    os << "\n";
-    os.flush();
+        os << "\n";
+        os.flush();
+    }
 }
 
 template class DistHMat3d<float>;

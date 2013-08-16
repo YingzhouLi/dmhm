@@ -23,7 +23,7 @@ FormRow
 
     // Set up the diagonal entry
     colIndices.Push_back( rowIdx );
-    row.Push_back( (Scalar)8 );
+    row.Push_back( (Scalar)6 );
 
     // Front connection to (x-1,y,z)
     if( x != 0 )

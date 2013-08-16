@@ -2377,7 +2377,6 @@ DistHMat2d<Scalar>::MultiplyHMatRandomCompressFinalcompute()
             DistLowRank &DF = *block_.data.DF;
             Dense<Scalar> &U = DF.ULocal;
             DF.rank = BL_.Width();
-    CallStackEntry entry("Dist_Low_Rank_U");
             hmat_tools::Multiply( Scalar(1), colT_, BL_, U );
             colT_.Clear();
             BL_.Clear();
@@ -2387,7 +2386,6 @@ DistHMat2d<Scalar>::MultiplyHMatRandomCompressFinalcompute()
             DistLowRank &DF = *block_.data.DF;
             Dense<Scalar> &V = DF.VLocal;
             DF.rank = BR_.Width();
-    CallStackEntry entry("Dist_Low_Rank_V");
             hmat_tools::Multiply( Scalar(1), rowT_, BR_, V );
             rowT_.Clear();
             BR_.Clear();
@@ -2409,7 +2407,6 @@ DistHMat2d<Scalar>::MultiplyHMatRandomCompressFinalcompute()
                 {
                     Dense<Scalar> &U = SF.D;
                     SF.rank = BL_.Width();
-    CallStackEntry entry("Split_Low_Rank_U");
                     hmat_tools::Multiply( Scalar(1), colT_, BL_, U );
                     colT_.Clear();
                     BL_.Clear();
@@ -2418,7 +2415,6 @@ DistHMat2d<Scalar>::MultiplyHMatRandomCompressFinalcompute()
                 {
                     Dense<Scalar> &V = SF.D;
                     SF.rank = BR_.Width();
-    CallStackEntry entry("Split_Low_Rank_V");
                     hmat_tools::Multiply( Scalar(1), rowT_, BR_, V );
                     rowT_.Clear();
                     BR_.Clear();
@@ -2552,7 +2548,6 @@ DistHMat2d<Scalar>::MultiplyHMatRandomCompressFinalcompute()
             {
                 LowRank<Scalar> &F = *block_.data.F;
                 Dense<Scalar> &U = F.U;
-    CallStackEntry entry("Low_Rank");
                 hmat_tools::Multiply( Scalar(1), colT_, BL_, U );
                 colT_.Clear();
                 BL_.Clear();

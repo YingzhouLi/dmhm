@@ -12,7 +12,9 @@
 
 #include "./MultiplyHMatMain-incl.hpp"
 #include "./MultiplyHMatFHH-incl.hpp"
+#include "./Truncation-incl.hpp"
 #include "./MultiplyHMatCompress-incl.hpp"
+#include "./MultiplyHMatRandomCompress-incl.hpp"
 #include "./MultiplyHMatFHHCompress-incl.hpp"
 
 namespace dmhm {
@@ -32,6 +34,9 @@ DistHMat3d<Scalar>::Multiply
 #endif
     DistHMat3d<Scalar>& A = *this;
 
+#ifdef MEMORY_INFO
+    //ResetMemoryCount();
+#endif
     if( multType == 0 )
         A.MultiplyHMatSingleUpdateAccumulate( alpha, B, C );
     else if( multType == 1 )
@@ -77,6 +82,11 @@ DistHMat3d<Scalar>::MultiplyHMatFullAccumulate
 #ifdef TIME_MULTIPLY
     mpi::Barrier( mpi::COMM_WORLD );
     timer.Stop( 1 );
+#endif
+
+#ifdef MEMORY_INFO
+//    A.PrintGlobalMemoryInfo("Matrix A before loop: ");
+//    B.PrintGlobalMemoryInfo("Matrix B before loop: ");
 #endif
 
     const int startLevel = 0;
@@ -173,11 +183,14 @@ DistHMat3d<Scalar>::MultiplyHMatFullAccumulate
 #ifdef TIME_MULTIPLY
     timer.Start( 13 );
 #endif
-    C.MultiplyHMatCompress( startLevel, endLevel );
+    C.MultiplyHMatCompress();
+    //C.MultiplyHMatRandomCompress();
 #ifdef TIME_MULTIPLY
     mpi::Barrier( mpi::COMM_WORLD );
     timer.Stop( 13 );
 #endif
+
+    C.PruneGhostNodes();
 
 #ifdef TIME_MULTIPLY
     const int commRank = mpi::CommRank( mpi::COMM_WORLD );
@@ -241,6 +254,11 @@ DistHMat3d<Scalar>::MultiplyHMatSingleLevelAccumulate
 #ifdef TIME_MULTIPLY
     mpi::Barrier( mpi::COMM_WORLD );
     timer.Stop( 1 );
+#endif
+
+#ifdef MEMORY_INFO
+//    A.PrintGlobalMemoryInfo("Matrix A before loop: ");
+//    B.PrintGlobalMemoryInfo("Matrix B before loop: ");
 #endif
 
     const int startUpdate = 0;
@@ -340,12 +358,14 @@ DistHMat3d<Scalar>::MultiplyHMatSingleLevelAccumulate
 #ifdef TIME_MULTIPLY
         timer.Start( 13 );
 #endif
-        C.MultiplyHMatCompress( 0, A.NumLevels());
+        C.MultiplyHMatCompress();
+        //C.MultiplyHMatRandomCompress();
 #ifdef TIME_MULTIPLY
         mpi::Barrier( mpi::COMM_WORLD );
         timer.Stop( 13 );
 #endif
     }
+    C.PruneGhostNodes();
 
 #ifdef TIME_MULTIPLY
     const int commRank = mpi::CommRank( mpi::COMM_WORLD );
@@ -409,6 +429,11 @@ DistHMat3d<Scalar>::MultiplyHMatSingleUpdateAccumulate
 #ifdef TIME_MULTIPLY
     mpi::Barrier( mpi::COMM_WORLD );
     timer.Stop( 1 );
+#endif
+
+#ifdef MEMORY_INFO
+//    A.PrintGlobalMemoryInfo("Matrix A before loop: ");
+//    B.PrintGlobalMemoryInfo("Matrix B before loop: ");
 #endif
 
     const int numLevels = A.NumLevels();
@@ -510,13 +535,15 @@ DistHMat3d<Scalar>::MultiplyHMatSingleUpdateAccumulate
 #ifdef TIME_MULTIPLY
             timer.Start( 13 );
 #endif
-            C.MultiplyHMatCompress( 0, A.NumLevels() );
+            C.MultiplyHMatCompress();
+            //C.MultiplyHMatRandomCompress();
 #ifdef TIME_MULTIPLY
             mpi::Barrier( mpi::COMM_WORLD );
             timer.Stop( 13 );
 #endif
         }
     }
+    C.PruneGhostNodes();
 
 #ifdef TIME_MULTIPLY
     const int commRank = mpi::CommRank( mpi::COMM_WORLD );
@@ -537,7 +564,7 @@ DistHMat3d<Scalar>::MultiplyHMatSingleUpdateAccumulate
          << "FHH broadcasts:   " << timer.GetTime( 10 ) << " seconds.\n"
          << "FHH postcompute:  " << timer.GetTime( 11 ) << " seconds.\n"
          << "FHH finalize:     " << timer.GetTime( 12 ) << " seconds.\n"
-         << "Compress:          " << timer.GetTime( 13 ) << " seconds.\n"
+         << "Compress:         " << timer.GetTime( 13 ) << " seconds.\n"
          << std::endl;
     file.close();
 #endif

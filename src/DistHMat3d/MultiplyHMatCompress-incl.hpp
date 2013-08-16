@@ -7,15 +7,13 @@
    directory, or at http://opensource.org/licenses/GPL-3.0
 */
 
-#include "./Truncation-incl.hpp"
-
-int evdCount;
+int maxRankCount;
 
 namespace dmhm {
 
 template<typename Scalar>
 void
-DistHMat3d<Scalar>::MultiplyHMatCompress( int startLevel, int endLevel )
+DistHMat3d<Scalar>::MultiplyHMatCompress()
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompress");
@@ -27,18 +25,33 @@ DistHMat3d<Scalar>::MultiplyHMatCompress( int startLevel, int endLevel )
     // vectors of U'U, and USqrEig_ to store the eigenvalues of U'U.
     // Everything about V are same in VSqr_ and VSqrEig_.
 
+#ifdef MEMORY_INFO
+    //PrintMemoryInfo( "MemoryInfo before Compression" );
+    PrintGlobal( PeakMemoryUsage()/1024./1024.,
+                 "Peak Memory Before Compress(MB): " );
+    NewMemoryCount( 2 );
+#endif
+
+    maxRankCount = 0;
     MultiplyHMatCompressLowRankCountAndResize(0);
     MultiplyHMatCompressLowRankImport(0);
-    MultiplyHMatCompressFPrecompute( startLevel, endLevel);
 #ifdef MEMORY_INFO
-//    PrintMemoryInfo( "MemoryInfo before Compression Reduce" );
+    PrintGlobal( double(maxRankCount), "Max Rank Number: ");
+    PrintGlobal( PeakMemoryUsage( 2 )/1024./1024.,
+                 "Peak Memory Of Resize And Import(MB): " );
+    PrintGlobal( PeakMemoryUsage()/1024./1024.,
+                 "Peak Memory After Import(MB): " );
+    PrintGlobalMemoryInfo();
+    EraseMemoryCount( 2 );
+    NewMemoryCount( 1 );
 #endif
-    MultiplyHMatCompressFReduces( startLevel, endLevel );
 
-    evdCount=0;
-    MultiplyHMatCompressFEigenDecomp( startLevel, endLevel );
-    MultiplyHMatCompressFPassMatrix( startLevel, endLevel );
-    MultiplyHMatCompressFPassVector( startLevel, endLevel );
+    MultiplyHMatCompressFPrecompute();
+    MultiplyHMatCompressFReduces();
+
+    MultiplyHMatCompressFEigenDecomp();
+    MultiplyHMatCompressFPassMatrix();
+    MultiplyHMatCompressFPassVector();
 
     // Compute sigma_1 V1' V2 sigma_2, the middle part of UV'
     // We use B to state the mid part of UV' that is
@@ -48,12 +61,9 @@ DistHMat3d<Scalar>::MultiplyHMatCompress( int startLevel, int endLevel )
     // of B. BSqrEig_ stores eigenvalues of B.
     //
     const Real midcomputeTol = MidcomputeTolerance<Real>();
-    MultiplyHMatCompressFMidcompute( midcomputeTol, startLevel, endLevel );
-#ifdef MEMORY_INFO
-//    PrintMemoryInfo( "MemoryInfo Compression after Midcompute" );
-#endif
-    MultiplyHMatCompressFPassbackNum( startLevel, endLevel );
-    MultiplyHMatCompressFPassbackData( startLevel, endLevel );
+    MultiplyHMatCompressFMidcompute( midcomputeTol );
+    MultiplyHMatCompressFPassbackNum();
+    MultiplyHMatCompressFPassbackData();
 
     // Compute USqr*sqrt(USqrEig)^-1 BSqrU BSigma = BL
     // We overwrite the USqr = USqr*sqrt(USqrEig)^-1
@@ -62,16 +72,22 @@ DistHMat3d<Scalar>::MultiplyHMatCompress( int startLevel, int endLevel )
     // We overwrite the VSqr = VSqr*sqrt(VSqrEig)^-1
     //
     const Real compressionTol = CompressionTolerance<Real>();
-    MultiplyHMatCompressFPostcompute( compressionTol, startLevel, endLevel );
+    MultiplyHMatCompressFPostcompute( compressionTol );
 
-    MultiplyHMatCompressFBroadcastsNum( startLevel, endLevel );
-    MultiplyHMatCompressFBroadcasts( startLevel, endLevel );
+    MultiplyHMatCompressFBroadcastsNum();
+    MultiplyHMatCompressFBroadcasts();
     // Compute the final U and V store in the usual space.
-    MultiplyHMatCompressFFinalcompute( startLevel, endLevel );
+    MultiplyHMatCompressFFinalcompute();
 
+#ifdef MEMORY_INFO
+    PrintGlobal( PeakMemoryUsage()/1024./1024., "Peak Memory(MB): " );
+    PrintGlobal( PeakMemoryUsage( 1 )/1024./1024.,
+                 "Temp Peak Memory(MB): " );
+    EraseMemoryCount( 1 );
+#endif
     // Clean up all the space used in this file
     // Also, clean up the colXMap_, rowXMap_, UMap_, VMap_, ZMap_
-    MultiplyHMatCompressFCleanup( startLevel, endLevel );
+    MultiplyHMatCompressFCleanup();
 }
 
 template<typename Scalar>
@@ -153,6 +169,8 @@ DistHMat3d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
             rank += DF.VLocal.Width();
         }
 
+        if( rank > maxRankCount )
+            maxRankCount = rank;
         // Store the rank and create the space
         if( inTargetTeam_ )
         {
@@ -222,6 +240,8 @@ DistHMat3d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
             rank += SF.D.Width();
         }
 
+        if( rank > maxRankCount )
+            maxRankCount = rank;
         // Create the space and store the rank if we'll need to do a QR
         if( inTargetTeam_ )
         {
@@ -273,6 +293,8 @@ DistHMat3d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
             rank += F.Rank();
         }
 
+        if( rank > maxRankCount )
+            maxRankCount = rank;
         // Create the space and store the updates. If there are no dense
         // updates, then mark two more matrices for QR factorization.
         {
@@ -393,6 +415,8 @@ DistHMat3d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
                 }
             }
         }
+        if( rank > maxRankCount )
+            maxRankCount = rank;
         break;
     }
     case DENSE:
@@ -422,6 +446,8 @@ DistHMat3d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
         // Create space for storing the parent updates
         UMap_.Set( -1, new Dense<Scalar>(m,rank) );
         VMap_.Set( -1, new Dense<Scalar>(n,rank) );
+        if( rank > maxRankCount )
+            maxRankCount = rank;
         break;
     }
     default:
@@ -943,8 +969,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressImportV
 
 template<typename Scalar>
 void
-DistHMat3d<Scalar>::MultiplyHMatCompressFPrecompute
-( int startLevel, int endLevel )
+DistHMat3d<Scalar>::MultiplyHMatCompressFPrecompute()
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompressFPrecompute");
@@ -958,20 +983,14 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPrecompute
     case SPLIT_NODE:
     case NODE:
     {
-        if( level_+1 < endLevel )
-        {
             Node& node = *block_.data.N;
             for( int t=0; t<8; ++t )
                 for( int s=0; s<8; ++s)
-                    node.Child(t,s).MultiplyHMatCompressFPrecompute
-                    ( startLevel, endLevel );
-        }
+                    node.Child(t,s).MultiplyHMatCompressFPrecompute();
         break;
     }
     case DIST_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         DistLowRank &DF = *block_.data.DF;
         int LH=LocalHeight();
         int LW=LocalWidth();
@@ -1013,8 +1032,6 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPrecompute
     }
     case SPLIT_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         if( haveDenseUpdate_ )
             break;
         SplitLowRank &SF = *block_.data.SF;
@@ -1060,8 +1077,6 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPrecompute
     }
     case LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         if( haveDenseUpdate_ )
             break;
         LowRank<Scalar> &F = *block_.data.F;
@@ -1104,8 +1119,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPrecompute
 
 template<typename Scalar>
 void
-DistHMat3d<Scalar>::MultiplyHMatCompressFReduces
-( int startLevel, int endLevel )
+DistHMat3d<Scalar>::MultiplyHMatCompressFReduces()
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompressFReduces");
@@ -1114,7 +1128,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFReduces
     const int numLevels = teams_->NumLevels();
     const int numReduces = numLevels-1;
     Vector<int> sizes( numReduces, 0 );
-    MultiplyHMatCompressFReducesCount( sizes, startLevel, endLevel );
+    MultiplyHMatCompressFReducesCount( sizes );
 
     int totalsize = 0;
     for(int i=0; i<numReduces; ++i)
@@ -1125,18 +1139,18 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFReduces
         offsets[i] = offset;
     Vector<int> offsetscopy = offsets;
     MultiplyHMatCompressFReducesPack
-    ( buffer, offsetscopy, startLevel, endLevel );
+    ( buffer, offsetscopy );
 
     MultiplyHMatCompressFTreeReduces( buffer, sizes );
 
     MultiplyHMatCompressFReducesUnpack
-    ( buffer, offsets, startLevel, endLevel );
+    ( buffer, offsets );
 }
 
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatCompressFReducesCount
-( Vector<int>& sizes, int startLevel, int endLevel ) const
+( Vector<int>& sizes ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompressFReduceCount");
@@ -1148,21 +1162,15 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFReducesCount
     {
     case DIST_NODE:
     {
-        if( level_+1 < endLevel )
-        if( level_ >= startLevel && level_ < endLevel )
-        {
-            Node& node = *block_.data.N;
-            for( int t=0; t<8; ++t )
-                for( int s=0; s<8; ++s)
-                    node.Child(t,s).MultiplyHMatCompressFReducesCount
-                    ( sizes, startLevel, endLevel );
-        }
+        Node& node = *block_.data.N;
+        for( int t=0; t<8; ++t )
+            for( int s=0; s<8; ++s)
+                node.Child(t,s).MultiplyHMatCompressFReducesCount
+                ( sizes );
         break;
     }
     case DIST_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         DistLowRank &DF = *block_.data.DF;
         int totalrank = DF.rank;
         if( totalrank <= MaxRank() )
@@ -1181,8 +1189,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFReducesCount
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatCompressFReducesPack
-( Vector<Scalar>& buffer, Vector<int>& offsets,
-  int startLevel, int endLevel )
+( Vector<Scalar>& buffer, Vector<int>& offsets )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompressFReducePack");
@@ -1194,20 +1201,15 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFReducesPack
     {
     case DIST_NODE:
     {
-        if( level_+1 < endLevel )
-        {
-            Node& node = *block_.data.N;
-            for( int t=0; t<8; ++t )
-                for( int s=0; s<8; ++s)
-                    node.Child(t,s).MultiplyHMatCompressFReducesPack
-                    ( buffer, offsets, startLevel, endLevel );
-        }
+        Node& node = *block_.data.N;
+        for( int t=0; t<8; ++t )
+        	for( int s=0; s<8; ++s)
+                node.Child(t,s).MultiplyHMatCompressFReducesPack
+                ( buffer, offsets );
         break;
     }
     case DIST_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         DistLowRank &DF = *block_.data.DF;
         int totalrank = DF.rank;
         if( totalrank <= MaxRank() )
@@ -1252,8 +1254,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFTreeReduces
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatCompressFReducesUnpack
-( const Vector<Scalar>& buffer, Vector<int>& offsets,
-  int startLevel, int endLevel )
+( const Vector<Scalar>& buffer, Vector<int>& offsets )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompressFReducesUnpack");
@@ -1265,20 +1266,15 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFReducesUnpack
     {
     case DIST_NODE:
     {
-        if( level_+1 < endLevel )
-        {
-            Node& node = *block_.data.N;
-            for( int t=0; t<8; ++t )
-                for( int s=0; s<8; ++s)
-                    node.Child(t,s).MultiplyHMatCompressFReducesUnpack
-                    ( buffer, offsets, startLevel, endLevel );
-        }
+        Node& node = *block_.data.N;
+        for( int t=0; t<8; ++t )
+            for( int s=0; s<8; ++s)
+                node.Child(t,s).MultiplyHMatCompressFReducesUnpack
+                ( buffer, offsets );
         break;
     }
     case DIST_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         DistLowRank &DF = *block_.data.DF;
         int totalrank = DF.rank;
         if( totalrank <= MaxRank() )
@@ -1310,8 +1306,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFReducesUnpack
 
 template<typename Scalar>
 void
-DistHMat3d<Scalar>::MultiplyHMatCompressFEigenDecomp
-( int startLevel, int endLevel )
+DistHMat3d<Scalar>::MultiplyHMatCompressFEigenDecomp()
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompressFEigenDecomp");
@@ -1325,20 +1320,14 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFEigenDecomp
     case SPLIT_NODE:
     case NODE:
     {
-        if( level_+1 < endLevel )
-        {
-            Node& node = *block_.data.N;
-            for( int t=0; t<8; ++t )
-                for( int s=0; s<8; ++s )
-                    node.Child(t,s).MultiplyHMatCompressFEigenDecomp
-                    ( startLevel, endLevel);
-        }
+        Node& node = *block_.data.N;
+        for( int t=0; t<8; ++t )
+            for( int s=0; s<8; ++s )
+                node.Child(t,s).MultiplyHMatCompressFEigenDecomp();
         break;
     }
     case DIST_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         DistLowRank &DF = *block_.data.DF;
         int totalrank = DF.rank;
         if( totalrank <= MaxRank() )
@@ -1353,7 +1342,6 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFEigenDecomp
                 lapack::EVD
                 ( 'V', 'U', USqr_.Height(),
                   USqr_.Buffer(), USqr_.LDim(), &USqrEig_[0] );
-                evdCount++;
             }
 
             if( inSourceTeam_ )
@@ -1361,15 +1349,12 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFEigenDecomp
                 lapack::EVD
                 ( 'V', 'U', VSqr_.Height(),
                   VSqr_.Buffer(), VSqr_.LDim(), &VSqrEig_[0] );
-                evdCount++;
             }
         }
         break;
     }
     case SPLIT_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         if( haveDenseUpdate_ )
             break;
         SplitLowRank& SF = *block_.data.SF;
@@ -1385,7 +1370,6 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFEigenDecomp
                 lapack::EVD
                 ( 'V', 'U', USqr_.Height(),
                   USqr_.Buffer(), USqr_.LDim(), &USqrEig_[0] );
-                evdCount++;
             }
 
             if( inSourceTeam_ )
@@ -1393,14 +1377,12 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFEigenDecomp
                 lapack::EVD
                 ( 'V', 'U', VSqr_.Height(),
                   VSqr_.Buffer(), VSqr_.LDim(), &VSqrEig_[0] );
-                evdCount++;
             }
         }
+        break;
     }
     case LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         if( haveDenseUpdate_ )
             break;
         LowRank<Scalar> &F = *block_.data.F;
@@ -1413,12 +1395,10 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFEigenDecomp
             lapack::EVD
             ( 'V', 'U', USqr_.Height(),
               USqr_.Buffer(), USqr_.LDim(), &USqrEig_[0] );
-            evdCount++;
 
             lapack::EVD
             ( 'V', 'U', VSqr_.Height(),
               VSqr_.Buffer(), VSqr_.LDim(), &VSqrEig_[0] );
-            evdCount++;
         }
         break;
     }
@@ -1429,8 +1409,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFEigenDecomp
 
 template<typename Scalar>
 void
-DistHMat3d<Scalar>::MultiplyHMatCompressFPassMatrix
-( int startLevel, int endLevel )
+DistHMat3d<Scalar>::MultiplyHMatCompressFPassMatrix()
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompressFPassMatrix");
@@ -1438,7 +1417,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassMatrix
     // Compute send and recv sizes
     std::map<int,int> sendsizes, recvsizes;
     MultiplyHMatCompressFPassMatrixCount
-    ( sendsizes, recvsizes, startLevel, endLevel );
+    ( sendsizes, recvsizes );
 
     // Compute the offsets
     int totalSendsize=0, totalRecvsize=0;
@@ -1459,7 +1438,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassMatrix
     Vector<Scalar> sendBuffer(totalSendsize);
     std::map<int,int> offsets = sendOffsets;
     MultiplyHMatCompressFPassMatrixPack
-    ( sendBuffer, offsets, startLevel, endLevel );
+    ( sendBuffer, offsets );
 
     // Start the non-blocking recvs
     mpi::Comm comm = teams_->Team( 0 );
@@ -1492,7 +1471,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassMatrix
     // Unpack as soon as we have received our data
     mpi::WaitAll( numRecvs, &recvRequests[0] );
     MultiplyHMatCompressFPassMatrixUnpack
-    ( recvBuffer, recvOffsets, startLevel, endLevel );
+    ( recvBuffer, recvOffsets );
 
     // Don't exit until we know that the data was sent
     mpi::WaitAll( numSends, &sendRequests[0] );
@@ -1501,8 +1480,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassMatrix
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatCompressFPassMatrixCount
-( std::map<int,int>& sendsizes, std::map<int,int>& recvsizes,
-  int startLevel, int endLevel ) const
+( std::map<int,int>& sendsizes, std::map<int,int>& recvsizes ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompressFPassMatrixCount");
@@ -1515,20 +1493,15 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassMatrixCount
     case DIST_NODE:
     case SPLIT_NODE:
     {
-        if( level_+1 < endLevel )
-        {
-            Node& node = *block_.data.N;
-            for( int t=0; t<8; ++t )
-                for( int s=0; s<8; ++s )
-                    node.Child(t,s).MultiplyHMatCompressFPassMatrixCount
-                    ( sendsizes, recvsizes, startLevel, endLevel );
-        }
+        Node& node = *block_.data.N;
+        for( int t=0; t<8; ++t )
+            for( int s=0; s<8; ++s )
+                node.Child(t,s).MultiplyHMatCompressFPassMatrixCount
+                ( sendsizes, recvsizes );
         break;
     }
     case DIST_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         if( inSourceTeam_ && inTargetTeam_ )
             break;
         DistLowRank &DF = *block_.data.DF;
@@ -1548,8 +1521,6 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassMatrixCount
     }
     case SPLIT_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         if( haveDenseUpdate_ )
             break;
         SplitLowRank& SF = *block_.data.SF;
@@ -1588,8 +1559,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassMatrixCount
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatCompressFPassMatrixPack
-( Vector<Scalar>& buffer, std::map<int,int>& offsets,
-  int startLevel, int endLevel ) const
+( Vector<Scalar>& buffer, std::map<int,int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompressFPassMatrixPack");
@@ -1602,20 +1572,15 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassMatrixPack
     case DIST_NODE:
     case SPLIT_NODE:
     {
-        if( level_+1 < endLevel )
-        {
-            Node& node = *block_.data.N;
-            for( int t=0; t<8; ++t )
-                for( int s=0; s<8; ++s )
-                    node.Child(t,s).MultiplyHMatCompressFPassMatrixPack
-                    ( buffer, offsets, startLevel, endLevel );
-        }
+        Node& node = *block_.data.N;
+        for( int t=0; t<8; ++t )
+            for( int s=0; s<8; ++s )
+                node.Child(t,s).MultiplyHMatCompressFPassMatrixPack
+                ( buffer, offsets );
         break;
     }
     case DIST_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         if( inTargetTeam_ )
             break;
         DistLowRank &DF = *block_.data.DF;
@@ -1635,8 +1600,6 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassMatrixPack
     }
     case SPLIT_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         if( haveDenseUpdate_ )
             break;
         SplitLowRank& SF = *block_.data.SF;
@@ -1681,8 +1644,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassMatrixPack
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatCompressFPassMatrixUnpack
-( const Vector<Scalar>& buffer, std::map<int,int>& offsets,
-  int startLevel, int endLevel )
+( const Vector<Scalar>& buffer, std::map<int,int>& offsets )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompressFPassMatrixUnpack");
@@ -1695,20 +1657,15 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassMatrixUnpack
     case DIST_NODE:
     case SPLIT_NODE:
     {
-        if( level_+1 < endLevel )
-        {
-            Node& node = *block_.data.N;
-            for( int t=0; t<8; ++t )
-                for( int s=0; s<8; ++s )
-                    node.Child(t,s).MultiplyHMatCompressFPassMatrixUnpack
-                    ( buffer, offsets, startLevel, endLevel );
-        }
+        Node& node = *block_.data.N;
+        for( int t=0; t<8; ++t )
+            for( int s=0; s<8; ++s )
+                node.Child(t,s).MultiplyHMatCompressFPassMatrixUnpack
+                ( buffer, offsets );
         break;
     }
     case DIST_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         if( inSourceTeam_ )
             break;
         DistLowRank &DF = *block_.data.DF;
@@ -1730,8 +1687,6 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassMatrixUnpack
     }
     case SPLIT_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         if( haveDenseUpdate_ )
             break;
         SplitLowRank& SF = *block_.data.SF;
@@ -1781,8 +1736,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassMatrixUnpack
 
 template<typename Scalar>
 void
-DistHMat3d<Scalar>::MultiplyHMatCompressFPassVector
-( int startLevel, int endLevel )
+DistHMat3d<Scalar>::MultiplyHMatCompressFPassVector()
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompressFPassVector");
@@ -1790,7 +1744,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassVector
     // Compute send and recv sizes
     std::map<int,int> sendsizes, recvsizes;
     MultiplyHMatCompressFPassVectorCount
-    ( sendsizes, recvsizes, startLevel, endLevel );
+    ( sendsizes, recvsizes );
 
     // Compute the offsets
     int totalSendsize=0, totalRecvsize=0;
@@ -1811,7 +1765,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassVector
     Vector<Real> sendBuffer(totalSendsize);
     std::map<int,int> offsets = sendOffsets;
     MultiplyHMatCompressFPassVectorPack
-    ( sendBuffer, offsets, startLevel, endLevel );
+    ( sendBuffer, offsets );
 
     // Start the non-blocking recvs
     mpi::Comm comm = teams_->Team( 0 );
@@ -1844,7 +1798,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassVector
     // Unpack as soon as we have received our data
     mpi::WaitAll( numRecvs, &recvRequests[0] );
     MultiplyHMatCompressFPassVectorUnpack
-    ( recvBuffer, recvOffsets, startLevel, endLevel );
+    ( recvBuffer, recvOffsets );
 
     // Don't exit until we know that the data was sent
     mpi::WaitAll( numSends, &sendRequests[0] );
@@ -1853,8 +1807,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassVector
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatCompressFPassVectorCount
-( std::map<int,int>& sendsizes, std::map<int,int>& recvsizes,
-  int startLevel, int endLevel ) const
+( std::map<int,int>& sendsizes, std::map<int,int>& recvsizes ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompressFPassVectorCount");
@@ -1867,20 +1820,15 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassVectorCount
     case DIST_NODE:
     case SPLIT_NODE:
     {
-        if( level_+1 < endLevel )
-        {
-            Node& node = *block_.data.N;
-            for( int t=0; t<8; ++t )
-                for( int s=0; s<8; ++s )
-                    node.Child(t,s).MultiplyHMatCompressFPassVectorCount
-                    ( sendsizes, recvsizes, startLevel, endLevel );
-        }
+        Node& node = *block_.data.N;
+        for( int t=0; t<8; ++t )
+            for( int s=0; s<8; ++s )
+                node.Child(t,s).MultiplyHMatCompressFPassVectorCount
+                ( sendsizes, recvsizes );
         break;
     }
     case DIST_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         if( inSourceTeam_ && inTargetTeam_ )
             break;
         DistLowRank &DF = *block_.data.DF;
@@ -1900,8 +1848,6 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassVectorCount
     }
     case SPLIT_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         if( haveDenseUpdate_ )
             break;
         SplitLowRank& SF = *block_.data.SF;
@@ -1927,8 +1873,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassVectorCount
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatCompressFPassVectorPack
-( Vector<Real>& buffer, std::map<int,int>& offsets,
-  int startLevel, int endLevel ) const
+( Vector<Real>& buffer, std::map<int,int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompressFPassVectorPack");
@@ -1941,20 +1886,15 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassVectorPack
     case DIST_NODE:
     case SPLIT_NODE:
     {
-        if( level_+1 < endLevel )
-        {
-            Node& node = *block_.data.N;
-            for( int t=0; t<8; ++t )
-                for( int s=0; s<8; ++s )
-                    node.Child(t,s).MultiplyHMatCompressFPassVectorPack
-                    ( buffer, offsets, startLevel, endLevel );
-        }
+        Node& node = *block_.data.N;
+        for( int t=0; t<8; ++t )
+            for( int s=0; s<8; ++s )
+                node.Child(t,s).MultiplyHMatCompressFPassVectorPack
+                ( buffer, offsets );
         break;
     }
     case DIST_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         if( inTargetTeam_ )
             break;
         DistLowRank &DF = *block_.data.DF;
@@ -1973,8 +1913,6 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassVectorPack
     }
     case SPLIT_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         if( inTargetTeam_ )
             break;
         if( haveDenseUpdate_ )
@@ -2001,8 +1939,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassVectorPack
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatCompressFPassVectorUnpack
-( const Vector<Real>& buffer, std::map<int,int>& offsets,
-  int startLevel, int endLevel )
+( const Vector<Real>& buffer, std::map<int,int>& offsets )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompressFPassVectorUnpack");
@@ -2015,20 +1952,15 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassVectorUnpack
     case DIST_NODE:
     case SPLIT_NODE:
     {
-        if( level_+1 < endLevel )
-        {
-            Node& node = *block_.data.N;
-            for( int t=0; t<8; ++t )
-                for( int s=0; s<8; ++s )
-                    node.Child(t,s).MultiplyHMatCompressFPassVectorUnpack
-                    ( buffer, offsets, startLevel, endLevel );
-        }
+        Node& node = *block_.data.N;
+        for( int t=0; t<8; ++t )
+            for( int s=0; s<8; ++s )
+                node.Child(t,s).MultiplyHMatCompressFPassVectorUnpack
+                ( buffer, offsets );
         break;
     }
     case DIST_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         if( inSourceTeam_ )
             break;
         DistLowRank &DF = *block_.data.DF;
@@ -2048,8 +1980,6 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassVectorUnpack
     }
     case SPLIT_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         if( inSourceTeam_ )
             break;
         if( haveDenseUpdate_ )
@@ -2077,7 +2007,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassVectorUnpack
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatCompressFMidcompute
-( Real relTol, int startLevel, int endLevel )
+( Real relTol )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompressFMidcompute");
@@ -2091,20 +2021,15 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFMidcompute
     case SPLIT_NODE:
     case NODE:
     {
-        if( level_+1 < endLevel )
-        {
-            Node& node = *block_.data.N;
-            for( int t=0; t<8; ++t )
-                for( int s=0; s<8; ++s)
-                    node.Child(t,s).MultiplyHMatCompressFMidcompute
-                    ( relTol, startLevel, endLevel );
-        }
+        Node& node = *block_.data.N;
+        for( int t=0; t<8; ++t )
+            for( int s=0; s<8; ++s)
+                node.Child(t,s).MultiplyHMatCompressFMidcompute
+                ( relTol );
         break;
     }
     case DIST_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         DistLowRank &DF = *block_.data.DF;
         int totalrank = DF.rank;
         if( totalrank <= MaxRank() )
@@ -2161,8 +2086,6 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFMidcompute
     }
     case SPLIT_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         if( haveDenseUpdate_ )
             break;
         SplitLowRank& SF = *block_.data.SF;
@@ -2265,8 +2188,6 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFMidcompute
     }
     case LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         if( haveDenseUpdate_ )
             break;
         LowRank<Scalar> &F = *block_.data.F;
@@ -2359,8 +2280,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFMidcompute
 
 template<typename Scalar>
 void
-DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackNum
-( int startLevel, int endLevel )
+DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackNum()
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompressFPassbackNum");
@@ -2368,7 +2288,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackNum
     // Compute send and recv sizes
     std::map<int,int> sendsizes, recvsizes;
     MultiplyHMatCompressFPassbackNumCount
-    ( sendsizes, recvsizes, startLevel, endLevel );
+    ( sendsizes, recvsizes );
 
     // Compute the offsets
     int totalSendsize=0, totalRecvsize=0;
@@ -2389,7 +2309,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackNum
     Vector<int> sendBuffer(totalSendsize);
     std::map<int,int> offsets = sendOffsets;
     MultiplyHMatCompressFPassbackNumPack
-    ( sendBuffer, offsets, startLevel, endLevel );
+    ( sendBuffer, offsets );
 
     // Start the non-blocking recvs
     mpi::Comm comm = teams_->Team( 0 );
@@ -2422,7 +2342,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackNum
     // Unpack as soon as we have received our data
     mpi::WaitAll( numRecvs, &recvRequests[0] );
     MultiplyHMatCompressFPassbackNumUnpack
-    ( recvBuffer, recvOffsets, startLevel, endLevel );
+    ( recvBuffer, recvOffsets );
 
     // Don't exit until we know that the data was sent
     mpi::WaitAll( numSends, &sendRequests[0] );
@@ -2431,8 +2351,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackNum
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackNumCount
-( std::map<int,int>& sendsizes, std::map<int,int>& recvsizes,
-  int startLevel, int endLevel ) const
+( std::map<int,int>& sendsizes, std::map<int,int>& recvsizes ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompressFPassbackNumCount");
@@ -2445,20 +2364,15 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackNumCount
     case DIST_NODE:
     case SPLIT_NODE:
     {
-        if( level_+1 < endLevel )
-        {
-            Node& node = *block_.data.N;
-            for( int t=0; t<8; ++t )
-                for( int s=0; s<8; ++s )
-                    node.Child(t,s).MultiplyHMatCompressFPassbackNumCount
-                    ( sendsizes, recvsizes, startLevel, endLevel );
-        }
+        Node& node = *block_.data.N;
+        for( int t=0; t<8; ++t )
+            for( int s=0; s<8; ++s )
+                node.Child(t,s).MultiplyHMatCompressFPassbackNumCount
+                ( sendsizes, recvsizes );
         break;
     }
     case DIST_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         if( inSourceTeam_ && inTargetTeam_ )
             break;
         DistLowRank &DF = *block_.data.DF;
@@ -2478,8 +2392,6 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackNumCount
     }
     case SPLIT_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         if( haveDenseUpdate_ )
             break;
         SplitLowRank& SF = *block_.data.SF;
@@ -2505,8 +2417,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackNumCount
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackNumPack
-( Vector<int>& buffer, std::map<int,int>& offsets,
-  int startLevel, int endLevel ) const
+( Vector<int>& buffer, std::map<int,int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompressFPassbackNumPack");
@@ -2519,20 +2430,15 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackNumPack
     case DIST_NODE:
     case SPLIT_NODE:
     {
-        if( level_+1 < endLevel )
-        {
-            Node& node = *block_.data.N;
-            for( int t=0; t<8; ++t )
-                for( int s=0; s<8; ++s )
-                    node.Child(t,s).MultiplyHMatCompressFPassbackNumPack
-                    ( buffer, offsets, startLevel, endLevel );
-        }
+        Node& node = *block_.data.N;
+        for( int t=0; t<8; ++t )
+            for( int s=0; s<8; ++s )
+                node.Child(t,s).MultiplyHMatCompressFPassbackNumPack
+                ( buffer, offsets );
         break;
     }
     case DIST_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         if( inSourceTeam_ )
             break;
         DistLowRank &DF = *block_.data.DF;
@@ -2550,8 +2456,6 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackNumPack
     }
     case SPLIT_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         if( inSourceTeam_ )
             break;
         if( haveDenseUpdate_ )
@@ -2577,8 +2481,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackNumPack
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackNumUnpack
-( const Vector<int>& buffer, std::map<int,int>& offsets,
-  int startLevel, int endLevel )
+( const Vector<int>& buffer, std::map<int,int>& offsets )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompressFPassbackNumUnpack");
@@ -2591,20 +2494,15 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackNumUnpack
     case DIST_NODE:
     case SPLIT_NODE:
     {
-        if( level_+1 < endLevel )
-        {
-            Node& node = *block_.data.N;
-            for( int t=0; t<8; ++t )
-                for( int s=0; s<8; ++s )
-                    node.Child(t,s).MultiplyHMatCompressFPassbackNumUnpack
-                    ( buffer, offsets, startLevel, endLevel );
-        }
+        Node& node = *block_.data.N;
+        for( int t=0; t<8; ++t )
+            for( int s=0; s<8; ++s )
+                node.Child(t,s).MultiplyHMatCompressFPassbackNumUnpack
+                ( buffer, offsets );
         break;
     }
     case DIST_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         if( inTargetTeam_ )
             break;
         DistLowRank &DF = *block_.data.DF;
@@ -2624,8 +2522,6 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackNumUnpack
     }
     case SPLIT_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         if( inTargetTeam_ )
             break;
         if( haveDenseUpdate_ )
@@ -2652,8 +2548,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackNumUnpack
 
 template<typename Scalar>
 void
-DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackData
-( int startLevel, int endLevel )
+DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackData()
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompressFPassbackData");
@@ -2662,7 +2557,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackData
     // Compute send and recv sizes
     std::map<int,int> sendsizes, recvsizes;
     MultiplyHMatCompressFPassbackDataCount
-    ( sendsizes, recvsizes, startLevel, endLevel );
+    ( sendsizes, recvsizes );
 
     // Compute the offsets
     int totalSendsize=0, totalRecvsize=0;
@@ -2683,7 +2578,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackData
     Vector<Scalar> sendBuffer(totalSendsize);
     std::map<int,int> offsets = sendOffsets;
     MultiplyHMatCompressFPassbackDataPack
-    ( sendBuffer, offsets, startLevel, endLevel );
+    ( sendBuffer, offsets );
 
     // Start the non-blocking recvs
     mpi::Comm comm = teams_->Team( 0 );
@@ -2716,7 +2611,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackData
     // Unpack as soon as we have received our data
     mpi::WaitAll( numRecvs, &recvRequests[0] );
     MultiplyHMatCompressFPassbackDataUnpack
-    ( recvBuffer, recvOffsets, startLevel, endLevel );
+    ( recvBuffer, recvOffsets );
 
     // Don't exit until we know that the data was sent
     mpi::WaitAll( numSends, &sendRequests[0] );
@@ -2725,8 +2620,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackData
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackDataCount
-( std::map<int,int>& sendsizes, std::map<int,int>& recvsizes,
-  int startLevel, int endLevel )
+( std::map<int,int>& sendsizes, std::map<int,int>& recvsizes )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompressFPassbackDataCount");
@@ -2739,20 +2633,15 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackDataCount
     case DIST_NODE:
     case SPLIT_NODE:
     {
-        if( level_+1 < endLevel )
-        {
-            Node& node = *block_.data.N;
-            for( int t=0; t<8; ++t )
-                for( int s=0; s<8; ++s )
-                    node.Child(t,s).MultiplyHMatCompressFPassbackDataCount
-                    ( sendsizes, recvsizes, startLevel, endLevel );
-        }
+        Node& node = *block_.data.N;
+        for( int t=0; t<8; ++t )
+            for( int s=0; s<8; ++s )
+                node.Child(t,s).MultiplyHMatCompressFPassbackDataCount
+                ( sendsizes, recvsizes );
         break;
     }
     case DIST_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         if( inSourceTeam_ && inTargetTeam_ )
             break;
         DistLowRank &DF = *block_.data.DF;
@@ -2772,8 +2661,6 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackDataCount
     }
     case SPLIT_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         SplitLowRank& SF = *block_.data.SF;
         const int LH = Height();
         const int LW = Width();
@@ -2811,8 +2698,6 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackDataCount
     }
     case SPLIT_DENSE:
     {
-        if( level_ < startLevel )
-            break;
         if( inTargetTeam_ )
         {
             UMap_.ResetIterator();
@@ -2836,8 +2721,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackDataCount
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackDataPack
-( Vector<Scalar>& buffer, std::map<int,int>& offsets,
-  int startLevel, int endLevel )
+( Vector<Scalar>& buffer, std::map<int,int>& offsets )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompressFPassbackDataPack");
@@ -2850,20 +2734,15 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackDataPack
     case DIST_NODE:
     case SPLIT_NODE:
     {
-        if( level_+1 < endLevel )
-        {
-            Node& node = *block_.data.N;
-            for( int t=0; t<8; ++t )
-                for( int s=0; s<8; ++s )
-                    node.Child(t,s).MultiplyHMatCompressFPassbackDataPack
-                    ( buffer, offsets, startLevel, endLevel );
-        }
+        Node& node = *block_.data.N;
+        for( int t=0; t<8; ++t )
+            for( int s=0; s<8; ++s )
+                node.Child(t,s).MultiplyHMatCompressFPassbackDataPack
+                ( buffer, offsets );
         break;
     }
     case DIST_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         if( inSourceTeam_ || !inTargetTeam_ )
             break;
         DistLowRank &DF = *block_.data.DF;
@@ -2884,8 +2763,6 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackDataPack
     }
     case SPLIT_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         SplitLowRank& SF = *block_.data.SF;
         const int LH = Height();
         const int LW = Width();
@@ -2933,8 +2810,6 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackDataPack
     }
     case SPLIT_DENSE:
     {
-        if( level_ < startLevel )
-            break;
         if( inTargetTeam_ )
         {
             UMap_.ResetIterator();
@@ -2958,8 +2833,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackDataPack
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackDataUnpack
-( const Vector<Scalar>& buffer, std::map<int,int>& offsets,
-  int startLevel, int endLevel )
+( const Vector<Scalar>& buffer, std::map<int,int>& offsets )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompressFPassbackDataUnpack");
@@ -2972,20 +2846,15 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackDataUnpack
     case DIST_NODE:
     case SPLIT_NODE:
     {
-        if( level_+1 < endLevel )
-        {
-            Node& node = *block_.data.N;
-            for( int t=0; t<8; ++t )
-                for( int s=0; s<8; ++s )
-                    node.Child(t,s).MultiplyHMatCompressFPassbackDataUnpack
-                    ( buffer, offsets, startLevel, endLevel );
-        }
+        Node& node = *block_.data.N;
+        for( int t=0; t<8; ++t )
+            for( int s=0; s<8; ++s )
+                node.Child(t,s).MultiplyHMatCompressFPassbackDataUnpack
+                ( buffer, offsets );
         break;
     }
     case DIST_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         if( inTargetTeam_ || !inSourceTeam_ )
             break;
         DistLowRank &DF = *block_.data.DF;
@@ -3005,8 +2874,6 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackDataUnpack
     }
     case SPLIT_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         SplitLowRank& SF = *block_.data.SF;
         const int LH = Height();
         const int LW = Width();
@@ -3058,8 +2925,6 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackDataUnpack
     }
     case SPLIT_DENSE:
     {
-        if( level_ < startLevel )
-            break;
         if( inSourceTeam_ )
         {
             UMap_.Set( 0, new Dense<Scalar>);
@@ -3083,7 +2948,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPassbackDataUnpack
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatCompressFPostcompute
-( Real epsilon, int startLevel, int endLevel )
+( Real epsilon )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompressFPostcompute");
@@ -3097,22 +2962,17 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPostcompute
     case SPLIT_NODE:
     case NODE:
     {
-        if( level_+1 < endLevel )
-        {
-            Node& node = *block_.data.N;
-            for( int t=0; t<8; ++t )
-                for( int s=0; s<8; ++s)
-                    node.Child(t,s).MultiplyHMatCompressFPostcompute
-                    ( epsilon, startLevel, endLevel );
-        }
+        Node& node = *block_.data.N;
+        for( int t=0; t<8; ++t )
+            for( int s=0; s<8; ++s)
+                node.Child(t,s).MultiplyHMatCompressFPostcompute
+                ( epsilon );
         break;
     }
     case DIST_LOW_RANK:
     case SPLIT_LOW_RANK:
     case LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         if( haveDenseUpdate_ )
             break;
         mpi::Comm team = teams_->Team( level_ );
@@ -3213,8 +3073,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFPostcompute
 
 template<typename Scalar>
 void
-DistHMat3d<Scalar>::MultiplyHMatCompressFBroadcastsNum
-( int startLevel, int endLevel )
+DistHMat3d<Scalar>::MultiplyHMatCompressFBroadcastsNum()
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompressFBroadcastsNum");
@@ -3222,7 +3081,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFBroadcastsNum
     const int numLevels = teams_->NumLevels();
     const int numBroadcasts = numLevels-1;
     Vector<int> sizes( numBroadcasts, 0 );
-    MultiplyHMatCompressFBroadcastsNumCount( sizes, startLevel, endLevel );
+    MultiplyHMatCompressFBroadcastsNumCount( sizes );
 
     int totalsize = 0;
     for(int i=0; i<numBroadcasts; ++i)
@@ -3233,18 +3092,18 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFBroadcastsNum
         offsets[i] = offset;
     Vector<int> offsetscopy = offsets;
     MultiplyHMatCompressFBroadcastsNumPack
-    ( buffer, offsetscopy, startLevel, endLevel );
+    ( buffer, offsetscopy );
 
     MultiplyHMatCompressFTreeBroadcastsNum( buffer, sizes );
 
     MultiplyHMatCompressFBroadcastsNumUnpack
-    ( buffer, offsets, startLevel, endLevel );
+    ( buffer, offsets );
 }
 
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatCompressFBroadcastsNumCount
-( Vector<int>& sizes, int startLevel, int endLevel ) const
+( Vector<int>& sizes ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompressFBroadcastsNumCount");
@@ -3256,20 +3115,15 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFBroadcastsNumCount
     {
     case DIST_NODE:
     {
-        if( level_+1 < endLevel )
-        {
-            Node& node = *block_.data.N;
-            for( int t=0; t<8; ++t )
-                for( int s=0; s<8; ++s )
-                    node.Child(t,s).MultiplyHMatCompressFBroadcastsNumCount
-                    ( sizes, startLevel, endLevel );
-        }
+        Node& node = *block_.data.N;
+        for( int t=0; t<8; ++t )
+            for( int s=0; s<8; ++s )
+                node.Child(t,s).MultiplyHMatCompressFBroadcastsNumCount
+                ( sizes );
         break;
     }
     case DIST_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         DistLowRank &DF = *block_.data.DF;
         int totalrank = DF.rank;
         if( totalrank <= MaxRank() )
@@ -3288,8 +3142,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFBroadcastsNumCount
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatCompressFBroadcastsNumPack
-( Vector<int>& buffer, Vector<int>& offsets,
-  int startLevel, int endLevel ) const
+( Vector<int>& buffer, Vector<int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompressFBroadcastsNumPack");
@@ -3301,20 +3154,15 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFBroadcastsNumPack
     {
     case DIST_NODE:
     {
-        if( level_+1 < endLevel )
-        {
-            Node& node = *block_.data.N;
-            for( int t=0; t<8; ++t )
-                for( int s=0; s<8; ++s )
-                    node.Child(t,s).MultiplyHMatCompressFBroadcastsNumPack
-                    ( buffer, offsets, startLevel, endLevel );
-        }
+        Node& node = *block_.data.N;
+        for( int t=0; t<8; ++t )
+            for( int s=0; s<8; ++s )
+                node.Child(t,s).MultiplyHMatCompressFBroadcastsNumPack
+                ( buffer, offsets );
         break;
     }
     case DIST_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         DistLowRank &DF = *block_.data.DF;
         int totalrank = DF.rank;
         if( totalrank <= MaxRank() )
@@ -3355,8 +3203,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFTreeBroadcastsNum
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatCompressFBroadcastsNumUnpack
-( Vector<int>& buffer, Vector<int>& offsets,
-  int startLevel, int endLevel )
+( Vector<int>& buffer, Vector<int>& offsets )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompressFBroadcastsNumUnpack");
@@ -3368,20 +3215,15 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFBroadcastsNumUnpack
     {
     case DIST_NODE:
     {
-        if( level_+1 < endLevel )
-        {
-            Node& node = *block_.data.N;
-            for( int t=0; t<8; ++t )
-                for( int s=0; s<8; ++s )
-                    node.Child(t,s).MultiplyHMatCompressFBroadcastsNumUnpack
-                    ( buffer, offsets, startLevel, endLevel );
-        }
+        Node& node = *block_.data.N;
+        for( int t=0; t<8; ++t )
+            for( int s=0; s<8; ++s )
+                node.Child(t,s).MultiplyHMatCompressFBroadcastsNumUnpack
+                ( buffer, offsets );
         break;
     }
     case DIST_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         DistLowRank &DF = *block_.data.DF;
         int totalrank = DF.rank;
         if( totalrank <= MaxRank() )
@@ -3405,7 +3247,13 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFBroadcastsNumUnpack
                 offsets[level_]++;
             }
         }
-
+        else
+        {
+            if( inTargetTeam_ )
+                offsets[level_]++;
+            if( inSourceTeam_ )
+                offsets[level_]++;
+        }
         break;
     }
     default:
@@ -3415,8 +3263,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFBroadcastsNumUnpack
 
 template<typename Scalar>
 void
-DistHMat3d<Scalar>::MultiplyHMatCompressFBroadcasts
-( int startLevel, int endLevel )
+DistHMat3d<Scalar>::MultiplyHMatCompressFBroadcasts()
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompressFBroadcasts");
@@ -3424,7 +3271,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFBroadcasts
     const int numLevels = teams_->NumLevels();
     const int numBroadcasts = numLevels-1;
     Vector<int> sizes( numBroadcasts, 0 );
-    MultiplyHMatCompressFBroadcastsCount( sizes, startLevel, endLevel );
+    MultiplyHMatCompressFBroadcastsCount( sizes );
 
     int totalsize = 0;
     for(int i=0; i<numBroadcasts; ++i)
@@ -3435,18 +3282,18 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFBroadcasts
         offsets[i] = offset;
     Vector<int> offsetscopy = offsets;
     MultiplyHMatCompressFBroadcastsPack
-    ( buffer, offsetscopy, startLevel, endLevel );
+    ( buffer, offsetscopy );
 
     MultiplyHMatCompressFTreeBroadcasts( buffer, sizes );
 
     MultiplyHMatCompressFBroadcastsUnpack
-    ( buffer, offsets, startLevel, endLevel );
+    ( buffer, offsets );
 }
 
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatCompressFBroadcastsCount
-( Vector<int>& sizes, int startLevel, int endLevel ) const
+( Vector<int>& sizes ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompressFBroadcastsCount");
@@ -3458,20 +3305,15 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFBroadcastsCount
     {
     case DIST_NODE:
     {
-        if( level_+1 < endLevel )
-        {
-            Node& node = *block_.data.N;
-            for( int t=0; t<8; ++t )
-                for( int s=0; s<8; ++s )
-                    node.Child(t,s).MultiplyHMatCompressFBroadcastsCount
-                    ( sizes, startLevel, endLevel );
-        }
+        Node& node = *block_.data.N;
+        for( int t=0; t<8; ++t )
+            for( int s=0; s<8; ++s )
+                node.Child(t,s).MultiplyHMatCompressFBroadcastsCount
+                ( sizes );
         break;
     }
     case DIST_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         DistLowRank &DF = *block_.data.DF;
         int totalrank = DF.rank;
         if( totalrank <= MaxRank() )
@@ -3490,8 +3332,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFBroadcastsCount
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatCompressFBroadcastsPack
-( Vector<Scalar>& buffer, Vector<int>& offsets,
-  int startLevel, int endLevel ) const
+( Vector<Scalar>& buffer, Vector<int>& offsets ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompressFBroadcastsPack");
@@ -3503,20 +3344,15 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFBroadcastsPack
     {
     case DIST_NODE:
     {
-        if( level_+1 < endLevel )
-        {
-            Node& node = *block_.data.N;
-            for( int t=0; t<8; ++t )
-                for( int s=0; s<8; ++s )
-                    node.Child(t,s).MultiplyHMatCompressFBroadcastsPack
-                    ( buffer, offsets, startLevel, endLevel );
-        }
+        Node& node = *block_.data.N;
+        for( int t=0; t<8; ++t )
+            for( int s=0; s<8; ++s )
+                node.Child(t,s).MultiplyHMatCompressFBroadcastsPack
+                ( buffer, offsets );
         break;
     }
     case DIST_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         DistLowRank &DF = *block_.data.DF;
         int totalrank = DF.rank;
         if( totalrank <= MaxRank() )
@@ -3559,8 +3395,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFTreeBroadcasts
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatCompressFBroadcastsUnpack
-( Vector<Scalar>& buffer, Vector<int>& offsets,
-  int startLevel, int endLevel )
+( Vector<Scalar>& buffer, Vector<int>& offsets )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompressFBroadcastsUnpack");
@@ -3572,20 +3407,15 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFBroadcastsUnpack
     {
     case DIST_NODE:
     {
-        if( level_+1 < endLevel )
-        {
-            Node& node = *block_.data.N;
-            for( int t=0; t<8; ++t )
-                for( int s=0; s<8; ++s )
-                    node.Child(t,s).MultiplyHMatCompressFBroadcastsUnpack
-                    ( buffer, offsets, startLevel, endLevel );
-        }
+        Node& node = *block_.data.N;
+        for( int t=0; t<8; ++t )
+            for( int s=0; s<8; ++s )
+                node.Child(t,s).MultiplyHMatCompressFBroadcastsUnpack
+                ( buffer, offsets );
         break;
     }
     case DIST_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         DistLowRank &DF = *block_.data.DF;
         int totalrank = DF.rank;
         if( totalrank <= MaxRank() )
@@ -3611,8 +3441,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFBroadcastsUnpack
 
 template<typename Scalar>
 void
-DistHMat3d<Scalar>::MultiplyHMatCompressFFinalcompute
-( int startLevel, int endLevel )
+DistHMat3d<Scalar>::MultiplyHMatCompressFFinalcompute()
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompressFFinalcompute");
@@ -3626,24 +3455,19 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFFinalcompute
     case SPLIT_NODE:
     case NODE:
     {
-        if( level_+1 < endLevel )
-        {
-            Node& node = *block_.data.N;
-            for( int t=0; t<8; ++t )
-                for( int s=0; s<8; ++s )
-                    node.Child(t,s).MultiplyHMatCompressFFinalcompute
-                    ( startLevel, endLevel );
-        }
+        Node& node = *block_.data.N;
+        for( int t=0; t<8; ++t )
+            for( int s=0; s<8; ++s )
+                node.Child(t,s).MultiplyHMatCompressFFinalcompute();
         break;
     }
     case DIST_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         DistLowRank &DF = *block_.data.DF;
         int totalrank = DF.rank;
         if( totalrank <= MaxRank() )
             break;
+
         if( inTargetTeam_ )
         {
             DistLowRank &DF = *block_.data.DF;
@@ -3680,8 +3504,6 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFFinalcompute
     }
     case SPLIT_LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         if( !haveDenseUpdate_ )
         {
             SplitLowRank& SF = *block_.data.SF;
@@ -3840,8 +3662,6 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFFinalcompute
     }
     case LOW_RANK:
     {
-        if( level_ < startLevel )
-            break;
         if( !haveDenseUpdate_ )
         {
             LowRank<Scalar> &F = *block_.data.F;
@@ -3957,8 +3777,6 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFFinalcompute
     }
     case SPLIT_DENSE:
     {
-        if(level_ < startLevel )
-            break;
         if( inSourceTeam_ )
         {
             SplitDense& SD = *block_.data.SD;
@@ -3983,8 +3801,6 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFFinalcompute
     }
     case DENSE:
     {
-        if( level_ < startLevel )
-            break;
         Dense<Scalar>& D = *block_.data.D;
         const int m = D.Height();
         const int n = D.Width();
@@ -4011,8 +3827,7 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFFinalcompute
 
 template<typename Scalar>
 void
-DistHMat3d<Scalar>::MultiplyHMatCompressFCleanup
-( int startLevel, int endLevel )
+DistHMat3d<Scalar>::MultiplyHMatCompressFCleanup()
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatCompressFCleanup");
@@ -4026,14 +3841,10 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFCleanup
     case NODE:
     case NODE_GHOST:
     {
-        if( level_+1 < endLevel )
-        {
             Node& node = *block_.data.N;
             for( int t=0; t<8; ++t )
                 for( int s=0; s<8; ++s )
-                    node.Child(t,s).MultiplyHMatCompressFCleanup
-                    ( startLevel, endLevel );
-        }
+                    node.Child(t,s).MultiplyHMatCompressFCleanup();
     }
     case DIST_LOW_RANK:
     case DIST_LOW_RANK_GHOST:
@@ -4046,8 +3857,6 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFCleanup
     case DENSE:
     case DENSE_GHOST:
     {
-        if( level_ < startLevel )
-            break;
         USqr_.Clear();
         VSqr_.Clear();
         USqrEig_.Clear();
@@ -4067,6 +3876,10 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFCleanup
         mainContextMap_.Clear();
         colFHHContextMap_.Clear();
         rowFHHContextMap_.Clear();
+        OmegaTU_.Clear();
+        OmegaTV_.Clear();
+        colTSqr_.Clear();
+        rowTSqr_.Clear();
         break;
     }
     default:

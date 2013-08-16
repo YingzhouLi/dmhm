@@ -23,7 +23,7 @@ FormRow
 
     // Set up the diagonal entry
     colIndices.Push_back( rowIdx );
-    row.Push_back( Scalar(8) );
+    row.Push_back( Scalar(6) );
 
     // Front connection to (x-1,y,z)
     if( x != 0 )
@@ -201,7 +201,8 @@ main( int argc, char* argv[] )
         }
         mpi::Barrier( mpi::COMM_WORLD );
         double SchulzInvertStartTime = mpi::Time();
-        A.SchulzInvert(schuN);
+        A.SchulzInvert(schuN, multType);
+        A.PrintGlobalMemoryInfo("Matrix Memory: ");
         mpi::Barrier( mpi::COMM_WORLD );
         double SchulzInvertStopTime = mpi::Time();
         if( commRank == 0 )
@@ -268,11 +269,9 @@ main( int argc, char* argv[] )
                       << " seconds." << std::endl;
         }
 #ifdef MEMORY_INFO
-        C.PrintMemoryInfo("Memory info of C");
-        std::cout << "Memory of block now: "
-                  << MemoryUsage()/1024./1024. << "MB" << std::endl;
-        std::cout << "Peak memory of block: "
-                  << PeakMemoryUsage()/1024./1024. << "MB" << std::endl;
+        //C.PrintMemoryInfo("Memory info of C");
+        PrintGlobal( MemoryUsage()/1024./1024., "Memory of block now(MB): " );
+        PrintGlobal( PeakMemoryUsage()/1024./1024., "Peak memory of block now(MB): " );
 #endif
         if( structure )
         {

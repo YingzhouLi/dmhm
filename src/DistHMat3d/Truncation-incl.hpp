@@ -41,7 +41,7 @@ DistHMat3d<Scalar>::SVDTrunc
   Dense<Scalar>& VH, Real relTol )
 {
 #ifndef RELEASE
-    CallStackEntry entry("DistHMat3d::EVDTrunc");
+    CallStackEntry entry("DistHMat3d::SVDTrunc");
 #endif
     const int m = U.Width();
     const int n = VH.Height();
@@ -52,11 +52,9 @@ DistHMat3d<Scalar>::SVDTrunc
     const Real twoNorm = s[0];
     const Real tolerance = relTol*twoNorm;
     int cutoff;
-    for( cutoff=std::min(k,maxRank_)-1; cutoff>=0; --cutoff )
+    for( cutoff=std::min( k, MaxRank() )-1; cutoff>=0; --cutoff )
         if( s[cutoff] > tolerance )
             break;
-    if( cutoff < 0 )
-        cutoff = 0;
     s.Erase( s.Begin()+cutoff+1, s.Begin()+k );
     U.EraseCols( cutoff+1, m-1 );
     VH.EraseRows( cutoff+1, n-1 );
