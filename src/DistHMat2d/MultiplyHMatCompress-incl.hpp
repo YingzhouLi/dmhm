@@ -7,7 +7,7 @@
    directory, or at http://opensource.org/licenses/GPL-3.0
 */
 
-int evdCount;
+int maxRankCount;
 
 namespace dmhm {
 
@@ -32,10 +32,11 @@ DistHMat2d<Scalar>::MultiplyHMatCompress()
     NewMemoryCount( 2 );
 #endif
 
+    maxRankCount = 0;
     MultiplyHMatCompressLowRankCountAndResize(0);
     MultiplyHMatCompressLowRankImport(0);
-
 #ifdef MEMORY_INFO
+    PrintGlobal( double(maxRankCount), "Max Rank Number: ");
     PrintGlobal( PeakMemoryUsage( 2 )/1024./1024.,
                  "Peak Memory Of Resize And Import(MB): " );
     PrintGlobal( PeakMemoryUsage()/1024./1024.,
@@ -48,7 +49,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompress()
     MultiplyHMatCompressFPrecompute();
     MultiplyHMatCompressFReduces();
 
-    evdCount=0;
     MultiplyHMatCompressFEigenDecomp();
     MultiplyHMatCompressFPassMatrix();
     MultiplyHMatCompressFPassVector();
@@ -169,6 +169,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
             rank += DF.VLocal.Width();
         }
 
+        if( rank > maxRankCount )
+            maxRankCount = rank;
         // Store the rank and create the space
         if( inTargetTeam_ )
         {
@@ -238,6 +240,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
             rank += SF.D.Width();
         }
 
+        if( rank > maxRankCount )
+            maxRankCount = rank;
         // Create the space and store the rank if we'll need to do a QR
         if( inTargetTeam_ )
         {
@@ -289,6 +293,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
             rank += F.Rank();
         }
 
+        if( rank > maxRankCount )
+            maxRankCount = rank;
         // Create the space and store the updates. If there are no dense
         // updates, then mark two more matrices for QR factorization.
         {
@@ -409,6 +415,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
                 }
             }
         }
+        if( rank > maxRankCount )
+            maxRankCount = rank;
         break;
     }
     case DENSE:
@@ -438,6 +446,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
         // Create space for storing the parent updates
         UMap_.Set( -1, new Dense<Scalar>(m,rank) );
         VMap_.Set( -1, new Dense<Scalar>(n,rank) );
+        if( rank > maxRankCount )
+            maxRankCount = rank;
         break;
     }
     default:
@@ -1303,7 +1313,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFEigenDecomp()
                 lapack::EVD
                 ( 'V', 'U', USqr_.Height(),
                   USqr_.Buffer(), USqr_.LDim(), &USqrEig_[0] );
-                evdCount++;
             }
 
             if( inSourceTeam_ )
@@ -1311,7 +1320,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFEigenDecomp()
                 lapack::EVD
                 ( 'V', 'U', VSqr_.Height(),
                   VSqr_.Buffer(), VSqr_.LDim(), &VSqrEig_[0] );
-                evdCount++;
             }
         }
         break;
@@ -1333,7 +1341,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFEigenDecomp()
                 lapack::EVD
                 ( 'V', 'U', USqr_.Height(),
                   USqr_.Buffer(), USqr_.LDim(), &USqrEig_[0] );
-                evdCount++;
             }
 
             if( inSourceTeam_ )
@@ -1341,7 +1348,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFEigenDecomp()
                 lapack::EVD
                 ( 'V', 'U', VSqr_.Height(),
                   VSqr_.Buffer(), VSqr_.LDim(), &VSqrEig_[0] );
-                evdCount++;
             }
         }
         break;
@@ -1360,12 +1366,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFEigenDecomp()
             lapack::EVD
             ( 'V', 'U', USqr_.Height(),
               USqr_.Buffer(), USqr_.LDim(), &USqrEig_[0] );
-            evdCount++;
 
             lapack::EVD
             ( 'V', 'U', VSqr_.Height(),
               VSqr_.Buffer(), VSqr_.LDim(), &VSqrEig_[0] );
-            evdCount++;
         }
         break;
     }
@@ -3434,6 +3438,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute()
         int totalrank = DF.rank;
         if( totalrank <= MaxRank() )
             break;
+
         if( inTargetTeam_ )
         {
             DistLowRank &DF = *block_.data.DF;

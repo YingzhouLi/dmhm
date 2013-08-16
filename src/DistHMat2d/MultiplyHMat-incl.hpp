@@ -14,7 +14,7 @@
 #include "./MultiplyHMatFHH-incl.hpp"
 #include "./Truncation-incl.hpp"
 #include "./MultiplyHMatCompress-incl.hpp"
-//#include "./MultiplyHMatRandomCompress-incl.hpp"
+#include "./MultiplyHMatRandomCompress-incl.hpp"
 #include "./MultiplyHMatFHHCompress-incl.hpp"
 
 namespace dmhm {
@@ -35,7 +35,7 @@ DistHMat2d<Scalar>::Multiply
     DistHMat2d<Scalar>& A = *this;
 
 #ifdef MEMORY_INFO
-    ResetMemoryCount();
+    //ResetMemoryCount();
 #endif
     if( multType == 0 )
         A.MultiplyHMatSingleUpdateAccumulate( alpha, B, C );
@@ -85,8 +85,8 @@ DistHMat2d<Scalar>::MultiplyHMatFullAccumulate
 #endif
 
 #ifdef MEMORY_INFO
-    A.PrintGlobalMemoryInfo("Matrix A before loop: ");
-    B.PrintGlobalMemoryInfo("Matrix B before loop: ");
+//    A.PrintGlobalMemoryInfo("Matrix A before loop: ");
+//    B.PrintGlobalMemoryInfo("Matrix B before loop: ");
 #endif
 
     const int startLevel = 0;
@@ -257,8 +257,8 @@ DistHMat2d<Scalar>::MultiplyHMatSingleLevelAccumulate
 #endif
 
 #ifdef MEMORY_INFO
-    A.PrintGlobalMemoryInfo("Matrix A before loop: ");
-    B.PrintGlobalMemoryInfo("Matrix B before loop: ");
+//    A.PrintGlobalMemoryInfo("Matrix A before loop: ");
+//    B.PrintGlobalMemoryInfo("Matrix B before loop: ");
 #endif
 
     const int startUpdate = 0;
@@ -432,8 +432,8 @@ DistHMat2d<Scalar>::MultiplyHMatSingleUpdateAccumulate
 #endif
 
 #ifdef MEMORY_INFO
-    A.PrintGlobalMemoryInfo("Matrix A before loop: ");
-    B.PrintGlobalMemoryInfo("Matrix B before loop: ");
+//    A.PrintGlobalMemoryInfo("Matrix A before loop: ");
+//    B.PrintGlobalMemoryInfo("Matrix B before loop: ");
 #endif
 
     const int numLevels = A.NumLevels();

@@ -1165,7 +1165,9 @@ DistHMat2d<Scalar>::TransposeMultiplyDenseSumsUnpack
         if( teamRank == 0 )
         {
             if( Z.Height() == Z.LDim() )
-                MemCopy( Z.Buffer(), &buffer[offsets[level_]], DF.rank );
+                MemCopy
+                ( Z.Buffer(), &buffer[offsets[level_]],
+                  DF.rank*numRhs );
             else if( DF.rank > 0 )
                 for( int j=0; j<numRhs; ++j )
                     MemCopy

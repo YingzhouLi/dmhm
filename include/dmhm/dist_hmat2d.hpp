@@ -463,9 +463,11 @@ private:
             Block();
             ~Block();
             void Clear();
+            double TotalSize();
         };
         Block block;
         void Clear();
+        double TotalSize();
     };
 
     // TODO: Merge this with all of the MultiplyDense routines and create
@@ -495,10 +497,12 @@ private:
             Block();
             ~Block();
             void Clear();
+            double TotalSize();
         };
         int numRhs;
         Block block;
         void Clear();
+        double TotalSize();
     };
 
     /*
@@ -1604,9 +1608,62 @@ DistHMat2d<Scalar>::MultiplyVectorContext::Block::Clear()
 }
 
 template<typename Scalar>
+inline double
+DistHMat2d<Scalar>::MultiplyVectorContext::Block::TotalSize()
+{
+    switch( type )
+    {
+    case DIST_NODE:
+    {
+        MultiplyVectorContext::DistNode& node = *data.DN;
+        double totalSize = 0.0;
+        for( int t=0; t<4; ++t )
+            for( int s=0; s<4; ++s )
+                totalSize += node.Child(t,s).TotalSize();
+        return totalSize;
+    }
+    case SPLIT_NODE:
+    {
+        MultiplyVectorContext::SplitNode& node = *data.SN;
+        double totalSize = 0.0;
+        for( int t=0; t<4; ++t )
+            for( int s=0; s<4; ++s )
+                totalSize += node.Child(t,s).TotalSize();
+        return totalSize;
+    }
+    case DIST_LOW_RANK:
+    case SPLIT_LOW_RANK:
+    case SPLIT_DENSE:
+    {
+        Vector<Scalar>& ZVector = *data.z;
+        return ZVector.Size();
+    }
+    case DIST_NODE_GHOST:
+    case SPLIT_NODE_GHOST:
+    case NODE_GHOST:
+    case DIST_LOW_RANK_GHOST:
+    case SPLIT_LOW_RANK_GHOST:
+    case LOW_RANK_GHOST:
+    case SPLIT_DENSE_GHOST:
+    case DENSE_GHOST:
+    case NODE:
+    case LOW_RANK:
+    case DENSE:
+    case EMPTY:
+        break;
+    }
+    return 0.0;
+}
+
+template<typename Scalar>
 inline void
 DistHMat2d<Scalar>::MultiplyVectorContext::Clear()
 { block.Clear(); }
+
+template<typename Scalar>
+inline double
+DistHMat2d<Scalar>::MultiplyVectorContext::TotalSize()
+{ return block.TotalSize(); }
 
 template<typename Scalar>
 inline
@@ -1706,9 +1763,62 @@ DistHMat2d<Scalar>::MultiplyDenseContext::Block::Clear()
 }
 
 template<typename Scalar>
+inline double
+DistHMat2d<Scalar>::MultiplyDenseContext::Block::TotalSize()
+{
+    switch( type )
+    {
+    case DIST_NODE:
+    {
+        MultiplyDenseContext::DistNode& node = *data.DN;
+        double totalSize = 0.0;
+        for( int t=0; t<4; ++t )
+            for( int s=0; s<4; ++s )
+                totalSize += node.Child(t,s).TotalSize();
+        return totalSize;
+    }
+    case SPLIT_NODE:
+    {
+        MultiplyDenseContext::SplitNode& node = *data.SN;
+        double totalSize = 0.0;
+        for( int t=0; t<4; ++t )
+            for( int s=0; s<4; ++s )
+                totalSize += node.Child(t,s).TotalSize();
+        return totalSize;
+    }
+    case DIST_LOW_RANK:
+    case SPLIT_LOW_RANK:
+    case SPLIT_DENSE:
+    {
+        Dense<Scalar>& ZDense = *data.Z;
+        return ZDense.Size();
+    }
+    case DIST_NODE_GHOST:
+    case SPLIT_NODE_GHOST:
+    case NODE_GHOST:
+    case DIST_LOW_RANK_GHOST:
+    case SPLIT_LOW_RANK_GHOST:
+    case LOW_RANK_GHOST:
+    case SPLIT_DENSE_GHOST:
+    case DENSE_GHOST:
+    case NODE:
+    case LOW_RANK:
+    case DENSE:
+    case EMPTY:
+        break;
+    }
+    return 0.0;
+}
+
+template<typename Scalar>
 inline void
 DistHMat2d<Scalar>::MultiplyDenseContext::Clear()
 { block.Clear(); }
+
+template<typename Scalar>
+inline double
+DistHMat2d<Scalar>::MultiplyDenseContext::TotalSize()
+{ return block.TotalSize(); }
 
 /*
  * Public member functions
