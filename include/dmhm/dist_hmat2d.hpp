@@ -36,10 +36,10 @@ public:
         Teams( mpi::Comm comm );
         ~Teams();
 
-        unsigned NumLevels() const;
-        unsigned TeamLevel( unsigned level ) const;
-        mpi::Comm Team( unsigned level ) const;
-        mpi::Comm CrossTeam( unsigned inverseLevel ) const;
+        int NumLevels() const;
+        int TeamLevel( int level ) const;
+        mpi::Comm Team( int level ) const;
+        mpi::Comm CrossTeam( int inverseLevel ) const;
 
         void TreeSums
         ( Vector<Scalar>& buffer, const Vector<int>& sizes ) const;
@@ -1422,7 +1422,7 @@ template<typename Scalar>
 inline
 DistHMat2d<Scalar>::Node::~Node()
 {
-    for( unsigned i=0; i<children.Size(); ++i )
+    for( int i=0; i<children.Size(); ++i )
         delete children[i];
     children.Clear();
 }
@@ -1862,7 +1862,8 @@ DistHMat2d<Scalar>::Teams::Teams( mpi::Comm comm )
 
     // Simple (yet slow) method for computing the number of teams
     // (and how many we're the root of)
-    unsigned numLevels=1, teamSize=p;
+    int numLevels=1;
+    unsigned teamSize=p;
     while( teamSize != 1 )
     {
         ++numLevels;
@@ -1875,7 +1876,7 @@ DistHMat2d<Scalar>::Teams::Teams( mpi::Comm comm )
     teams_.Resize( numLevels );
     mpi::CommDup( comm, teams_[0] );
     teamSize = p;
-    for( unsigned level=1; level<numLevels; ++level )
+    for( int level=1; level<numLevels; ++level )
     {
         if( teamSize >= 4 )
             teamSize >>= 2;
@@ -1888,7 +1889,7 @@ DistHMat2d<Scalar>::Teams::Teams( mpi::Comm comm )
 
     crossTeams_.Resize( numLevels );
     mpi::CommDup( teams_[numLevels-1], crossTeams_[0] );
-    for( unsigned inverseLevel=1; inverseLevel<numLevels; ++inverseLevel )
+    for( int inverseLevel=1; inverseLevel<numLevels; ++inverseLevel )
     {
         const int level = numLevels-1-inverseLevel;
         teamSize = mpi::CommSize( teams_[level] );
@@ -1918,32 +1919,30 @@ DistHMat2d<Scalar>::Teams::~Teams()
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::Teams::~Teams");
 #endif
-    for( unsigned i=0; i<teams_.Size(); ++i )
+    for( int i=0; i<teams_.Size(); ++i )
         mpi::CommFree( teams_[i] );
-    for( unsigned i=0; i<crossTeams_.Size(); ++i )
+    for( int i=0; i<crossTeams_.Size(); ++i )
         mpi::CommFree( crossTeams_[i] );
 }
 
 template<typename Scalar>
-inline unsigned
+inline int
 DistHMat2d<Scalar>::Teams::NumLevels() const
 { return teams_.Size(); }
 
 template<typename Scalar>
-inline unsigned
-DistHMat2d<Scalar>::Teams::TeamLevel( unsigned level ) const
-{ return std::min(level,(unsigned)teams_.Size()-1); }
+inline int
+DistHMat2d<Scalar>::Teams::TeamLevel( int level ) const
+{ return std::min(level,teams_.Size()-1); }
 
 template<typename Scalar>
 inline mpi::Comm
-DistHMat2d<Scalar>::Teams::Team
-( unsigned level ) const
+DistHMat2d<Scalar>::Teams::Team( int level ) const
 { return teams_[TeamLevel(level)]; }
 
 template<typename Scalar>
 inline mpi::Comm
-DistHMat2d<Scalar>::Teams::CrossTeam
-( unsigned inverseLevel ) const
+DistHMat2d<Scalar>::Teams::CrossTeam( int inverseLevel ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::Teams::CrossTeam");

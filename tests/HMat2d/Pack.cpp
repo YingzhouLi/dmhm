@@ -22,35 +22,35 @@ FormRow
     colIndices.Resize( 0 );
 
     // Set up the diagonal entry
-    colIndices.Push_back( rowIdx );
-    row.Push_back( (Scalar)8 );
+    colIndices.PushBack( rowIdx );
+    row.PushBack( (Scalar)8 );
 
     // Front connection to (x-1,y,z)
     if( x != 0 )
     {
-        colIndices.Push_back( (x-1) + xSize*y );
-        row.Push_back( (Scalar)-1 );
+        colIndices.PushBack( (x-1) + xSize*y );
+        row.PushBack( (Scalar)-1 );
     }
 
     // Back connection to (x+1,y,z)
     if( x != xSize-1 )
     {
-        colIndices.Push_back( (x+1) + xSize*y );
-        row.Push_back( (Scalar)-1 );
+        colIndices.PushBack( (x+1) + xSize*y );
+        row.PushBack( (Scalar)-1 );
     }
 
     // Left connection to (x,y-1,z)
     if( y != 0 )
     {
-        colIndices.Push_back( x + xSize*(y-1) );
-        row.Push_back( (Scalar)-1 );
+        colIndices.PushBack( x + xSize*(y-1) );
+        row.PushBack( (Scalar)-1 );
     }
 
     // Right connection to (x,y+1,z)
     if( y != ySize-1 )
     {
-        colIndices.Push_back( x + xSize*(y+1) );
-        row.Push_back( (Scalar)-1 );
+        colIndices.PushBack( x + xSize*(y+1) );
+        row.PushBack( (Scalar)-1 );
     }
 }
 
@@ -98,20 +98,20 @@ main( int argc, char* argv[] )
         Vector<int> colIndices;
         for( int i=0; i<m; ++i )
         {
-            S.rowOffsets.Push_back( S.nonzeros.Size() );
+            S.rowOffsets.PushBack( S.nonzeros.Size() );
             const int iNatural = inverseMap[i];
             const int x = iNatural % xSize;
             const int y = (iNatural/xSize) % ySize;
 
             FormRow( x, y, xSize, ySize, row, colIndices );
 
-            for( unsigned j=0; j<row.Size(); ++j )
+            for( int j=0; j<row.Size(); ++j )
             {
-                S.nonzeros.Push_back( row[j] );
-                S.columnIndices.Push_back( map[colIndices[j]] );
+                S.nonzeros.PushBack( row[j] );
+                S.columnIndices.PushBack( map[colIndices[j]] );
             }
         }
-        S.rowOffsets.Push_back( S.nonzeros.Size() );
+        S.rowOffsets.PushBack( S.nonzeros.Size() );
         double fillStopTime = mpi::Time();
         if( rank == 0 )
         {
@@ -212,7 +212,7 @@ main( int argc, char* argv[] )
                       << " seconds." << std::endl;
             if( print )
                 z.Print("z := HCopy x ~= S x");
-            for( unsigned i=0; i<z.Height(); ++i )
+            for( int i=0; i<z.Height(); ++i )
             {
                 if( z.Get(i) != y.Get(i) )
                 {

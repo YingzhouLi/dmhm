@@ -114,19 +114,19 @@ DistHMat2d<Scalar>::MultiplyHMatFHHSums
     DistHMat2d<Scalar>& A = *this;
 
     // Compute the message sizes for each reduce
-    const unsigned numTeamLevels = teams_->NumLevels();
-    const unsigned numReduces = numTeamLevels-1;
+    const int numTeamLevels = teams_->NumLevels();
+    const int numReduces = numTeamLevels-1;
     Vector<int> sizes( numReduces, 0 );
     A.MultiplyHMatFHHSumsCount
     ( B, C, sizes, startLevel, endLevel, startUpdate, endUpdate, 0 );
 
     // Pack all of the data to be reduced into a single buffer
     int totalSize = 0;
-    for( unsigned i=0; i<numReduces; ++i )
+    for( int i=0; i<numReduces; ++i )
         totalSize += sizes[i];
     Vector<Scalar> buffer( totalSize );
     Vector<int> offsets( numReduces );
-    for( unsigned i=0,offset=0; i<numReduces; offset+=sizes[i],++i )
+    for( int i=0,offset=0; i<numReduces; offset+=sizes[i],++i )
         offsets[i] = offset;
     Vector<int> offsetsCopy = offsets;
     A.MultiplyHMatFHHSumsPack
@@ -636,8 +636,8 @@ DistHMat2d<Scalar>::MultiplyHMatFHHBroadcasts
     DistHMat2d<Scalar>& A = *this;
 
     // Compute the message sizes for each broadcast
-    const unsigned numTeamLevels = teams_->NumLevels();
-    const unsigned numBroadcasts = numTeamLevels-1;
+    const int numTeamLevels = teams_->NumLevels();
+    const int numBroadcasts = numTeamLevels-1;
     Vector<int> sizes( numBroadcasts, 0 );
     A.MultiplyHMatFHHBroadcastsCount
     ( B, C, sizes, startLevel, endLevel, startUpdate, endUpdate, 0 );
@@ -645,11 +645,11 @@ DistHMat2d<Scalar>::MultiplyHMatFHHBroadcasts
     // Pack all of the data to be broadcast into a single buffer
     // (only roots of communicators contribute)
     int totalSize = 0;
-    for( unsigned i=0; i<numBroadcasts; ++i )
+    for( int i=0; i<numBroadcasts; ++i )
         totalSize += sizes[i];
     Vector<Scalar> buffer( totalSize );
     Vector<int> offsets( numBroadcasts );
-    for( unsigned i=0,offset=0; i<numBroadcasts; offset+=sizes[i],++i )
+    for( int i=0,offset=0; i<numBroadcasts; offset+=sizes[i],++i )
         offsets[i] = offset;
     Vector<int> offsetsCopy = offsets;
     A.MultiplyHMatFHHBroadcastsPack
@@ -995,7 +995,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHFinalize
     const DistHMat2d<Scalar>& A = *this;
 
     const int r = SampleRank( C.MaxRank() );
-    const unsigned numTeamLevels = C.teams_->NumLevels();
+    const int numTeamLevels = C.teams_->NumLevels();
     Vector<int> numQRs(numTeamLevels,0),
                      numTargetFHH(numTeamLevels,0),
                      numSourceFHH(numTeamLevels,0);
@@ -1006,11 +1006,11 @@ DistHMat2d<Scalar>::MultiplyHMatFHHFinalize
     int numTotalQRs=0, numQRSteps=0, qrTotalSize=0, tauTotalSize=0;
     Vector<int> XOffsets(numTeamLevels), halfHeightOffsets(numTeamLevels),
                      qrOffsets(numTeamLevels), tauOffsets(numTeamLevels);
-    for( unsigned teamLevel=0; teamLevel<numTeamLevels; ++teamLevel )
+    for( int teamLevel=0; teamLevel<numTeamLevels; ++teamLevel )
     {
         mpi::Comm team = C.teams_->Team( teamLevel );
-        const unsigned teamSize = mpi::CommSize( team );
-        const unsigned log2TeamSize = Log2( teamSize );
+        const int teamSize = mpi::CommSize( team );
+        const int log2TeamSize = Log2( teamSize );
 
         XOffsets[teamLevel] = numTotalQRs;
         halfHeightOffsets[teamLevel] = 2*numQRSteps;
@@ -1035,7 +1035,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHFinalize
     Vector<int> leftOffsets(numTeamLevels), middleOffsets(numTeamLevels),
                      rightOffsets(numTeamLevels);
     int totalAllReduceSize = 0;
-    for( unsigned teamLevel=0; teamLevel<numTeamLevels; ++teamLevel )
+    for( int teamLevel=0; teamLevel<numTeamLevels; ++teamLevel )
     {
         leftOffsets[teamLevel] = totalAllReduceSize;
         totalAllReduceSize += numTargetFHH[teamLevel]*r*r;
@@ -1075,12 +1075,12 @@ DistHMat2d<Scalar>::MultiplyHMatFHHFinalize
 
     // Explicitly form the Q's
     Dense<Scalar> Z( 2*r, r );
-    for( unsigned teamLevel=0; teamLevel<numTeamLevels; ++teamLevel )
+    for( int teamLevel=0; teamLevel<numTeamLevels; ++teamLevel )
     {
         mpi::Comm team = C.teams_->Team( teamLevel );
-        const unsigned teamSize = mpi::CommSize( team );
-        const unsigned log2TeamSize = Log2( teamSize );
-        const unsigned teamRank = mpi::CommRank( team );
+        const int teamSize = mpi::CommSize( team );
+        const int log2TeamSize = Log2( teamSize );
+        const int teamRank = mpi::CommRank( team );
 
         Dense<Scalar>** XLevel = &Xs[XOffsets[teamLevel]];
         const int* halfHeightsLevel =
@@ -1221,9 +1221,9 @@ DistHMat2d<Scalar>::MultiplyHMatFHHFinalize
     // Q1' Omega2, Omega2' (alpha A B Omega1), and Q2' Omega1
     {
         // Generate offsets and sizes for each entire level
-        const unsigned numAllReduces = numTeamLevels-1;
+        const int numAllReduces = numTeamLevels-1;
         Vector<int> sizes(numAllReduces);
-        for( unsigned teamLevel=0; teamLevel<numAllReduces; ++teamLevel )
+        for( int teamLevel=0; teamLevel<numAllReduces; ++teamLevel )
             sizes[teamLevel] = (2*numTargetFHH[teamLevel]+
                                   numSourceFHH[teamLevel])*r*r;
 
@@ -1281,13 +1281,13 @@ DistHMat2d<Scalar>::MultiplyHMatFHHFinalizeCounts
         {
             if( inTargetTeam_ )
             {
-                const unsigned teamLevel = teams_->TeamLevel(level_);
+                const int teamLevel = teams_->TeamLevel(level_);
                 numQRs[teamLevel] += colXMap_.Size();
                 numTargetFHH[teamLevel] += colXMap_.Size();
             }
             if( inSourceTeam_ )
             {
-                const unsigned teamLevel = teams_->TeamLevel(level_);
+                const int teamLevel = teams_->TeamLevel(level_);
                 numQRs[teamLevel] += rowXMap_.Size();
                 numSourceFHH[teamLevel] += rowXMap_.Size();
             }
@@ -1342,7 +1342,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHFinalizeMiddleUpdates
                     const int key = A.sourceOffset_;
                     const Dense<Scalar>& X = C.colXMap_.Get( key );
                     const Dense<Scalar>& Omega2 = A.rowOmega_;
-                    const unsigned teamLevel = C.teams_->TeamLevel(C.level_);
+                    const int teamLevel = C.teams_->TeamLevel(C.level_);
                     Scalar* middleUpdate =
                         &allReduceBuffer[middleOffsets[teamLevel]];
                     blas::Gemm
@@ -1415,15 +1415,15 @@ DistHMat2d<Scalar>::MultiplyHMatFHHFinalizeLocalQR
         if( level_ >= startLevel && level_ < endLevel )
         {
             mpi::Comm team = teams_->Team( level_ );
-            const unsigned teamLevel = teams_->TeamLevel(level_);
+            const int teamLevel = teams_->TeamLevel(level_);
             const int log2TeamSize = Log2( mpi::CommSize( team ) );
             const int r = SampleRank( MaxRank() );
 
             if( inTargetTeam_ )
             {
                 colXMap_.ResetIterator();
-                const unsigned numEntries = colXMap_.Size();
-                for( unsigned i=0; i<numEntries; ++i,colXMap_.Increment() )
+                const int numEntries = colXMap_.Size();
+                for( int i=0; i<numEntries; ++i,colXMap_.Increment() )
                 {
                     Dense<Scalar>& X = *colXMap_.CurrentEntry();
                     Xs[XOffsets[teamLevel]++] = &X;
@@ -1500,7 +1500,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHFinalizeOuterUpdates
                     update >= startUpdate && update < endUpdate )
                 {
                     const int key = A.sourceOffset_;
-                    const unsigned teamLevel = C.teams_->TeamLevel(C.level_);
+                    const int teamLevel = C.teams_->TeamLevel(C.level_);
                     if( C.inTargetTeam_ )
                     {
                         // Handle the left update, Q1' Omega2
@@ -1603,7 +1603,7 @@ DistHMat2d<Scalar>::MultiplyHMatFHHFinalizeFormLowRank
                     update >= startUpdate && update < endUpdate )
                 {
                     const int key = A.sourceOffset_;
-                    const unsigned teamLevel = C.teams_->TeamLevel(C.level_);
+                    const int teamLevel = C.teams_->TeamLevel(C.level_);
                     if( C.inTargetTeam_ )
                     {
                         // Form Q1 pinv(Q1' Omega2)' (Omega2' alpha A B Omega1)

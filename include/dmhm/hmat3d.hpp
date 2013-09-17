@@ -498,7 +498,7 @@ template<typename Scalar>
 inline
 HMat3d<Scalar>::Node::~Node()
 {
-    for( unsigned i=0; i<children.Size(); ++i )
+    for( int i=0; i<children.Size(); ++i )
         delete children[i];
     children.Clear();
 }
@@ -572,7 +572,7 @@ template<typename Scalar>
 inline
 HMat3d<Scalar>::NodeSymmetric::~NodeSymmetric()
 {
-    for( unsigned i=0; i<children.Size(); ++i )
+    for( int i=0; i<children.Size(); ++i )
         delete children[i];
     children.Clear();
 }

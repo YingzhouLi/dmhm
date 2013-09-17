@@ -1280,7 +1280,7 @@ HMat3d<Scalar>::DisplayRecursion
     case NODE_SYMMETRIC:
     {
         const NodeSymmetric& node = *block_.data.NS;
-        for( unsigned child=0; child<node.children.Size(); ++child )
+        for( int child=0; child<node.children.Size(); ++child )
             node.children[child]->DisplayRecursion( matrix, mRatio, nRatio );
         break;
     }
@@ -1331,7 +1331,7 @@ HMat3d<Scalar>::LatexStructureRecursion
     case NODE_SYMMETRIC:
     {
         const NodeSymmetric& node = *block_.data.NS;
-        for( unsigned child=0; child<node.children.Size(); ++child )
+        for( int child=0; child<node.children.Size(); ++child )
             node.children[child]->LatexStructureRecursion( file, globalHeight );
         break;
     }
@@ -1375,7 +1375,7 @@ HMat3d<Scalar>::MScriptStructureRecursion( std::ofstream& file ) const
              << targetOffset_ << " " << sourceOffset_ << " "
              << Height() << " " << Width() << "\n";
         const NodeSymmetric& node = *block_.data.NS;
-        for( unsigned child=0; child<node.children.Size(); ++child )
+        for( int child=0; child<node.children.Size(); ++child )
             node.children[child]->MScriptStructureRecursion( file );
         break;
     }

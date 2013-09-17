@@ -140,10 +140,10 @@ public:
 #ifndef RELEASE
         CallStackEntry entry("MemoryMap::EntrySize");
 #endif
-        int entSize=0.0;
+        int entSize=0;
         typename std::map<T1,T2*>::iterator it = baseMap_.begin();
         for( unsigned int i=0; i<baseMap_.size(); ++i,++it)
-            entSize += it->second->size();
+            entSize += it->second->Size();
         return entSize;
     }
 

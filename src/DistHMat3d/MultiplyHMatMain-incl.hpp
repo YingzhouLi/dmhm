@@ -1075,8 +1075,8 @@ DistHMat3d<Scalar>::MultiplyHMatMainSums
     DistHMat3d<Scalar>& A = *this;
 
     // Compute the message sizes for each reduce
-    const unsigned numTeamLevels = teams_->NumLevels();
-    const unsigned numReduces = numTeamLevels-1;
+    const int numTeamLevels = teams_->NumLevels();
+    const int numReduces = numTeamLevels-1;
     Vector<int> sizes( numReduces, 0 );
     A.MultiplyHMatMainSumsCountA( sizes, startLevel, endLevel );
     B.MultiplyHMatMainSumsCountB( sizes, startLevel, endLevel );
@@ -1085,11 +1085,11 @@ DistHMat3d<Scalar>::MultiplyHMatMainSums
 
     // Pack all of the data to be reduced into a single buffer
     int totalSize = 0;
-    for( unsigned i=0; i<numReduces; ++i )
+    for( int i=0; i<numReduces; ++i )
         totalSize += sizes[i];
     Vector<Scalar> buffer( totalSize );
     Vector<int> offsets( numReduces );
-    for( unsigned i=0,offset=0; i<numReduces; offset+=sizes[i],++i )
+    for( int i=0,offset=0; i<numReduces; offset+=sizes[i],++i )
         offsets[i] = offset;
     Vector<int> offsetsCopy = offsets;
     A.MultiplyHMatMainSumsPackA( buffer, offsetsCopy, startLevel, endLevel );
@@ -1374,7 +1374,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainSumsCountC
             {
                 const DistLowRank& DFA = *A.block_.data.DF;
                 const DistLowRank& DFB = *B.block_.data.DF;
-                const unsigned teamLevel = A.teams_->TeamLevel(A.level_);
+                const int teamLevel = A.teams_->TeamLevel(A.level_);
                 sizes[teamLevel] += DFA.rank*DFB.rank;
             }
             break;
@@ -1458,7 +1458,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainSumsPackC
                 const DistLowRank& DFB = *B.block_.data.DF;
                 if( DFA.rank != 0 && DFB.rank != 0 )
                 {
-                    const unsigned teamLevel = A.teams_->TeamLevel(A.level_);
+                    const int teamLevel = A.teams_->TeamLevel(A.level_);
                     MemCopy
                     ( &buffer[offsets[teamLevel]],
                       C.ZMap_.Get( key ).LockedBuffer(), DFA.rank*DFB.rank );
@@ -1546,7 +1546,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainSumsUnpackC
                 const DistLowRank& DFB = *B.block_.data.DF;
                 if( DFA.rank != 0 && DFB.rank != 0 )
                 {
-                    const unsigned teamLevel = A.teams_->TeamLevel(A.level_);
+                    const int teamLevel = A.teams_->TeamLevel(A.level_);
                     MemCopy
                     ( C.ZMap_.Get( key ).Buffer(), &buffer[offsets[teamLevel]],
                       DFA.rank*DFB.rank );
@@ -3507,8 +3507,8 @@ DistHMat3d<Scalar>::MultiplyHMatMainBroadcasts
     DistHMat3d<Scalar>& A = *this;
 
     // Compute the message sizes for each broadcast
-    const unsigned numTeamLevels = teams_->NumLevels();
-    const unsigned numBroadcasts = numTeamLevels-1;
+    const int numTeamLevels = teams_->NumLevels();
+    const int numBroadcasts = numTeamLevels-1;
     Vector<int> sizes( numBroadcasts, 0 );
     A.MultiplyHMatMainBroadcastsCountA( sizes, startLevel, endLevel );
     B.MultiplyHMatMainBroadcastsCountB( sizes, startLevel, endLevel );
@@ -3518,11 +3518,11 @@ DistHMat3d<Scalar>::MultiplyHMatMainBroadcasts
     // Pack all of the data to be broadcast into a single buffer
     // (only roots of communicators contribute)
     int totalSize = 0;
-    for( unsigned i=0; i<numBroadcasts; ++i )
+    for( int i=0; i<numBroadcasts; ++i )
         totalSize += sizes[i];
     Vector<Scalar> buffer( totalSize );
     Vector<int> offsets( numBroadcasts );
-    for( unsigned i=0,offset=0; i<numBroadcasts; offset+=sizes[i],++i )
+    for( int i=0,offset=0; i<numBroadcasts; offset+=sizes[i],++i )
         offsets[i] = offset;
     Vector<int> offsetsCopy = offsets;
     A.MultiplyHMatMainBroadcastsPackA
@@ -3853,7 +3853,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainBroadcastsCountC
             {
                 const DistLowRank& DFA = *A.block_.data.DF;
                 const DistLowRank& DFB = *B.block_.data.DF;
-                const unsigned teamLevel = A.teams_->TeamLevel(A.level_);
+                const int teamLevel = A.teams_->TeamLevel(A.level_);
                 sizes[teamLevel] += DFA.rank*DFB.rank;
             }
             break;
@@ -3865,7 +3865,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainBroadcastsCountC
             {
                 const DistLowRank& DFA = *A.block_.data.DF;
                 const DistLowRankGhost& DFGB = *B.block_.data.DFG;
-                const unsigned teamLevel = A.teams_->TeamLevel(A.level_);
+                const int teamLevel = A.teams_->TeamLevel(A.level_);
                 sizes[teamLevel] += DFA.rank*DFGB.rank;
             }
             break;
@@ -3895,7 +3895,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainBroadcastsCountC
             {
                 const DistLowRank& DFA = *A.block_.data.DF;
                 const DistLowRank& DFB = *B.block_.data.DF;
-                const unsigned teamLevel = A.teams_->TeamLevel(A.level_);
+                const int teamLevel = A.teams_->TeamLevel(A.level_);
                 sizes[teamLevel] += DFA.rank*DFB.rank;
             }
             break;
@@ -4016,7 +4016,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainBroadcastsPackC
                 const int teamRank = mpi::CommRank( team );
                 if( teamRank == 0 && DFA.rank != 0 && DFB.rank != 0 )
                 {
-                    const unsigned teamLevel = A.teams_->TeamLevel(A.level_);
+                    const int teamLevel = A.teams_->TeamLevel(A.level_);
                     MemCopy
                     ( &buffer[offsets[teamLevel]],
                       C.ZMap_.Get( key ).LockedBuffer(), DFA.rank*DFB.rank );
@@ -4036,7 +4036,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainBroadcastsPackC
                 const int teamRank = mpi::CommRank( team );
                 if( teamRank == 0 && DFA.rank != 0 && DFGB.rank != 0 )
                 {
-                    const unsigned teamLevel = A.teams_->TeamLevel(A.level_);
+                    const int teamLevel = A.teams_->TeamLevel(A.level_);
                     MemCopy
                     ( &buffer[offsets[teamLevel]],
                       C.ZMap_.Get( key ).LockedBuffer(), DFA.rank*DFGB.rank );
@@ -4070,7 +4070,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainBroadcastsPackC
                 const int teamRank = mpi::CommRank( team );
                 if( teamRank == 0 && DFA.rank != 0 && DFB.rank != 0 )
                 {
-                    const unsigned teamLevel = A.teams_->TeamLevel(A.level_);
+                    const int teamLevel = A.teams_->TeamLevel(A.level_);
                     MemCopy
                     ( &buffer[offsets[teamLevel]],
                       C.ZMap_.Get( key ).LockedBuffer(), DFA.rank*DFB.rank );
@@ -4193,7 +4193,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainBroadcastsUnpackC
                 const DistLowRank& DFB = *B.block_.data.DF;
                 if( DFA.rank != 0 && DFB.rank != 0 )
                 {
-                    const unsigned teamLevel = A.teams_->TeamLevel(A.level_);
+                    const int teamLevel = A.teams_->TeamLevel(A.level_);
                     MemCopy
                     ( C.ZMap_.Get( key ).Buffer(), &buffer[offsets[teamLevel]],
                       DFA.rank*DFB.rank );
@@ -4211,7 +4211,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainBroadcastsUnpackC
                 const DistLowRankGhost& DFGB = *B.block_.data.DFG;
                 if( DFA.rank != 0 && DFGB.rank != 0 )
                 {
-                    const unsigned teamLevel = A.teams_->TeamLevel(A.level_);
+                    const int teamLevel = A.teams_->TeamLevel(A.level_);
                     MemCopy
                     ( C.ZMap_.Get( key ).Buffer(), &buffer[offsets[teamLevel]],
                       DFA.rank*DFGB.rank );
@@ -4243,7 +4243,7 @@ DistHMat3d<Scalar>::MultiplyHMatMainBroadcastsUnpackC
                 const DistLowRank& DFB = *B.block_.data.DF;
                 if( DFA.rank != 0 && DFB.rank != 0 )
                 {
-                    const unsigned teamLevel = A.teams_->TeamLevel(A.level_);
+                    const int teamLevel = A.teams_->TeamLevel(A.level_);
                     MemCopy
                     ( C.ZMap_.Get( key ).Buffer(), &buffer[offsets[teamLevel]],
                       DFA.rank*DFB.rank );

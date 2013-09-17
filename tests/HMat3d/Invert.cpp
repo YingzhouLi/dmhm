@@ -91,49 +91,49 @@ FormRow
     colIndices.Resize( 0 );
 
     // Set up the diagonal entry
-    colIndices.Push_back( rowIdx );
-    row.Push_back( centerTerm );
+    colIndices.PushBack( rowIdx );
+    row.PushBack( centerTerm );
 
     // Front connection to (x-1,y,z)
     if( x != 0 )
     {
-        colIndices.Push_back( (x-1) + xSize*y + xSize*ySize*z );
-        row.Push_back( xTermL );
+        colIndices.PushBack( (x-1) + xSize*y + xSize*ySize*z );
+        row.PushBack( xTermL );
     }
 
     // Back connection to (x+1,y,z)
     if( x != xSize-1 )
     {
-        colIndices.Push_back( (x+1) + xSize*y + xSize*ySize*z );
-        row.Push_back( xTermR );
+        colIndices.PushBack( (x+1) + xSize*y + xSize*ySize*z );
+        row.PushBack( xTermR );
     }
 
     // Left connection to (x,y-1,z)
     if( y != 0 )
     {
-        colIndices.Push_back( x + xSize*(y-1) + xSize*ySize*z);
-        row.Push_back( yTermL );
+        colIndices.PushBack( x + xSize*(y-1) + xSize*ySize*z);
+        row.PushBack( yTermL );
     }
 
     // Right connection to (x,y+1,z)
     if( y != ySize-1 )
     {
-        colIndices.Push_back( x + xSize*(y+1) + xSize*ySize*z);
-        row.Push_back( yTermR );
+        colIndices.PushBack( x + xSize*(y+1) + xSize*ySize*z);
+        row.PushBack( yTermR );
     }
 
     // Top connection to (x,y,z-1)
     if( z != 0 )
     {
-        colIndices.Push_back( x + xSize*y + xSize*ySize*(z-1));
-        row.Push_back( zTermL );
+        colIndices.PushBack( x + xSize*y + xSize*ySize*(z-1));
+        row.PushBack( zTermL );
     }
 
     // Bottom connection to (x,y,z+1)
     if( z != zSize-1 )
     {
-        colIndices.Push_back( x + xSize*y + xSize*ySize*(z+1));
-        row.Push_back( zTermR );
+        colIndices.PushBack( x + xSize*y + xSize*ySize*(z+1));
+        row.PushBack( zTermR );
     }
 }
 
@@ -226,7 +226,7 @@ main( int argc, char* argv[] )
         Vector<int> colIndices;
         for( int i=0; i<m; ++i )
         {
-            S.rowOffsets.Push_back( S.nonzeros.Size() );
+            S.rowOffsets.PushBack( S.nonzeros.Size() );
             const int iNatural = inverseMap[i];
             const int x = iNatural % xSize;
             const int y = (iNatural/xSize) % ySize;
@@ -236,13 +236,13 @@ main( int argc, char* argv[] )
             ( imagShift, x, y, z,
               xSize, ySize, zSize, pmlSize, row, colIndices );
 
-            for( unsigned j=0; j<row.Size(); ++j )
+            for( int j=0; j<row.Size(); ++j )
             {
-                S.nonzeros.Push_back( row[j] );
-                S.columnIndices.Push_back( map[colIndices[j]] );
+                S.nonzeros.PushBack( row[j] );
+                S.columnIndices.PushBack( map[colIndices[j]] );
             }
         }
-        S.rowOffsets.Push_back( S.nonzeros.Size() );
+        S.rowOffsets.PushBack( S.nonzeros.Size() );
         double fillStopTime = mpi::Time();
         if( rank == 0 )
         {

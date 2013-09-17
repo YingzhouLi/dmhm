@@ -74,7 +74,7 @@ main( int argc, char* argv[] )
         mpi::Barrier( mpi::COMM_WORLD );
         double hmatMatStartTime = mpi::Time();
         Dense<Scalar> X( n, 30 );
-        for( unsigned j=0; j<X.Width(); ++j )
+        for( int j=0; j<X.Width(); ++j )
             for( int i=0; i<n; ++i )
                 X.Set( i, j, i+j );
         Dense<Scalar> Y;
@@ -225,9 +225,9 @@ main( int argc, char* argv[] )
         Dense<Scalar> YLocalTruth;
         YLocalTruth.View
         ( Y, distH.FirstLocalRow(), 0, distH.LocalHeight(), X.Width() );
-        for( unsigned j=0; j<YLocal.Width(); ++j )
+        for( int j=0; j<YLocal.Width(); ++j )
         {
-            for( unsigned i=0; i<YLocal.Height(); ++i )
+            for( int i=0; i<YLocal.Height(); ++i )
             {
                 double error = std::abs(YLocalTruth.Get(i,j)-YLocal.Get(i,j));
                 if( error > 1e-8 )
@@ -277,9 +277,9 @@ main( int argc, char* argv[] )
         Dense<Scalar> ZLocalTruth;
         ZLocalTruth.View
         ( Z, distH.FirstLocalCol(), 0, distH.LocalWidth(), X.Width() );
-        for( unsigned j=0; j<ZLocal.Width(); ++j )
+        for( int j=0; j<ZLocal.Width(); ++j )
         {
-            for( unsigned i=0; i<ZLocal.Height(); ++i )
+            for( int i=0; i<ZLocal.Height(); ++i )
             {
                 double error = std::abs(ZLocalTruth.Get(i,j)-ZLocal.Get(i,j));
                 if( error > 1e-8 )

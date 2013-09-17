@@ -22,35 +22,35 @@ FormRow
     colIndices.Resize( 0 );
 
     // Set up the diagonal entry
-    colIndices.Push_back( rowIdx );
-    row.Push_back( (Scalar)4 );
+    colIndices.PushBack( rowIdx );
+    row.PushBack( (Scalar)4 );
 
     // Front connection to (x-1,y)
     if( x != 0 )
     {
-        colIndices.Push_back( (x-1) + xSize*y );
-        row.Push_back( (Scalar)-1 );
+        colIndices.PushBack( (x-1) + xSize*y );
+        row.PushBack( (Scalar)-1 );
     }
 
     // Back connection to (x+1,y)
     if( x != xSize-1 )
     {
-        colIndices.Push_back( (x+1) + xSize*y );
-        row.Push_back( (Scalar)-1 );
+        colIndices.PushBack( (x+1) + xSize*y );
+        row.PushBack( (Scalar)-1 );
     }
 
     // Left connection to (x,y-1)
     if( y != 0 )
     {
-        colIndices.Push_back( x + xSize*(y-1) );
-        row.Push_back( (Scalar)-1 );
+        colIndices.PushBack( x + xSize*(y-1) );
+        row.PushBack( (Scalar)-1 );
     }
 
     // Right connection to (x,y+1)
     if( y != ySize-1 )
     {
-        colIndices.Push_back( x + xSize*(y+1) );
-        row.Push_back( (Scalar)-1 );
+        colIndices.PushBack( x + xSize*(y+1) );
+        row.PushBack( (Scalar)-1 );
     }
 }
 
@@ -113,20 +113,20 @@ main( int argc, char* argv[] )
         Vector<int> colIndices;
         for( int i=0; i<m; ++i )
         {
-            S.rowOffsets.Push_back( S.nonzeros.Size() );
+            S.rowOffsets.PushBack( S.nonzeros.Size() );
             const int iNatural = inverseMap[i];
             const int x = iNatural % xSize;
             const int y = (iNatural/xSize) % ySize;
 
             FormRow( x, y, xSize, ySize, row, colIndices );
 
-            for( unsigned j=0; j<row.Size(); ++j )
+            for( int j=0; j<row.Size(); ++j )
             {
-                S.nonzeros.Push_back( row[j] );
-                S.columnIndices.Push_back( map[colIndices[j]] );
+                S.nonzeros.PushBack( row[j] );
+                S.columnIndices.PushBack( map[colIndices[j]] );
             }
         }
-        S.rowOffsets.Push_back( S.nonzeros.Size() );
+        S.rowOffsets.PushBack( S.nonzeros.Size() );
         mpi::Barrier( mpi::COMM_WORLD );
         double fillStopTime = mpi::Time();
         if( commRank == 0 )
@@ -410,7 +410,7 @@ main( int argc, char* argv[] )
         double myInfTruth=0, myInfError=0,
                myL1Truth=0, myL1Error=0,
                myL2SquaredTruth=0, myL2SquaredError=0;
-        for( unsigned j=0; j<XLocal.Width(); ++j )
+        for( int j=0; j<XLocal.Width(); ++j )
         {
             for( int i=0; i<localHeight; ++i )
             {

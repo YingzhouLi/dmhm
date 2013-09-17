@@ -22,35 +22,35 @@ FormCol
     rowIndices.Resize( 0 );
 
     // Set up the diagonal entry
-    rowIndices.Push_back( colIdx );
-    col.Push_back( (Scalar)4 );
+    rowIndices.PushBack( colIdx );
+    col.PushBack( (Scalar)4 );
 
     // Front connection to (x-1,y)
     if( x != 0 )
     {
-        rowIndices.Push_back( (x-1) + xSize*y );
-        col.Push_back( (Scalar)-1 );
+        rowIndices.PushBack( (x-1) + xSize*y );
+        col.PushBack( (Scalar)-1 );
     }
 
     // Back connection to (x+1,y)
     if( x != xSize-1 )
     {
-        rowIndices.Push_back( (x+1) + xSize*y );
-        col.Push_back( (Scalar)-1 );
+        rowIndices.PushBack( (x+1) + xSize*y );
+        col.PushBack( (Scalar)-1 );
     }
 
     // Left connection to (x,y-1)
     if( y != 0 )
     {
-        rowIndices.Push_back( x + xSize*(y-1) );
-        col.Push_back( (Scalar)-1 );
+        rowIndices.PushBack( x + xSize*(y-1) );
+        col.PushBack( (Scalar)-1 );
     }
 
     // Right connection to (x,y+1)
     if( y != ySize-1 )
     {
-        rowIndices.Push_back( x + xSize*(y+1) );
-        col.Push_back( (Scalar)-1 );
+        rowIndices.PushBack( x + xSize*(y+1) );
+        col.PushBack( (Scalar)-1 );
     }
 }
 

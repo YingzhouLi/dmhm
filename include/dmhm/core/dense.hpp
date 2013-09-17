@@ -27,8 +27,8 @@ private:
     /*
      * Private member data
      */
-    size_t height_, width_;
-    size_t ldim_; // leading dimension of matrix
+    int height_, width_;
+    int ldim_; // leading dimension of matrix
     bool viewing_;
     bool lockedView_;
     std::vector<Scalar> memory_;
@@ -41,13 +41,13 @@ public:
      * Public non-static member functions
      */
     Dense( MatrixType type=GENERAL );
-    Dense( size_t height, size_t width, MatrixType type=GENERAL );
-    Dense( size_t height, size_t width, size_t ldim, MatrixType type=GENERAL );
+    Dense( int height, int width, MatrixType type=GENERAL );
+    Dense( int height, int width, int ldim, MatrixType type=GENERAL );
     Dense
-    ( Scalar* buffer, size_t height, size_t width, size_t ldim,
+    ( Scalar* buffer, int height, int width, int ldim,
       MatrixType type=GENERAL );
     Dense
-    ( const Scalar* lockedBuffer, size_t height, size_t width, size_t ldim,
+    ( const Scalar* lockedBuffer, int height, int width, int ldim,
       MatrixType type=GENERAL );
     ~Dense();
 
@@ -57,33 +57,32 @@ public:
     bool Symmetric() const;
     //bool Hermitian() const;
 
-    size_t Height() const;
-    size_t Width() const;
-    size_t Size() const;
-    size_t size() const;
-    size_t LDim() const;
-    void Resize( size_t height, size_t width );
-    void Resize( size_t height, size_t width, size_t ldim );
-    void EraseCols( size_t first, size_t last );
-    void EraseRows( size_t first, size_t last );
-    void Erase( size_t colfirst, size_t collast, size_t rowfirst, size_t rowlast );
+    int Height() const;
+    int Width() const;
+    int Size() const;
+    int LDim() const;
+    void Resize( int height, int width );
+    void Resize( int height, int width, int ldim );
+    void EraseCols( int first, int last );
+    void EraseRows( int first, int last );
+    void Erase( int colfirst, int collast, int rowfirst, int rowlast );
     void Clear();
 
     bool IsEmpty() const;
 
-    void Set( size_t i, size_t j, Scalar value );
-    Scalar Get( size_t i, size_t j ) const;
+    void Set( int i, int j, Scalar value );
+    Scalar Get( int i, int j ) const;
     void Print( const std::string tag, std::ostream& os=std::cout ) const;
 
-    Scalar* Buffer( size_t i=0, size_t j=0 );
-    const Scalar* LockedBuffer( size_t i=0, size_t j=0 ) const;
+    Scalar* Buffer( int i=0, int j=0 );
+    const Scalar* LockedBuffer( int i=0, int j=0 ) const;
 
     void View( Dense<Scalar>& A );
-    void View( Dense<Scalar>& A, size_t i, size_t j, size_t height, size_t width );
+    void View( Dense<Scalar>& A, int i, int j, int height, int width );
 
     void LockedView( const Dense<Scalar>& A );
     void LockedView
-    ( const Dense<Scalar>& A, size_t i, size_t j, size_t height, size_t width );
+    ( const Dense<Scalar>& A, int i, int j, int height, int width );
     void Init( );
 };
 
@@ -106,9 +105,8 @@ Dense<Scalar>::Dense( MatrixType type )
 
 template<typename Scalar>
 inline
-Dense<Scalar>::Dense
-( size_t height, size_t width, MatrixType type )
-: height_(height), width_(width), ldim_(std::max(height,(size_t)1)),
+Dense<Scalar>::Dense( int height, int width, MatrixType type )
+: height_(height), width_(width), ldim_(std::max(height,1)),
   viewing_(false), lockedView_(false),
   memory_(ldim_*width_), buffer_(&memory_[0]), lockedBuffer_(0),
   type_(type)
@@ -127,8 +125,7 @@ Dense<Scalar>::Dense
 
 template<typename Scalar>
 inline
-Dense<Scalar>::Dense
-( size_t height, size_t width, size_t ldim, MatrixType type )
+Dense<Scalar>::Dense( int height, int width, int ldim, MatrixType type )
 : height_(height), width_(width), ldim_(ldim),
   viewing_(false), lockedView_(false),
   memory_(ldim_*width_), buffer_(&memory_[0]), lockedBuffer_(0),
@@ -151,7 +148,7 @@ Dense<Scalar>::Dense
 template<typename Scalar>
 inline
 Dense<Scalar>::Dense
-( Scalar* buffer, size_t height, size_t width, size_t ldim, MatrixType type )
+( Scalar* buffer, int height, int width, int ldim, MatrixType type )
 : height_(height), width_(width), ldim_(ldim),
   viewing_(true), lockedView_(false),
   memory_(), buffer_(buffer), lockedBuffer_(0),
@@ -171,7 +168,7 @@ Dense<Scalar>::Dense
 template<typename Scalar>
 inline
 Dense<Scalar>::Dense
-( const Scalar* lockedBuffer, size_t height, size_t width, size_t ldim, MatrixType type )
+( const Scalar* lockedBuffer, int height, int width, int ldim, MatrixType type )
 : height_(height), width_(width), ldim_(ldim),
   viewing_(true), lockedView_(true),
   memory_(), buffer_(0), lockedBuffer_(lockedBuffer),
@@ -225,8 +222,8 @@ template<typename Scalar>
 inline bool
 Dense<Scalar>::Hermitian() const
 {
-    for( size_t i=0; i<height_; ++i )
-        for( size_t j=i+1; j<width_; ++j )
+    for( int i=0; i<height_; ++i )
+        for( int j=i+1; j<width_; ++j )
             if( std::abs(std::abs(Get(i,j))-std::abs(Get(j,i)))>1e-6 )
                 return false;
     return true;
@@ -235,33 +232,28 @@ Dense<Scalar>::Hermitian() const
 */
 
 template<typename Scalar>
-inline size_t
+inline int
 Dense<Scalar>::Height() const
 { return height_; }
 
 template<typename Scalar>
-inline size_t
+inline int
 Dense<Scalar>::Width() const
 { return width_; }
 
 template<typename Scalar>
-inline size_t
+inline int
 Dense<Scalar>::Size() const
 { return memory_.size(); }
 
 template<typename Scalar>
-inline size_t
-Dense<Scalar>::size() const
-{ return memory_.size(); }
-
-template<typename Scalar>
-inline size_t
+inline int
 Dense<Scalar>::LDim() const
 { return ldim_; }
 
 template<typename Scalar>
 inline void
-Dense<Scalar>::Resize( size_t height, size_t width )
+Dense<Scalar>::Resize( int height, int width )
 {
 #ifndef RELEASE
     CallStackEntry entry("Dense::Resize");
@@ -278,7 +270,7 @@ Dense<Scalar>::Resize( size_t height, size_t width )
     if( height > ldim_ )
     {
         // We cannot trivially preserve the old contents
-        ldim_ = std::max( height, (size_t)1 );
+        ldim_ = std::max( height, 1 );
     }
     height_ = height;
     width_ = width;
@@ -291,7 +283,7 @@ Dense<Scalar>::Resize( size_t height, size_t width )
 
 template<typename Scalar>
 inline void
-Dense<Scalar>::Resize( size_t height, size_t width, size_t ldim )
+Dense<Scalar>::Resize( int height, int width, int ldim )
 {
 #ifndef RELEASE
     CallStackEntry entry("Dense::Resize");
@@ -319,7 +311,7 @@ Dense<Scalar>::Resize( size_t height, size_t width, size_t ldim )
 
 template<typename Scalar>
 inline void
-Dense<Scalar>::EraseCols( size_t first, size_t last )
+Dense<Scalar>::EraseCols( int first, int last )
 {
 #ifndef RELEASE
     CallStackEntry entry("Dense::EraseCols");
@@ -347,7 +339,7 @@ Dense<Scalar>::EraseCols( size_t first, size_t last )
 
 template<typename Scalar>
 inline void
-Dense<Scalar>::EraseRows( size_t first, size_t last )
+Dense<Scalar>::EraseRows( int first, int last )
 {
 #ifndef RELEASE
     CallStackEntry entry("Dense::EraseRows");
@@ -370,7 +362,7 @@ Dense<Scalar>::EraseRows( size_t first, size_t last )
             ( memory_.begin()+i*ldim_+first, memory_.begin()+i*ldim_+last+1 );
         }
         buffer_ = &memory_[0];
-        ldim_ = std::max( ldim_-last+first-1, (size_t)1 );
+        ldim_ = std::max( ldim_-last+first-1, 1 );
     }
 #ifdef MEMORY_INFO
             AddToMemoryCount( (double)memory_.size()*sizeof(Scalar) );
@@ -379,7 +371,8 @@ Dense<Scalar>::EraseRows( size_t first, size_t last )
 
 template<typename Scalar>
 inline void
-Dense<Scalar>::Erase( size_t colfirst, size_t collast, size_t rowfirst, size_t rowlast )
+Dense<Scalar>::Erase
+( int colfirst, int collast, int rowfirst, int rowlast )
 {
     MatrixType typetmp = type_;
 #ifndef RELEASE
@@ -431,7 +424,7 @@ Dense<Scalar>::Clear()
 
 template<typename Scalar>
 inline void
-Dense<Scalar>::Set( size_t i, size_t j, Scalar value )
+Dense<Scalar>::Set( int i, int j, Scalar value )
 {
 #ifndef RELEASE
     CallStackEntry entry("Dense::Set");
@@ -449,7 +442,7 @@ Dense<Scalar>::Set( size_t i, size_t j, Scalar value )
 
 template<typename Scalar>
 inline Scalar
-Dense<Scalar>::Get( size_t i, size_t j ) const
+Dense<Scalar>::Get( int i, int j ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("Dense::Get");
@@ -476,20 +469,20 @@ Dense<Scalar>::Print( const std::string tag, std::ostream& os ) const
     os << tag << "\n";
     if( type_ == SYMMETRIC )
     {
-        for( size_t i=0; i<height_; ++i )
+        for( int i=0; i<height_; ++i )
         {
-            for( size_t j=0; j<=i; ++j )
+            for( int j=0; j<=i; ++j )
                 os << WrapScalar(Get(i,j)) << " ";
-            for( size_t j=i+1; j<width_; ++j )
+            for( int j=i+1; j<width_; ++j )
                 os << WrapScalar(Get(j,i)) << " ";
             os << "\n";
         }
     }
     else
     {
-        for( size_t i=0; i<height_; ++i )
+        for( int i=0; i<height_; ++i )
         {
-            for( size_t j=0; j<width_; ++j )
+            for( int j=0; j<width_; ++j )
                 os << WrapScalar(Get(i,j)) << " ";
             os << "\n";
         }
@@ -499,7 +492,7 @@ Dense<Scalar>::Print( const std::string tag, std::ostream& os ) const
 
 template<typename Scalar>
 inline Scalar*
-Dense<Scalar>::Buffer( size_t i, size_t j )
+Dense<Scalar>::Buffer( int i, int j )
 {
 #ifndef RELEASE
     CallStackEntry entry("Dense::Buffer");
@@ -515,7 +508,7 @@ Dense<Scalar>::Buffer( size_t i, size_t j )
 
 template<typename Scalar>
 inline const Scalar*
-Dense<Scalar>::LockedBuffer( size_t i, size_t j ) const
+Dense<Scalar>::LockedBuffer( int i, int j ) const
 {
 #ifndef RELEASE
     CallStackEntry entry("Dense::LockedBuffer");
@@ -548,7 +541,7 @@ Dense<Scalar>::View( Dense<Scalar>& A )
 
 template<typename Scalar>
 inline void
-Dense<Scalar>::View( Dense<Scalar>& A, size_t i, size_t j, size_t height, size_t width )
+Dense<Scalar>::View( Dense<Scalar>& A, int i, int j, int height, int width )
 {
 #ifndef RELEASE
     CallStackEntry entry("Dense::View");
@@ -593,7 +586,7 @@ Dense<Scalar>::LockedView( const Dense<Scalar>& A )
 template<typename Scalar>
 inline void
 Dense<Scalar>::LockedView
-( const Dense<Scalar>& A, size_t i, size_t j, size_t height, size_t width )
+( const Dense<Scalar>& A, int i, int j, int height, int width )
 {
 #ifndef RELEASE
     CallStackEntry entry("Dense::LockedView");

@@ -32,36 +32,36 @@ main( int argc, char* argv[] )
 
         for( int i=0; i<m; ++i )
         {
-            S.rowOffsets.Push_back( S.nonzeros.Size() );
+            S.rowOffsets.PushBack( S.nonzeros.Size() );
 
             if( i >= xSize )
             {
-                S.nonzeros.Push_back( S.nonzeros.Size()+1 );
-                S.columnIndices.Push_back( i-xSize );
+                S.nonzeros.PushBack( S.nonzeros.Size()+1 );
+                S.columnIndices.PushBack( i-xSize );
             }
 
             if( i >= 1 )
             {
-                S.nonzeros.Push_back( S.nonzeros.Size()+1 );
-                S.columnIndices.Push_back( i-1 );
+                S.nonzeros.PushBack( S.nonzeros.Size()+1 );
+                S.columnIndices.PushBack( i-1 );
             }
 
-            S.nonzeros.Push_back( S.nonzeros.Size()+1 );
-            S.columnIndices.Push_back( i );
+            S.nonzeros.PushBack( S.nonzeros.Size()+1 );
+            S.columnIndices.PushBack( i );
 
             if( i+1 < n )
             {
-                S.nonzeros.Push_back( S.nonzeros.Size()+1 );
-                S.columnIndices.Push_back( i+1 );
+                S.nonzeros.PushBack( S.nonzeros.Size()+1 );
+                S.columnIndices.PushBack( i+1 );
             }
 
             if( i+xSize < n )
             {
-                S.nonzeros.Push_back( S.nonzeros.Size()+1 );
-                S.columnIndices.Push_back( i+xSize );
+                S.nonzeros.PushBack( S.nonzeros.Size()+1 );
+                S.columnIndices.PushBack( i+xSize );
             }
         }
-        S.rowOffsets.Push_back( S.nonzeros.Size() );
+        S.rowOffsets.PushBack( S.nonzeros.Size() );
         S.Print( "S" );
 
         Dense<double> D;
@@ -89,19 +89,19 @@ main( int argc, char* argv[] )
 
         for( int i=0; i<r; ++i )
         {
-            S.rowOffsets.Push_back( S.nonzeros.Size() );
+            S.rowOffsets.PushBack( S.nonzeros.Size() );
 
             if( i+xSize < n )
             {
-                S.nonzeros.Push_back( S.nonzeros.Size()+1 );
-                S.columnIndices.Push_back( i+xSize );
+                S.nonzeros.PushBack( S.nonzeros.Size()+1 );
+                S.columnIndices.PushBack( i+xSize );
             }
         }
         for( int i=r; i<m; ++i )
         {
-            S.rowOffsets.Push_back( S.nonzeros.Size() );
+            S.rowOffsets.PushBack( S.nonzeros.Size() );
         }
-        S.rowOffsets.Push_back( S.nonzeros.Size() );
+        S.rowOffsets.PushBack( S.nonzeros.Size() );
         S.Print( "S" );
 
         LowRank<double> F;
