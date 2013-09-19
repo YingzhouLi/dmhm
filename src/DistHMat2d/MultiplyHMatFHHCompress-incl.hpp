@@ -86,7 +86,6 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressPrecompute
                         const int key = A.sourceOffset_;
                         const Dense<Scalar>& colU = C.colXMap_.Get( key );
                         const int Trank = colU.Width();
-                        const int LH = colU.Height();
                         const int Omegarank = A.rowOmega_.Width();
 
                         C.colUSqrMap_.Set
@@ -101,29 +100,18 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressPrecompute
                         ( key, new Dense<Scalar>( Trank, Trank ) );
 
                         //_colUSqr = ( A B Omega1)' ( A B Omega1 )
-                        // TODO: Replace this with a Herk call...
-                        colUSqr.Init();
-                        blas::Gemm
-                        ( 'C', 'N', Trank, Trank, LH,
-                         Scalar(1), colU.LockedBuffer(), colU.LDim(),
-                                    colU.LockedBuffer(), colU.LDim(),
-                         Scalar(0), colUSqr.Buffer(), colUSqr.LDim() );
+                        hmat_tools::AdjointMultiply
+                        ( Scalar(1), colU, colU, colUSqr );
 
                         //_colPinv = Omega2' (A B Omega1)
-                        colPinv.Init();
-                        blas::Gemm
-                        ( 'C', 'N', Omegarank, Trank, LH,
-                          Scalar(1), A.rowOmega_.LockedBuffer(),
-                                     A.rowOmega_.LDim(),
-                                     colU.LockedBuffer(), colU.LDim(),
-                          Scalar(0), colPinv.Buffer(),  colPinv.LDim() );
+                        hmat_tools::AdjointMultiply
+                        ( Scalar(1), A.rowOmega_, colU, colPinv );
                     }
                     if( C.inSourceTeam_ )
                     {
                         const int key = A.sourceOffset_;
                         const Dense<Scalar>& rowU = C.rowXMap_.Get( key );
                         const int Trank = rowU.Width();
-                        const int LH = rowU.Height();
                         const int Omegarank = B.colOmega_.Width();
 
                         C.rowUSqrMap_.Set
@@ -139,21 +127,12 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressPrecompute
 
                         //_rowUSqr = ( B' A' Omega2 )' ( B' A' Omega2 )
                         // TODO: Replace this with a Herk call...
-                        rowUSqr.Init();
-                        blas::Gemm
-                        ( 'C', 'N', Trank, Trank, LH,
-                         Scalar(1), rowU.LockedBuffer(), rowU.LDim(),
-                                    rowU.LockedBuffer(), rowU.LDim(),
-                         Scalar(0), rowUSqr.Buffer(), rowUSqr.LDim() );
+                        hmat_tools::AdjointMultiply
+                        ( Scalar(1), rowU, rowU, rowUSqr );
 
                         //_rowPinv = Omega1' (B' A' Omega2)
-                        rowPinv.Init();
-                        blas::Gemm
-                        ( 'C', 'N', Omegarank, Trank, LH,
-                          Scalar(1), B.colOmega_.LockedBuffer(),
-                                     B.colOmega_.LDim(),
-                                     rowU.LockedBuffer(), rowU.LDim(),
-                          Scalar(0), rowPinv.Buffer(), rowPinv.LDim() );
+                        hmat_tools::AdjointMultiply
+                        ( Scalar(1), B.colOmega_, rowU, rowPinv );
                     }
                 }
             }
@@ -585,31 +564,18 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressMidcompute
                                 MemZero( USqr.Buffer(0,j), k );
                         }
 
-                        Pinv.Init();
-                        blas::Gemm
-                        ( 'N', 'N', OmegaT.Height(), k, k,
-                         Scalar(1), OmegaT.LockedBuffer(), OmegaT.LDim(),
-                                    USqr.LockedBuffer(), USqr.LDim(),
-                         Scalar(0), Pinv.Buffer(), Pinv.LDim() );
+                        hmat_tools::Multiply( Scalar(1), OmegaT, USqr, Pinv );
 
                         lapack::AdjointPseudoInverse
                         ( Pinv.Height(), Pinv.Width(),
                           Pinv.Buffer(), Pinv.LDim(), epsilon );
 
-                        Dense<Scalar> Ztmp( k, Pinv.Height() );
-                        Ztmp.Init();
-                        blas::Gemm
-                        ( 'N', 'C', k, Pinv.Height(), k,
-                         Scalar(1), USqr.LockedBuffer(), USqr.LDim(),
-                                    Pinv.LockedBuffer(), Pinv.LDim(),
-                         Scalar(0), Ztmp.Buffer(), Ztmp.LDim() );
+                        Dense<Scalar> Ztmp;
+                        hmat_tools::MultiplyAdjoint
+                        ( Scalar(1), USqr, Pinv, Ztmp );
 
-                        BL.Init();
-                        blas::Gemm
-                        ( 'N', 'N', k, OmegaT.Width(), Ztmp.Width(),
-                         Scalar(1), Ztmp.LockedBuffer(), Ztmp.LDim(),
-                                    OmegaT.LockedBuffer(), OmegaT.LDim(),
-                         Scalar(0), BL.Buffer(), BL.LDim() );
+                        hmat_tools::Multiply
+                        ( Scalar(1), Ztmp, OmegaT, BL );
                     }
                     if( C.inSourceTeam_ )
                     {
@@ -645,23 +611,15 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressMidcompute
                                 MemZero( USqr.Buffer(0,j), k );
                         }
 
-                        Pinv.Init();
-                        blas::Gemm
-                        ( 'N', 'N', OmegaT.Height(), k, k,
-                         Scalar(1), OmegaT.LockedBuffer(), OmegaT.LDim(),
-                                    USqr.LockedBuffer(), USqr.LDim(),
-                         Scalar(0), Pinv.Buffer(), Pinv.LDim() );
+                        hmat_tools::Multiply
+                        ( Scalar(1), OmegaT, USqr, Pinv );
 
                         lapack::AdjointPseudoInverse
                         ( Pinv.Height(), Pinv.Width(),
                           Pinv.Buffer(), Pinv.LDim(), epsilon );
 
-                        BR.Init();
-                        blas::Gemm
-                        ( 'N', 'C', k, Pinv.Height(), k,
-                         Scalar(1), USqr.LockedBuffer(), USqr.LDim(),
-                                    Pinv.LockedBuffer(), Pinv.LDim(),
-                         Scalar(0), BR.Buffer(), BR.LDim() );
+                        hmat_tools::MultiplyAdjoint
+                        ( Scalar(1), USqr, Pinv, BR );
                     }
                 }
             }
@@ -1023,28 +981,19 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressPostcompute
                     {
                         Dense<Scalar>& BL = C.BLMap_.Get( key );
                         Dense<Scalar>& colU = C.colXMap_.Get( key );
-                        Dense<Scalar> Ztmp(colU.Height(), BL.Width());
-                        Ztmp.Init();
-                        blas::Gemm
-                        ('N', 'N', colU.Height(), BL.Width(), colU.Width(),
-                         Scalar(1), colU.LockedBuffer(), colU.LDim(),
-                                    BL.LockedBuffer(), BL.LDim(),
-                         Scalar(0), Ztmp.Buffer(),  Ztmp.LDim() );
+                        Dense<Scalar> Ztmp;
+                        hmat_tools::Multiply
+                        ( Scalar(1), colU, BL, Ztmp );
                         hmat_tools::Copy( Ztmp, colU );
                     }
                     if( C.inSourceTeam_ )
                     {
                         Dense<Scalar>& BR = C.BRMap_.Get( key );
                         Dense<Scalar>& rowU = C.rowXMap_.Get( key );
-                        Dense<Scalar> Ztmp(rowU.Height(), BR.Width());
-                        Ztmp.Init();
-                        blas::Gemm
-                        ('N', 'N', rowU.Height(), BR.Width(), rowU.Width(),
-                         Scalar(1), rowU.LockedBuffer(), rowU.LDim(),
-                                    BR.LockedBuffer(), BR.LDim(),
-                         Scalar(0), Ztmp.Buffer(),  Ztmp.LDim() );
-                        hmat_tools::Copy( Ztmp, rowU );
-                        hmat_tools::Conjugate( rowU );
+                        Dense<Scalar> Ztmp;
+                        hmat_tools::Multiply
+                        ( Scalar(1), rowU, BR, Ztmp );
+                        hmat_tools::Conjugate( Ztmp, rowU );
                     }
                 }
             }

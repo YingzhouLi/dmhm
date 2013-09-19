@@ -433,12 +433,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressLowRankCountAndResize( int rank )
         {
             const Dense<Scalar>& U = *UMap_.CurrentEntry();
             const Dense<Scalar>& V = *VMap_.CurrentEntry();
-            const int r = U.Width();
-            blas::Gemm
-            ( 'N', 'T', m, n, r,
-              Scalar(1), U.LockedBuffer(), U.LDim(),
-                         V.LockedBuffer(), V.LDim(),
-              Scalar(1), D.Buffer(),       D.LDim() );
+            hmat_tools::MultiplyTranspose
+			( Scalar(1), U, V, Scalar(1), D );
             UMap_.EraseCurrentEntry();
             VMap_.EraseCurrentEntry();
         }
@@ -963,41 +959,23 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute()
     case DIST_LOW_RANK:
     {
         DistLowRank &DF = *block_.data.DF;
-        int LH=LocalHeight();
-        int LW=LocalWidth();
         int totalrank = DF.rank;
 
         if( inTargetTeam_ && totalrank > MaxRank() )
         {
-            USqr_.Resize( totalrank, totalrank );
-            USqr_.Init();
             USqrEig_.Resize( totalrank );
             Dense<Scalar>& U = DF.ULocal;
 
-            // TODO: Replace with Herk
-            if( totalrank > 0 )
-                blas::Gemm
-                ( 'C', 'N', totalrank, totalrank, LH,
-                  Scalar(1), U.LockedBuffer(), U.LDim(),
-                             U.LockedBuffer(), U.LDim(),
-                  Scalar(0), USqr_.Buffer(),   USqr_.LDim() );
+            hmat_tools::AdjointMultiply( Scalar(1), U, U, USqr_ );
         }
 
         totalrank=DF.rank;
         if( inSourceTeam_ && totalrank > MaxRank() )
         {
-            VSqr_.Resize( totalrank, totalrank );
-            VSqr_.Init();
             VSqrEig_.Resize( totalrank );
             Dense<Scalar>& V = DF.VLocal;
 
-            // TODO: Replace with Herk
-            if( totalrank > 0 )
-                blas::Gemm
-                ( 'C', 'N', totalrank, totalrank, LW,
-                 Scalar(1), V.LockedBuffer(), V.LDim(),
-                            V.LockedBuffer(), V.LDim(),
-                 Scalar(0), VSqr_.Buffer(),       VSqr_.LDim() );
+            hmat_tools::AdjointMultiply( Scalar(1), V, V, VSqr_ );
         }
         break;
     }
@@ -1014,34 +992,18 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute()
         {
             if( inTargetTeam_ )
             {
-                USqr_.Resize( totalrank, totalrank );
-                USqr_.Init();
                 USqrEig_.Resize( totalrank );
                 Dense<Scalar>& U = SF.D;
 
-                // MaxRank greater than zero, so totalrank greater than zero.
-                // TODO: Replace with Herk
-                blas::Gemm
-                ('C', 'N', totalrank, totalrank, LH,
-                 Scalar(1), U.LockedBuffer(), U.LDim(),
-                            U.LockedBuffer(), U.LDim(),
-                 Scalar(0), USqr_.Buffer(),   USqr_.LDim() );
+                hmat_tools::AdjointMultiply( Scalar(1), U, U, USqr_ );
             }
 
             if( inSourceTeam_ )
             {
-                VSqr_.Resize( totalrank, totalrank );
-                VSqr_.Init();
                 VSqrEig_.Resize( totalrank );
                 Dense<Scalar>& V = SF.D;
 
-                // MaxRank greater than zero, so totalrank greater than zero.
-                // TODO: Replace with Herk
-                blas::Gemm
-                ('C', 'N', totalrank, totalrank, LW,
-                 Scalar(1), V.LockedBuffer(), V.LDim(),
-                            V.LockedBuffer(), V.LDim(),
-                 Scalar(0), VSqr_.Buffer(),   VSqr_.LDim() );
+                hmat_tools::AdjointMultiply( Scalar(1), V, V, VSqr_ );
             }
         }
         break;
@@ -1057,29 +1019,13 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPrecompute()
 
         if( LH > totalrank && LW > totalrank && totalrank > MaxRank() )
         {
-            USqr_.Resize( totalrank, totalrank, totalrank );
-            USqr_.Init();
             USqrEig_.Resize( totalrank );
 
-            // MaxRank greater than zero, so totalrank greater than zero.
-            // TODO: Replace with Herk
-            blas::Gemm
-            ( 'C', 'N', totalrank, totalrank, LH,
-             Scalar(1), F.U.LockedBuffer(), F.U.LDim(),
-                        F.U.LockedBuffer(), F.U.LDim(),
-             Scalar(0), USqr_.Buffer(),     USqr_.LDim() );
+            hmat_tools::AdjointMultiply( Scalar(1), F.U, F.U, USqr_ );
 
-            VSqr_.Resize( totalrank, totalrank, totalrank );
-            VSqr_.Init();
             VSqrEig_.Resize( totalrank );
 
-            // MaxRank greater than zero, so totalrank greater than zero.
-            // TODO: Replace with Herk
-            blas::Gemm
-            ( 'C', 'N', totalrank, totalrank, LW,
-             Scalar(1), F.V.LockedBuffer(), F.V.LDim(),
-                        F.V.LockedBuffer(), F.V.LDim(),
-             Scalar(0), VSqr_.Buffer(),     VSqr_.LDim() );
+            hmat_tools::AdjointMultiply( Scalar(1), F.V, F.V, VSqr_ );
         }
         break;
     }
@@ -2011,8 +1957,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
         {
             const int k = USqr_.Width();
             Dense<Scalar> BSqr;
-            BSqr.Resize( k, k );
-            BSqr.Init();
             Vector<Real> USqrSigma(k), VSqrSigma(k);
             BSqrU_.Resize( k, k );
             BSqrU_.Init();
@@ -2023,11 +1967,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
             if( k==0 )
                 break;
 
-            blas::Gemm
-            ( 'T', 'N', k, k, k,
-              Scalar(1), USqr_.LockedBuffer(), USqr_.LDim(),
-                         VSqr_.LockedBuffer(), VSqr_.LDim(),
-              Scalar(0), BSqr.Buffer(),       BSqr.LDim() );
+            hmat_tools::TransposeMultiply( Scalar(1), USqr_, VSqr_, BSqr );
 
             hmat_tools::Conjugate( BSqr );
             for( int i=0; i<k; ++i)
@@ -2069,8 +2009,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
             {
                 const int k = USqr_.Width();
                 Dense<Scalar> BSqr;
-                BSqr.Resize( k, k );
-                BSqr.Init();
                 Vector<Real> USqrSigma(k), VSqrSigma(k);
                 BSqrU_.Resize( k, k );
                 BSqrU_.Init();
@@ -2081,11 +2019,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
                 if( k==0 )
                     break;
 
-                blas::Gemm
-                ( 'T', 'N', k, k, k,
-                  Scalar(1), USqr_.LockedBuffer(), USqr_.LDim(),
-                             VSqr_.LockedBuffer(), VSqr_.LDim(),
-                  Scalar(0), BSqr.Buffer(),       BSqr.LDim() );
+                hmat_tools::TransposeMultiply( Scalar(1), USqr_, VSqr_, BSqr );
 
                 hmat_tools::Conjugate( BSqr );
                 for( int i=0; i<k; ++i)
@@ -2115,24 +2049,10 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
         else if( totalrank > MaxRank() )
         {
             Dense<Scalar> B;
-            B.Resize( LH, LW );
-            B.Init();
             if( inSourceTeam_ )
-            {
-                blas::Gemm
-                ( 'N', 'T', LH, LW, totalrank,
-                  Scalar(1), SFD_.LockedBuffer(), SFD_.LDim(),
-                             SF.D.LockedBuffer(), SF.D.LDim(),
-                  Scalar(0), B.Buffer(),       B.LDim() );
-            }
+                hmat_tools::MultiplyTranspose( Scalar(1), SFD_, SF.D, B );
             else
-            {
-                blas::Gemm
-                ( 'N', 'T', LH, LW, totalrank,
-                  Scalar(1), SF.D.LockedBuffer(), SF.D.LDim(),
-                             SFD_.LockedBuffer(), SFD_.LDim(),
-                  Scalar(0), B.Buffer(),       B.LDim() );
-            }
+                hmat_tools::MultiplyTranspose( Scalar(1), SF.D, SFD_, B );
 
             const int minDim = std::min( LH, LW );
             BSqrU_.Resize( LH, minDim );
@@ -2169,8 +2089,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
         {
             const int k = USqr_.Width();
             Dense<Scalar> BSqr;
-            BSqr.Resize( k, k );
-            BSqr.Init();
             Vector<Real> USqrSigma(k), VSqrSigma(k);
             BSqrU_.Resize( k, k );
             BSqrU_.Init();
@@ -2181,11 +2099,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
             if( k==0 )
                 break;
 
-            blas::Gemm
-            ( 'T', 'N', k, k, k,
-              Scalar(1), USqr_.LockedBuffer(), USqr_.LDim(),
-                         VSqr_.LockedBuffer(), VSqr_.LDim(),
-              Scalar(0), BSqr.Buffer(),       BSqr.LDim() );
+            hmat_tools::TransposeMultiply( Scalar(1), USqr_, VSqr_, BSqr );
 
             hmat_tools::Conjugate( BSqr );
             for( int i=0; i<k; ++i)
@@ -2214,13 +2128,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
         else if( totalrank > MaxRank() )
         {
             Dense<Scalar> B;
-            B.Resize( LH, LW );
-            B.Init();
-            blas::Gemm
-            ( 'N', 'T', LH, LW, totalrank,
-              Scalar(1), F.U.LockedBuffer(), F.U.LDim(),
-                         F.V.LockedBuffer(), F.V.LDim(),
-              Scalar(0), B.Buffer(),       B.LDim() );
+            hmat_tools::MultiplyTranspose( Scalar(1), F.U, F.V, B );
 
             const int minDim = std::min( LH, LW );
             BSqrU_.Resize( LH, minDim );
@@ -2997,13 +2905,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPostcompute
                     for( int i=0; i<m; ++i )
                         BSqrU_.Set(i,j,BSqrU_.Get(i,j)*BSigma_[j]);
 
-                BL_.Resize( kU, n );
-                BL_.Init();
-                blas::Gemm
-                ( 'N', 'N', kU, n, kU,
-                  Scalar(1), USqr_.LockedBuffer(),  USqr_.LDim(),
-                             BSqrU_.LockedBuffer(), BSqrU_.LDim(),
-                  Scalar(0), BL_.Buffer(), BL_.LDim() );
+                hmat_tools::Multiply( Scalar(1), USqr_, BSqrU_, BL_ );
                 USqr_.Clear();
                 BSqrU_.Clear();
             }
@@ -3024,13 +2926,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPostcompute
                         MemZero( VSqr_.Buffer(0,j), kV );
                 }
 
-                BR_.Resize( kV, BSqrVH_.Height() );
-                BR_.Init();
-                blas::Gemm
-                ( 'N', 'T', kV, BSqrVH_.Height(), kV,
-                  Scalar(1), VSqr_.LockedBuffer(),  VSqr_.LDim(),
-                             BSqrVH_.LockedBuffer(), BSqrVH_.LDim(),
-                  Scalar(0), BR_.Buffer(), BR_.LDim() );
+                hmat_tools::MultiplyTranspose( Scalar(1), VSqr_, BSqrVH_, BR_ );
                 VSqr_.Clear();
                 BSqrVH_.Clear();
             }
@@ -3446,13 +3342,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute()
             Dense<Scalar> Utmp;
             hmat_tools::Copy(U, Utmp);
             DF.rank = BL_.Width();
-            U.Resize( Utmp.Height(), BL_.Width() );
-            U.Init();
-            blas::Gemm
-            ('N', 'N', Utmp.Height(), BL_.Width(), Utmp.Width(),
-             Scalar(1), Utmp.LockedBuffer(), Utmp.LDim(),
-                        BL_.LockedBuffer(), BL_.LDim(),
-             Scalar(0), U.Buffer(),         U.LDim() );
+            hmat_tools::Multiply( Scalar(1), Utmp, BL_, U );
             BL_.Clear();
         }
         if( inSourceTeam_ )
@@ -3462,13 +3352,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute()
             Dense<Scalar> Vtmp;
             hmat_tools::Copy(V, Vtmp);
             DF.rank = BR_.Width();
-            V.Resize( Vtmp.Height(), BR_.Width() );
-            V.Init();
-            blas::Gemm
-            ('N', 'N', Vtmp.Height(), BR_.Width(), Vtmp.Width(),
-             Scalar(1), Vtmp.LockedBuffer(), Vtmp.LDim(),
-                        BR_.LockedBuffer(), BR_.LDim(),
-             Scalar(0), V.Buffer(),         V.LDim() );
+            hmat_tools::Multiply( Scalar(1), Vtmp, BR_, V );
             BR_.Clear();
         }
         break;
@@ -3489,13 +3373,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute()
                     Dense<Scalar> Utmp;
                     hmat_tools::Copy(U, Utmp);
                     SF.rank = BL_.Width();
-                    U.Resize( Utmp.Height(), BL_.Width() );
-                    U.Init();
-                    blas::Gemm
-                    ('N', 'N', Utmp.Height(), BL_.Width(), Utmp.Width(),
-                     Scalar(1), Utmp.LockedBuffer(), Utmp.LDim(),
-                                BL_.LockedBuffer(), BL_.LDim(),
-                     Scalar(0), U.Buffer(),         U.LDim() );
+                    hmat_tools::Multiply( Scalar(1), Utmp, BL_, U );
                     BL_.Clear();
                 }
                 if( inSourceTeam_ )
@@ -3504,13 +3382,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute()
                     Dense<Scalar> Vtmp;
                     hmat_tools::Copy(V, Vtmp);
                     SF.rank = BR_.Width();
-                    V.Resize( Vtmp.Height(), BR_.Width() );
-                    V.Init();
-                    blas::Gemm
-                    ('N', 'N', Vtmp.Height(), BR_.Width(), Vtmp.Width(),
-                     Scalar(1), Vtmp.LockedBuffer(), Vtmp.LDim(),
-                                BR_.LockedBuffer(), BR_.LDim(),
-                     Scalar(0), V.Buffer(),         V.LDim() );
+                    hmat_tools::Multiply( Scalar(1), Vtmp, BR_, V );
                     BR_.Clear();
                 }
             }
@@ -3541,21 +3413,15 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute()
             {
                 Dense<Scalar>& SFU = SF.D;
                 Dense<Scalar>& SFV = SFD_;
-                blas::Gemm
-                ('N', 'T', m, n, SF.rank,
-                 Scalar(1), SFU.LockedBuffer(), SFU.LDim(),
-                            SFV.LockedBuffer(), SFV.LDim(),
-                 Scalar(1), D_.Buffer(),        D_.LDim() );
+                hmat_tools::MultiplyTranspose
+                ( Scalar(1), SFU, SFV, Scalar(1), D_ );
             }
             else
             {
                 Dense<Scalar>& SFU = SFD_;
                 Dense<Scalar>& SFV = SF.D;
-                blas::Gemm
-                ('N', 'T', m, n, SF.rank,
-                 Scalar(1), SFU.LockedBuffer(), SFU.LDim(),
-                            SFV.LockedBuffer(), SFV.LDim(),
-                 Scalar(1), D_.Buffer(),        D_.LDim() );
+                hmat_tools::MultiplyTranspose
+                ( Scalar(1), SFU, SFV, Scalar(1), D_ );
             }
 
 
@@ -3645,24 +3511,12 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute()
                 Dense<Scalar> &U = F.U;
                 Dense<Scalar> Utmp;
                 hmat_tools::Copy(U, Utmp);
-                U.Resize( Utmp.Height(), BL_.Width() );
-                U.Init();
-                blas::Gemm
-                ('N', 'N', Utmp.Height(), BL_.Width(), Utmp.Width(),
-                 Scalar(1), Utmp.LockedBuffer(), Utmp.LDim(),
-                            BL_.LockedBuffer(), BL_.LDim(),
-                 Scalar(0), U.Buffer(),         U.LDim() );
+                hmat_tools::Multiply( Scalar(1), Utmp, BL_, U );
 
                 Dense<Scalar> &V = F.V;
                 Dense<Scalar> Vtmp;
                 hmat_tools::Copy(V, Vtmp);
-                V.Resize( Vtmp.Height(), BR_.Width() );
-                V.Init();
-                blas::Gemm
-                ('N', 'N', Vtmp.Height(), BR_.Width(), Vtmp.Width(),
-                 Scalar(1), Vtmp.LockedBuffer(), Vtmp.LDim(),
-                            BR_.LockedBuffer(), BR_.LDim(),
-                 Scalar(0), V.Buffer(),         V.LDim() );
+                hmat_tools::Multiply( Scalar(1), Vtmp, BR_, V );
             }
             else if( totalrank > MaxRank() )
             {
@@ -3681,14 +3535,9 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute()
             const int n = F.Width();
             const int minDim = std::min( m, n );
             const int maxRank = MaxRank();
-            const int r = F.Rank();
 
             // Add U V^[T/H] onto the dense update
-            blas::Gemm
-            ( 'N', 'T', m, n, r,
-              Scalar(1), F.U.LockedBuffer(), F.U.LDim(),
-                         F.V.LockedBuffer(), F.V.LDim(),
-              Scalar(1), D_.Buffer(),        D_.LDim() );
+            hmat_tools::MultiplyTranspose( Scalar(1), F.U, F.V, Scalar(1), D_ );
 
             if( minDim <= maxRank )
             {
@@ -3751,19 +3600,13 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute()
         if( inSourceTeam_ )
         {
             SplitDense& SD = *block_.data.SD;
-            const int m = SD.D.Height();
-            const int n = SD.D.Width();
 
             UMap_.ResetIterator();
             VMap_.ResetIterator();
             const Dense<Scalar>& U = *UMap_.CurrentEntry();
             const Dense<Scalar>& V = *VMap_.CurrentEntry();
 
-            blas::Gemm
-            ('N', 'T', m, n, U.Width(),
-             Scalar(1), U.LockedBuffer(), U.LDim(),
-                        V.LockedBuffer(), V.LDim(),
-             Scalar(1), SD.D.Buffer(), SD.D.LDim() );
+            hmat_tools::MultiplyTranspose( Scalar(1), U, V, Scalar(1), SD.D );
 
             UMap_.Clear();
             VMap_.Clear();
@@ -3773,19 +3616,13 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute()
     case DENSE:
     {
         Dense<Scalar>& D = *block_.data.D;
-        const int m = D.Height();
-        const int n = D.Width();
 
         UMap_.ResetIterator();
         VMap_.ResetIterator();
         const Dense<Scalar>& U = *UMap_.CurrentEntry();
         const Dense<Scalar>& V = *VMap_.CurrentEntry();
 
-        blas::Gemm
-        ('N', 'T', m, n, U.Width(),
-         Scalar(1), U.LockedBuffer(), U.LDim(),
-                    V.LockedBuffer(), V.LDim(),
-         Scalar(1), D.Buffer(), D.LDim() );
+        hmat_tools::MultiplyTranspose( Scalar(1), U, V, Scalar(1), D );
 
         UMap_.Clear();
         VMap_.Clear();

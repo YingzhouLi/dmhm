@@ -398,6 +398,127 @@ void TransposeMultiply
         LowRank<std::complex<Real> >& F );
 
 /*
+ *  Matrix Matrix Transpose Multiply, C := alpha A B^T
+ *
+ *  When the resulting matrix is dense, an update form is also provided, i.e.,
+ *  C := alpha A B^T + beta C
+ *
+ *  A routine for forming a low-rank matrix from the product of two black-box
+ *  matrix and matrix-transpose vector multiplication routines is also provided.
+ */
+// D := alpha D D^T
+template<typename Scalar>
+void MultiplyTranspose
+( Scalar alpha, const Dense<Scalar>& A,
+                const Dense<Scalar>& B,
+                      Dense<Scalar>& C );
+// D := alpha D D^T + beta D
+template<typename Scalar>
+void MultiplyTranspose
+( Scalar alpha, const Dense<Scalar>& A,
+                const Dense<Scalar>& B,
+  Scalar beta,        Dense<Scalar>& C );
+// D := alpha D F^T
+template<typename Scalar>
+void MultiplyTranspose
+( Scalar alpha, const Dense<Scalar>& A,
+                const LowRank<Scalar>& B,
+                      Dense<Scalar>& C );
+// D := alpha D F^T + beta D
+template<typename Scalar>
+void MultiplyTranspose
+( Scalar alpha, const Dense<Scalar>& A,
+                const LowRank<Scalar>& B,
+  Scalar beta,        Dense<Scalar>& C );
+// D := alpha F D^T
+template<typename Scalar>
+void MultiplyTranspose
+( Scalar alpha, const LowRank<Scalar>& A,
+                const Dense<Scalar>& B,
+                      Dense<Scalar>& C );
+// D := alpha F D^T + beta D
+template<typename Scalar>
+void MultiplyTranspose
+( Scalar alpha, const LowRank<Scalar>& A,
+                const Dense<Scalar>& B,
+  Scalar beta,        Dense<Scalar>& C );
+// D := alpha F F^T
+template<typename Scalar>
+void MultiplyTranspose
+( Scalar alpha, const LowRank<Scalar>& A,
+                const LowRank<Scalar>& B,
+                      Dense<Scalar>& C );
+// D := alpha F F^T + beta D
+template<typename Scalar>
+void MultiplyTranspose
+( Scalar alpha, const LowRank<Scalar>& A,
+                const LowRank<Scalar>& B,
+  Scalar beta,        Dense<Scalar>& C );
+// F := alpha F F^T
+template<typename Scalar>
+void MultiplyTranspose
+( Scalar alpha, const LowRank<Scalar>& A,
+                const LowRank<Scalar>& B,
+                      LowRank<Scalar>& C );
+// F := alpha D F^T
+template<typename Scalar>
+void MultiplyTranspose
+( Scalar alpha, const Dense<Scalar>& A,
+                const LowRank<Scalar>& B,
+                      LowRank<Scalar>& C );
+// F := alpha F D^T
+template<typename Scalar>
+void MultiplyTranspose
+( Scalar alpha, const LowRank<Scalar>& A,
+                const Dense<Scalar>& B,
+                      LowRank<Scalar>& C );
+// F := alpha D D^T
+template<typename Real>
+void MultiplyTranspose
+( int maxRank, Real alpha,
+  const Dense<Real>& A,
+  const Dense<Real>& B,
+        LowRank<Real>& C );
+// F := alpha D D^T
+template<typename Real>
+void MultiplyTranspose
+( int maxRank, std::complex<Real> alpha,
+  const Dense< std::complex<Real> >& A,
+  const Dense< std::complex<Real> >& B,
+        LowRank<std::complex<Real> >& C );
+// F := alpha D D^T + beta F
+template<typename Real>
+void MultiplyTranspose
+( int maxRank, Real alpha,
+  const Dense<Real>& A,
+  const Dense<Real>& B,
+  Real beta,
+        LowRank<Real>& C );
+// F := alpha D D^T + beta F
+template<typename Real>
+void MultiplyTranspose
+( int maxRank, std::complex<Real> alpha,
+  const Dense< std::complex<Real> >& A,
+  const Dense< std::complex<Real> >& B,
+  std::complex<Real> beta,
+        LowRank<std::complex<Real> >& C );
+// F := alpha H H^T
+template<typename Real>
+void MultiplyTranspose
+( int sampleRank,
+  Real alpha,
+  const AbstractHMat<Real>& A,
+  const AbstractHMat<Real>& B,
+        LowRank<Real>& F );
+template<typename Real>
+void MultiplyTranspose
+( int sampleRank,
+  std::complex<Real> alpha,
+  const AbstractHMat< std::complex<Real> >& A,
+  const AbstractHMat< std::complex<Real> >& B,
+        LowRank<std::complex<Real> >& F );
+
+/*
  *  Matrix-Adjoint Matrix Multiply, C := alpha A^H B
  *
  *  When the resulting matrix is dense, an update form is also provided, i.e.,
@@ -518,6 +639,126 @@ void AdjointMultiply
   const AbstractHMat< std::complex<Real> >& B,
         LowRank<std::complex<Real> >& F );
 
+/*
+ *  Matrix Matrix-Adjoint Multiply, C := alpha A B^H
+ *
+ *  When the resulting matrix is dense, an update form is also provided, i.e.,
+ *  C := alpha A B^H + beta C
+ *
+ *  A routine for forming a low-rank matrix from the product of two black-box
+ *  matrix and matrix-transpose vector multiplication routines is also provided.
+ */
+// D := alpha D D^H
+template<typename Scalar>
+void MultiplyAdjoint
+( Scalar alpha, const Dense<Scalar>& A,
+                const Dense<Scalar>& B,
+                      Dense<Scalar>& C );
+// D := alpha D D^H + beta D
+template<typename Scalar>
+void MultiplyAdjoint
+( Scalar alpha, const Dense<Scalar>& A,
+                const Dense<Scalar>& B,
+  Scalar beta,        Dense<Scalar>& C );
+// D := alpha D F^H
+template<typename Scalar>
+void MultiplyAdjoint
+( Scalar alpha, const Dense<Scalar>& A,
+                const LowRank<Scalar>& B,
+                      Dense<Scalar>& C );
+// D := alpha D F^H + beta D
+template<typename Scalar>
+void MultiplyAdjoint
+( Scalar alpha, const Dense<Scalar>& A,
+                const LowRank<Scalar>& B,
+  Scalar beta,        Dense<Scalar>& C );
+// D := alpha F D^H
+template<typename Scalar>
+void MultiplyAdjoint
+( Scalar alpha, const LowRank<Scalar>& A,
+                const Dense<Scalar>& B,
+                      Dense<Scalar>& C );
+// D := alpha F D^H + beta D
+template<typename Scalar>
+void MultiplyAdjoint
+( Scalar alpha, const LowRank<Scalar>& A,
+                const Dense<Scalar>& B,
+  Scalar beta,        Dense<Scalar>& C );
+// D := alpha F F^H
+template<typename Scalar>
+void MultiplyAdjoint
+( Scalar alpha, const LowRank<Scalar>& A,
+                const LowRank<Scalar>& B,
+                      Dense<Scalar>& C );
+// D := alpha F F^H + beta D
+template<typename Scalar>
+void MultiplyAdjoint
+( Scalar alpha, const LowRank<Scalar>& A,
+                const LowRank<Scalar>& B,
+  Scalar beta,        Dense<Scalar>& C );
+// F := alpha F F^H
+template<typename Scalar>
+void MultiplyAdjoint
+( Scalar alpha, const LowRank<Scalar>& A,
+                const LowRank<Scalar>& B,
+                      LowRank<Scalar>& C );
+// F := alpha D F^H
+template<typename Scalar>
+void MultiplyAdjoint
+( Scalar alpha, const Dense<Scalar>& A,
+                const LowRank<Scalar>& B,
+                      LowRank<Scalar>& C );
+// F := alpha F D^H
+template<typename Scalar>
+void MultiplyAdjoint
+( Scalar alpha, const LowRank<Scalar>& A,
+                const Dense<Scalar>& B,
+                      LowRank<Scalar>& C );
+// F := alpha D D^H
+template<typename Real>
+void MultiplyAdjoint
+( int maxRank, Real alpha,
+  const Dense<Real>& A,
+  const Dense<Real>& B,
+        LowRank<Real>& C );
+// F := alpha D D^H
+template<typename Real>
+void MultiplyAdjoint
+( int maxRank, std::complex<Real> alpha,
+  const Dense< std::complex<Real> >& A,
+  const Dense< std::complex<Real> >& B,
+        LowRank<std::complex<Real> >& C );
+// F := alpha D D^H + beta F
+template<typename Real>
+void MultiplyAdjoint
+( int maxRank, Real alpha,
+  const Dense<Real>& A,
+  const Dense<Real>& B,
+  Real beta,
+        LowRank<Real>& C );
+// F := alpha D D^H + beta F
+template<typename Real>
+void MultiplyAdjoint
+( int maxRank, std::complex<Real> alpha,
+  const Dense< std::complex<Real> >& A,
+  const Dense< std::complex<Real> >& B,
+  std::complex<Real> beta,
+        LowRank<std::complex<Real> >& C );
+// F := alpha H H^H
+template<typename Real>
+void MultiplyAdjoint
+( int sampleRank,
+  Real alpha,
+  const AbstractHMat<Real>& A,
+  const AbstractHMat<Real>& B,
+        LowRank<Real>& F );
+template<typename Real>
+void MultiplyAdjoint
+( int sampleRank,
+  std::complex<Real> alpha,
+  const AbstractHMat< std::complex<Real> >& A,
+  const AbstractHMat< std::complex<Real> >& B,
+        LowRank<std::complex<Real> >& F );
 /*
  *  Matrix-Vector multiply, y := alpha A x + beta y
  */
