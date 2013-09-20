@@ -1117,37 +1117,24 @@ DistHMat3d<Scalar>::MultiplyHMatRandomCompressMidcompute()
     case DIST_LOW_RANK:
     {
         DistLowRank &DF = *block_.data.DF;
-        const int LH = LocalHeight();
-        const int LW = LocalWidth();
         const int totalrank = DF.rank;
-        const int sampleRank = SampleRank( MaxRank() );
         if( totalrank <= MaxRank() )
             break;
         if( inTargetTeam_ )
         {
-            colT_.Resize( LH, sampleRank );
-            blas::Gemm
-            ( 'N', 'T', LH, sampleRank, totalrank,
-              Scalar(1), DF.ULocal.LockedBuffer(), DF.ULocal.LDim(),
-                         OmegaTV_.LockedBuffer(), OmegaTV_.LDim(),
-              Scalar(0), colT_.Buffer(), colT_.LDim() );
+            hmat_tools::MultiplyTranspose
+            ( Scalar(1), DF.ULocal, OmegaTV_, colT_ );
             DF.ULocal.Clear();
 
-            colTSqr_.Resize( sampleRank, sampleRank );
             hmat_tools::AdjointMultiply
             ( Scalar(1), colT_, colT_, colTSqr_ );
         }
         if( inSourceTeam_ )
         {
-            rowT_.Resize( LW, sampleRank );
-            blas::Gemm
-            ( 'N', 'T', LW, sampleRank, totalrank,
-              Scalar(1), DF.VLocal.LockedBuffer(), DF.VLocal.LDim(),
-                         OmegaTU_.LockedBuffer(), OmegaTU_.LDim(),
-              Scalar(0), rowT_.Buffer(), rowT_.LDim() );
+            hmat_tools::MultiplyTranspose
+            ( Scalar(1), DF.VLocal, OmegaTU_, rowT_ );
             DF.VLocal.Clear();
 
-            rowTSqr_.Resize( sampleRank, sampleRank );
             hmat_tools::AdjointMultiply
             ( Scalar(1), rowT_, rowT_, rowTSqr_ );
         }
@@ -1166,29 +1153,19 @@ DistHMat3d<Scalar>::MultiplyHMatRandomCompressMidcompute()
         {
             if( inTargetTeam_ )
             {
-                colT_.Resize( LH, sampleRank );
-                blas::Gemm
-                ( 'N', 'T', LH, sampleRank, totalrank,
-                  Scalar(1), SF.D.LockedBuffer(), SF.D.LDim(),
-                             OmegaTV_.LockedBuffer(), OmegaTV_.LDim(),
-                  Scalar(0), colT_.Buffer(), colT_.LDim() );
+                hmat_tools::MultiplyTranspose
+                ( Scalar(1), SF.D, OmegaTV_, colT_ );
                 SF.D.Clear();
 
-                colTSqr_.Resize( sampleRank, sampleRank );
                 hmat_tools::AdjointMultiply
                 ( Scalar(1), colT_, colT_, colTSqr_ );
             }
             else
             {
-                rowT_.Resize( LW, sampleRank );
-                blas::Gemm
-                ( 'N', 'T', LW, sampleRank, totalrank,
-                  Scalar(1), SF.D.LockedBuffer(), SF.D.LDim(),
-                             OmegaTU_.LockedBuffer(), OmegaTU_.LDim(),
-                  Scalar(0), rowT_.Buffer(), rowT_.LDim() );
+                hmat_tools::MultiplyTranspose
+                ( Scalar(1), SF.D, OmegaTU_, rowT_ );
                 SF.D.Clear();
 
-                rowTSqr_.Resize( sampleRank, sampleRank );
                 hmat_tools::AdjointMultiply
                 ( Scalar(1), rowT_, rowT_, rowTSqr_ );
             }
@@ -1206,25 +1183,15 @@ DistHMat3d<Scalar>::MultiplyHMatRandomCompressMidcompute()
         const int sampleRank = SampleRank( MaxRank() );
         if( LH*LW > totalrank*sampleRank && totalrank > MaxRank() )
         {
-            colT_.Resize( LH, sampleRank );
-            blas::Gemm
-            ( 'N', 'T', LH, sampleRank, totalrank,
-              Scalar(1), F.U.LockedBuffer(), F.U.LDim(),
-                         OmegaTV_.LockedBuffer(), OmegaTV_.LDim(),
-              Scalar(0), colT_.Buffer(), colT_.LDim() );
+            hmat_tools::MultiplyTranspose
+            ( Scalar(1), F.U, OmegaTV_, colT_ );
 
-            colTSqr_.Resize( sampleRank, sampleRank );
             hmat_tools::AdjointMultiply
             ( Scalar(1), colT_, colT_, colTSqr_ );
 
-            rowT_.Resize( LW, sampleRank );
-            blas::Gemm
-            ( 'N', 'T', LW, sampleRank, totalrank,
-              Scalar(1), F.V.LockedBuffer(), F.V.LDim(),
-                         OmegaTU_.LockedBuffer(), OmegaTU_.LDim(),
-              Scalar(0), rowT_.Buffer(), rowT_.LDim() );
+            hmat_tools::MultiplyTranspose
+            ( Scalar(1), F.V, OmegaTU_, rowT_ );
 
-            rowTSqr_.Resize( sampleRank, sampleRank );
             hmat_tools::AdjointMultiply
             ( Scalar(1), rowT_, rowT_, rowTSqr_ );
         }
@@ -1483,26 +1450,20 @@ DistHMat3d<Scalar>::MultiplyHMatRandomCompressPostcompute
                         MemZero( colTSqr_.Buffer(0,j), k );
                 }
 
-                Dense<Scalar> Omega( sampleRank, sampleRank );
-                blas::Gemm
-                ( 'N', 'T', sampleRank, sampleRank, totalrank,
-                  Scalar(1), OmegaTU_.LockedBuffer(), OmegaTU_.LDim(),
-                             OmegaTV_.LockedBuffer(), OmegaTV_.LDim(),
-                  Scalar(0), Omega.Buffer(), Omega.LDim() );
+                Dense<Scalar> Omega;
+                hmat_tools::MultiplyTranspose
+                ( Scalar(1), OmegaTU_, OmegaTV_, Omega );
 
-                Dense<Scalar> Pinv( sampleRank, k );
+                Dense<Scalar> Pinv;
                 hmat_tools::Multiply( Scalar(1), Omega, colTSqr_, Pinv );
 
                 lapack::AdjointPseudoInverse
                 ( Pinv.Height(), Pinv.Width(),
                   Pinv.Buffer(), Pinv.LDim(), epsilon );
 
-                Dense<Scalar> Ztmp( k, sampleRank );
-                blas::Gemm
-                ( 'N', 'C', k, sampleRank, k,
-                  Scalar(1), colTSqr_.LockedBuffer(), colTSqr_.LDim(),
-                             Pinv.LockedBuffer(), Pinv.LDim(),
-                  Scalar(0), Ztmp.Buffer(), Ztmp.LDim() );
+                Dense<Scalar> Ztmp;
+                hmat_tools::MultiplyAdjoint
+                ( Scalar(1), colTSqr_, Pinv, Ztmp );
 
                 Dense<Scalar> U( sampleRank, sampleRank );
                 Dense<Scalar> VH( sampleRank, sampleRank );
@@ -1548,33 +1509,24 @@ DistHMat3d<Scalar>::MultiplyHMatRandomCompressPostcompute
                         MemZero( rowTSqr_.Buffer(0,j), k );
                 }
 
-                Dense<Scalar> Omega( sampleRank, sampleRank );
-                blas::Gemm
-                ( 'N', 'T', sampleRank, sampleRank, totalrank,
-                  Scalar(1), OmegaTU_.LockedBuffer(), OmegaTU_.LDim(),
-                             OmegaTV_.LockedBuffer(), OmegaTV_.LDim(),
-                  Scalar(0), Omega.Buffer(), Omega.LDim() );
+                Dense<Scalar> Omega;
+                hmat_tools::MultiplyTranspose
+                ( Scalar(1), OmegaTU_, OmegaTV_, Omega );
 
-                Dense<Scalar> OmegaT( sampleRank, sampleRank );
-                blas::Gemm
-                ( 'N', 'T', sampleRank, sampleRank, totalrank,
-                  Scalar(1), OmegaTV_.LockedBuffer(), OmegaTV_.LDim(),
-                             OmegaTU_.LockedBuffer(), OmegaTU_.LDim(),
-                  Scalar(0), OmegaT.Buffer(), OmegaT.LDim() );
+                Dense<Scalar> OmegaT;
+                hmat_tools::MultiplyTranspose
+                ( Scalar(1), OmegaTV_, OmegaTU_, OmegaT );
 
-                Dense<Scalar> Pinv( sampleRank, k );
+                Dense<Scalar> Pinv;
                 hmat_tools::Multiply( Scalar(1), OmegaT, rowTSqr_, Pinv );
 
                 lapack::AdjointPseudoInverse
                 ( Pinv.Height(), Pinv.Width(),
                   Pinv.Buffer(), Pinv.LDim(), epsilon );
 
-                Dense<Scalar> Ztmp( k, sampleRank );
-                blas::Gemm
-                ( 'N', 'C', k, sampleRank, k,
-                  Scalar(1), rowTSqr_.LockedBuffer(), rowTSqr_.LDim(),
-                             Pinv.LockedBuffer(), Pinv.LDim(),
-                  Scalar(0), Ztmp.Buffer(), Ztmp.LDim() );
+                Dense<Scalar> Ztmp;
+                hmat_tools::MultiplyAdjoint
+                ( Scalar(1), rowTSqr_, Pinv, Ztmp );
 
                 Dense<Scalar> U( sampleRank, sampleRank );
                 Dense<Scalar> VH( sampleRank, sampleRank );
@@ -1587,12 +1539,8 @@ DistHMat3d<Scalar>::MultiplyHMatRandomCompressPostcompute
 
                 SVDTrunc( U, Sigma, VH, relTol );
 
-                BR_.Resize( k, Sigma.Size() );
-                blas::Gemm
-                ( 'N', 'T', k, Sigma.Size(), sampleRank,
-                  Scalar(1), Ztmp.LockedBuffer(), Ztmp.LDim(),
-                             VH.LockedBuffer(), VH.LDim(),
-                  Scalar(0), BR_.Buffer(), BR_.LDim() );
+                hmat_tools::MultiplyTranspose
+                ( Scalar(1), Ztmp, VH, BR_ );
 
                 rowTSqr_.Clear();
             }
@@ -1633,26 +1581,20 @@ DistHMat3d<Scalar>::MultiplyHMatRandomCompressPostcompute
                         MemZero( colTSqr_.Buffer(0,j), k );
                 }
 
-                Dense<Scalar> Omega( sampleRank, sampleRank );
-                blas::Gemm
-                ( 'N', 'T', sampleRank, sampleRank, totalrank,
-                  Scalar(1), OmegaTU_.LockedBuffer(), OmegaTU_.LDim(),
-                             OmegaTV_.LockedBuffer(), OmegaTV_.LDim(),
-                  Scalar(0), Omega.Buffer(), Omega.LDim() );
+                Dense<Scalar> Omega;
+                hmat_tools::MultiplyTranspose
+                ( Scalar(1), OmegaTU_, OmegaTV_, Omega );
 
-                Dense<Scalar> Pinv( sampleRank, k );
+                Dense<Scalar> Pinv;
                 hmat_tools::Multiply( Scalar(1), Omega, colTSqr_, Pinv );
 
                 lapack::AdjointPseudoInverse
                 ( Pinv.Height(), Pinv.Width(),
                   Pinv.Buffer(), Pinv.LDim(), epsilon );
 
-                Dense<Scalar> Ztmp( k, sampleRank );
-                blas::Gemm
-                ( 'N', 'C', k, sampleRank, k,
-                  Scalar(1), colTSqr_.LockedBuffer(), colTSqr_.LDim(),
-                             Pinv.LockedBuffer(), Pinv.LDim(),
-                  Scalar(0), Ztmp.Buffer(), Ztmp.LDim() );
+                Dense<Scalar> Ztmp;
+                hmat_tools::MultiplyAdjoint
+                ( Scalar(1), colTSqr_, Pinv, Ztmp );
 
                 Dense<Scalar> U( sampleRank, sampleRank );
                 Dense<Scalar> VH( sampleRank, sampleRank );
@@ -1698,33 +1640,24 @@ DistHMat3d<Scalar>::MultiplyHMatRandomCompressPostcompute
                         MemZero( rowTSqr_.Buffer(0,j), k );
                 }
 
-                Dense<Scalar> Omega( sampleRank, sampleRank );
-                blas::Gemm
-                ( 'N', 'T', sampleRank, sampleRank, totalrank,
-                  Scalar(1), OmegaTU_.LockedBuffer(), OmegaTU_.LDim(),
-                             OmegaTV_.LockedBuffer(), OmegaTV_.LDim(),
-                  Scalar(0), Omega.Buffer(), Omega.LDim() );
+                Dense<Scalar> Omega;
+                hmat_tools::MultiplyTranspose
+                ( Scalar(1), OmegaTU_, OmegaTV_, Omega );
 
-                Dense<Scalar> OmegaT( sampleRank, sampleRank );
-                blas::Gemm
-                ( 'N', 'T', sampleRank, sampleRank, totalrank,
-                  Scalar(1), OmegaTV_.LockedBuffer(), OmegaTV_.LDim(),
-                             OmegaTU_.LockedBuffer(), OmegaTU_.LDim(),
-                  Scalar(0), OmegaT.Buffer(), OmegaT.LDim() );
+                Dense<Scalar> OmegaT;
+                hmat_tools::MultiplyTranspose
+                ( Scalar(1), OmegaTV_, OmegaTU_, OmegaT );
 
-                Dense<Scalar> Pinv( sampleRank, k );
+                Dense<Scalar> Pinv;
                 hmat_tools::Multiply( Scalar(1), OmegaT, rowTSqr_, Pinv );
 
                 lapack::AdjointPseudoInverse
                 ( Pinv.Height(), Pinv.Width(),
                   Pinv.Buffer(), Pinv.LDim(), epsilon );
 
-                Dense<Scalar> Ztmp( k, sampleRank );
-                blas::Gemm
-                ( 'N', 'C', k, sampleRank, k,
-                  Scalar(1), rowTSqr_.LockedBuffer(), rowTSqr_.LDim(),
-                             Pinv.LockedBuffer(), Pinv.LDim(),
-                  Scalar(0), Ztmp.Buffer(), Ztmp.LDim() );
+                Dense<Scalar> Ztmp;
+                hmat_tools::MultiplyAdjoint
+                ( Scalar(1), rowTSqr_, Pinv, Ztmp );
 
                 Dense<Scalar> U( sampleRank, sampleRank );
                 Dense<Scalar> VH( sampleRank, sampleRank );
@@ -1737,12 +1670,8 @@ DistHMat3d<Scalar>::MultiplyHMatRandomCompressPostcompute
 
                 SVDTrunc( U, Sigma, VH, relTol );
 
-                BR_.Resize( k, Sigma.Size() );
-                blas::Gemm
-                ( 'N', 'T', k, Sigma.Size(), sampleRank,
-                  Scalar(1), Ztmp.LockedBuffer(), Ztmp.LDim(),
-                             VH.LockedBuffer(), VH.LDim(),
-                  Scalar(0), BR_.Buffer(), BR_.LDim() );
+                hmat_tools::MultiplyTranspose
+                ( Scalar(1), Ztmp, VH, BR_ );
 
                 rowTSqr_.Clear();
             }
@@ -1751,23 +1680,15 @@ DistHMat3d<Scalar>::MultiplyHMatRandomCompressPostcompute
         else if( totalrank > MaxRank() )
         {
             Dense<Scalar> B;
-            B.Resize( LH, LW );
-            B.Init();
             if( inSourceTeam_ )
             {
-                blas::Gemm
-                ( 'N', 'T', LH, LW, totalrank,
-                  Scalar(1), SFD_.LockedBuffer(), SFD_.LDim(),
-                             SF.D.LockedBuffer(), SF.D.LDim(),
-                  Scalar(0), B.Buffer(),       B.LDim() );
+                hmat_tools::MultiplyTranspose
+                ( Scalar(1), SFD_, SF.D, B );
             }
             else
             {
-                blas::Gemm
-                ( 'N', 'T', LH, LW, totalrank,
-                  Scalar(1), SF.D.LockedBuffer(), SF.D.LDim(),
-                             SFD_.LockedBuffer(), SFD_.LDim(),
-                  Scalar(0), B.Buffer(),       B.LDim() );
+                hmat_tools::MultiplyTranspose
+                ( Scalar(1), SF.D, SFD_, B );
             }
 
             const int minDim = std::min( LH, LW );
@@ -1826,26 +1747,20 @@ DistHMat3d<Scalar>::MultiplyHMatRandomCompressPostcompute
                         MemZero( colTSqr_.Buffer(0,j), k );
                 }
 
-                Dense<Scalar> Omega( sampleRank, sampleRank );
-                blas::Gemm
-                ( 'N', 'T', sampleRank, sampleRank, totalrank,
-                  Scalar(1), OmegaTU_.LockedBuffer(), OmegaTU_.LDim(),
-                             OmegaTV_.LockedBuffer(), OmegaTV_.LDim(),
-                  Scalar(0), Omega.Buffer(), Omega.LDim() );
+                Dense<Scalar> Omega;
+                hmat_tools::MultiplyTranspose
+                ( Scalar(1), OmegaTU_, OmegaTV_, Omega );
 
-                Dense<Scalar> Pinv( sampleRank, k );
+                Dense<Scalar> Pinv;
                 hmat_tools::Multiply( Scalar(1), Omega, colTSqr_, Pinv );
 
                 lapack::AdjointPseudoInverse
                 ( Pinv.Height(), Pinv.Width(),
                   Pinv.Buffer(), Pinv.LDim(), epsilon );
 
-                Dense<Scalar> Ztmp( k, sampleRank );
-                blas::Gemm
-                ( 'N', 'C', k, sampleRank, k,
-                  Scalar(1), colTSqr_.LockedBuffer(), colTSqr_.LDim(),
-                             Pinv.LockedBuffer(), Pinv.LDim(),
-                  Scalar(0), Ztmp.Buffer(), Ztmp.LDim() );
+                Dense<Scalar> Ztmp;
+                hmat_tools::MultiplyAdjoint
+                ( Scalar(1), colTSqr_, Pinv, Ztmp );
 
                 Dense<Scalar> U( sampleRank, sampleRank );
                 Dense<Scalar> VH( sampleRank, sampleRank );
@@ -1890,33 +1805,24 @@ DistHMat3d<Scalar>::MultiplyHMatRandomCompressPostcompute
                         MemZero( rowTSqr_.Buffer(0,j), k );
                 }
 
-                Dense<Scalar> Omega( sampleRank, sampleRank );
-                blas::Gemm
-                ( 'N', 'T', sampleRank, sampleRank, totalrank,
-                  Scalar(1), OmegaTU_.LockedBuffer(), OmegaTU_.LDim(),
-                             OmegaTV_.LockedBuffer(), OmegaTV_.LDim(),
-                  Scalar(0), Omega.Buffer(), Omega.LDim() );
+                Dense<Scalar> Omega;
+                hmat_tools::MultiplyTranspose
+                ( Scalar(1), OmegaTU_, OmegaTV_, Omega );
 
-                Dense<Scalar> OmegaT( sampleRank, sampleRank );
-                blas::Gemm
-                ( 'N', 'T', sampleRank, sampleRank, totalrank,
-                  Scalar(1), OmegaTV_.LockedBuffer(), OmegaTV_.LDim(),
-                             OmegaTU_.LockedBuffer(), OmegaTU_.LDim(),
-                  Scalar(0), OmegaT.Buffer(), OmegaT.LDim() );
+                Dense<Scalar> OmegaT;
+                hmat_tools::MultiplyTranspose
+                ( Scalar(1), OmegaTV_, OmegaTU_, OmegaT );
 
-                Dense<Scalar> Pinv( sampleRank, k );
+                Dense<Scalar> Pinv;
                 hmat_tools::Multiply( Scalar(1), OmegaT, rowTSqr_, Pinv );
 
                 lapack::AdjointPseudoInverse
                 ( Pinv.Height(), Pinv.Width(),
                   Pinv.Buffer(), Pinv.LDim(), epsilon );
 
-                Dense<Scalar> Ztmp( k, sampleRank );
-                blas::Gemm
-                ( 'N', 'C', k, sampleRank, k,
-                  Scalar(1), rowTSqr_.LockedBuffer(), rowTSqr_.LDim(),
-                             Pinv.LockedBuffer(), Pinv.LDim(),
-                  Scalar(0), Ztmp.Buffer(), Ztmp.LDim() );
+                Dense<Scalar> Ztmp;
+                hmat_tools::MultiplyAdjoint
+                ( Scalar(1), rowTSqr_, Pinv, Ztmp );
 
                 Dense<Scalar> U( sampleRank, sampleRank );
                 Dense<Scalar> VH( sampleRank, sampleRank );
@@ -1929,12 +1835,8 @@ DistHMat3d<Scalar>::MultiplyHMatRandomCompressPostcompute
 
                 SVDTrunc( U, Sigma, VH, relTol );
 
-                BR_.Resize( k, Sigma.Size() );
-                blas::Gemm
-                ( 'N', 'T', k, Sigma.Size(), sampleRank,
-                  Scalar(1), Ztmp.LockedBuffer(), Ztmp.LDim(),
-                             VH.LockedBuffer(), VH.LDim(),
-                  Scalar(0), BR_.Buffer(), BR_.LDim() );
+                hmat_tools::MultiplyTranspose
+                ( Scalar(1), Ztmp, VH, BR_ );
 
                 rowTSqr_.Clear();
             }
@@ -1942,13 +1844,8 @@ DistHMat3d<Scalar>::MultiplyHMatRandomCompressPostcompute
         else if( totalrank > MaxRank() )
         {
             Dense<Scalar> B;
-            B.Resize( LH, LW );
-            B.Init();
-            blas::Gemm
-            ( 'N', 'T', LH, LW, totalrank,
-              Scalar(1), F.U.LockedBuffer(), F.U.LDim(),
-                         F.V.LockedBuffer(), F.V.LDim(),
-              Scalar(0), B.Buffer(),       B.LDim() );
+            hmat_tools::MultiplyTranspose
+            ( Scalar(1), F.U, F.V, B );
 
             const int minDim = std::min( LH, LW );
             BSqrU_.Resize( LH, minDim );
@@ -2445,21 +2342,15 @@ DistHMat3d<Scalar>::MultiplyHMatRandomCompressFinalcompute()
             {
                 Dense<Scalar>& SFU = SF.D;
                 Dense<Scalar>& SFV = SFD_;
-                blas::Gemm
-                ('N', 'T', m, n, SF.rank,
-                 Scalar(1), SFU.LockedBuffer(), SFU.LDim(),
-                            SFV.LockedBuffer(), SFV.LDim(),
-                 Scalar(1), D_.Buffer(),        D_.LDim() );
+                hmat_tools::MultiplyTranspose
+                ( Scalar(1), SFU, SFV, Scalar(1), D_ );
             }
             else
             {
                 Dense<Scalar>& SFU = SFD_;
                 Dense<Scalar>& SFV = SF.D;
-                blas::Gemm
-                ('N', 'T', m, n, SF.rank,
-                 Scalar(1), SFU.LockedBuffer(), SFU.LDim(),
-                            SFV.LockedBuffer(), SFV.LDim(),
-                 Scalar(1), D_.Buffer(),        D_.LDim() );
+                hmat_tools::MultiplyTranspose
+                ( Scalar(1), SFU, SFV, Scalar(1), D_ );
             }
 
 
@@ -2574,14 +2465,10 @@ DistHMat3d<Scalar>::MultiplyHMatRandomCompressFinalcompute()
             const int n = F.Width();
             const int minDim = std::min( m, n );
             const int maxRank = MaxRank();
-            const int r = F.Rank();
 
             // Add U V^[T/H] onto the dense update
-            blas::Gemm
-            ( 'N', 'T', m, n, r,
-              Scalar(1), F.U.LockedBuffer(), F.U.LDim(),
-                         F.V.LockedBuffer(), F.V.LDim(),
-              Scalar(1), D_.Buffer(),        D_.LDim() );
+            hmat_tools::MultiplyTranspose
+            ( Scalar(1), F.U, F.V, Scalar(1), D_ );
 
             if( minDim <= maxRank )
             {
@@ -2644,19 +2531,14 @@ DistHMat3d<Scalar>::MultiplyHMatRandomCompressFinalcompute()
         if( inSourceTeam_ )
         {
             SplitDense& SD = *block_.data.SD;
-            const int m = SD.D.Height();
-            const int n = SD.D.Width();
 
             UMap_.ResetIterator();
             VMap_.ResetIterator();
             const Dense<Scalar>& U = *UMap_.CurrentEntry();
             const Dense<Scalar>& V = *VMap_.CurrentEntry();
 
-            blas::Gemm
-            ('N', 'T', m, n, U.Width(),
-             Scalar(1), U.LockedBuffer(), U.LDim(),
-                        V.LockedBuffer(), V.LDim(),
-             Scalar(1), SD.D.Buffer(), SD.D.LDim() );
+            hmat_tools::MultiplyTranspose
+            ( Scalar(1), U, V, Scalar(1), SD.D );
 
             UMap_.Clear();
             VMap_.Clear();
@@ -2666,19 +2548,14 @@ DistHMat3d<Scalar>::MultiplyHMatRandomCompressFinalcompute()
     case DENSE:
     {
         Dense<Scalar>& D = *block_.data.D;
-        const int m = D.Height();
-        const int n = D.Width();
 
         UMap_.ResetIterator();
         VMap_.ResetIterator();
         const Dense<Scalar>& U = *UMap_.CurrentEntry();
         const Dense<Scalar>& V = *VMap_.CurrentEntry();
 
-        blas::Gemm
-        ('N', 'T', m, n, U.Width(),
-         Scalar(1), U.LockedBuffer(), U.LDim(),
-                    V.LockedBuffer(), V.LDim(),
-         Scalar(1), D.Buffer(), D.LDim() );
+        hmat_tools::MultiplyTranspose
+        ( Scalar(1), U, V, Scalar(1), D );
 
         UMap_.Clear();
         VMap_.Clear();

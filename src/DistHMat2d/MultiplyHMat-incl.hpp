@@ -183,8 +183,8 @@ DistHMat2d<Scalar>::MultiplyHMatFullAccumulate
 #ifdef TIME_MULTIPLY
     timer.Start( 13 );
 #endif
-    C.MultiplyHMatCompress();
-    //C.MultiplyHMatRandomCompress();
+    //C.MultiplyHMatCompress();
+    C.MultiplyHMatRandomCompress();
 #ifdef TIME_MULTIPLY
     mpi::Barrier( mpi::COMM_WORLD );
     timer.Stop( 13 );
