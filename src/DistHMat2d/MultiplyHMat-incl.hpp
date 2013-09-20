@@ -33,23 +33,27 @@ DistHMat2d<Scalar>::Multiply
         throw std::logic_error("Invalid multiplication type");
 #endif
     DistHMat2d<Scalar>& A = *this;
-
+    Real twoNorm;
+    Scalar estimateA = A.ParallelEstimateTwoNorm( 1.5, 3 );
+    Scalar estimateB = B.ParallelEstimateTwoNorm( 1.5, 3 );
+    twoNorm = std::abs(estimateA*estimateB);
 #ifdef MEMORY_INFO
     //ResetMemoryCount();
 #endif
     if( multType == 0 )
-        A.MultiplyHMatSingleUpdateAccumulate( alpha, B, C );
+        A.MultiplyHMatSingleUpdateAccumulate( alpha, B, C, twoNorm );
     else if( multType == 1 )
-        A.MultiplyHMatSingleLevelAccumulate( alpha, B, C );
+        A.MultiplyHMatSingleLevelAccumulate( alpha, B, C, twoNorm );
     else
-        A.MultiplyHMatFullAccumulate( alpha, B, C );
+        A.MultiplyHMatFullAccumulate( alpha, B, C, twoNorm );
 }
 
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyHMatFullAccumulate
 ( Scalar alpha, DistHMat2d<Scalar>& B,
-                DistHMat2d<Scalar>& C )
+                DistHMat2d<Scalar>& C,
+  Real twoNorm )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MultiplyHMatFullAccumulate");
@@ -183,8 +187,8 @@ DistHMat2d<Scalar>::MultiplyHMatFullAccumulate
 #ifdef TIME_MULTIPLY
     timer.Start( 13 );
 #endif
-    //C.MultiplyHMatCompress();
-    C.MultiplyHMatRandomCompress();
+    C.MultiplyHMatCompress( twoNorm );
+    //C.MultiplyHMatRandomCompress( twoNorm );
 #ifdef TIME_MULTIPLY
     mpi::Barrier( mpi::COMM_WORLD );
     timer.Stop( 13 );
@@ -221,7 +225,7 @@ template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyHMatSingleLevelAccumulate
 ( Scalar alpha, DistHMat2d<Scalar>& B,
-                DistHMat2d<Scalar>& C )
+                DistHMat2d<Scalar>& C, Real twoNorm )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MultiplyHMatSingleLevelAccumulate");
@@ -358,8 +362,8 @@ DistHMat2d<Scalar>::MultiplyHMatSingleLevelAccumulate
 #ifdef TIME_MULTIPLY
         timer.Start( 13 );
 #endif
-        C.MultiplyHMatCompress();
-        //C.MultiplyHMatRandomCompress();
+        C.MultiplyHMatCompress( twoNorm );
+        //C.MultiplyHMatRandomCompress( twoNorm );
 #ifdef TIME_MULTIPLY
         mpi::Barrier( mpi::COMM_WORLD );
         timer.Stop( 13 );
@@ -396,7 +400,7 @@ template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyHMatSingleUpdateAccumulate
 ( Scalar alpha, DistHMat2d<Scalar>& B,
-                DistHMat2d<Scalar>& C )
+                DistHMat2d<Scalar>& C, Real twoNorm )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MultiplyHMatSingleUpdateAccumulate");
@@ -535,8 +539,8 @@ DistHMat2d<Scalar>::MultiplyHMatSingleUpdateAccumulate
 #ifdef TIME_MULTIPLY
             timer.Start( 13 );
 #endif
-            C.MultiplyHMatCompress();
-            //C.MultiplyHMatRandomCompress();
+            C.MultiplyHMatCompress( twoNorm );
+            //C.MultiplyHMatRandomCompress( twoNorm );
 #ifdef TIME_MULTIPLY
             mpi::Barrier( mpi::COMM_WORLD );
             timer.Stop( 13 );

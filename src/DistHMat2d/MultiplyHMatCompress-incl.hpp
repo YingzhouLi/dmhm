@@ -13,7 +13,7 @@ namespace dmhm {
 
 template<typename Scalar>
 void
-DistHMat2d<Scalar>::MultiplyHMatCompress()
+DistHMat2d<Scalar>::MultiplyHMatCompress( Real twoNorm )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MultiplyHMatCompress");
@@ -61,7 +61,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompress()
     // of B. BSqrEig_ stores eigenvalues of B.
     //
     const Real midcomputeTol = MidcomputeTolerance<Real>();
-    MultiplyHMatCompressFMidcompute( midcomputeTol );
+    MultiplyHMatCompressFMidcompute( midcomputeTol, twoNorm );
     MultiplyHMatCompressFPassbackNum();
     MultiplyHMatCompressFPassbackData();
 
@@ -1924,7 +1924,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassVectorUnpack
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
-( Real relTol )
+( Real relTol, Real twoNorm )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFMidcompute");
@@ -1942,7 +1942,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
         for( int t=0; t<4; ++t )
             for( int s=0; s<4; ++s)
                 node.Child(t,s).MultiplyHMatCompressFMidcompute
-                ( relTol );
+                ( relTol, twoNorm );
         break;
     }
     case DIST_LOW_RANK:
@@ -1991,7 +1991,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
              BSqrVH_.Buffer(), BSqrVH_.LDim(),
              &work[0], lwork, &rwork[0] );
 
-            SVDTrunc( BSqrU_, BSigma_, BSqrVH_, relTol );
+            SVDTrunc( BSqrU_, BSigma_, BSqrVH_, relTol, twoNorm );
         }
         break;
     }
@@ -2043,7 +2043,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
                  BSqrVH_.Buffer(), BSqrVH_.LDim(),
                  &work[0], lwork, &rwork[0] );
 
-                SVDTrunc( BSqrU_, BSigma_, BSqrVH_, relTol );
+                SVDTrunc( BSqrU_, BSigma_, BSqrVH_, relTol, twoNorm );
             }
         }
         else if( totalrank > MaxRank() )
@@ -2072,7 +2072,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
              BSqrVH_.Buffer(), BSqrVH_.LDim(),
              &work[0], lwork, &rwork[0] );
 
-            SVDTrunc( BSqrU_, BSigma_, BSqrVH_, relTol );
+            SVDTrunc( BSqrU_, BSigma_, BSqrVH_, relTol, twoNorm );
             SFD_.Clear();
         }
         break;
@@ -2123,7 +2123,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
              BSqrVH_.Buffer(), BSqrVH_.LDim(),
              &work[0], lwork, &rwork[0] );
 
-            SVDTrunc( BSqrU_, BSigma_, BSqrVH_, relTol );
+            SVDTrunc( BSqrU_, BSigma_, BSqrVH_, relTol, twoNorm );
         }
         else if( totalrank > MaxRank() )
         {
@@ -2148,7 +2148,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
              BSqrVH_.Buffer(), BSqrVH_.LDim(),
              &work[0], lwork, &rwork[0] );
 
-            SVDTrunc( BSqrU_, BSigma_, BSqrVH_, relTol );
+            SVDTrunc( BSqrU_, BSigma_, BSqrVH_, relTol, twoNorm );
         }
         break;
     }

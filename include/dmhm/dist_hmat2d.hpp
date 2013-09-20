@@ -833,13 +833,13 @@ private:
     //
     void MultiplyHMatFullAccumulate
     ( Scalar alpha, DistHMat2d<Scalar>& B,
-                    DistHMat2d<Scalar>& C );
+                    DistHMat2d<Scalar>& C, Real twoNorm );
     void MultiplyHMatSingleLevelAccumulate
     ( Scalar alpha, DistHMat2d<Scalar>& B,
-                    DistHMat2d<Scalar>& C );
+                    DistHMat2d<Scalar>& C, Real twoNorm );
     void MultiplyHMatSingleUpdateAccumulate
     ( Scalar alpha, DistHMat2d<Scalar>& B,
-                    DistHMat2d<Scalar>& C );
+                    DistHMat2d<Scalar>& C, Real twoNorm );
 
     void MultiplyHMatFormGhostRanks( DistHMat2d<Scalar>& B );
     void MultiplyHMatFormGhostRanksCount
@@ -1140,9 +1140,10 @@ private:
 
     void EVDTrunc( Dense<Scalar>& Q, Vector<Real>& w, Real epsilon );
     void SVDTrunc
-    ( Dense<Scalar>& U, Vector<Real>& w, Dense<Scalar>& VH, Real epsilon );
+    ( Dense<Scalar>& U, Vector<Real>& w, Dense<Scalar>& VH,
+      Real epsilon, Real twoNorm );
 
-    void MultiplyHMatCompress();
+    void MultiplyHMatCompress( Real twoNorm );
     void MultiplyHMatCompressLowRankCountAndResize( int rank );
     void MultiplyHMatCompressLowRankImport( int rank );
     void MultiplyHMatCompressImportU
@@ -1174,7 +1175,7 @@ private:
     ( Vector<Real>& buffer, std::map<int,int>& offsets ) const;
     void MultiplyHMatCompressFPassVectorUnpack
     ( const Vector<Real>& buffer, std::map<int,int>& offsets );
-    void MultiplyHMatCompressFMidcompute( Real epsilon );
+    void MultiplyHMatCompressFMidcompute( Real epsilon, Real twoNorm );
     void MultiplyHMatCompressFPassbackNum();
     void MultiplyHMatCompressFPassbackNumCount
     ( std::map<int,int>& sendSizes, std::map<int,int>& recvSizes ) const;
@@ -1210,7 +1211,7 @@ private:
     void MultiplyHMatCompressFCleanup();
 
 
-    void MultiplyHMatRandomCompress();
+    void MultiplyHMatRandomCompress( Real twoNorm );
     void MultiplyHMatRandomCompressPrecompute();
     void MultiplyHMatRandomCompressReducesOmegaTUV();
     void MultiplyHMatRandomCompressReducesOmegaTUVCount
@@ -1248,7 +1249,7 @@ private:
     void MultiplyHMatRandomCompressReducesTSqrUnpack
     ( const Vector<Scalar>& buffer, Vector<int>& offsets );
     void MultiplyHMatRandomCompressPostcompute
-    ( Real epsilon, Real relTol );
+    ( Real epsilon, Real relTol, Real twoNorm );
     void MultiplyHMatRandomCompressBroadcastsNum();
     void MultiplyHMatRandomCompressBroadcastsNumCount( Vector<int>& sizes ) const;
     void MultiplyHMatRandomCompressBroadcastsNumPack
