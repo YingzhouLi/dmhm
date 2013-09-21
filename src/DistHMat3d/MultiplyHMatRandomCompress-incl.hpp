@@ -12,7 +12,7 @@ namespace dmhm {
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatRandomCompress
-()
+( Real twoNorm )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatRandomCompress");
@@ -52,7 +52,8 @@ DistHMat3d<Scalar>::MultiplyHMatRandomCompress
 
     const Real midcomputeTol = MidcomputeTolerance<Real>();
     const Real compressionTol = CompressionTolerance<Real>();
-    MultiplyHMatRandomCompressPostcompute( midcomputeTol, compressionTol );
+    MultiplyHMatRandomCompressPostcompute
+    ( midcomputeTol, compressionTol, twoNorm );
 
 
     // Broadcastsnum and broadcasts in compression to
@@ -1395,7 +1396,7 @@ DistHMat3d<Scalar>::MultiplyHMatRandomCompressReducesTSqrUnpack
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatRandomCompressPostcompute
-( Real epsilon, Real relTol )
+( Real epsilon, Real relTol, Real twoNorm )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatRandomCompressPostcompute");
@@ -1413,7 +1414,7 @@ DistHMat3d<Scalar>::MultiplyHMatRandomCompressPostcompute
         for( int t=0; t<8; ++t )
             for( int s=0; s<8; ++s)
                 node.Child(t,s).MultiplyHMatRandomCompressPostcompute
-                ( epsilon, relTol );
+                ( epsilon, relTol, twoNorm );
         break;
     }
     case DIST_LOW_RANK:
@@ -1474,7 +1475,7 @@ DistHMat3d<Scalar>::MultiplyHMatRandomCompressPostcompute
                   U.Buffer(), U.LDim(),
                   VH.Buffer(), VH.LDim() );
 
-                SVDTrunc( U, Sigma, VH, relTol );
+                SVDTrunc( U, Sigma, VH, relTol, twoNorm );
 
                 for( int j=0; j<Sigma.Size(); ++j )
                     for( int i=0; i<sampleRank; ++i )
@@ -1537,7 +1538,7 @@ DistHMat3d<Scalar>::MultiplyHMatRandomCompressPostcompute
                   U.Buffer(), U.LDim(),
                   VH.Buffer(), VH.LDim() );
 
-                SVDTrunc( U, Sigma, VH, relTol );
+                SVDTrunc( U, Sigma, VH, relTol, twoNorm );
 
                 hmat_tools::MultiplyTranspose
                 ( Scalar(1), Ztmp, VH, BR_ );
@@ -1605,7 +1606,7 @@ DistHMat3d<Scalar>::MultiplyHMatRandomCompressPostcompute
                   U.Buffer(), U.LDim(),
                   VH.Buffer(), VH.LDim() );
 
-                SVDTrunc( U, Sigma, VH, relTol );
+                SVDTrunc( U, Sigma, VH, relTol, twoNorm );
 
                 for( int j=0; j<Sigma.Size(); ++j )
                     for( int i=0; i<sampleRank; ++i )
@@ -1668,7 +1669,7 @@ DistHMat3d<Scalar>::MultiplyHMatRandomCompressPostcompute
                   U.Buffer(), U.LDim(),
                   VH.Buffer(), VH.LDim() );
 
-                SVDTrunc( U, Sigma, VH, relTol );
+                SVDTrunc( U, Sigma, VH, relTol, twoNorm );
 
                 hmat_tools::MultiplyTranspose
                 ( Scalar(1), Ztmp, VH, BR_ );
@@ -1709,7 +1710,7 @@ DistHMat3d<Scalar>::MultiplyHMatRandomCompressPostcompute
              BSqrVH_.Buffer(), BSqrVH_.LDim(),
              &work[0], lwork, &rwork[0] );
 
-            SVDTrunc( BSqrU_, BSigma_, BSqrVH_, relTol );
+            SVDTrunc( BSqrU_, BSigma_, BSqrVH_, relTol, twoNorm );
             SFD_.Clear();
         }
         break;
@@ -1771,7 +1772,7 @@ DistHMat3d<Scalar>::MultiplyHMatRandomCompressPostcompute
                   U.Buffer(), U.LDim(),
                   VH.Buffer(), VH.LDim() );
 
-                SVDTrunc( U, Sigma, VH, relTol );
+                SVDTrunc( U, Sigma, VH, relTol, twoNorm );
 
                 for( int j=0; j<Sigma.Size(); ++j )
                     for( int i=0; i<sampleRank; ++i )
@@ -1833,7 +1834,7 @@ DistHMat3d<Scalar>::MultiplyHMatRandomCompressPostcompute
                   U.Buffer(), U.LDim(),
                   VH.Buffer(), VH.LDim() );
 
-                SVDTrunc( U, Sigma, VH, relTol );
+                SVDTrunc( U, Sigma, VH, relTol, twoNorm );
 
                 hmat_tools::MultiplyTranspose
                 ( Scalar(1), Ztmp, VH, BR_ );
@@ -1865,7 +1866,7 @@ DistHMat3d<Scalar>::MultiplyHMatRandomCompressPostcompute
              BSqrVH_.Buffer(), BSqrVH_.LDim(),
              &work[0], lwork, &rwork[0] );
 
-            SVDTrunc( BSqrU_, BSigma_, BSqrVH_, relTol );
+            SVDTrunc( BSqrU_, BSigma_, BSqrVH_, relTol, twoNorm );
         }
         break;
     }

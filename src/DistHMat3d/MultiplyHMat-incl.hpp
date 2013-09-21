@@ -33,23 +33,27 @@ DistHMat3d<Scalar>::Multiply
         throw std::logic_error("Invalid multiplication type");
 #endif
     DistHMat3d<Scalar>& A = *this;
-
+    Real twoNorm;
+    Scalar estimateA = A.ParallelEstimateTwoNorm( 1.5, 3 );
+    Scalar estimateB = B.ParallelEstimateTwoNorm( 1.5, 3 );
+    twoNorm = std::abs(estimateA*estimateB);
 #ifdef MEMORY_INFO
     //ResetMemoryCount();
 #endif
     if( multType == 0 )
-        A.MultiplyHMatSingleUpdateAccumulate( alpha, B, C );
+        A.MultiplyHMatSingleUpdateAccumulate( alpha, B, C, twoNorm );
     else if( multType == 1 )
-        A.MultiplyHMatSingleLevelAccumulate( alpha, B, C );
+        A.MultiplyHMatSingleLevelAccumulate( alpha, B, C, twoNorm );
     else
-        A.MultiplyHMatFullAccumulate( alpha, B, C );
+        A.MultiplyHMatFullAccumulate( alpha, B, C, twoNorm );
 }
 
 template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatFullAccumulate
 ( Scalar alpha, DistHMat3d<Scalar>& B,
-                DistHMat3d<Scalar>& C )
+                DistHMat3d<Scalar>& C,
+  Real twoNorm )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatFullAccumulate");
@@ -183,8 +187,8 @@ DistHMat3d<Scalar>::MultiplyHMatFullAccumulate
 #ifdef TIME_MULTIPLY
     timer.Start( 13 );
 #endif
-    C.MultiplyHMatCompress();
-    //C.MultiplyHMatRandomCompress();
+    C.MultiplyHMatCompress( twoNorm );
+    //C.MultiplyHMatRandomCompress( twoNorm );
 #ifdef TIME_MULTIPLY
     mpi::Barrier( mpi::COMM_WORLD );
     timer.Stop( 13 );
@@ -221,7 +225,7 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatSingleLevelAccumulate
 ( Scalar alpha, DistHMat3d<Scalar>& B,
-                DistHMat3d<Scalar>& C )
+                DistHMat3d<Scalar>& C, Real twoNorm )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatSingleLevelAccumulate");
@@ -237,6 +241,12 @@ DistHMat3d<Scalar>::MultiplyHMatSingleLevelAccumulate
     A.PruneGhostNodes();
     B.PruneGhostNodes();
     C.Clear();
+#ifdef TIME_MULTIPLY
+    const int commRank = mpi::CommRank( mpi::COMM_WORLD );
+    std::ostringstream os;
+    os << "Multiply-singleLevel-" << commRank << ".log";
+    std::ofstream file( os.str().c_str() );
+#endif
 
 #ifdef TIME_MULTIPLY
     Timer timer;
@@ -271,6 +281,7 @@ DistHMat3d<Scalar>::MultiplyHMatSingleLevelAccumulate
         const int endLevel = level+1;
 
 #ifdef TIME_MULTIPLY
+        Timer timer;
         timer.Start( 2 );
 #endif
         A.MultiplyHMatMainPrecompute
@@ -358,36 +369,34 @@ DistHMat3d<Scalar>::MultiplyHMatSingleLevelAccumulate
 #ifdef TIME_MULTIPLY
         timer.Start( 13 );
 #endif
-        C.MultiplyHMatCompress();
-        //C.MultiplyHMatRandomCompress();
+        C.MultiplyHMatCompress( twoNorm );
+        //C.MultiplyHMatRandomCompress( twoNorm );
 #ifdef TIME_MULTIPLY
         mpi::Barrier( mpi::COMM_WORLD );
         timer.Stop( 13 );
+#endif
+#ifdef TIME_MULTIPLY
+        file << "Level: " << level << std::endl;
+        file << "Form ghost nodes: " << timer.GetTime( 0 ) << " seconds.\n"
+             << "Form ghost ranks: " << timer.GetTime( 1 ) << " seconds.\n"
+             << "Main precompute:  " << timer.GetTime( 2 ) << " seconds.\n"
+             << "Main summations:  " << timer.GetTime( 3 ) << " seconds.\n"
+             << "Main pass data:   " << timer.GetTime( 4 ) << " seconds.\n"
+             << "Main broadcasts:  " << timer.GetTime( 5 ) << " seconds.\n"
+             << "Main postcompute: " << timer.GetTime( 6 ) << " seconds.\n"
+             << "FHH precompute:   " << timer.GetTime( 7 ) << " seconds.\n"
+             << "FHH summations:   " << timer.GetTime( 8 ) << " seconds.\n"
+             << "FHH pass data:    " << timer.GetTime( 9 ) << " seconds.\n"
+             << "FHH broadcasts:   " << timer.GetTime( 10 ) << " seconds.\n"
+             << "FHH postcompute:  " << timer.GetTime( 11 ) << " seconds.\n"
+             << "FHH finalize:     " << timer.GetTime( 12 ) << " seconds.\n"
+             << "Compress:         " << timer.GetTime( 13 ) << " seconds.\n"
+             << std::endl;
 #endif
     }
     C.PruneGhostNodes();
 
 #ifdef TIME_MULTIPLY
-    const int commRank = mpi::CommRank( mpi::COMM_WORLD );
-    std::ostringstream os;
-    os << "Multiply-singleLevel-" << commRank << ".log";
-    std::ofstream file( os.str().c_str() );
-
-    file << "Form ghost nodes: " << timer.GetTime( 0 ) << " seconds.\n"
-         << "Form ghost ranks: " << timer.GetTime( 1 ) << " seconds.\n"
-         << "Main precompute:  " << timer.GetTime( 2 ) << " seconds.\n"
-         << "Main summations:  " << timer.GetTime( 3 ) << " seconds.\n"
-         << "Main pass data:   " << timer.GetTime( 4 ) << " seconds.\n"
-         << "Main broadcasts:  " << timer.GetTime( 5 ) << " seconds.\n"
-         << "Main postcompute: " << timer.GetTime( 6 ) << " seconds.\n"
-         << "FHH precompute:   " << timer.GetTime( 7 ) << " seconds.\n"
-         << "FHH summations:   " << timer.GetTime( 8 ) << " seconds.\n"
-         << "FHH pass data:    " << timer.GetTime( 9 ) << " seconds.\n"
-         << "FHH broadcasts:   " << timer.GetTime( 10 ) << " seconds.\n"
-         << "FHH postcompute:  " << timer.GetTime( 11 ) << " seconds.\n"
-         << "FHH finalize:     " << timer.GetTime( 12 ) << " seconds.\n"
-         << "Compress:         " << timer.GetTime( 13 ) << " seconds.\n"
-         << std::endl;
     file.close();
 #endif
 }
@@ -396,7 +405,7 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::MultiplyHMatSingleUpdateAccumulate
 ( Scalar alpha, DistHMat3d<Scalar>& B,
-                DistHMat3d<Scalar>& C )
+                DistHMat3d<Scalar>& C, Real twoNorm )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::MultiplyHMatSingleUpdateAccumulate");
@@ -412,6 +421,13 @@ DistHMat3d<Scalar>::MultiplyHMatSingleUpdateAccumulate
     A.PruneGhostNodes();
     B.PruneGhostNodes();
     C.Clear();
+
+#ifdef TIME_MULTIPLY
+    const int commRank = mpi::CommRank( mpi::COMM_WORLD );
+    std::ostringstream os;
+    os << "Multiply-singleUpdate-" << commRank << ".log";
+    std::ofstream file( os.str().c_str() );
+#endif
 
 #ifdef TIME_MULTIPLY
     Timer timer;
@@ -448,6 +464,7 @@ DistHMat3d<Scalar>::MultiplyHMatSingleUpdateAccumulate
             const int endUpdate = update+1;
 
 #ifdef TIME_MULTIPLY
+            Timer timer;
             timer.Start( 2 );
 #endif
             A.MultiplyHMatMainPrecompute
@@ -535,39 +552,38 @@ DistHMat3d<Scalar>::MultiplyHMatSingleUpdateAccumulate
 #ifdef TIME_MULTIPLY
             timer.Start( 13 );
 #endif
-            C.MultiplyHMatCompress();
-            //C.MultiplyHMatRandomCompress();
+            C.MultiplyHMatCompress( twoNorm );
+            //C.MultiplyHMatRandomCompress( twoNorm );
 #ifdef TIME_MULTIPLY
             mpi::Barrier( mpi::COMM_WORLD );
             timer.Stop( 13 );
 #endif
+
+#ifdef TIME_MULTIPLY
+            file << "Level: " << level << "  Update: " << update << std::endl;
+            file << "Form ghost nodes: " << timer.GetTime( 0 ) << " seconds.\n"
+                 << "Form ghost ranks: " << timer.GetTime( 1 ) << " seconds.\n"
+                 << "Main precompute:  " << timer.GetTime( 2 ) << " seconds.\n"
+                 << "Main summations:  " << timer.GetTime( 3 ) << " seconds.\n"
+                 << "Main pass data:   " << timer.GetTime( 4 ) << " seconds.\n"
+                 << "Main broadcasts:  " << timer.GetTime( 5 ) << " seconds.\n"
+                 << "Main postcompute: " << timer.GetTime( 6 ) << " seconds.\n"
+                 << "FHH precompute:   " << timer.GetTime( 7 ) << " seconds.\n"
+                 << "FHH summations:   " << timer.GetTime( 8 ) << " seconds.\n"
+                 << "FHH pass data:    " << timer.GetTime( 9 ) << " seconds.\n"
+                 << "FHH broadcasts:   " << timer.GetTime( 10 ) << " seconds.\n"
+                 << "FHH postcompute:  " << timer.GetTime( 11 ) << " seconds.\n"
+                 << "FHH finalize:     " << timer.GetTime( 12 ) << " seconds.\n"
+                 << "Compress:         " << timer.GetTime( 13 ) << " seconds.\n"
+                 << std::endl;
+#endif
         }
     }
     C.PruneGhostNodes();
-
 #ifdef TIME_MULTIPLY
-    const int commRank = mpi::CommRank( mpi::COMM_WORLD );
-    std::ostringstream os;
-    os << "Multiply-singleUpdate-" << commRank << ".log";
-    std::ofstream file( os.str().c_str() );
-
-    file << "Form ghost nodes: " << timer.GetTime( 0 ) << " seconds.\n"
-         << "Form ghost ranks: " << timer.GetTime( 1 ) << " seconds.\n"
-         << "Main precompute:  " << timer.GetTime( 2 ) << " seconds.\n"
-         << "Main summations:  " << timer.GetTime( 3 ) << " seconds.\n"
-         << "Main pass data:   " << timer.GetTime( 4 ) << " seconds.\n"
-         << "Main broadcasts:  " << timer.GetTime( 5 ) << " seconds.\n"
-         << "Main postcompute: " << timer.GetTime( 6 ) << " seconds.\n"
-         << "FHH precompute:   " << timer.GetTime( 7 ) << " seconds.\n"
-         << "FHH summations:   " << timer.GetTime( 8 ) << " seconds.\n"
-         << "FHH pass data:    " << timer.GetTime( 9 ) << " seconds.\n"
-         << "FHH broadcasts:   " << timer.GetTime( 10 ) << " seconds.\n"
-         << "FHH postcompute:  " << timer.GetTime( 11 ) << " seconds.\n"
-         << "FHH finalize:     " << timer.GetTime( 12 ) << " seconds.\n"
-         << "Compress:         " << timer.GetTime( 13 ) << " seconds.\n"
-         << std::endl;
     file.close();
 #endif
+
 }
 
 } // namespace dmhm

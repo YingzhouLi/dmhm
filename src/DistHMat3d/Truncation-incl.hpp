@@ -38,7 +38,7 @@ template<typename Scalar>
 void
 DistHMat3d<Scalar>::SVDTrunc
 ( Dense<Scalar>& U, Vector<Real>& s,
-  Dense<Scalar>& VH, Real relTol )
+  Dense<Scalar>& VH, Real relTol, Real twoNorm )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat3d::SVDTrunc");
@@ -49,7 +49,6 @@ DistHMat3d<Scalar>::SVDTrunc
     if( k == 0 )
         return;
 
-    const Real twoNorm = s[0];
     const Real tolerance = relTol*twoNorm;
     int cutoff;
     for( cutoff=std::min( k, MaxRank() )-1; cutoff>=0; --cutoff )
