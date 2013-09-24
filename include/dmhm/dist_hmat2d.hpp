@@ -16,6 +16,7 @@
 
 namespace dmhm {
 
+extern Timer timerGlobal;
 // A distributed H-matrix class that assumes a 2d box domain and requires
 // a power of two number of processes. It does not yet support implicit
 // symmetry.

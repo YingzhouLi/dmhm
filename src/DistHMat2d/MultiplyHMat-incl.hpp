@@ -19,6 +19,10 @@
 
 namespace dmhm {
 
+#ifdef TIME_MULTIPLY
+Timer timerGlobal;
+#endif
+
 // C := alpha A B
 template<typename Scalar>
 void
@@ -71,6 +75,7 @@ DistHMat2d<Scalar>::MultiplyHMatFullAccumulate
     C.Clear();
 
 #ifdef TIME_MULTIPLY
+    timerGlobal.Clear();
     Timer timer;
     mpi::Barrier( mpi::COMM_WORLD );
     timer.Start( 0 );
@@ -216,6 +221,8 @@ DistHMat2d<Scalar>::MultiplyHMatFullAccumulate
          << "FHH postcompute:  " << timer.GetTime( 11 ) << " seconds.\n"
          << "FHH finalize:     " << timer.GetTime( 12 ) << " seconds.\n"
          << "Compress:         " << timer.GetTime( 13 ) << " seconds.\n"
+         << "SVD Compress:     " << timerGlobal.GetTime( 0 ) << " seconds.\n"
+         << "EVD Compress:     " << timerGlobal.GetTime( 1 ) << " seconds.\n"
          << std::endl;
     file.close();
 #endif
@@ -281,6 +288,7 @@ DistHMat2d<Scalar>::MultiplyHMatSingleLevelAccumulate
         const int endLevel = level+1;
 
 #ifdef TIME_MULTIPLY
+        timerGlobal.Clear();
         Timer timer;
         timer.Start( 2 );
 #endif
@@ -391,6 +399,8 @@ DistHMat2d<Scalar>::MultiplyHMatSingleLevelAccumulate
              << "FHH postcompute:  " << timer.GetTime( 11 ) << " seconds.\n"
              << "FHH finalize:     " << timer.GetTime( 12 ) << " seconds.\n"
              << "Compress:         " << timer.GetTime( 13 ) << " seconds.\n"
+             << "SVD Compress:     " << timerGlobal.GetTime( 0 ) << " seconds.\n"
+             << "EVD Compress:     " << timerGlobal.GetTime( 1 ) << " seconds.\n"
              << std::endl;
 #endif
     }
@@ -464,6 +474,7 @@ DistHMat2d<Scalar>::MultiplyHMatSingleUpdateAccumulate
             const int endUpdate = update+1;
 
 #ifdef TIME_MULTIPLY
+            timerGlobal.Clear();
             Timer timer;
             timer.Start( 2 );
 #endif
@@ -575,6 +586,10 @@ DistHMat2d<Scalar>::MultiplyHMatSingleUpdateAccumulate
                  << "FHH postcompute:  " << timer.GetTime( 11 ) << " seconds.\n"
                  << "FHH finalize:     " << timer.GetTime( 12 ) << " seconds.\n"
                  << "Compress:         " << timer.GetTime( 13 ) << " seconds.\n"
+                 << "SVD Compress:     " << timerGlobal.GetTime( 0 ) 
+                                         << " seconds.\n"
+                 << "EVD Compress:     " << timerGlobal.GetTime( 1 )
+                                         << " seconds.\n"
                  << std::endl;
 #endif
         }

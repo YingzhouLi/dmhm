@@ -39,6 +39,7 @@ double peakMemoryUsage=0;
 std::map<int,double> memoryUsageMap;
 std::map<int,double> peakMemoryUsageMap;
 #endif
+
 }
 
 namespace dmhm {

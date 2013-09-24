@@ -538,9 +538,15 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressMidcompute
 
                         const int k = USqr.Height();
                         Vector<Real> USqrEig( k );
+#ifdef TIME_MULTIPLY
+                        timerGlobal.Start( 1 );
+#endif
                         lapack::EVD
                         ( 'V', 'U', k,
                           USqr.Buffer(), USqr.LDim(), &USqrEig[0] );
+#ifdef TIME_MULTIPLY
+                        timerGlobal.Stop( 1 );
+#endif
 
                         //colOmegaT = Omega2' T1
                         Dense<Scalar> OmegaT;
@@ -585,9 +591,15 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressMidcompute
 
                         const int k = USqr.Height();
                         Vector<Real> USqrEig( k );
+#ifdef TIME_MULTIPLY
+                        timerGlobal.Start( 1 );
+#endif
                         lapack::EVD
                         ( 'V', 'U', k,
                           USqr.Buffer(), USqr.LDim(), &USqrEig[0] );
+#ifdef TIME_MULTIPLY
+                        timerGlobal.Stop( 1 );
+#endif
 
                         //colOmegaT = Omega2' T1
                         Dense<Scalar> OmegaT;
