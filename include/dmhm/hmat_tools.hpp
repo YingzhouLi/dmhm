@@ -77,6 +77,11 @@ void Add
 ( Scalar alpha, const Dense<Scalar>& A,
   Scalar beta,  const Dense<Scalar>& B,
                       Dense<Scalar>& C );
+// D := alpha D + beta D
+template<typename Scalar>
+void Axpy
+( Scalar alpha, const Dense<Scalar>& A,
+                Dense<Scalar>& B );
 // F := alpha F + beta F
 template<typename Scalar>
 void Add

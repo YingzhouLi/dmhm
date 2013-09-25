@@ -56,6 +56,29 @@ void Add
     }
 }
 
+// Dense C := alpha A + beta B
+template<typename Scalar>
+void Axpy
+( Scalar alpha, const Dense<Scalar>& A,
+                Dense<Scalar>& B )
+{
+#ifndef RELEASE
+    CallStackEntry entry("hmat_tools::Axpy (D := D + D)");
+    if( A.Height() != B.Height() || A.Width() != B.Width() )
+        throw std::logic_error("Tried to add nonconforming matrices.");
+#endif
+    const int m = A.Height();
+    const int n = A.Width();
+
+    for( int j=0; j<n; ++j )
+    {
+        const Scalar* RESTRICT ACol = A.LockedBuffer(0,j);
+        Scalar* RESTRICT BCol = B.Buffer(0,j);
+        for( int i=0; i<m; ++i )
+            BCol[i] = alpha*ACol[i] + BCol[i];
+    }
+}
+
 // Low-rank C := alpha A + beta B
 template<typename Scalar>
 void Add
@@ -238,6 +261,20 @@ template void Add
 ( std::complex<double> alpha, const Dense<std::complex<double> >& A,
   std::complex<double> beta,  const Dense<std::complex<double> >& B,
                                     Dense<std::complex<double> >& C );
+
+// Dense C := alpha A + beta B
+template void Axpy
+( float alpha, const Dense<float>& A,
+               Dense<float>& B );
+template void Axpy
+( double alpha, const Dense<double>& A,
+                Dense<double>& B );
+template void Axpy
+( std::complex<float> alpha, const Dense<std::complex<float> >& A,
+                             Dense<std::complex<float> >& B );
+template void Axpy
+( std::complex<double> alpha, const Dense<std::complex<double> >& A,
+                              Dense<std::complex<double> >& B );
 
 // Low-rank C := alpha A + beta B
 template void Add

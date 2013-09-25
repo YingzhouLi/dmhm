@@ -193,6 +193,11 @@ public:
     // A := alpha I + A
     void AddConstantToDiagonal( Scalar alpha );
 
+    // B := alpha A + B
+    void Axpy( Scalar alpha, DistHMat2d<Scalar>& B );
+    // B := alpha A + B
+    void AddMatrix( Scalar alpha, DistHMat2d<Scalar>& B );
+
     // estimate ||A||_2
     Real ParallelEstimateTwoNorm( Real theta, Real confidence);
 
