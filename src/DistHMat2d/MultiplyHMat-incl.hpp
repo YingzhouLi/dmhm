@@ -223,6 +223,34 @@ DistHMat2d<Scalar>::MultiplyHMatFullAccumulate
          << "Compress:         " << timer.GetTime( 13 ) << " seconds.\n"
          << "SVD Compress:     " << timerGlobal.GetTime( 0 ) << " seconds.\n"
          << "EVD Compress:     " << timerGlobal.GetTime( 1 ) << " seconds.\n"
+         << "Com Count&Resize: " << timerGlobal.GetTime( 2 ) 
+                                 << " seconds.\n"
+         << "Com LRImport:     " << timerGlobal.GetTime( 3 ) 
+                                 << " seconds.\n"
+         << "Com Precompute:   " << timerGlobal.GetTime( 4 ) 
+                                 << " seconds.\n"
+         << "Com Reduces:      " << timerGlobal.GetTime( 5 ) 
+                                 << " seconds.\n"
+         << "Com EigenDecomp:  " << timerGlobal.GetTime( 6 ) 
+                                 << " seconds.\n"
+         << "Com PassMatrix:   " << timerGlobal.GetTime( 7 ) 
+                                 << " seconds.\n"
+         << "Com PassVector:   " << timerGlobal.GetTime( 8 ) 
+                                 << " seconds.\n"
+         << "Com Midcompute:   " << timerGlobal.GetTime( 9 ) 
+                                 << " seconds.\n"
+         << "Com PassbackNum:  " << timerGlobal.GetTime( 10 ) 
+                                 << " seconds.\n"
+         << "Com PassbackData: " << timerGlobal.GetTime( 11 ) 
+                                 << " seconds.\n"
+         << "Com Postcompute:  " << timerGlobal.GetTime( 12 ) 
+                                 << " seconds.\n"
+         << "Com BcastNum:     " << timerGlobal.GetTime( 13 ) 
+                                 << " seconds.\n"
+         << "Com Bcast:        " << timerGlobal.GetTime( 14 ) 
+                                 << " seconds.\n"
+         << "Com Finalcompute: " << timerGlobal.GetTime( 15 ) 
+                                 << " seconds.\n"
          << std::endl;
     file.close();
 #endif
@@ -401,6 +429,34 @@ DistHMat2d<Scalar>::MultiplyHMatSingleLevelAccumulate
              << "Compress:         " << timer.GetTime( 13 ) << " seconds.\n"
              << "SVD Compress:     " << timerGlobal.GetTime( 0 ) << " seconds.\n"
              << "EVD Compress:     " << timerGlobal.GetTime( 1 ) << " seconds.\n"
+             << "Com Count&Resize: " << timerGlobal.GetTime( 2 ) 
+                                     << " seconds.\n"
+             << "Com LRImport:     " << timerGlobal.GetTime( 3 ) 
+                                     << " seconds.\n"
+             << "Com Precompute:   " << timerGlobal.GetTime( 4 ) 
+                                     << " seconds.\n"
+             << "Com Reduces:      " << timerGlobal.GetTime( 5 ) 
+                                     << " seconds.\n"
+             << "Com EigenDecomp:  " << timerGlobal.GetTime( 6 ) 
+                                     << " seconds.\n"
+             << "Com PassMatrix:   " << timerGlobal.GetTime( 7 ) 
+                                     << " seconds.\n"
+             << "Com PassVector:   " << timerGlobal.GetTime( 8 ) 
+                                     << " seconds.\n"
+             << "Com Midcompute:   " << timerGlobal.GetTime( 9 ) 
+                                     << " seconds.\n"
+             << "Com PassbackNum:  " << timerGlobal.GetTime( 10 ) 
+                                     << " seconds.\n"
+             << "Com PassbackData: " << timerGlobal.GetTime( 11 ) 
+                                     << " seconds.\n"
+             << "Com Postcompute:  " << timerGlobal.GetTime( 12 ) 
+                                     << " seconds.\n"
+             << "Com BcastNum:     " << timerGlobal.GetTime( 13 ) 
+                                     << " seconds.\n"
+             << "Com Bcast:        " << timerGlobal.GetTime( 14 ) 
+                                     << " seconds.\n"
+             << "Com Finalcompute: " << timerGlobal.GetTime( 15 ) 
+                                     << " seconds.\n"
              << std::endl;
 #endif
     }
@@ -589,6 +645,34 @@ DistHMat2d<Scalar>::MultiplyHMatSingleUpdateAccumulate
                  << "SVD Compress:     " << timerGlobal.GetTime( 0 ) 
                                          << " seconds.\n"
                  << "EVD Compress:     " << timerGlobal.GetTime( 1 )
+                                         << " seconds.\n"
+                 << "Com Count&Resize: " << timerGlobal.GetTime( 2 ) 
+                                         << " seconds.\n"
+                 << "Com LRImport:     " << timerGlobal.GetTime( 3 ) 
+                                         << " seconds.\n"
+                 << "Com Precompute:   " << timerGlobal.GetTime( 4 ) 
+                                         << " seconds.\n"
+                 << "Com Reduces:      " << timerGlobal.GetTime( 5 ) 
+                                         << " seconds.\n"
+                 << "Com EigenDecomp:  " << timerGlobal.GetTime( 6 ) 
+                                         << " seconds.\n"
+                 << "Com PassMatrix:   " << timerGlobal.GetTime( 7 ) 
+                                         << " seconds.\n"
+                 << "Com PassVector:   " << timerGlobal.GetTime( 8 ) 
+                                         << " seconds.\n"
+                 << "Com Midcompute:   " << timerGlobal.GetTime( 9 ) 
+                                         << " seconds.\n"
+                 << "Com PassbackNum:  " << timerGlobal.GetTime( 10 ) 
+                                         << " seconds.\n"
+                 << "Com PassbackData: " << timerGlobal.GetTime( 11 ) 
+                                         << " seconds.\n"
+                 << "Com Postcompute:  " << timerGlobal.GetTime( 12 ) 
+                                         << " seconds.\n"
+                 << "Com BcastNum:     " << timerGlobal.GetTime( 13 ) 
+                                         << " seconds.\n"
+                 << "Com Bcast:        " << timerGlobal.GetTime( 14 ) 
+                                         << " seconds.\n"
+                 << "Com Finalcompute: " << timerGlobal.GetTime( 15 ) 
                                          << " seconds.\n"
                  << std::endl;
 #endif
