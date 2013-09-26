@@ -67,6 +67,11 @@ DistHMat2d<Scalar>::SchulzInvert
         DistHMat2d<Scalar> XCopy;
         XCopy.CopyFrom( X );
         Z.Multiply( Scalar(1), XCopy, X, multType );
+
+        XCopy.AdjointFrom( X );
+        XCopy.Axpy( Scalar(1), X );
+        X.Scale( Scalar(0.5) );
+
 #ifndef RELEASE
         {
             mpi::Comm team = teams_->Team(0);
