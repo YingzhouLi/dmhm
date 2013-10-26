@@ -88,10 +88,6 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressPrecompute
                         const int Trank = colU.Width();
                         const int Omegarank = A.rowOmega_.Width();
 
-                        C.colUSqrMap_.Set
-                        ( key, new Dense<Scalar>( Trank, Trank ) );
-                        Dense<Scalar>& colUSqr = C.colUSqrMap_.Get( key );
-
                         C.colPinvMap_.Set
                         ( key, new Dense<Scalar>( Omegarank, Trank ) );
                         Dense<Scalar>& colPinv = C.colPinvMap_.Get( key );
@@ -99,40 +95,9 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressPrecompute
                         C.BLMap_.Set
                         ( key, new Dense<Scalar>( Trank, Trank ) );
 
-                        //_colUSqr = ( A B Omega1)' ( A B Omega1 )
-                        hmat_tools::AdjointMultiply
-                        ( Scalar(1), colU, colU, colUSqr );
-
                         //_colPinv = Omega2' (A B Omega1)
                         hmat_tools::AdjointMultiply
                         ( Scalar(1), A.rowOmega_, colU, colPinv );
-                    }
-                    if( C.inSourceTeam_ )
-                    {
-                        const int key = A.sourceOffset_;
-                        const Dense<Scalar>& rowU = C.rowXMap_.Get( key );
-                        const int Trank = rowU.Width();
-                        const int Omegarank = B.colOmega_.Width();
-
-                        C.rowUSqrMap_.Set
-                        ( key, new Dense<Scalar>( Trank, Trank ) );
-                        Dense<Scalar>& rowUSqr = C.rowUSqrMap_.Get( key );
-
-                        C.rowPinvMap_.Set
-                        ( key, new Dense<Scalar>( Omegarank, Trank ) );
-                        Dense<Scalar>& rowPinv = C.rowPinvMap_.Get( key );
-
-                        C.BRMap_.Set
-                        ( key, new Dense<Scalar>( Trank, Omegarank ) );
-
-                        //_rowUSqr = ( B' A' Omega2 )' ( B' A' Omega2 )
-                        // TODO: Replace this with a Herk call...
-                        hmat_tools::AdjointMultiply
-                        ( Scalar(1), rowU, rowU, rowUSqr );
-
-                        //_rowPinv = Omega1' (B' A' Omega2)
-                        hmat_tools::AdjointMultiply
-                        ( Scalar(1), B.colOmega_, rowU, rowPinv );
                     }
                 }
             }
@@ -238,17 +203,8 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressReducesCount
                     const int key = A.sourceOffset_;
                     if( C.inTargetTeam_ )
                     {
-                        const Dense<Scalar>& colUSqr = C.colUSqrMap_.Get( key );
                         const Dense<Scalar>& colPinv = C.colPinvMap_.Get( key );
-                        sizes[C.level_] += colUSqr.Height()*colUSqr.Width();
                         sizes[C.level_] += colPinv.Height()*colPinv.Width();
-                    }
-                    if( C.inSourceTeam_ )
-                    {
-                        const Dense<Scalar>& rowUSqr = C.rowUSqrMap_.Get( key );
-                        const Dense<Scalar>& rowPinv = C.rowPinvMap_.Get( key );
-                        sizes[C.level_] += rowUSqr.Height()*rowUSqr.Width();
-                        sizes[C.level_] += rowPinv.Height()*rowPinv.Width();
                     }
                 }
             }
@@ -318,35 +274,11 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressReducesPack
                     int size;
                     if( C.inTargetTeam_ )
                     {
-                        const Dense<Scalar>& colUSqr = C.colUSqrMap_.Get( key );
                         const Dense<Scalar>& colPinv = C.colPinvMap_.Get( key );
-
-                        size = colUSqr.Height()*colUSqr.Width();
-                        MemCopy
-                        ( &buffer[offsets[C.level_]], colUSqr.LockedBuffer(),
-                          size );
-                        offsets[C.level_] += size;
 
                         size = colPinv.Height()*colPinv.Width();
                         MemCopy
                         ( &buffer[offsets[C.level_]], colPinv.LockedBuffer(),
-                          size );
-                        offsets[C.level_] += size;
-                    }
-                    if( C.inSourceTeam_ )
-                    {
-                        const Dense<Scalar>& rowUSqr = C.rowUSqrMap_.Get( key );
-                        const Dense<Scalar>& rowPinv = C.rowPinvMap_.Get( key );
-
-                        size = rowUSqr.Height()*rowUSqr.Width();
-                        MemCopy
-                        ( &buffer[offsets[C.level_]], rowUSqr.LockedBuffer(),
-                          size );
-                        offsets[C.level_] += size;
-
-                        size = rowPinv.Height()*rowPinv.Width();
-                        MemCopy
-                        ( &buffer[offsets[C.level_]], rowPinv.LockedBuffer(),
                           size );
                         offsets[C.level_] += size;
                     }
@@ -431,35 +363,11 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressReducesUnpack
                     int size;
                     if( C.inTargetTeam_ && teamRank == 0 )
                     {
-                        Dense<Scalar>& colUSqr = C.colUSqrMap_.Get( key );
                         Dense<Scalar>& colPinv = C.colPinvMap_.Get( key );
-
-                        size = colUSqr.Height()*colUSqr.Width();
-                        MemCopy
-                        ( colUSqr.Buffer(), &buffer[offsets[C.level_]],
-                          size );
-                        offsets[C.level_] += size;
 
                         size = colPinv.Height()*colPinv.Width();
                         MemCopy
                         ( colPinv.Buffer(), &buffer[offsets[C.level_]],
-                          size );
-                        offsets[C.level_] += size;
-                    }
-                    if( C.inSourceTeam_ && teamRank == 0 )
-                    {
-                        Dense<Scalar>& rowUSqr = C.rowUSqrMap_.Get( key );
-                        Dense<Scalar>& rowPinv = C.rowPinvMap_.Get( key );
-
-                        size = rowUSqr.Height()*rowUSqr.Width();
-                        MemCopy
-                        ( rowUSqr.Buffer(), &buffer[offsets[C.level_]],
-                          size );
-                        offsets[C.level_] += size;
-
-                        size = rowPinv.Height()*rowPinv.Width();
-                        MemCopy
-                        ( rowPinv.Buffer(), &buffer[offsets[C.level_]],
                           size );
                         offsets[C.level_] += size;
                     }
@@ -532,106 +440,16 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressMidcompute
                     const int key = A.sourceOffset_;
                     if( C.inTargetTeam_ )
                     {
-                        Dense<Scalar>& USqr = C.colUSqrMap_.Get( key );
                         Dense<Scalar>& Pinv = C.colPinvMap_.Get( key );
                         Dense<Scalar>& BL = C.BLMap_.Get( key );
 
-                        const int k = USqr.Height();
-                        Vector<Real> USqrEig( k );
-#ifdef TIME_MULTIPLY
-                        timerGlobal.Start( 1 );
-#endif
-                        lapack::EVD
-                        ( 'V', 'U', k,
-                          USqr.Buffer(), USqr.LDim(), &USqrEig[0] );
-#ifdef TIME_MULTIPLY
-                        timerGlobal.Stop( 1 );
-#endif
-
-                        //colOmegaT = Omega2' T1
-                        Dense<Scalar> OmegaT;
-                        hmat_tools::Copy( Pinv, OmegaT );
-
-                        Real maxEig = 0;
-                        if( k > 0 )
-                            maxEig = std::max( USqrEig[k-1], Real(0) );
-
-                        // TODO: Iterate backwards to compute cutoff in manner
-                        //       similar to AdjointPseudoInverse
-                        const Real tolerance = sqrt(epsilon*maxEig*k);
-                        for( int j=0; j<k; j++ )
-                        {
-                            const Real omega = std::max( USqrEig[j], Real(0) );
-                            const Real sqrtOmega = sqrt( omega );
-                            if( sqrtOmega > tolerance )
-                                for( int i=0; i<k; ++i )
-                                    USqr.Set(i,j,USqr.Get(i,j)/sqrtOmega);
-                            else
-                                MemZero( USqr.Buffer(0,j), k );
-                        }
-
-                        hmat_tools::Multiply( Scalar(1), OmegaT, USqr, Pinv );
+                        const int k = Pinv.Height();
 
                         lapack::AdjointPseudoInverse
                         ( Pinv.Height(), Pinv.Width(),
                           Pinv.Buffer(), Pinv.LDim(), epsilon );
 
-                        Dense<Scalar> Ztmp;
-                        hmat_tools::MultiplyAdjoint
-                        ( Scalar(1), USqr, Pinv, Ztmp );
-
-                        hmat_tools::Multiply
-                        ( Scalar(1), Ztmp, OmegaT, BL );
-                    }
-                    if( C.inSourceTeam_ )
-                    {
-                        Dense<Scalar>& USqr = C.rowUSqrMap_.Get( key );
-                        Dense<Scalar>& Pinv = C.rowPinvMap_.Get( key );
-                        Dense<Scalar>& BR = C.BRMap_.Get( key );
-
-                        const int k = USqr.Height();
-                        Vector<Real> USqrEig( k );
-#ifdef TIME_MULTIPLY
-                        timerGlobal.Start( 1 );
-#endif
-                        lapack::EVD
-                        ( 'V', 'U', k,
-                          USqr.Buffer(), USqr.LDim(), &USqrEig[0] );
-#ifdef TIME_MULTIPLY
-                        timerGlobal.Stop( 1 );
-#endif
-
-                        //colOmegaT = Omega2' T1
-                        Dense<Scalar> OmegaT;
-                        hmat_tools::Copy( Pinv, OmegaT );
-
-                        Real maxEig = 0;
-                        if( k > 0 )
-                            maxEig = std::max( USqrEig[k-1], Real(0) );
-
-                        // TODO: Iterate backwards to compute cutoff in manner
-                        //       similar to AdjointPseudoInverse
-                        const Real tolerance = sqrt(epsilon*maxEig*k);
-                        for( int j=0; j<k; j++ )
-                        {
-                            const Real omega = std::max( USqrEig[j], Real(0) );
-                            const Real sqrtOmega = sqrt( omega );
-                            if( sqrtOmega > tolerance )
-                                for( int i=0; i<k; ++i )
-                                    USqr.Set(i,j,USqr.Get(i,j)/sqrtOmega);
-                            else
-                                MemZero( USqr.Buffer(0,j), k );
-                        }
-
-                        hmat_tools::Multiply
-                        ( Scalar(1), OmegaT, USqr, Pinv );
-
-                        lapack::AdjointPseudoInverse
-                        ( Pinv.Height(), Pinv.Width(),
-                          Pinv.Buffer(), Pinv.LDim(), epsilon );
-
-                        hmat_tools::MultiplyAdjoint
-                        ( Scalar(1), USqr, Pinv, BR );
+                        hmat_tools::Adjoint( Pinv, BL );
                     }
                 }
             }
@@ -740,11 +558,6 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressBroadcastsCount
                         const Dense<Scalar>& BL = C.BLMap_.Get( key );
                         sizes[C.level_] += BL.Height()*BL.Width();
                     }
-                    if( C.inSourceTeam_ )
-                    {
-                        const Dense<Scalar>& BR = C.BRMap_.Get( key );
-                        sizes[C.level_] += BR.Height()*BR.Width();
-                    }
                 }
             }
             else if( C.level_+1 < endLevel )
@@ -820,15 +633,6 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressBroadcastsPack
                             int size = BL.Height()*BL.Width();
                             MemCopy
                             ( &buffer[offsets[C.level_]], BL.LockedBuffer(),
-                              size );
-                            offsets[C.level_] += size;
-                        }
-                        if( C.inSourceTeam_ )
-                        {
-                            const Dense<Scalar>& BR = C.BRMap_.Get( key );
-                            int size = BR.Height()*BR.Width();
-                            MemCopy
-                            ( &buffer[offsets[C.level_]], BR.LockedBuffer(),
                               size );
                             offsets[C.level_] += size;
                         }
@@ -918,15 +722,6 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressBroadcastsUnpack
                           size );
                         offsets[C.level_] += size;
                     }
-                    if( C.inSourceTeam_ )
-                    {
-                        Dense<Scalar>& BR = C.BRMap_.Get( key );
-                        int size = BR.Height()*BR.Width();
-                        MemCopy
-                        ( BR.Buffer(), &buffer[offsets[C.level_]],
-                          size );
-                        offsets[C.level_] += size;
-                    }
                 }
             }
             else if( C.level_+1 < endLevel )
@@ -1000,12 +795,8 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompressPostcompute
                     }
                     if( C.inSourceTeam_ )
                     {
-                        Dense<Scalar>& BR = C.BRMap_.Get( key );
                         Dense<Scalar>& rowU = C.rowXMap_.Get( key );
-                        Dense<Scalar> Ztmp;
-                        hmat_tools::Multiply
-                        ( Scalar(1), rowU, BR, Ztmp );
-                        hmat_tools::Conjugate( Ztmp, rowU );
+                        hmat_tools::Conjugate( rowU );
                     }
                 }
             }

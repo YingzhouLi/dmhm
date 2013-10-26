@@ -466,6 +466,7 @@ Dense<Scalar>::Print( const std::string tag, std::ostream& os ) const
 #ifndef RELEASE
     CallStackEntry entry("Dense::Print");
 #endif
+    os.precision(15);
     os << tag << "\n";
     if( type_ == SYMMETRIC )
     {
