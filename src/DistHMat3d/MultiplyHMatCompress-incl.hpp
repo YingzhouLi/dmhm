@@ -33,8 +33,23 @@ DistHMat3d<Scalar>::MultiplyHMatCompress( Real twoNorm )
 #endif
 
     maxRankCount = 0;
+
+#ifdef TIME_MULTIPLY
+    mpi::Barrier( mpi::COMM_WORLD );
+    timerGlobal.Start( 2 );
+#endif
     MultiplyHMatCompressLowRankCountAndResize(0);
+#ifdef TIME_MULTIPLY
+    mpi::Barrier( mpi::COMM_WORLD );
+    timerGlobal.Stop( 2 );
+    timerGlobal.Start( 3 );
+#endif
     MultiplyHMatCompressLowRankImport(0);
+#ifdef TIME_MULTIPLY
+    mpi::Barrier( mpi::COMM_WORLD );
+    timerGlobal.Stop( 3 );
+    timerGlobal.Start( 4 );
+#endif
 #ifdef MEMORY_INFO
     PrintGlobal( double(maxRankCount), "Max Rank Number: ");
     PrintGlobal( PeakMemoryUsage( 2 )/1024./1024.,
@@ -47,12 +62,37 @@ DistHMat3d<Scalar>::MultiplyHMatCompress( Real twoNorm )
 #endif
 
     MultiplyHMatCompressFPrecompute();
+#ifdef TIME_MULTIPLY
+    mpi::Barrier( mpi::COMM_WORLD );
+    timerGlobal.Stop( 4 );
+    timerGlobal.Start( 5 );
+#endif
     MultiplyHMatCompressFReduces();
+#ifdef TIME_MULTIPLY
+    mpi::Barrier( mpi::COMM_WORLD );
+    timerGlobal.Stop( 5 );
+    timerGlobal.Start( 6 );
+#endif
 
     MultiplyHMatCompressFEigenDecomp();
+#ifdef TIME_MULTIPLY
+    mpi::Barrier( mpi::COMM_WORLD );
+    timerGlobal.Stop( 6 );
+    timerGlobal.Start( 7 );
+#endif
     MultiplyHMatCompressFPassMatrix();
+#ifdef TIME_MULTIPLY
+    mpi::Barrier( mpi::COMM_WORLD );
+    timerGlobal.Stop( 7 );
+    timerGlobal.Start( 8 );
+#endif
     MultiplyHMatCompressFPassVector();
 
+#ifdef TIME_MULTIPLY
+    mpi::Barrier( mpi::COMM_WORLD );
+    timerGlobal.Stop( 8 );
+    timerGlobal.Start( 9 );
+#endif
     // Compute sigma_1 V1' V2 sigma_2, the middle part of UV'
     // We use B to state the mid part of UV' that is
     // B = sigma_1 V1' V2 sigma_2.
@@ -62,8 +102,23 @@ DistHMat3d<Scalar>::MultiplyHMatCompress( Real twoNorm )
     //
     const Real midcomputeTol = MidcomputeTolerance<Real>();
     MultiplyHMatCompressFMidcompute( midcomputeTol, twoNorm );
+#ifdef TIME_MULTIPLY
+    mpi::Barrier( mpi::COMM_WORLD );
+    timerGlobal.Stop( 9 );
+    timerGlobal.Start( 10 );
+#endif
     MultiplyHMatCompressFPassbackNum();
+#ifdef TIME_MULTIPLY
+    mpi::Barrier( mpi::COMM_WORLD );
+    timerGlobal.Stop( 10 );
+    timerGlobal.Start( 11 );
+#endif
     MultiplyHMatCompressFPassbackData();
+#ifdef TIME_MULTIPLY
+    mpi::Barrier( mpi::COMM_WORLD );
+    timerGlobal.Stop( 11 );
+    timerGlobal.Start( 12 );
+#endif
 
     // Compute USqr*sqrt(USqrEig)^-1 BSqrU BSigma = BL
     // We overwrite the USqr = USqr*sqrt(USqrEig)^-1
@@ -73,11 +128,30 @@ DistHMat3d<Scalar>::MultiplyHMatCompress( Real twoNorm )
     //
     const Real compressionTol = CompressionTolerance<Real>();
     MultiplyHMatCompressFPostcompute( compressionTol );
+#ifdef TIME_MULTIPLY
+    mpi::Barrier( mpi::COMM_WORLD );
+    timerGlobal.Stop( 12 );
+    timerGlobal.Start( 13 );
+#endif
 
     MultiplyHMatCompressFBroadcastsNum();
+#ifdef TIME_MULTIPLY
+    mpi::Barrier( mpi::COMM_WORLD );
+    timerGlobal.Stop( 13 );
+    timerGlobal.Start( 14 );
+#endif
     MultiplyHMatCompressFBroadcasts();
+#ifdef TIME_MULTIPLY
+    mpi::Barrier( mpi::COMM_WORLD );
+    timerGlobal.Stop( 14 );
+    timerGlobal.Start( 15 );
+#endif
     // Compute the final U and V store in the usual space.
     MultiplyHMatCompressFFinalcompute();
+#ifdef TIME_MULTIPLY
+    mpi::Barrier( mpi::COMM_WORLD );
+    timerGlobal.Stop( 15 );
+#endif
 
 #ifdef MEMORY_INFO
     PrintGlobal( PeakMemoryUsage()/1024./1024., "Peak Memory(MB): " );
@@ -1285,16 +1359,28 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFEigenDecomp()
             // Calculate Eigenvalues of Squared Matrix
             if( inTargetTeam_ )
             {
+#ifdef TIME_MULTIPLY
+                timerGlobal.Start( 1 );
+#endif
                 lapack::EVD
                 ( 'V', 'U', USqr_.Height(),
                   USqr_.Buffer(), USqr_.LDim(), &USqrEig_[0] );
+#ifdef TIME_MULTIPLY
+                timerGlobal.Stop( 1 );
+#endif
             }
 
             if( inSourceTeam_ )
             {
+#ifdef TIME_MULTIPLY
+                timerGlobal.Start( 1 );
+#endif
                 lapack::EVD
                 ( 'V', 'U', VSqr_.Height(),
                   VSqr_.Buffer(), VSqr_.LDim(), &VSqrEig_[0] );
+#ifdef TIME_MULTIPLY
+                timerGlobal.Stop( 1 );
+#endif
             }
         }
         break;
@@ -1313,16 +1399,28 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFEigenDecomp()
         {
             if( inTargetTeam_ )
             {
+#ifdef TIME_MULTIPLY
+                timerGlobal.Start( 1 );
+#endif
                 lapack::EVD
                 ( 'V', 'U', USqr_.Height(),
                   USqr_.Buffer(), USqr_.LDim(), &USqrEig_[0] );
+#ifdef TIME_MULTIPLY
+                timerGlobal.Stop( 1 );
+#endif
             }
 
             if( inSourceTeam_ )
             {
+#ifdef TIME_MULTIPLY
+                timerGlobal.Start( 1 );
+#endif
                 lapack::EVD
                 ( 'V', 'U', VSqr_.Height(),
                   VSqr_.Buffer(), VSqr_.LDim(), &VSqrEig_[0] );
+#ifdef TIME_MULTIPLY
+                timerGlobal.Stop( 1 );
+#endif
             }
         }
         break;
@@ -1338,6 +1436,9 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFEigenDecomp()
 
         if( LH > totalrank && LW > totalrank && totalrank > MaxRank() )
         {
+#ifdef TIME_MULTIPLY
+            timerGlobal.Start( 1 );
+#endif
             lapack::EVD
             ( 'V', 'U', USqr_.Height(),
               USqr_.Buffer(), USqr_.LDim(), &USqrEig_[0] );
@@ -1345,6 +1446,9 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFEigenDecomp()
             lapack::EVD
             ( 'V', 'U', VSqr_.Height(),
               VSqr_.Buffer(), VSqr_.LDim(), &VSqrEig_[0] );
+#ifdef TIME_MULTIPLY
+            timerGlobal.Stop( 1 );
+#endif
         }
         break;
     }
@@ -2013,12 +2117,18 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFMidcompute
             const int lrwork = lapack::SVDRealWorkSize(k,k);
             Vector<Scalar> work(lwork);
             Vector<Real> rwork(lrwork);
+#ifdef TIME_MULTIPLY
+            timerGlobal.Start( 0 );
+#endif
             lapack::SVD
             ('S', 'S' ,k ,k,
              BSqr.Buffer(), BSqr.LDim(), &BSigma_[0],
              BSqrU_.Buffer(), BSqrU_.LDim(),
              BSqrVH_.Buffer(), BSqrVH_.LDim(),
              &work[0], lwork, &rwork[0] );
+#ifdef TIME_MULTIPLY
+            timerGlobal.Stop( 0 );
+#endif
 
             SVDTrunc( BSqrU_, BSigma_, BSqrVH_, relTol, twoNorm );
         }
@@ -2065,12 +2175,18 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFMidcompute
                 const int lrwork = lapack::SVDRealWorkSize(k,k);
                 Vector<Scalar> work(lwork);
                 Vector<Real> rwork(lrwork);
+#ifdef TIME_MULTIPLY
+                timerGlobal.Start( 0 );
+#endif
                 lapack::SVD
                 ('S', 'S' ,k ,k,
                  BSqr.Buffer(), BSqr.LDim(), &BSigma_[0],
                  BSqrU_.Buffer(), BSqrU_.LDim(),
                  BSqrVH_.Buffer(), BSqrVH_.LDim(),
                  &work[0], lwork, &rwork[0] );
+#ifdef TIME_MULTIPLY
+                timerGlobal.Stop( 0 );
+#endif
 
                 SVDTrunc( BSqrU_, BSigma_, BSqrVH_, relTol, twoNorm );
             }
@@ -2094,12 +2210,18 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFMidcompute
             const int lrwork = lapack::SVDRealWorkSize(LH,LW);
             Vector<Scalar> work(lwork);
             Vector<Real> rwork(lrwork);
+#ifdef TIME_MULTIPLY
+            timerGlobal.Start( 0 );
+#endif
             lapack::SVD
             ('S', 'S' , LH, LW,
              B.Buffer(), B.LDim(), &BSigma_[0],
              BSqrU_.Buffer(), BSqrU_.LDim(),
              BSqrVH_.Buffer(), BSqrVH_.LDim(),
              &work[0], lwork, &rwork[0] );
+#ifdef TIME_MULTIPLY
+            timerGlobal.Stop( 0 );
+#endif
 
             SVDTrunc( BSqrU_, BSigma_, BSqrVH_, relTol, twoNorm );
             SFD_.Clear();
@@ -2145,12 +2267,18 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFMidcompute
             const int lrwork = lapack::SVDRealWorkSize(k,k);
             Vector<Scalar> work(lwork);
             Vector<Real> rwork(lrwork);
+#ifdef TIME_MULTIPLY
+            timerGlobal.Start( 0 );
+#endif
             lapack::SVD
             ('S', 'S' ,k ,k,
              BSqr.Buffer(), BSqr.LDim(), &BSigma_[0],
              BSqrU_.Buffer(), BSqrU_.LDim(),
              BSqrVH_.Buffer(), BSqrVH_.LDim(),
              &work[0], lwork, &rwork[0] );
+#ifdef TIME_MULTIPLY
+            timerGlobal.Stop( 0 );
+#endif
 
             SVDTrunc( BSqrU_, BSigma_, BSqrVH_, relTol, twoNorm );
         }
@@ -2170,12 +2298,18 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFMidcompute
             const int lrwork = lapack::SVDRealWorkSize(LH,LW);
             Vector<Scalar> work(lwork);
             Vector<Real> rwork(lrwork);
+#ifdef TIME_MULTIPLY
+            timerGlobal.Start( 0 );
+#endif
             lapack::SVD
             ('S', 'S' , LH, LW,
              B.Buffer(), B.LDim(), &BSigma_[0],
              BSqrU_.Buffer(), BSqrU_.LDim(),
              BSqrVH_.Buffer(), BSqrVH_.LDim(),
              &work[0], lwork, &rwork[0] );
+#ifdef TIME_MULTIPLY
+            timerGlobal.Stop( 0 );
+#endif
 
             SVDTrunc( BSqrU_, BSigma_, BSqrVH_, relTol, twoNorm );
         }
@@ -3493,10 +3627,16 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFFinalcompute()
                 Vector<Real> realwork( lapack::SVDRealWorkSize(m,n) );
                 if( inTargetTeam_ )
                 {
+#ifdef TIME_MULTIPLY
+                    timerGlobal.Start( 0 );
+#endif
                     lapack::SVD
                     ( 'O', 'N', m, n, D_.Buffer(), D_.LDim(),
                       &sigma[0], 0, 1, 0, 1,
                       &work[0], work.Size(), &realwork[0] );
+#ifdef TIME_MULTIPLY
+                    timerGlobal.Stop( 0 );
+#endif
 
                     SF.D.Resize( m, maxRank );
                     SF.D.Init();
@@ -3506,10 +3646,16 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFFinalcompute()
                 }
                 else
                 {
+#ifdef TIME_MULTIPLY
+                    timerGlobal.Start( 0 );
+#endif
                     lapack::SVD
                     ( 'N', 'O', m, n, D_.Buffer(), D_.LDim(),
                       &sigma[0], 0, 1, 0, 1,
                       &work[0], work.Size(), &realwork[0] );
+#ifdef TIME_MULTIPLY
+                    timerGlobal.Stop( 0 );
+#endif
 
                     SF.D.Resize( n, maxRank );
                     SF.D.Init();
@@ -3598,10 +3744,16 @@ DistHMat3d<Scalar>::MultiplyHMatCompressFFinalcompute()
                 Vector<Real> sigma( minDim );
                 Vector<Scalar> work( lapack::SVDWorkSize(m,n) );
                 Vector<Real> realWork( lapack::SVDRealWorkSize(m,n) );
+#ifdef TIME_MULTIPLY
+                timerGlobal.Start( 0 );
+#endif
                 lapack::SVD
                 ( 'O', 'S', m, n, D_.Buffer(), D_.LDim(),
                   &sigma[0], 0, 1, VH.Buffer(), VH.LDim(),
                   &work[0], work.Size(), &realWork[0] );
+#ifdef TIME_MULTIPLY
+                timerGlobal.Stop( 0 );
+#endif
 
                 // Form U with the truncated left singular vectors scaled
                 // by the corresponding singular values

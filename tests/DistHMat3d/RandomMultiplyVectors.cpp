@@ -42,6 +42,10 @@ main( int argc, char* argv[] )
         DistHMat A
         ( numLevels, maxRank, strong, xSize, ySize, zSize, teams );
         A.SetToRandom();
+#ifdef MEMORY_INFO
+        A.PrintGlobalMemoryInfo("Matrix Memory: ");
+        PrintGlobal( PeakMemoryUsage()/1024./1024., "Peak Memory: ");
+#endif
         const double createStopTime = mpi::Time();
         if( commRank == 0 )
         {

@@ -16,8 +16,10 @@
 
 namespace dmhm {
 
-// A distributed H-matrix class that assumes a 3d box and a power-of-two number
-// of processes. It does not yet support implicit symmetry.
+extern Timer timerGlobal;
+// A distributed H-matrix class that assumes a 3d box domain and requires
+// a power of two number of processes. It does not yet support implicit
+// symmetry.
 template<typename Scalar>
 class DistHMat3d
 {
@@ -191,6 +193,11 @@ public:
 
     // A := alpha I + A
     void AddConstantToDiagonal( Scalar alpha );
+
+    // B := alpha A + B
+    void Axpy( Scalar alpha, DistHMat3d<Scalar>& B );
+    // B := alpha A + B
+    void AddMatrix( Scalar alpha, DistHMat3d<Scalar>& B );
 
     // estimate ||A||_2
     Real ParallelEstimateTwoNorm( Real theta, Real confidence);

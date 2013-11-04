@@ -51,10 +51,38 @@ DistHMat3d<Scalar>::SchulzInvert
         DistHMat3d<Scalar> Z;
         X.Multiply( Scalar(-1), *this, Z, multType );
         Z.AddConstantToDiagonal( Scalar(2) );
+#ifndef RELEASE
+        {
+            mpi::Comm team = teams_->Team(0);
+            const int teamRank = mpi::CommRank( team );
+            const Scalar normestimate =
+                Z.ParallelEstimateTwoNorm( theta, confidence );
+
+            if( teamRank == 0 )
+                std::cout << "2-Norm of 2I - X_k A:  " << normestimate
+                          << std::endl;
+        }
+#endif
         // Form X_k+1 := Z X_k = (2I - X_k A) X_k
         DistHMat3d<Scalar> XCopy;
         XCopy.CopyFrom( X );
         Z.Multiply( Scalar(1), XCopy, X, multType );
+
+        XCopy.AdjointFrom( X );
+        XCopy.Axpy( Scalar(1), X );
+        X.Scale( Scalar(0.5) );
+
+#ifndef RELEASE
+        {
+            mpi::Comm team = teams_->Team(0);
+            const int teamRank = mpi::CommRank( team );
+            const Scalar normestimate =
+                X.ParallelEstimateTwoNorm( theta, confidence );
+            if( teamRank == 0 )
+                std::cout << "2-Norm of X_{k+1}:  " << normestimate
+                          << std::endl;
+        }
+#endif
     }
 
     CopyFrom( X );

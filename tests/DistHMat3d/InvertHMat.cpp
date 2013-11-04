@@ -203,7 +203,9 @@ main( int argc, char* argv[] )
         double SchulzInvertStartTime = mpi::Time();
         A.SchulzInvert(schuN, multType);
         B.CopyFrom(A);
+#ifdef MEMORY_INFO
         A.PrintGlobalMemoryInfo("Matrix Memory: ");
+#endif
         mpi::Barrier( mpi::COMM_WORLD );
         double SchulzInvertStopTime = mpi::Time();
         if( commRank == 0 )
