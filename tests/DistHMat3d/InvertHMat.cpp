@@ -85,16 +85,16 @@ main( int argc, char* argv[] )
         const int numLevels = Input("--numLevels","depth of H-matrix tree",4);
         const bool strong = Input("--strong","strongly admissible?",false);
         const int maxRank = Input("--maxRank","maximum rank of block",5);
-        const int multType = Input("--multType","multiply type",2);
+        const int multType = Input("--multType","multiply type",0);
         const bool print = Input("--print","print matrices?",false);
         const bool structure = Input("--structure","print structure?",false);
         const bool multI = Input("--multI","multiply by identity?",false);
         const int schuN = Input("--schuN","Iteration number of Schulz invert",15);
         const int oversample = Input("--oversample","num extra basis vecs",4);
         const double midcomputeTol =
-            Input("--midcomputeTol","tolerance for midcompute stage",1e-16);
+            Input("--midcomputeTol","tolerance for midcompute stage",1e-8);
         const double compressionTol =
-            Input("--compressionTol","tolerance for compression",1e-16);
+            Input("--compressionTol","tolerance for compression",1e-8);
         ProcessInput();
         PrintInputReport();
 
