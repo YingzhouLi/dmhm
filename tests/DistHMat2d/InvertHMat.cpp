@@ -12,46 +12,58 @@ using namespace dmhm;
 template<typename Real>
 void
 FormRow
-( int x, int y, int xSize, int ySize,
-  Vector<std::complex<Real> >& row, Vector<int>& colIndices )
+( int x, int y, int xSize, int ySize, double h,
+ Dense<std::complex<Real> >& DA, Dense<std::complex<Real> >& DV,
+ Vector<std::complex<Real> >& row, Vector<int>& colIndices )
 {
     typedef std::complex<Real> Scalar;
     const int rowIdx = x + xSize*y;
+    double hh = h*h;
 
     row.Resize( 0 );
     colIndices.Resize( 0 );
 
-    // Set up the diagonal entry
-    colIndices.PushBack( rowIdx );
-    row.PushBack( Scalar(4) );
+    Scalar cv = DV.Get(x,y);
 
     // Front connection to (x-1,y)
     if( x != 0 )
     {
         colIndices.PushBack( (x-1) + xSize*y );
-        row.PushBack( Scalar(-1) );
+        Scalar coef = (DA.Get(x-1,y) + DA.Get(x,y)) / hh / 2.0;
+        row.PushBack( -coef );
+        cv += coef;
     }
 
     // Back connection to (x+1,y)
     if( x != xSize-1 )
     {
         colIndices.PushBack( (x+1) + xSize*y );
-        row.PushBack( Scalar(-1) );
+        Scalar coef = (DA.Get(x+1,y) + DA.Get(x,y)) / hh / 2.0;
+        row.PushBack( -coef );
+        cv += coef;
     }
 
     // Left connection to (x,y-1)
     if( y != 0 )
     {
         colIndices.PushBack( x + xSize*(y-1) );
-        row.PushBack( Scalar(-1) );
+        Scalar coef = (DA.Get(x,y-1) + DA.Get(x,y)) / hh / 2.0;
+        row.PushBack( -coef );
+        cv += coef;
     }
 
     // Right connection to (x,y+1)
     if( y != ySize-1 )
     {
         colIndices.PushBack( x + xSize*(y+1) );
-        row.PushBack( Scalar(-1) );
+        Scalar coef = (DA.Get(x,y+1) + DA.Get(x,y)) / hh / 2.0;
+        row.PushBack( -coef );
+        cv += coef;
     }
+
+    // Set up the diagonal entry
+    colIndices.PushBack( rowIdx );
+    row.PushBack( (Scalar)cv );
 }
 
 int
@@ -70,16 +82,16 @@ main( int argc, char* argv[] )
         const int numLevels = Input("--numLevels","depth of H-matrix tree",4);
         const bool strong = Input("--strong","strongly admissible?",false);
         const int maxRank = Input("--maxRank","maximum rank of block",5);
-        const int multType = Input("--multType","multiply type",2);
+        const int multType = Input("--multType","multiply type",0);
         const bool print = Input("--print","print matrices?",false);
         const bool structure = Input("--structure","print structure?",false);
         const bool multI = Input("--multI","multiply by identity?",false);
         const int schuN = Input("--schuN","Iteration number of Schulz invert",15);
         const int oversample = Input("--oversample","num extra basis vecs",4);
         const double midcomputeTol =
-            Input("--midcomputeTol","tolerance for midcompute stage",1e-16);
+            Input("--midcomputeTol","tolerance for midcompute stage",1e-8);
         const double compressionTol =
-            Input("--compressionTol","tolerance for compression",1e-16);
+            Input("--compressionTol","tolerance for compression",1e-8);
         ProcessInput();
         PrintInputReport();
 
@@ -111,6 +123,14 @@ main( int argc, char* argv[] )
         double fillStartTime = mpi::Time();
         Vector<Scalar> row;
         Vector<int> colIndices;
+        Dense<Scalar> DomainA(xSize,ySize);
+        Dense<Scalar> DomainV(xSize,ySize);
+        ParallelGaussianRandomVectors( DomainA );
+        double h = 1.0/xSize;
+        for( int x=0; x<xSize; ++x )
+            for( int y=0; y<ySize; ++y )
+                DomainA.Set(x,y,Abs(DomainA.Get(x,y)));
+
         for( int i=0; i<m; ++i )
         {
             S.rowOffsets.PushBack( S.nonzeros.Size() );
@@ -118,7 +138,7 @@ main( int argc, char* argv[] )
             const int x = iNatural % xSize;
             const int y = (iNatural/xSize) % ySize;
 
-            FormRow( x, y, xSize, ySize, row, colIndices );
+            FormRow( x, y, xSize, ySize, h, DomainA, DomainV, row, colIndices );
 
             for( int j=0; j<row.Size(); ++j )
             {
@@ -185,7 +205,6 @@ main( int argc, char* argv[] )
         mpi::Barrier( mpi::COMM_WORLD );
         double SchulzInvertStartTime = mpi::Time();
         A.SchulzInvert(schuN, multType);
-        B.CopyFrom(A);
 #ifdef MEMORY_INFO
         A.PrintGlobalMemoryInfo("Matrix Memory: ");
 #endif
