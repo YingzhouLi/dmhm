@@ -52,6 +52,7 @@ DistHMat2d<Scalar>::SchulzInvert
         X.Multiply( Scalar(-1), *this, Z, multType );
         Z.AddConstantToDiagonal( Scalar(2) );
 #ifndef RELEASE
+        /*
         {
             mpi::Comm team = teams_->Team(0);
             const int teamRank = mpi::CommRank( team );
@@ -62,6 +63,7 @@ DistHMat2d<Scalar>::SchulzInvert
                 std::cout << "2-Norm of 2I - X_k A:  " << normestimate
                           << std::endl;
         }
+        */
 #endif
         // Form X_k+1 := Z X_k = (2I - X_k A) X_k
         DistHMat2d<Scalar> XCopy;

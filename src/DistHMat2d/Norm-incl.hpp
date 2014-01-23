@@ -24,6 +24,7 @@ DistHMat2d<Scalar>::ParallelEstimateTwoNorm( Real theta, Real confidence )
     const int k = ceil(log(0.8*sqrt(n)*pow(10,confidence))/log(theta));
     mpi::Comm team = teams_->Team( 0 );
 #ifndef RELEASE
+    /*
     {
         const int teamRank = mpi::CommRank( team );
         if( teamRank == 0 )
@@ -35,6 +36,7 @@ DistHMat2d<Scalar>::ParallelEstimateTwoNorm( Real theta, Real confidence )
                       << "1-10^{-" << confidence << "}" << std::endl;
         }
     }
+    */
 #endif
     // Sample the unit sphere
     Vector<Scalar> x( n );
@@ -63,11 +65,13 @@ DistHMat2d<Scalar>::ParallelEstimateTwoNorm( Real theta, Real confidence )
         estimate *= pow( twoNorm, root );
     }
 #ifndef RELEASE
+    /*
     {
         const int teamRank = mpi::CommRank( team );
         if( teamRank == 0 )
             std::cout << "Estimated ||A||_2 as " << estimate << std::endl;
     }
+    */
 #endif
     return estimate;
 }

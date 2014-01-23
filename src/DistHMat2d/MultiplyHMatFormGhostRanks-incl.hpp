@@ -61,6 +61,7 @@ DistHMat2d<Scalar>::MultiplyHMatFormGhostRanks
 
     // Start the non-blocking sends
 #ifndef RELEASE
+    /*
     const int commRank = mpi::CommRank( comm );
     if( commRank == 0 )
     {
@@ -69,6 +70,7 @@ DistHMat2d<Scalar>::MultiplyHMatFormGhostRanks
                   << sendSizes.size() << " processes and recv from "
                   << recvSizes.size() << std::endl;
     }
+    */
 #endif
     const int numSends = sendSizes.size();
     Vector<mpi::Request> sendRequests( numSends );
