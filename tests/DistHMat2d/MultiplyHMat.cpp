@@ -16,7 +16,7 @@ FormRow
   Dense<std::complex<Real> >& DA, Dense<std::complex<Real> >& DV,
   Vector<std::complex<Real> >& row, Vector<int>& colIndices )
 {
-    typedef std::complex<Real> Scalar;
+     typedef std::complex<Real> Scalar;
     const int rowIdx = x + xSize*y;
     double hh = h*h;
 
@@ -29,37 +29,41 @@ FormRow
     if( x != 0 )
     {
         colIndices.PushBack( (x-1) + xSize*y );
-        row.PushBack( (Scalar)-DA.Get(x-1,y) / hh );
-        cv += DA.Get(x-1,y);
+        Scalar coef = (DA.Get(x-1,y) + DA.Get(x,y)) / hh / 2.0;
+        row.PushBack( -coef );
+        cv += coef;
     }
 
     // Back connection to (x+1,y)
     if( x != xSize-1 )
     {
         colIndices.PushBack( (x+1) + xSize*y );
-        row.PushBack( (Scalar)-DA.Get(x+1,y) / hh );
-        cv += DA.Get(x+1,y);
+        Scalar coef = (DA.Get(x+1,y) + DA.Get(x,y)) / hh / 2.0;
+        row.PushBack( -coef );
+        cv += coef;
     }
 
     // Left connection to (x,y-1)
     if( y != 0 )
     {
         colIndices.PushBack( x + xSize*(y-1) );
-        row.PushBack( (Scalar)-DA.Get(x,y-1) / hh );
-        cv += DA.Get(x,y-1);
+        Scalar coef = (DA.Get(x,y-1) + DA.Get(x,y)) / hh / 2.0;
+        row.PushBack( -coef );
+        cv += coef;
     }
 
     // Right connection to (x,y+1)
     if( y != ySize-1 )
     {
         colIndices.PushBack( x + xSize*(y+1) );
-        row.PushBack( (Scalar)-DA.Get(x,y+1) / hh );
-        cv += DA.Get(x,y+1);
+        Scalar coef = (DA.Get(x,y+1) + DA.Get(x,y)) / hh / 2.0;
+        row.PushBack( -coef );
+        cv += coef;
     }
 
     // Set up the diagonal entry
     colIndices.PushBack( rowIdx );
-    row.PushBack( (Scalar)cv / hh );
+    row.PushBack( (Scalar)cv );
 }
 
 int
