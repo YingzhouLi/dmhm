@@ -26,7 +26,7 @@ main( int argc, char* argv[] )
         const bool strong = Input("--strong","strongly admissible?",false);
         const int maxRank = Input("--maxRank","maximum rank of block",5);
         const int numVectors = Input("--numVectors","num vectors to mult",20);
-        const bool structure = Input("--structure","print structure?",true);
+        const bool structure = Input("--structure","print structure?",false);
         ProcessInput();
         PrintInputReport();
 
