@@ -3021,7 +3021,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPostcompute
             if( inTargetTeam_ )
             {
                 const Real maxEig = std::max( USqrEig_[kU-1], Real(0) );
-                const Real tolerance;
+                Real tolerance;
                 if( USqrEig_[kU-1]<0 )
                     tolerance = epsilon*sqrt(maxEig)*kU;
                 else
@@ -3053,7 +3053,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPostcompute
             if( inSourceTeam_ && kV > 0 )
             {
                 const Real maxEig = std::max( VSqrEig_[kV-1], Real(0) );
-                const Real tolerance;
+                Real tolerance;
                 if( VSqrEig_[kV-1]<0 )
                     tolerance = epsilon*sqrt(maxEig)*kV;
                 else
