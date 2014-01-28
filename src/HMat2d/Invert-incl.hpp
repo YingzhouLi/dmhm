@@ -168,6 +168,10 @@ HMat2d<Scalar>::SchulzInvert
             Z.AddConstantToDiagonal( Scalar(1) );
             Scalar estimateZ =
             hmat_tools::EstimateTwoNorm( Z, theta, confidence );
+#ifndef RELEASE
+            std::cout << "Iteration: " << k << std::endl;
+            std::cout << "||I-X_k A||_2: " << Abs(estimateZ) << std::endl;
+#endif
             if( Abs(estimateZ) < stopTol )
             {
                 Z.AddConstantToDiagonal( Scalar(1) );
