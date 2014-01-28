@@ -271,7 +271,8 @@ public:
     // with probability at least 1-10^{-confidence}.
     //
     // The values for theta and confidence are currently hardcoded.
-    void SchulzInvert( int numIterations, Real theta=1.5, Real confidence=6 );
+    void SchulzInvert
+    ( int numIterations, Real theta=1.5, Real confidence=6, Real stopTol=1e-4 );
 
 private:
     /*

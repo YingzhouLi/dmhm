@@ -37,6 +37,7 @@ sInv( int k, int b, int size )
         return 1;
 }
 
+/*
 template<typename Real>
 void
 FormRow
@@ -111,6 +112,64 @@ FormRow
         row.PushBack( yTermR );
     }
 }
+*/
+
+template<typename Real>
+void
+FormRow
+( int x, int y, int xSize, int ySize, double h,
+ Dense<std::complex<Real> >& DA, Dense<std::complex<Real> >& DV,
+ Vector<std::complex<Real> >& row, Vector<int>& colIndices )
+{
+    typedef std::complex<Real> Scalar;
+    const int rowIdx = x + xSize*y;
+    double hh = h*h;
+
+    row.Resize( 0 );
+    colIndices.Resize( 0 );
+
+    Scalar cv = DV.Get(x,y);
+
+    // Front connection to (x-1,y)
+    if( x != 0 )
+    {
+        colIndices.PushBack( (x-1) + xSize*y );
+        Scalar coef = (DA.Get(x-1,y) + DA.Get(x,y)) / hh / 2.0;
+        row.PushBack( -coef );
+        cv += coef;
+    }
+
+    // Back connection to (x+1,y)
+    if( x != xSize-1 )
+    {
+        colIndices.PushBack( (x+1) + xSize*y );
+        Scalar coef = (DA.Get(x+1,y) + DA.Get(x,y)) / hh / 2.0;
+        row.PushBack( -coef );
+        cv += coef;
+    }
+
+    // Left connection to (x,y-1)
+    if( y != 0 )
+    {
+        colIndices.PushBack( x + xSize*(y-1) );
+        Scalar coef = (DA.Get(x,y-1) + DA.Get(x,y)) / hh / 2.0;
+        row.PushBack( -coef );
+        cv += coef;
+    }
+
+    // Right connection to (x,y+1)
+    if( y != ySize-1 )
+    {
+        colIndices.PushBack( x + xSize*(y+1) );
+        Scalar coef = (DA.Get(x,y+1) + DA.Get(x,y)) / hh / 2.0;
+        row.PushBack( -coef );
+        cv += coef;
+    }
+
+    // Set up the diagonal entry
+    colIndices.PushBack( rowIdx );
+    row.PushBack( (Scalar)cv );
+}
 
 template<typename Real>
 void
@@ -165,7 +224,7 @@ main( int argc, char* argv[] )
         const bool strong = Input("--strong","strongly admissible?",false);
         const int maxRank = Input("--maxRank","maximum rank of block",5);
         const bool print = Input("--print","print matrices?",false);
-        const bool structure = Input("--structure","print structure?",true);
+        const bool structure = Input("--structure","print structure?",false);
         const int oversample = Input("--oversample","number of extra basis vecs",4);
         ProcessInput();
         PrintInputReport();
@@ -197,6 +256,14 @@ main( int argc, char* argv[] )
         double fillStartTime = mpi::Time();
         Vector<Scalar> row;
         Vector<int> colIndices;
+        Dense<Scalar> DomainA(xSize,ySize);
+        Dense<Scalar> DomainV(xSize,ySize);
+        SerialGaussianRandomVectors( DomainA );
+        double h = 1.0/xSize;
+        for( int x=0; x<xSize; ++x )
+            for( int y=0; y<ySize; ++y )
+                DomainA.Set(x,y,Abs(DomainA.Get(x,y)));
+
         for( int i=0; i<m; ++i )
         {
             S.rowOffsets.PushBack( S.nonzeros.Size() );
@@ -204,8 +271,10 @@ main( int argc, char* argv[] )
             const int x = iNatural % xSize;
             const int y = (iNatural/xSize) % ySize;
 
+//            FormRow
+//            ( imagShift, x, y, xSize, ySize, pmlSize, row, colIndices );
             FormRow
-            ( imagShift, x, y, xSize, ySize, pmlSize, row, colIndices );
+            ( x, y, xSize, ySize, h, DomainA, DomainV, row, colIndices );
 
             for( int j=0; j<row.Size(); ++j )
             {
@@ -330,8 +399,7 @@ main( int argc, char* argv[] )
         }
 
         // Schulz iteration tests
-        //for( int numIterations=10; numIterations<60; numIterations+=10 )
-        int numIterations =-1;
+        for( int numIterations=20; numIterations<30; numIterations+=10 )
         {
             // Make a copy
             if( rank == 0 )

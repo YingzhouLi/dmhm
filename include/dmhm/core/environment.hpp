@@ -19,6 +19,7 @@
 #include <fstream>
 #include <map>
 #include <set>
+#include <string>
 #include <sstream>
 #include <stack>
 #include <stdexcept>
@@ -115,6 +116,13 @@ void AddToMemoryCount( double size );
 double MemoryUsage( int key = -1 );
 double PeakMemoryUsage( int key = -1 );
 #endif
+
+inline std::string To_String( int n )
+{
+    std::ostringstream ss;
+    ss << n;
+    return ss.str();
+}
 
 void PrintGlobal
 ( double num, const std::string tag = "", std::ostream& os = std::cout );

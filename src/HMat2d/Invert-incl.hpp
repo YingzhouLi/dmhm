@@ -7,6 +7,10 @@
    directory, or at http://opensource.org/licenses/GPL-3.0
 */
 
+#include<string>
+#include<fstream>
+#include<sstream>
+
 namespace dmhm {
 
 // A := inv(A) using recursive Schur complements
@@ -29,8 +33,7 @@ HMat2d<Scalar>::DirectInvert()
         // create a temporary matrix.
         HMat2d<Scalar> B;
         B.CopyFrom( *this );
-
-        // Initialize our soon-to-be inverse as the identity
+// Initialize our soon-to-be inverse as the identity
         SetToIdentity();
 
         Node& nodeA = *block_.data.N;
@@ -125,7 +128,7 @@ HMat2d<Scalar>::DirectInvert()
 template<typename Scalar>
 void
 HMat2d<Scalar>::SchulzInvert
-( int numIterations, BASE(Scalar) theta, BASE(Scalar) confidence )
+( int numIterations, Real theta, Real confidence, Real stopTol )
 {
 #ifndef RELEASE
     CallStackEntry entry("HMat2d::SchulzInvert");
@@ -165,7 +168,7 @@ HMat2d<Scalar>::SchulzInvert
             Z.AddConstantToDiagonal( Scalar(1) );
             Scalar estimateZ =
             hmat_tools::EstimateTwoNorm( Z, theta, confidence );
-            if( Abs(estimateZ) < 1e-4 )
+            if( Abs(estimateZ) < stopTol )
             {
                 Z.AddConstantToDiagonal( Scalar(1) );
                 HMat2d<Scalar> XCopy;
@@ -182,6 +185,16 @@ HMat2d<Scalar>::SchulzInvert
         HMat2d<Scalar> XCopy;
         XCopy.CopyFrom( X );
         Z.Multiply( Scalar(1), XCopy, X );
+
+#ifndef RELEASE
+        std::string xfilename = "XMat_" + To_String(k) + ".m";
+        std::ofstream xoutfile;
+        xoutfile.open(xfilename.c_str());
+        xoutfile << "XMat = [";
+        X.Print("",xoutfile);
+        xoutfile << "];\n";
+        xoutfile.close();
+#endif
     }
 
     CopyFrom( X );

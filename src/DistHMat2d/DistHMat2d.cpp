@@ -1752,6 +1752,28 @@ DistHMat2d<Scalar>::MemoryInfo
 
 template<typename Scalar>
 void
+DistHMat2d<Scalar>::Print( const std::string tag, std::ostream& os ) const
+{
+#ifndef RELEASE
+    CallStackEntry entry("DistHMat2d::Print");
+    mpi::Comm team = teams_->Team(0);
+    if( mpi::CommSize( team ) > 1 )
+        throw std::logic_error
+            ("DistHMat Print currently only support one processor");
+#endif
+    const int n = Width();
+    Dense<Scalar> I( n, n );
+    MemZero( I.Buffer(), I.LDim()*n );
+    for( int j=0; j<n; ++j )
+        I.Set(j,j,Scalar(1));
+
+    Dense<Scalar> HFull;
+    Multiply( Scalar(1), I, HFull );
+    HFull.Print( tag, os );
+}
+
+template<typename Scalar>
+void
 DistHMat2d<Scalar>::PrintMemoryInfo
 ( const std::string tag, std::ostream& os ) const
 {

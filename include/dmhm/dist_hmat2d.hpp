@@ -166,6 +166,10 @@ public:
       double& numLowRank, double& numLowRankTmp,
       double& numDense, double& numDenseTmp ) const;
 
+    //TODO: Currently Print is only support one processor
+    void Print
+    ( const std::string tag = "", std::ostream& os = std::cout ) const;
+
     void PrintMemoryInfo
     ( const std::string tag = "", std::ostream& os = std::cout ) const;
 
@@ -203,7 +207,8 @@ public:
 
     // A := inv(A)
     void SchulzInvert
-    ( int numIterations, int multType=2, Real theta=1.5, Real confidence=6 );
+    ( int numIterations, int multType=2,
+      Real theta=1.5, Real confidence=6, Real stopTol=1e-4 );
 
     // A := conj(A)
     void Conjugate();

@@ -14,7 +14,8 @@ namespace dmhm {
 template<typename Scalar>
 void
 DistHMat2d<Scalar>::SchulzInvert
-( int numIterations, int multType, BASE(Scalar) theta, BASE(Scalar) confidence )
+( int numIterations, int multType,
+  BASE(Scalar) theta, BASE(Scalar) confidence, Real stopTol )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::SchulzInvert");
@@ -60,7 +61,7 @@ DistHMat2d<Scalar>::SchulzInvert
             Z.AddConstantToDiagonal( Scalar(1) );
             Scalar estimateZ =
             Z.ParallelEstimateTwoNorm( theta, confidence );
-            if( Abs(estimateZ) < 1e-4 )
+            if( Abs(estimateZ) < stopTol )
             {
                 Z.AddConstantToDiagonal( Scalar(1) );
                 DistHMat2d<Scalar> XCopy;
@@ -72,34 +73,27 @@ DistHMat2d<Scalar>::SchulzInvert
         }
         else
         	Z.AddConstantToDiagonal( Scalar(2) );
-#ifndef RELEASE
-        /*
-        {
-            mpi::Comm team = teams_->Team(0);
-            const int teamRank = mpi::CommRank( team );
-            const Scalar normestimate =
-                Z.ParallelEstimateTwoNorm( theta, confidence );
 
-            if( teamRank == 0 )
-                std::cout << "2-Norm of 2I - X_k A:  " << normestimate
-                          << std::endl;
-        }
-        */
-#endif
         // Form X_k+1 := Z X_k = (2I - X_k A) X_k
         DistHMat2d<Scalar> XCopy;
         XCopy.CopyFrom( X );
         Z.Multiply( Scalar(1), XCopy, X, multType );
 
+/*
+        XCopy.AdjointFrom( X );
+        XCopy.Axpy( Scalar(1), X );
+        X.Scale( Scalar(0.5) );
+        */
+
 #ifndef RELEASE
         {
-            mpi::Comm team = teams_->Team(0);
-            const int teamRank = mpi::CommRank( team );
-            const Scalar normestimate =
-                X.ParallelEstimateTwoNorm( theta, confidence );
-            if( teamRank == 0 )
-                std::cout << "2-Norm of X_{k+1}:  " << normestimate
-                          << std::endl;
+            std::string xfilename = "XDMat_" + To_String(k) + ".m";
+            std::ofstream xoutfile;
+            xoutfile.open(xfilename.c_str());
+            xoutfile << "XDMat = [";
+            X.Print("",xoutfile);
+            xoutfile << "];\n";
+            xoutfile.close();
         }
 #endif
     }
