@@ -28,7 +28,7 @@ DistHMat3d<Scalar>::SchulzInvert
     bool stopflag = false;
     if( numIterations <= 0 )
     {
-        numIterations = 100;
+        numIterations = 30;
         stopflag = true;
     }
 
@@ -59,7 +59,7 @@ DistHMat3d<Scalar>::SchulzInvert
             Z.AddConstantToDiagonal( Scalar(1) );
             Scalar estimateZ =
             Z.ParallelEstimateTwoNorm( theta, confidence );
-            if( Abs(estimateZ/estimate) < 1e-4 )
+            if( Abs(estimateZ) < 1e-4 )
             {
                 Z.AddConstantToDiagonal( Scalar(1) );
                 DistHMat3d<Scalar> XCopy;

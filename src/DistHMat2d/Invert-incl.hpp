@@ -28,7 +28,7 @@ DistHMat2d<Scalar>::SchulzInvert
     bool stopflag = false;
     if( numIterations <= 0 )
     {
-        numIterations = 100;
+        numIterations = 30;
         stopflag = true;
     }
 
@@ -54,13 +54,13 @@ DistHMat2d<Scalar>::SchulzInvert
         // Form Z := 2I - X_k A
         DistHMat2d<Scalar> Z;
         X.Multiply( Scalar(-1), *this, Z, multType );
-		
+
 		if(stopflag)
         {
             Z.AddConstantToDiagonal( Scalar(1) );
             Scalar estimateZ =
             Z.ParallelEstimateTwoNorm( theta, confidence );
-            if( Abs(estimateZ/estimate) < 1e-4 )
+            if( Abs(estimateZ) < 1e-4 )
             {
                 Z.AddConstantToDiagonal( Scalar(1) );
                 DistHMat2d<Scalar> XCopy;

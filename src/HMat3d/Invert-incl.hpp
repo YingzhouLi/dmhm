@@ -141,7 +141,7 @@ HMat3d<Scalar>::SchulzInvert
     bool stopflag = false;
     if( numIterations <= 0 )
     {
-        numIterations = 100;
+        numIterations = 30;
         stopflag = true;
     }
 
@@ -165,7 +165,7 @@ HMat3d<Scalar>::SchulzInvert
             Z.AddConstantToDiagonal( Scalar(1) );
             Scalar estimateZ =
             hmat_tools::EstimateTwoNorm( Z, theta, confidence );
-            if( Abs(estimateZ/estimate) < 1e-4 )
+            if( Abs(estimateZ) < 1e-4 )
             {
                 Z.AddConstantToDiagonal( Scalar(1) );
                 HMat3d<Scalar> XCopy;
