@@ -29,37 +29,37 @@ FormRow
     if( x != 0 )
     {
         colIndices.PushBack( (x-1) + xSize*y );
-        Scalar coef = (DA.Get(x-1,y) + DA.Get(x,y)) / hh / 2.0;
+        Scalar coef = (DA.Get(x,y+1) + DA.Get(x+1,y+1)) / hh / 2.0;
         row.PushBack( -coef );
-        cv += coef;
     }
+    cv += (DA.Get(x,y+1) + DA.Get(x+1,y+1)) / hh / 2.0;
 
     // Back connection to (x+1,y)
     if( x != xSize-1 )
     {
         colIndices.PushBack( (x+1) + xSize*y );
-        Scalar coef = (DA.Get(x+1,y) + DA.Get(x,y)) / hh / 2.0;
+        Scalar coef = (DA.Get(x+2,y+1) + DA.Get(x+1,y+1)) / hh / 2.0;
         row.PushBack( -coef );
-        cv += coef;
     }
+    cv += (DA.Get(x+2,y+1) + DA.Get(x+1,y+1)) / hh / 2.0;
 
     // Left connection to (x,y-1)
     if( y != 0 )
     {
         colIndices.PushBack( x + xSize*(y-1) );
-        Scalar coef = (DA.Get(x,y-1) + DA.Get(x,y)) / hh / 2.0;
+        Scalar coef = (DA.Get(x+1,y) + DA.Get(x+1,y+1)) / hh / 2.0;
         row.PushBack( -coef );
-        cv += coef;
     }
+    cv += (DA.Get(x+1,y) + DA.Get(x+1,y+1)) / hh / 2.0;
 
     // Right connection to (x,y+1)
     if( y != ySize-1 )
     {
         colIndices.PushBack( x + xSize*(y+1) );
-        Scalar coef = (DA.Get(x,y+1) + DA.Get(x,y)) / hh / 2.0;
+        Scalar coef = (DA.Get(x+1,y+2) + DA.Get(x+1,y+1)) / hh / 2.0;
         row.PushBack( -coef );
-        cv += coef;
     }
+    cv += (DA.Get(x+1,y+2) + DA.Get(x+1,y+1)) / hh / 2.0;
 
     // Set up the diagonal entry
     colIndices.PushBack( rowIdx );
@@ -123,12 +123,12 @@ main( int argc, char* argv[] )
         double fillStartTime = mpi::Time();
         Vector<Scalar> row;
         Vector<int> colIndices;
-        Dense<Scalar> DomainA(xSize,ySize);
+        Dense<Scalar> DomainA(xSize+2,ySize+2);
         Dense<Scalar> DomainV(xSize,ySize);
         ParallelGaussianRandomVectors( DomainA );
         double h = 1.0/xSize;
-        for( int x=0; x<xSize; ++x )
-            for( int y=0; y<ySize; ++y )
+        for( int x=0; x<xSize+2; ++x )
+            for( int y=0; y<ySize+2; ++y )
                 DomainA.Set(x,y,Abs(DomainA.Get(x,y)));
         for( int i=0; i<m; ++i )
         {
