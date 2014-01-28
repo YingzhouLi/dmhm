@@ -443,8 +443,6 @@ DistHMat3d<Scalar>::MultiplyHMatFHHCompressMidcompute
                         Dense<Scalar>& Pinv = C.colPinvMap_.Get( key );
                         Dense<Scalar>& BL = C.BLMap_.Get( key );
 
-                        const int k = Pinv.Height();
-
                         lapack::AdjointPseudoInverse
                         ( Pinv.Height(), Pinv.Width(),
                           Pinv.Buffer(), Pinv.LDim(), epsilon );
