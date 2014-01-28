@@ -205,9 +205,7 @@ main( int argc, char* argv[] )
         mpi::Barrier( mpi::COMM_WORLD );
         double SchulzInvertStartTime = mpi::Time();
         A.SchulzInvert(schuN, multType);
-#ifdef MEMORY_INFO
-        A.PrintGlobalMemoryInfo("Matrix Memory: ");
-#endif
+
         mpi::Barrier( mpi::COMM_WORLD );
         double SchulzInvertStopTime = mpi::Time();
         if( commRank == 0 )
@@ -234,7 +232,7 @@ main( int argc, char* argv[] )
 
         Dense<Scalar> YLocal, ZLocal;
         // Y := AZ := ABX
-        B.Multiply( Scalar(1), XLocal, ZLocal );
+        B.Multiply( Scalar(1), XLocal, YLocal );
         if( print )
         {
             std::ostringstream sE;
@@ -245,7 +243,7 @@ main( int argc, char* argv[] )
             ZLocal.Print( "", EFile );
             EFile << "];\n";
         }
-        A.Multiply( Scalar(1), XLocal, ZLocal );
+        A.Multiply( Scalar(1), YLocal, ZLocal );
         if( print )
         {
             std::ostringstream sE;
@@ -256,66 +254,29 @@ main( int argc, char* argv[] )
             ZLocal.Print( "", EFile );
             EFile << "];\n";
         }
-        // Attempt to multiply the two matrices
-        if( commRank == 0 )
-        {
-            std::cout << "Multiplying distributed H-matrices...";
-            std::cout.flush();
-        }
-        mpi::Barrier( mpi::COMM_WORLD );
-        double multStartTime = mpi::Time();
-        DistHMat C( teams );
-        A.Multiply( Scalar(1), B, C, multType );
-        mpi::Barrier( mpi::COMM_WORLD );
-        double multStopTime = mpi::Time();
-        if( commRank == 0 )
-        {
-            std::cout << "done: " << multStopTime-multStartTime
-                      << " seconds." << std::endl;
-        }
-#ifdef MEMORY_INFO
-        //C.PrintMemoryInfo("Memory info of C");
-        PrintGlobal( MemoryUsage()/1024./1024., "Memory of block now(MB): " );
-        PrintGlobal( PeakMemoryUsage()/1024./1024., "Peak memory of block now(MB): " );
-#endif
-        if( structure )
-        {
-#ifdef HAVE_QT5
-            std::ostringstream os;
-            os << "C on " << commRank;
-            C.DisplayLocal( os.str() );
-#endif
-            C.LatexLocalStructure("C_ghosted_structure");
-            C.MScriptLocalStructure("C_ghosted_structure");
-        }
 
-        // Check that CX = ABX for an arbitrary X
         if( commRank == 0 )
             std::cout << "Checking consistency: " << std::endl;
         mpi::Barrier( mpi::COMM_WORLD );
-        B.Multiply( Scalar(1), XLocal, ZLocal );
-        A.Multiply( Scalar(1), ZLocal, YLocal );
-        // Z := CX
-        C.Multiply( Scalar(1), XLocal, ZLocal );
 
         if( print )
         {
-            std::ostringstream sY, sZ;
-            sY << "YLocal_" << commRank << ".m";
+            std::ostringstream sX, sZ;
+            sX << "XLocal_" << commRank << ".m";
             sZ << "ZLocal_" << commRank << ".m";
-            std::ofstream YFile( sY.str().c_str() );
+            std::ofstream XFile( sX.str().c_str() );
             std::ofstream ZFile( sZ.str().c_str() );
 
-            YFile << "YLocal{" << commRank+1 << "}=[\n";
-            YLocal.Print( "", YFile );
-            YFile << "];\n";
+            XFile << "XLocal{" << commRank+1 << "}=[\n";
+            XLocal.Print( "", XFile );
+            XFile << "];\n";
 
             ZFile << "ZLocal{" << commRank+1 << "}=[\n";
             ZLocal.Print( "", ZFile );
             ZFile << "];\n";
         }
 
-        // Compute the error norms and put ZLocal = YLocal-ZLocal
+        // Compute the error norms and put YLocal = XLocal-ZLocal
         double myInfTruth=0, myInfError=0,
                myL1Truth=0, myL1Error=0,
                myL2SquaredTruth=0, myL2SquaredError=0;
@@ -323,11 +284,11 @@ main( int argc, char* argv[] )
         {
             for( int i=0; i<localHeight; ++i )
             {
-                const std::complex<double> truth = YLocal.Get(i,j);
+                const std::complex<double> truth = XLocal.Get(i,j);
                 const std::complex<double> error = truth - ZLocal.Get(i,j);
                 const double truthMag = Abs( truth );
                 const double errorMag = Abs( error );
-                ZLocal.Set( i, j, error );
+                YLocal.Set( i, j, error );
 
                 // RHS norms
                 myInfTruth = std::max(myInfTruth,truthMag);
@@ -352,25 +313,15 @@ main( int argc, char* argv[] )
         ( &myL2SquaredError, &L2SquaredError, 1, mpi::SUM, 0, mpi::COMM_WORLD );
         if( commRank == 0 )
         {
-            std::cout << "||ABX||_oo    = " << infTruth << "\n"
-                      << "||ABX||_1     = " << L1Truth << "\n"
-                      << "||ABX||_2     = " << sqrt(L2SquaredTruth) << "\n"
-                      << "||CX-ABX||_oo = " << infError << "\n"
-                      << "||CX-ABX||_1  = " << L1Error << "\n"
-                      << "||CX-ABX||_2  = " << sqrt(L2SquaredError)
+            std::cout << "||X||_oo    = " << infTruth << "\n"
+                      << "||X||_1     = " << L1Truth << "\n"
+                      << "||X||_2     = " << sqrt(L2SquaredTruth) << "\n"
+                      << "||X-ABX||_oo = " << infError << "\n"
+                      << "||X-ABX||_1  = " << L1Error << "\n"
+                      << "||X-ABX||_2  = " << sqrt(L2SquaredError)
                       << std::endl;
         }
 
-        if( print )
-        {
-            std::ostringstream sE;
-            sE << "ELocal_" << commRank << ".m";
-            std::ofstream EFile( sE.str().c_str() );
-
-            EFile << "ELocal{" << commRank+1 << "}=[\n";
-            ZLocal.Print( "", EFile );
-            EFile << "];\n";
-        }
     }
     catch( ArgException& e ) { }
     catch( std::exception& e )

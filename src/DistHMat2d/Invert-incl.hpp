@@ -61,6 +61,15 @@ DistHMat2d<Scalar>::SchulzInvert
             Z.AddConstantToDiagonal( Scalar(1) );
             Scalar estimateZ =
             Z.ParallelEstimateTwoNorm( theta, confidence );
+#ifndef RELEASE
+            {
+                mpi::Comm team = teams_->Team(0);
+                const int teamRank = mpi::CommRank( team );
+                if( teamRank == 0 )
+                    std::cout << "||I-X_k A||_2: " << Abs(estimateZ)
+                              << std::endl;
+            }
+#endif
             if( Abs(estimateZ) < stopTol )
             {
                 Z.AddConstantToDiagonal( Scalar(1) );
@@ -73,7 +82,6 @@ DistHMat2d<Scalar>::SchulzInvert
         }
         else
         	Z.AddConstantToDiagonal( Scalar(2) );
-
         // Form X_k+1 := Z X_k = (2I - X_k A) X_k
         DistHMat2d<Scalar> XCopy;
         XCopy.CopyFrom( X );
