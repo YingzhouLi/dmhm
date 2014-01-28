@@ -359,7 +359,8 @@ main( int argc, char* argv[] )
         }
 
         // Schulz iteration tests
-        for( int numIterations=10; numIterations<60; numIterations+=10 )
+        //for( int numIterations=10; numIterations<60; numIterations+=10 )
+        int numIterations=-1;
         {
             // Make a copy
             if( rank == 0 )

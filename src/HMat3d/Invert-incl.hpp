@@ -138,8 +138,12 @@ HMat3d<Scalar>::SchulzInvert
     if( confidence <= 0 )
         throw std::logic_error("Confidence must be positive");
 #endif
+    bool stopflag = false;
     if( numIterations <= 0 )
-        throw std::logic_error("Must use at least 1 iteration.");
+    {
+        numIterations = 100;
+        stopflag = true;
+    }
 
     const Scalar estimate =
         hmat_tools::EstimateTwoNorm( *this, theta, confidence );
@@ -155,7 +159,24 @@ HMat3d<Scalar>::SchulzInvert
         // Form Z := 2I - X_k A
         HMat3d<Scalar> Z;
         X.Multiply( Scalar(-1), *this, Z );
-        Z.AddConstantToDiagonal( Scalar(2) );
+
+        if(stopflag)
+        {
+            Z.AddConstantToDiagonal( Scalar(1) );
+            Scalar estimateZ =
+            hmat_tools::EstimateTwoNorm( Z, theta, confidence );
+            if( Abs(estimateZ/estimate) < 1e-4 )
+            {
+                Z.AddConstantToDiagonal( Scalar(1) );
+                HMat3d<Scalar> XCopy;
+                XCopy.CopyFrom( X );
+                Z.Multiply( Scalar(1), XCopy, X );
+                break;
+            }
+            Z.AddConstantToDiagonal( Scalar(1) );
+        }
+        else
+            Z.AddConstantToDiagonal( Scalar(2) );
 
         // Form X_k+1 := Z X_k = (2I - X_k A) X_k
         HMat3d<Scalar> XCopy;

@@ -25,8 +25,12 @@ DistHMat2d<Scalar>::SchulzInvert
     if( confidence <= 0 )
         throw std::logic_error("Confidence must be positive");
 #endif
+    bool stopflag = false;
     if( numIterations <= 0 )
-        throw std::logic_error("Must use at least 1 iteration.");
+    {
+        numIterations = 100;
+        stopflag = true;
+    }
 
     const Scalar estimate =
         ParallelEstimateTwoNorm( theta, confidence );
@@ -50,7 +54,24 @@ DistHMat2d<Scalar>::SchulzInvert
         // Form Z := 2I - X_k A
         DistHMat2d<Scalar> Z;
         X.Multiply( Scalar(-1), *this, Z, multType );
-        Z.AddConstantToDiagonal( Scalar(2) );
+		
+		if(stopflag)
+        {
+            Z.AddConstantToDiagonal( Scalar(1) );
+            Scalar estimateZ =
+            Z.ParallelEstimateTwoNorm( theta, confidence );
+            if( Abs(estimateZ/estimate) < 1e-4 )
+            {
+                Z.AddConstantToDiagonal( Scalar(1) );
+                DistHMat2d<Scalar> XCopy;
+                XCopy.CopyFrom( X );
+                Z.Multiply( Scalar(1), XCopy, X );
+                break;
+            }
+            Z.AddConstantToDiagonal( Scalar(1) );
+        }
+        else
+        	Z.AddConstantToDiagonal( Scalar(2) );
 #ifndef RELEASE
         /*
         {
@@ -69,10 +90,6 @@ DistHMat2d<Scalar>::SchulzInvert
         DistHMat2d<Scalar> XCopy;
         XCopy.CopyFrom( X );
         Z.Multiply( Scalar(1), XCopy, X, multType );
-
-        XCopy.AdjointFrom( X );
-        XCopy.Axpy( Scalar(1), X );
-        X.Scale( Scalar(0.5) );
 
 #ifndef RELEASE
         {

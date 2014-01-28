@@ -22,7 +22,7 @@ DistHMat3d<Scalar>::EVDTrunc
         return;
 
     const Real maxEig = w[k-1];
-    const Real tolerance = relTol*maxEig;
+    const Real tolerance = relTol*maxEig*k;
     int cutoff;
     for( cutoff=0; cutoff<k; ++cutoff )
         if( w[cutoff] > tolerance )
@@ -49,7 +49,8 @@ DistHMat3d<Scalar>::SVDTrunc
     if( k == 0 )
         return;
 
-    const Real tolerance = relTol*twoNorm;
+    //const Real tolerance = relTol*twoNorm;
+    const Real tolerance = relTol*s[0]*k;
     int cutoff;
     for( cutoff=std::min( k, MaxRank() )-1; cutoff>=0; --cutoff )
         if( s[cutoff] > tolerance )
