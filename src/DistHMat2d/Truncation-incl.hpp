@@ -49,7 +49,7 @@ DistHMat2d<Scalar>::SVDTrunc
     if( k == 0 )
         return;
 
-    const Real tolerance = relTol*twoNorm;
+    const Real tolerance = relTol*s[0];//*twoNorm;
     int cutoff;
     for( cutoff=std::min( k, MaxRank() )-1; cutoff>=0; --cutoff )
         if( s[cutoff] > tolerance )
