@@ -92,9 +92,9 @@ main( int argc, char* argv[] )
         const bool multI = Input("--multI","multiply by identity?",false);
         const int oversample = Input("--oversample","num extra basis vecs",4);
         const double midcomputeTol =
-            Input("--midcomputeTol","tolerance for midcompute stage",1e-8);
+            Input("--midcomputeTol","tolerance for midcompute stage",1e-16);
         const double compressionTol =
-            Input("--compressionTol","tolerance for compression",1e-8);
+            Input("--compressionTol","tolerance for compression",1e-16);
         ProcessInput();
         PrintInputReport();
 

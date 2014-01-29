@@ -89,9 +89,9 @@ main( int argc, char* argv[] )
         const bool multI = Input("--multI","multiply by identity?",false);
         const int oversample = Input("--oversample","num extra basis vecs",4);
         const double midcomputeTol =
-            Input("--midcomputeTol","tolerance for midcompute stage",1e-8);
+            Input("--midcomputeTol","tolerance for midcompute stage",1e-16);
         const double compressionTol =
-            Input("--compressionTol","tolerance for compression",1e-8);
+            Input("--compressionTol","tolerance for compression",1e-16);
         ProcessInput();
         PrintInputReport();
 
@@ -125,11 +125,11 @@ main( int argc, char* argv[] )
         Vector<int> colIndices;
         Dense<Scalar> DomainA(xSize+2,ySize+2);
         Dense<Scalar> DomainV(xSize,ySize);
-        //ParallelGaussianRandomVectors( DomainA );
-        double h = 1.0;///xSize;
+        ParallelGaussianRandomVectors( DomainA );
+        double h = 1.0/xSize;
         for( int x=0; x<xSize+2; ++x )
             for( int y=0; y<ySize+2; ++y )
-                DomainA.Set(x,y,Scalar(1));//Abs(DomainA.Get(x,y)));
+                DomainA.Set(x,y,Abs(DomainA.Get(x,y)));
         for( int i=0; i<m; ++i )
         {
             S.rowOffsets.PushBack( S.nonzeros.Size() );
