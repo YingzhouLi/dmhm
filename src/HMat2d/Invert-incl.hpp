@@ -190,15 +190,6 @@ HMat2d<Scalar>::SchulzInvert
         XCopy.CopyFrom( X );
         Z.Multiply( Scalar(1), XCopy, X );
 
-#ifndef RELEASE
-        std::string xfilename = "XMat_" + To_String(k) + ".m";
-        std::ofstream xoutfile;
-        xoutfile.open(xfilename.c_str());
-        xoutfile << "XMat = [";
-        X.Print("",xoutfile);
-        xoutfile << "];\n";
-        xoutfile.close();
-#endif
     }
 
     CopyFrom( X );

@@ -93,17 +93,6 @@ DistHMat2d<Scalar>::SchulzInvert
         X.Scale( Scalar(0.5) );
         */
 
-#ifndef RELEASE
-        {
-            std::string xfilename = "XDMat_" + To_String(k) + ".m";
-            std::ofstream xoutfile;
-            xoutfile.open(xfilename.c_str());
-            xoutfile << "XDMat = [";
-            X.Print("",xoutfile);
-            xoutfile << "];\n";
-            xoutfile.close();
-        }
-#endif
     }
 
     CopyFrom( X );
