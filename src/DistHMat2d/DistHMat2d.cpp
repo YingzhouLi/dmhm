@@ -534,6 +534,29 @@ DistHMat2d<Scalar>::LatexLocalStructure( const std::string basename ) const
 
 template<typename Scalar>
 void
+DistHMat2d<Scalar>::PrintLocalRank
+( const std::string basename, int iterN ) const
+{
+#ifndef RELEASE
+    CallStackEntry entry("DistHMat2d::PrintLocalRank");
+#endif
+    mpi::Comm comm = teams_->Team( 0 );
+    const int commRank = mpi::CommRank( comm );
+
+    std::ostringstream os;
+    if( iterN >=0 )
+        os << basename << "-" << commRank << "-" << iterN << ".m";
+    else
+        os << basename << "-" << commRank << ".m";
+    std::ofstream file( os.str().c_str() );
+
+    file << "rankinfo=[\n";
+    PrintLocalRankRecursion( file );
+    file << "];" << std::endl;
+}
+
+template<typename Scalar>
+void
 DistHMat2d<Scalar>::MScriptLocalStructure( const std::string basename ) const
 {
 #ifndef RELEASE
@@ -600,11 +623,7 @@ DistHMat2d<Scalar>::DistHMat2d()
   beganColSpaceComp_(false), finishedColSpaceComp_(false)
 {
     block_.type = EMPTY;
-}
-
-template<typename Scalar>
-DistHMat2d<Scalar>::DistHMat2d
-( int numLevels, int maxRank, bool stronglyAdmissible,
+} template<typename Scalar> DistHMat2d<Scalar>::DistHMat2d ( int numLevels, int maxRank, bool stronglyAdmissible,
   int sourceOffset, int targetOffset,
   int xSizeSource, int xSizeTarget, int ySizeSource, int ySizeTarget,
   int xSource, int xTarget, int ySource, int yTarget,
@@ -1518,6 +1537,38 @@ DistHMat2d<Scalar>::MScriptLocalStructureRecursion( std::ofstream& file ) const
 
     case EMPTY:
         break;
+    }
+}
+
+template<typename Scalar>
+void
+DistHMat2d<Scalar>::PrintLocalRankRecursion
+( std::ofstream& file ) const
+{
+    switch( block_.type )
+    {
+    case DIST_NODE:
+    case SPLIT_NODE:
+    case NODE:
+    {
+        const Node& node = *block_.data.N;
+        for( int t=0; t<4; ++t )
+            for( int s=0; s<4; ++s )
+                node.Child(t,s).PrintLocalRankRecursion
+                ( file );
+        break;
+    }
+    case DIST_LOW_RANK:
+    case SPLIT_LOW_RANK:
+    case LOW_RANK:
+    {
+        mpi::Comm team = teams_->Team( level_ );
+        const int teamRank = mpi::CommRank( team );
+        if( teamRank == 0 )
+            file << level_ << " " << Rank() << " " << Height()
+                 << " " << Width() << "\n";
+        break;
+    }
     }
 }
 

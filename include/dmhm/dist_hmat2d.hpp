@@ -158,6 +158,9 @@ public:
 #endif
     // Compile this output with pdflatex+TikZ
     void LatexLocalStructure( const std::string basename ) const;
+
+    void PrintLocalRank
+    ( const std::string basename, int iterN = -1 ) const;
     // This can be visualized with util/PlotHStructure.m and Octave/Matlab
     void MScriptLocalStructure( const std::string basename ) const;
 
@@ -208,7 +211,8 @@ public:
     // A := inv(A)
     void SchulzInvert
     ( int numIterations, int multType=2,
-      Real theta=1.5, Real confidence=6, Real stopTol=1e-4 );
+      Real theta=1.5, Real confidence=6, Real stopTol=1e-4,
+      bool printRank = false );
 
     // A := conj(A)
     void Conjugate();
@@ -588,6 +592,7 @@ private:
 #endif
     void LatexLocalStructureRecursion
     ( std::ofstream& file, int globalheight ) const;
+    void PrintLocalRankRecursion( std::ofstream& file ) const;
     void MScriptLocalStructureRecursion( std::ofstream& file ) const;
 
     void UnpackRecursion( const byte*& head );

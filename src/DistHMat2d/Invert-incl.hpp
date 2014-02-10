@@ -15,7 +15,7 @@ template<typename Scalar>
 void
 DistHMat2d<Scalar>::SchulzInvert
 ( int numIterations, int multType,
-  BASE(Scalar) theta, BASE(Scalar) confidence, Real stopTol )
+  BASE(Scalar) theta, BASE(Scalar) confidence, Real stopTol, bool printRank )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::SchulzInvert");
@@ -86,6 +86,9 @@ DistHMat2d<Scalar>::SchulzInvert
         DistHMat2d<Scalar> XCopy;
         XCopy.CopyFrom( X );
         Z.Multiply( Scalar(1), XCopy, X, multType );
+
+        if(printRank)
+            X.PrintLocalRank( "SchulzIter", k );
 
 /*
         XCopy.AdjointFrom( X );

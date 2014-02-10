@@ -84,6 +84,8 @@ main( int argc, char* argv[] )
         const int maxRank = Input("--maxRank","maximum rank of block",5);
         const int multType = Input("--multType","multiply type",0);
         const bool print = Input("--print","print matrices?",false);
+        const bool printRank =
+            Input("--printRank","print rank of low rank blocks?",false);
         const bool structure = Input("--structure","print structure?",false);
         const bool multI = Input("--multI","multiply by identity?",false);
         const int schuN = Input("--schuN","Iteration number of Schulz invert",15);
@@ -204,7 +206,7 @@ main( int argc, char* argv[] )
         }
         mpi::Barrier( mpi::COMM_WORLD );
         double SchulzInvertStartTime = mpi::Time();
-        A.SchulzInvert(schuN, multType);
+        A.SchulzInvert(schuN, multType, 1.5, 6, 1e-4, printRank);
 
         mpi::Barrier( mpi::COMM_WORLD );
         double SchulzInvertStopTime = mpi::Time();
