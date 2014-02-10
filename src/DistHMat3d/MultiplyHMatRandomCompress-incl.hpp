@@ -50,10 +50,10 @@ DistHMat3d<Scalar>::MultiplyHMatRandomCompress
 
     MultiplyHMatRandomCompressReducesTSqr();
 
-    const Real midcomputeTol = MidcomputeTolerance<Real>();
+    const Real pseudoinvTol = PseudoinvTolerance<Real>();
     const Real compressionTol = CompressionTolerance<Real>();
     MultiplyHMatRandomCompressPostcompute
-    ( midcomputeTol, compressionTol, twoNorm );
+    ( pseudoinvTol, compressionTol, twoNorm );
 
 
     // Broadcastsnum and broadcasts in compression to

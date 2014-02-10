@@ -96,17 +96,17 @@ template<>
 void SetCompressionTolerance<double>( double relTol );
 
 template<typename Real>
-Real MidcomputeTolerance();
+Real PseudoinvTolerance();
 template<>
-float MidcomputeTolerance<float>();
+float PseudoinvTolerance<float>();
 template<>
-double MidcomputeTolerance<double>();
+double PseudoinvTolerance<double>();
 template<typename Real>
-void SetMidcomputeTolerance( Real tolerance );
+void SetPseudoinvTolerance( Real tolerance );
 template<>
-void SetMidcomputeTolerance<float>( float tolerance );
+void SetPseudoinvTolerance<float>( float tolerance );
 template<>
-void SetMidcomputeTolerance<double>( double tolerance );
+void SetPseudoinvTolerance<double>( double tolerance );
 
 #ifdef MEMORY_INFO
 void ResetMemoryCount( int key = -1 );

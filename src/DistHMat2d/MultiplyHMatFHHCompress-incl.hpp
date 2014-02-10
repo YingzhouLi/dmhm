@@ -31,9 +31,9 @@ DistHMat2d<Scalar>::MultiplyHMatFHHCompress
     MultiplyHMatFHHCompressReduces
     ( B, C, startLevel, endLevel, startUpdate, endUpdate, 0 );
 
-    const Real midcomputeTol = MidcomputeTolerance<Real>();
+    const Real pseudoinvTol = PseudoinvTolerance<Real>();
     MultiplyHMatFHHCompressMidcompute
-    ( B, C, midcomputeTol, startLevel, endLevel, startUpdate, endUpdate, 0 );
+    ( B, C, pseudoinvTol, startLevel, endLevel, startUpdate, endUpdate, 0 );
 
     MultiplyHMatFHHCompressBroadcasts
     ( B, C, startLevel, endLevel, startUpdate, endUpdate, 0  );

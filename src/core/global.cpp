@@ -28,9 +28,9 @@ std::stack<std::string> callStack;
 #endif
 
 int oversample=4;
-float midcomputeTolFloat=1e-5;
+float pseudoinvTolFloat=1e-5;
 float compressionTolFloat=1e-5;
-double midcomputeTolDouble=1e-16;
+double pseudoinvTolDouble=1e-16;
 double compressionTolDouble=1e-16;
 
 #ifdef MEMORY_INFO
@@ -181,26 +181,26 @@ void SetCompressionTolerance<double>( double relTol )
 { ::compressionTolDouble = relTol; }
 
 template<typename Real>
-Real MidcomputeTolerance();
+Real PseudoinvTolerance();
 
 template<>
-float MidcomputeTolerance<float>()
-{ return ::midcomputeTolFloat; }
+float PseudoinvTolerance<float>()
+{ return ::pseudoinvTolFloat; }
 
 template<>
-double MidcomputeTolerance<double>()
-{ return ::midcomputeTolDouble; }
+double PseudoinvTolerance<double>()
+{ return ::pseudoinvTolDouble; }
 
 template<typename Real>
-void SetMidcomputeTolerance( Real tolerance );
+void SetPseudoinvTolerance( Real tolerance );
 
 template<>
-void SetMidcomputeTolerance<float>( float tolerance )
-{ ::midcomputeTolFloat = tolerance; }
+void SetPseudoinvTolerance<float>( float tolerance )
+{ ::pseudoinvTolFloat = tolerance; }
 
 template<>
-void SetMidcomputeTolerance<double>( double tolerance )
-{ ::midcomputeTolDouble = tolerance; }
+void SetPseudoinvTolerance<double>( double tolerance )
+{ ::pseudoinvTolDouble = tolerance; }
 
 #ifdef MEMORY_INFO
 void ResetMemoryCount( int key )

@@ -91,15 +91,15 @@ main( int argc, char* argv[] )
         const bool multI = Input("--multI","multiply by identity?",false);
         const int schuN = Input("--schuN","Iteration number of Schulz invert",15);
         const int oversample = Input("--oversample","num extra basis vecs",4);
-        const double midcomputeTol =
-            Input("--midcomputeTol","tolerance for midcompute stage",1e-16);
+        const double pseudoinvTol =
+            Input("--pseudoinvTol","tolerance for pseudo inverse",1e-16);
         const double compressionTol =
             Input("--compressionTol","tolerance for compression",1e-16);
         ProcessInput();
         PrintInputReport();
 
         SetOversample( oversample );
-        SetMidcomputeTolerance<double>( midcomputeTol );
+        SetPseudoinvTolerance<double>( pseudoinvTol );
         SetCompressionTolerance<double>( compressionTol );
 
         const int m = xSize*ySize*zSize;

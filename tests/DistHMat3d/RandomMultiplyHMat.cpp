@@ -28,15 +28,15 @@ main( int argc, char* argv[] )
         const int multType = Input("--multType","multiply type",2);
         const bool structure = Input("--structure","print structure?",false);
         const int oversample = Input("--oversample","num extra basis vecs",4);
-        const double midcomputeTol =
-            Input("--midcomputeTol","tolerance for midcompute stage",1e-8);
+        const double pseudoinvTol =
+            Input("--pseudoinvTol","tolerance for pseudo inverse",1e-8);
         const double compressionTol =
             Input("--compressionTol","tolerance for compression",1e-8);
         ProcessInput();
         PrintInputReport();
 
         SetOversample( oversample );
-        SetMidcomputeTolerance<double>( midcomputeTol );
+        SetPseudoinvTolerance<double>( pseudoinvTol );
         SetCompressionTolerance<double>( compressionTol );
 
         // Set up two random distributed H-matrices

@@ -100,8 +100,8 @@ DistHMat3d<Scalar>::MultiplyHMatCompress( Real twoNorm )
     // Then BSqr_ also will be used to store the eigenvectors
     // of B. BSqrEig_ stores eigenvalues of B.
     //
-    const Real midcomputeTol = MidcomputeTolerance<Real>();
-    MultiplyHMatCompressFMidcompute( midcomputeTol, twoNorm );
+    const Real compressionTol = CompressionTolerance<Real>();
+    MultiplyHMatCompressFMidcompute( compressionTol, twoNorm );
 #ifdef TIME_MULTIPLY
     mpi::Barrier( mpi::COMM_WORLD );
     timerGlobal.Stop( 9 );
@@ -126,8 +126,8 @@ DistHMat3d<Scalar>::MultiplyHMatCompress( Real twoNorm )
     // Compute VSqr*sqrt(VSqrEig)^-1 BSqrV = BR
     // We overwrite the VSqr = VSqr*sqrt(VSqrEig)^-1
     //
-    const Real compressionTol = CompressionTolerance<Real>();
-    MultiplyHMatCompressFPostcompute( compressionTol );
+    const Real pseudoinvTol = PseudoinvTolerance<Real>();
+    MultiplyHMatCompressFPostcompute( pseudoinvTol );
 #ifdef TIME_MULTIPLY
     mpi::Barrier( mpi::COMM_WORLD );
     timerGlobal.Stop( 12 );
