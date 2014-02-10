@@ -92,7 +92,7 @@ main( int argc, char* argv[] )
         const double pseudoinvTol =
             Input("--pseudoinvTol","tolerance for pseudo inverse",1e-16);
         const double compressionTol =
-            Input("--compressionTol","tolerance for compression",1e-16);
+            Input("--compressionTol","tolerance for compression",1e-8);
         ProcessInput();
         PrintInputReport();
 

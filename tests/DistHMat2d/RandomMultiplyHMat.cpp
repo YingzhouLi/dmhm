@@ -28,9 +28,9 @@ main( int argc, char* argv[] )
         const bool structure = Input("--structure","print structure?",false);
         const int oversample = Input("--oversample","num extra basis vecs",4);
         const double pseudoinvTol =
-            Input("--pseudoinvTol","tolerance for pseudo inverse",1e-10);
+            Input("--pseudoinvTol","tolerance for pseudo inverse",1e-16);
         const double compressionTol =
-            Input("--compressionTol","tolerance for compression",1e-10);
+            Input("--compressionTol","tolerance for compression",1e-8);
         ProcessInput();
         PrintInputReport();
 
