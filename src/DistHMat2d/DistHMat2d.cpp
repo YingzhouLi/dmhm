@@ -545,9 +545,9 @@ DistHMat2d<Scalar>::PrintLocalRank
 
     std::ostringstream os;
     if( iterN >=0 )
-        os << basename << "-" << commRank << "-" << iterN << ".m";
+        os << basename << "_" << commRank << "_" << iterN << ".m";
     else
-        os << basename << "-" << commRank << ".m";
+        os << basename << "_" << commRank << ".m";
     std::ofstream file( os.str().c_str() );
 
     file << "rankinfo=[\n";
