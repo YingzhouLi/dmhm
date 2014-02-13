@@ -3563,36 +3563,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
 
             const int minDim = std::min(m,n);
             const int maxRank = MaxRank();
-            if( minDim <= maxRank )
-            {
-                if( inTargetTeam_ )
-                {
-                    SF.rank = minDim;
-                    if( m == minDim )
-                    {
-                        SF.D.Resize( m, m, m );
-                        SF.D.Init();
-                        for( int i=0; i<m; i++)
-                            SF.D.Set(i,i,Scalar(1));
-                    }
-                    else
-                        hmat_tools::Copy( D_, SF.D );
-                }
-                else
-                {
-                    SF.rank = minDim;
-                    if( m == minDim )
-                        hmat_tools::Transpose( D_, SF.D );
-                    else
-                    {
-                        SF.D.Resize( n, n, n);
-                        SF.D.Init();
-                        for( int i=0; i<n; i++)
-                            SF.D.Set(i,i,Scalar(1));
-                    }
-                }
-            }
-            else
             {
                 SF.rank = maxRank;
                 Vector<Real> sigma( minDim );
