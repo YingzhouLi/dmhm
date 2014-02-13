@@ -3564,7 +3564,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
             const int minDim = std::min(m,n);
             const int maxRank = MaxRank();
             {
-                SF.rank = maxRank;
                 Dense<Scalar> VH( std::min(m,n), n );
                 Dense<Scalar> U( m, std::min(m,n) );
                 Vector<Real> sigma( minDim );
@@ -3582,6 +3581,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
                 timerGlobal.Stop( 0 );
 #endif
                 SVDTrunc( U, sigma, VH, relTol, twoNorm );
+                SF.rank = sigma.Size();
 
                 if( inTargetTeam_ )
                 {
@@ -3597,7 +3597,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
 
                     SF.D.Resize( n, VH.Height() );
                     SF.D.Init();
-                    for( int j=0; j<maxRank; j++ )
+                    for( int j=0; j<VH.Height(); j++ )
                         for( int i=0; i<n; i++)
                             SF.D.Set(i,j,VH.Get(j,i));
                 }
