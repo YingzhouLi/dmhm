@@ -3565,46 +3565,41 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
             const int maxRank = MaxRank();
             {
                 SF.rank = maxRank;
+                Dense<Scalar> VH( std::min(m,n), n );
+                Dense<Scalar> U( m, std::min(m,n) );
                 Vector<Real> sigma( minDim );
                 Vector<Scalar> work( lapack::SVDWorkSize(m,n) );
-                Vector<Real> realwork( lapack::SVDRealWorkSize(m,n) );
+                Vector<Real> realWork( lapack::SVDRealWorkSize(m,n) );
+#ifdef TIME_MULTIPLY
+                timerGlobal.Start( 0 );
+#endif
+                lapack::SVD
+                ( 'S', 'S', m, n,
+                  D_.Buffer(), D_.LDim(), &sigma[0],
+                  U.Buffer(), U.LDim(), VH.Buffer(), VH.LDim(),
+                  &work[0], work.Size(), &realWork[0] );
+#ifdef TIME_MULTIPLY
+                timerGlobal.Stop( 0 );
+#endif
+                SVDTrunc( U, sigma, VH, relTol, twoNorm );
+
                 if( inTargetTeam_ )
                 {
-#ifdef TIME_MULTIPLY
-                    timerGlobal.Start( 0 );
-#endif
-                    lapack::SVD
-                    ( 'O', 'N', m, n, D_.Buffer(), D_.LDim(),
-                      &sigma[0], 0, 1, 0, 1,
-                      &work[0], work.Size(), &realwork[0] );
-#ifdef TIME_MULTIPLY
-                    timerGlobal.Stop( 0 );
-#endif
 
-                    SF.D.Resize( m, maxRank );
+                    SF.D.Resize( m, U.Width() );
                     SF.D.Init();
-                    for( int j=0; j<maxRank; j++ )
+                    for( int j=0; j<U.Width(); j++ )
                         for( int i=0; i<m; i++)
-                            SF.D.Set(i,j,D_.Get(i,j)*sigma[j]);
+                            SF.D.Set(i,j,U.Get(i,j)*sigma[j]);
                 }
                 else
                 {
-#ifdef TIME_MULTIPLY
-                    timerGlobal.Start( 0 );
-#endif
-                    lapack::SVD
-                    ( 'N', 'O', m, n, D_.Buffer(), D_.LDim(),
-                      &sigma[0], 0, 1, 0, 1,
-                      &work[0], work.Size(), &realwork[0] );
-#ifdef TIME_MULTIPLY
-                    timerGlobal.Stop( 0 );
-#endif
 
-                    SF.D.Resize( n, maxRank );
+                    SF.D.Resize( n, VH.Height() );
                     SF.D.Init();
                     for( int j=0; j<maxRank; j++ )
                         for( int i=0; i<n; i++)
-                            SF.D.Set(i,j,D_.Get(j,i));
+                            SF.D.Set(i,j,VH.Get(j,i));
                 }
             }
 
