@@ -1566,13 +1566,6 @@ DistHMat2d<Scalar>::PrintLocalRankRecursion
         if( teamRank == 0 )
             file << level_ << " " << Rank() << " " << Height()
                  << " " << Width() << "\n";
-        if( Rank() != 0 && level_ == 3 )
-        {
-            LowRank<Scalar> &F = *block_.data.F;
-            F.U.Print( "FU", file);
-            file << "-----------------------------------------------------\n";
-            F.V.Print( "FV", file);
-        }
         break;
     }
     }
