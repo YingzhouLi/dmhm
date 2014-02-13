@@ -1223,7 +1223,8 @@ private:
     ( Vector<Scalar>& buffer, Vector<int>& sizes ) const;
     void MultiplyHMatCompressFBroadcastsUnpack
     ( Vector<Scalar>& buffer, Vector<int>& offsets );
-    void MultiplyHMatCompressFFinalcompute();
+    void MultiplyHMatCompressFFinalcompute
+    ( Real relTol, Real twoNorm );
     void MultiplyHMatCompressFCleanup();
 
 

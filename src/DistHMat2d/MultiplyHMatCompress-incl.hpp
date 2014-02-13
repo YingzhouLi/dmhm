@@ -147,7 +147,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompress( Real twoNorm )
     timerGlobal.Start( 15 );
 #endif
     // Compute the final U and V store in the usual space.
-    MultiplyHMatCompressFFinalcompute();
+    MultiplyHMatCompressFFinalcompute( compressionTol, twoNorm );
 #ifdef TIME_MULTIPLY
     mpi::Barrier( mpi::COMM_WORLD );
     timerGlobal.Stop( 15 );
@@ -2253,7 +2253,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
 
             SVDTrunc( BSqrU_, BSigma_, BSqrVH_, relTol, twoNorm );
         }
-        else if( totalrank > MaxRank() )
+        else
         {
             Dense<Scalar> B;
             hmat_tools::MultiplyTranspose( Scalar(1), F.U, F.V, B );
@@ -3442,7 +3442,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFBroadcastsUnpack
 
 template<typename Scalar>
 void
-DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute()
+DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
+( Real relTol, Real twoNorm )
 {
 #ifndef RELEASE
     CallStackEntry entry("DistHMat2d::MultiplyHMatCompressFFinalcompute");
@@ -3459,7 +3460,8 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute()
         Node& node = *block_.data.N;
         for( int t=0; t<4; ++t )
             for( int s=0; s<4; ++s )
-                node.Child(t,s).MultiplyHMatCompressFFinalcompute();
+                node.Child(t,s).MultiplyHMatCompressFFinalcompute
+                ( relTol, twoNorm );
         break;
     }
     case DIST_LOW_RANK:
@@ -3664,7 +3666,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute()
                 hmat_tools::Copy(V, Vtmp);
                 hmat_tools::Multiply( Scalar(1), Vtmp, BR_, V );
             }
-            else if( totalrank > MaxRank() )
+            else
             {
                 hmat_tools::Copy( BSqrU_, F.U );
                 F.V.Resize( LW, BSqrVH_.Height() );
@@ -3685,33 +3687,12 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute()
             // Add U V^[T/H] onto the dense update
             hmat_tools::MultiplyTranspose( Scalar(1), F.U, F.V, Scalar(1), D_ );
 
-            if( minDim <= maxRank )
-            {
-                if( m == minDim )
-                {
-                    // Make U := I and V := D_^[T/H]
-                    F.U.Resize( minDim, minDim );
-                    F.U.Init();
-                    for( int j=0; j<minDim; ++j )
-                        F.U.Set(j,j,Scalar(1));
-                    hmat_tools::Transpose( D_, F.V );
-                }
-                else
-                {
-                    // Make U := D_ and V := I
-                    hmat_tools::Copy( D_, F.U );
-                    F.V.Resize( minDim, minDim );
-                    F.V.Init();
-                    for( int j=0; j<minDim; ++j )
-                        F.V.Set(j,j,Scalar(1));
-                }
-            }
-            else // minDim > maxRank
             {
                 // Perform an SVD on the dense matrix, overwriting it with
                 // the left singular vectors and VH with the adjoint of the
                 // right singular vecs
                 Dense<Scalar> VH( std::min(m,n), n );
+                Dense<Scalar> U( m, std::min(m,n) );
                 Vector<Real> sigma( minDim );
                 Vector<Scalar> work( lapack::SVDWorkSize(m,n) );
                 Vector<Real> realWork( lapack::SVDRealWorkSize(m,n) );
@@ -3719,25 +3700,27 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute()
                 timerGlobal.Start( 0 );
 #endif
                 lapack::SVD
-                ( 'O', 'S', m, n, D_.Buffer(), D_.LDim(),
-                  &sigma[0], 0, 1, VH.Buffer(), VH.LDim(),
+                ( 'S', 'S', m, n,
+                  D_.Buffer(), D_.LDim(), &sigma[0],
+                  U.Buffer(), U.LDim(), VH.Buffer(), VH.LDim(),
                   &work[0], work.Size(), &realWork[0] );
 #ifdef TIME_MULTIPLY
                 timerGlobal.Stop( 0 );
 #endif
+                SVDTrunc( U, sigma, VH, relTol, twoNorm );
 
                 // Form U with the truncated left singular vectors scaled
                 // by the corresponding singular values
-                F.U.Resize( m, maxRank );
+                F.U.Resize( m, U.Width() );
                 F.U.Init();
-                for( int j=0; j<maxRank; ++j )
+                for( int j=0; j<U.Width(); ++j )
                     for( int i=0; i<m; ++i )
-                        F.U.Set(i,j,sigma[j]*D_.Get(i,j));
+                        F.U.Set(i,j,sigma[j]*U.Get(i,j));
 
                 // Form V with the truncated right singular vectors
-                F.V.Resize( n, maxRank );
+                F.V.Resize( n, VH.Height() );
                 F.V.Init();
-                for( int j=0; j<maxRank; ++j )
+                for( int j=0; j<VH.Height(); ++j )
                     for( int i=0; i<n; ++i )
                         F.V.Set(i,j,VH.Get(j,i));
             }

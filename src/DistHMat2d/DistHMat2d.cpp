@@ -465,8 +465,8 @@ DistHMat2d<Scalar>::Admissible
 {
     if( stronglyAdmissible_ )
     {
-        //return std::max(std::abs(xSource-xTarget),std::abs(ySource-yTarget))>1;
-        return std::abs(xSource-xTarget)+std::abs(ySource-yTarget)>1;
+        return std::max(std::abs(xSource-xTarget),std::abs(ySource-yTarget))>1;
+        //return std::abs(xSource-xTarget)+std::abs(ySource-yTarget)>1;
     }
     else
         return xSource != xTarget || ySource != yTarget;
@@ -490,8 +490,7 @@ DistHMat2d<Scalar>::DisplayLocal( std::string title ) const
 
     // Initialize the matrix to all zeros
     for( int j=0; j<n; ++j )
-        for( int i=0; i<m; ++i )
-            A->Set( i, j, 0 );
+        for( int i=0; i<m; ++i ) A->Set( i, j, 0 );
 
     // Now fill in the H-matrix blocks recursively
     DisplayLocalRecursion( A, mRatio, nRatio );
@@ -1567,6 +1566,13 @@ DistHMat2d<Scalar>::PrintLocalRankRecursion
         if( teamRank == 0 )
             file << level_ << " " << Rank() << " " << Height()
                  << " " << Width() << "\n";
+        if( Rank() != 0 && level_ == 3 )
+        {
+            LowRank<Scalar> &F = *block_.data.F;
+            F.U.Print( "FU", file);
+            file << "-----------------------------------------------------\n";
+            F.V.Print( "FV", file);
+        }
         break;
     }
     }

@@ -801,8 +801,8 @@ HMat2d<Scalar>::Admissible
 {
     if( stronglyAdmissible_ )
     {
-        //return std::max(std::abs(xSource-xTarget),std::abs(ySource-yTarget))>1;
-        return std::abs(xSource-xTarget)+std::abs(ySource-yTarget)>1;
+        return std::max(std::abs(xSource-xTarget),std::abs(ySource-yTarget))>1;
+        //return std::abs(xSource-xTarget)+std::abs(ySource-yTarget)>1;
     }
     else
         return xSource != xTarget || ySource != yTarget;

@@ -51,9 +51,12 @@ DistHMat2d<Scalar>::SVDTrunc
 
     const Real tolerance = relTol*s[0];//*twoNorm;
     int cutoff;
-    for( cutoff=std::min( k, MaxRank() )-1; cutoff>=0; --cutoff )
-        if( s[cutoff] > tolerance )
-            break;
+    if( s[0] < relTol*relTol )
+        cutoff = 0;
+    else
+        for( cutoff=std::min( k, MaxRank() )-1; cutoff>=0; --cutoff )
+            if( s[cutoff] > tolerance )
+                break;
     s.Erase( s.Begin()+cutoff+1, s.Begin()+k );
     U.EraseCols( cutoff+1, m-1 );
     VH.EraseRows( cutoff+1, n-1 );

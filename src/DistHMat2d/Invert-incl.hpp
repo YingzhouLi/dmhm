@@ -42,6 +42,9 @@ DistHMat2d<Scalar>::SchulzInvert
     X.AdjointFrom( *this );
     X.Scale( alpha );
 
+    if(printRank)
+        X.PrintLocalRank( "SchulzIterInit" );
+
     for( int k=0; k<numIterations; ++k )
     {
 #ifndef RELEASE
