@@ -1557,7 +1557,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrixCount
             else
                 AddToMap( recvsizes, sourceRoot_, USqr_.Height()*USqr_.Width() );
         }
-        else if( totalrank > MaxRank() )
+        else
         {
             if( inSourceTeam_ )
             {
@@ -1638,7 +1638,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrixPack
               VSqr_.Height()*VSqr_.Width() );
             offsets[targetRoot_] += VSqr_.Height()*VSqr_.Width();
         }
-        else if( totalrank > MaxRank() )
+        else
         {
             if( inSourceTeam_ )
             {
@@ -1727,7 +1727,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrixUnpack
               VSqr_.Height()*VSqr_.Width() );
             offsets[sourceRoot_] += VSqr_.Height()*VSqr_.Width();
         }
-        else if( totalrank > MaxRank() )
+        else
         {
             if( inSourceTeam_ )
             {
@@ -2162,7 +2162,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
                 SVDTrunc( BSqrU_, BSigma_, BSqrVH_, relTol, twoNorm );
             }
         }
-        else if( totalrank > MaxRank() )
+        else
         {
             Dense<Scalar> B;
             if( inSourceTeam_ )
@@ -3522,7 +3522,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
                     BR_.Clear();
                 }
             }
-            else if( totalrank > MaxRank() )
+            else
             {
                 SF.rank = BSqrU_.Width();
                 if( inTargetTeam_ )
