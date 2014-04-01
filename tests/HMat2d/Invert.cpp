@@ -157,7 +157,7 @@ main( int argc, char* argv[] )
         double h = 1.0/xSize;
         for( int x=0; x<xSize+2; ++x )
             for( int y=0; y<ySize+2; ++y )
-                DomainA.Set(x,y,Abs(DomainA.Get(x,y)));
+                DomainA.Set(x,y,Abs(DomainA.Get(x,y))+Scalar(0.001));
 
         for( int i=0; i<m; ++i )
         {

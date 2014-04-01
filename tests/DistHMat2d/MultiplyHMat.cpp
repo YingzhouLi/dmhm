@@ -24,7 +24,6 @@ FormRow
     colIndices.Resize( 0 );
 
     Scalar cv = DV.Get(x,y);
-
     // Front connection to (x-1,y)
     if( x != 0 )
     {
@@ -129,7 +128,7 @@ main( int argc, char* argv[] )
         double h = 1.0/xSize;
         for( int x=0; x<xSize+2; ++x )
             for( int y=0; y<ySize+2; ++y )
-                DomainA.Set(x,y,Abs(DomainA.Get(x,y)));
+                DomainA.Set(x,y,Abs(DomainA.Get(x,y))+Scalar(0.001));
         for( int i=0; i<m; ++i )
         {
             S.rowOffsets.PushBack( S.nonzeros.Size() );
