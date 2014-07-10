@@ -12,6 +12,7 @@
 
 #ifdef HAVE_QT5
 
+#include <QFile>
 #include <QPainter>
 #include <QPixmap>
 #include <QStylePainter>
@@ -30,6 +31,8 @@ public:
 
     void DisplayReal( const Dense<T>* A );
     void DisplayImag( const Dense<T>* A );
+
+    void SavePng( std::string basename ) const;
 
 protected:
     void paintEvent( QPaintEvent* event );
@@ -186,6 +189,16 @@ DisplayWidget<T>::DisplayImag( const Dense<T>* A )
 
     // Refresh the widget
     update();
+}
+
+template<typename T>
+void DisplayWidget<T>::SavePng( std::string basename ) const
+{
+    // TODO: DEBUG
+    std::string filename = basename + ".png";
+    QFile file( filename.c_str() );
+    file.open( QIODevice::WriteOnly );
+    pixmap_.save( &file, "PNG" );
 }
 
 } // namespace dmhm

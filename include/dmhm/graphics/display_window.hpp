@@ -21,8 +21,7 @@ namespace dmhm {
 
 class DisplayWindow : public QWidget
 {
-    // This isn't needed until we add slots
-    // Q_OBJECT
+     Q_OBJECT
 public:
     DisplayWindow( QWidget* parent=0 );
     ~DisplayWindow();
@@ -34,6 +33,9 @@ private:
     QScrollArea *scroll_;
     DisplayWidget<double> *display_;
     const Dense<double> *matrix_;
+
+public slots:
+    void Save();
 };
 
 } // namespace dmhm

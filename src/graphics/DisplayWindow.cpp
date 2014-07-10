@@ -19,15 +19,23 @@ DisplayWindow::DisplayWindow( QWidget* parent )
     CallStackEntry entry("DisplayWindow::DisplayWindow");
 #endif
     matrix_ = 0;
+    QVBoxLayout* mainLayout = new QVBoxLayout();
 
-    // For the real matrix
     QHBoxLayout* matrixLayout = new QHBoxLayout();
     display_ = new DisplayWidget<double>();
     scroll_ = new QScrollArea();
     scroll_->setWidget( display_ );
     matrixLayout->addWidget( scroll_ );
+    mainLayout->addLayout( matrixLayout ); 
 
-    setLayout( matrixLayout );
+    // Add a save button
+    QHBoxLayout* optionsLayout = new QHBoxLayout();
+    QPushButton* saveButton = new QPushButton("Save");
+    optionsLayout->addWidget( saveButton );
+    mainLayout->addLayout( optionsLayout );
+
+    setLayout( mainLayout );
+    connect( saveButton, SIGNAL(clicked()), this, SLOT(Save()) );
     setAttribute( Qt::WA_DeleteOnClose );
 
     // DMHM needs to know if a window was opened for cleanup purposes
@@ -49,6 +57,12 @@ DisplayWindow::Display( const Dense<double>* matrix, QString title )
 
     setWindowTitle( title );
     display_->DisplayReal( matrix );
+}
+
+void
+DisplayWindow::Save()
+{
+    display_->SavePng( windowTitle().toStdString() );
 }
 
 } // namespace dmhm
