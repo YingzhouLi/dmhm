@@ -865,10 +865,10 @@ HMat3d<Scalar>::Admissible
     if( stronglyAdmissible_ )
     {
         //This one cost huge memory
-        //return std::max(std::max(std::abs(xSource-xTarget),
-        //                std::abs(ySource-yTarget)), std::abs(zSource-zTarget))>1;
-        return std::abs(xSource-xTarget) + std::abs(ySource-yTarget)
-            + std::abs(zSource-zTarget) > 1;
+        return std::max(std::max(std::abs(xSource-xTarget),
+                        std::abs(ySource-yTarget)), std::abs(zSource-zTarget))>1;
+        //return std::abs(xSource-xTarget) + std::abs(ySource-yTarget)
+        //    + std::abs(zSource-zTarget) > 1;
     }
     else
         return xSource != xTarget || ySource != yTarget || zSource!= zTarget;
