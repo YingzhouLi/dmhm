@@ -10,6 +10,8 @@
 
 #ifdef HAVE_QT5
 
+#include <QPushButton>
+
 namespace dmhm {
 
 DisplayWindow::DisplayWindow( QWidget* parent )
