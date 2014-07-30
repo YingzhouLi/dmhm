@@ -14,6 +14,7 @@
 #include <QScrollArea>
 #include <QWidget>
 
+#include "dmhm/core/environment.hpp"
 #include "dmhm/hmat_tools.hpp"
 #include "dmhm/graphics/display_widget.hpp"
 
@@ -22,6 +23,7 @@ namespace dmhm {
 class DisplayWindow : public QWidget
 {
      Q_OBJECT
+
 public:
     DisplayWindow( QWidget* parent=0 );
     ~DisplayWindow();

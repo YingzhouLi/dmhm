@@ -14,7 +14,7 @@
 
 #include "dmhm/graphics/ColorMap.hpp"
 #include "dmhm/graphics/display_widget.hpp"
-#include "dmhm/graphics/display_window.hpp"
+#include "dmhm/graphics/display_window-premoc.hpp"
 #include "dmhm/graphics/complex_display_window.hpp"
 
 #endif

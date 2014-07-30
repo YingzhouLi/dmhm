@@ -42,7 +42,7 @@ if(USE_QT5)
   find_package(Qt5Widgets)
   if(Qt5Widgets_FOUND)
     set(DMHM_HEADERS_PREMOC
-        "include/dmhm/graphics/display_window.hpp;include/dmhm/graphics/complex_display_window.hpp")
+        "include/dmhm/graphics/display_window-premoc.hpp;include/dmhm/graphics/complex_display_window.hpp")
     qt_wrap_cpp(dmhm DMHM_MOC_SRC ${DMHM_HEADERS_PREMOC})
     include_directories(${Qt5Widgets_INCLUDE_DIRS})
     add_definitions(${Qt5Widgets_DEFINITIONS})
@@ -179,7 +179,7 @@ file(GLOB_RECURSE DMHM_CPP RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
      "src/*.c" "src/*.cpp" "src/*-incl.hpp")
 file(GLOB_RECURSE DMHM_HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
      "include/*.h" "include/*.hpp")
-set(DMHM_SRC "${DMHM_CPP};${DMHM_HEADERS}")
+set(DMHM_SRC "${DMHM_CPP};${DMHM_HEADERS};${DMHM_MOC_SRC}")
 
 # Build the DMHM source
 add_library(dmhm STATIC ${DMHM_SRC})
