@@ -41,8 +41,7 @@ if(USE_QT5)
   # Search for Qt5
   find_package(Qt5Widgets)
   if(Qt5Widgets_FOUND)
-    set(DMHM_HEADERS_PREMOC
-        "include/dmhm/graphics/display_window-premoc.hpp;include/dmhm/graphics/complex_display_window.hpp")
+    set(DMHM_HEADERS_PREMOC "include/dmhm/graphics/display_window-premoc.hpp")
     qt_wrap_cpp(dmhm DMHM_MOC_SRC ${DMHM_HEADERS_PREMOC})
     include_directories(${Qt5Widgets_INCLUDE_DIRS})
     add_definitions(${Qt5Widgets_DEFINITIONS})
