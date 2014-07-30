@@ -549,10 +549,10 @@ DistHMat3d<Scalar>::Admissible
     if( stronglyAdmissible_ )
     {
         //The first one is too large for memory
-        //return std::max(std::max(std::abs(xSource-xTarget),
-        //    std::abs(ySource-yTarget)), std::abs(zSource-zTarget))>1;
-        return std::abs(xSource-xTarget) + std::abs(ySource-yTarget)
-            + std::abs(zSource-zTarget) > 1;
+        return std::max(std::max(std::abs(xSource-xTarget),
+            std::abs(ySource-yTarget)), std::abs(zSource-zTarget))>1;
+        //return std::abs(xSource-xTarget) + std::abs(ySource-yTarget)
+        //    + std::abs(zSource-zTarget) > 1;
     }
     else
         return xSource != xTarget || ySource != yTarget || zSource != zTarget;
