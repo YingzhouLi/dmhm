@@ -1557,7 +1557,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrixCount
             else
                 AddToMap( recvsizes, sourceRoot_, USqr_.Height()*USqr_.Width() );
         }
-        else
+        else if( totalrank > MaxRank() )
         {
             if( inSourceTeam_ )
             {
@@ -1638,7 +1638,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrixPack
               VSqr_.Height()*VSqr_.Width() );
             offsets[targetRoot_] += VSqr_.Height()*VSqr_.Width();
         }
-        else
+        else if( totalrank > MaxRank() )
         {
             if( inSourceTeam_ )
             {
@@ -1727,7 +1727,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFPassMatrixUnpack
               VSqr_.Height()*VSqr_.Width() );
             offsets[sourceRoot_] += VSqr_.Height()*VSqr_.Width();
         }
-        else
+        else if( totalrank > MaxRank() )
         {
             if( inSourceTeam_ )
             {
@@ -2162,7 +2162,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
                 SVDTrunc( BSqrU_, BSigma_, BSqrVH_, relTol, twoNorm );
             }
         }
-        else
+        else if( totalrank > MaxRank() )
         {
             Dense<Scalar> B;
             if( inSourceTeam_ )
@@ -2253,7 +2253,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
 
             SVDTrunc( BSqrU_, BSigma_, BSqrVH_, relTol, twoNorm );
         }
-        else
+        else if( totalrank > MaxRank() )
         {
             Dense<Scalar> B;
             hmat_tools::MultiplyTranspose( Scalar(1), F.U, F.V, B );
@@ -2272,6 +2272,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
 #ifdef TIME_MULTIPLY
             timerGlobal.Start( 0 );
 #endif
+            std::cout << LH << ", " << LW << ", " << totalrank << std::endl;
             lapack::SVD
             ('S', 'S' , LH, LW,
              B.Buffer(), B.LDim(), &BSigma_[0],
@@ -3522,7 +3523,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
                     BR_.Clear();
                 }
             }
-            else
+            else if( totalrank > MaxRank() )
             {
                 SF.rank = BSqrU_.Width();
                 if( inTargetTeam_ )
@@ -3631,7 +3632,7 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFFinalcompute
                 hmat_tools::Copy(V, Vtmp);
                 hmat_tools::Multiply( Scalar(1), Vtmp, BR_, V );
             }
-            else
+            else if( totalrank > MaxRank() )
             {
                 hmat_tools::Copy( BSqrU_, F.U );
                 F.V.Resize( LW, BSqrVH_.Height() );
