@@ -2272,7 +2272,6 @@ DistHMat2d<Scalar>::MultiplyHMatCompressFMidcompute
 #ifdef TIME_MULTIPLY
             timerGlobal.Start( 0 );
 #endif
-            std::cout << LH << ", " << LW << ", " << totalrank << std::endl;
             lapack::SVD
             ('S', 'S' , LH, LW,
              B.Buffer(), B.LDim(), &BSigma_[0],
