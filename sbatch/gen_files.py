@@ -35,7 +35,7 @@ for proc in proc_list:
         sh_file.write('#SBATCH -J %s\n'%namestr)
         sh_file.write('#SBATCH -o %s\n'%(out_folder+'/out_'+namestr+'.out'))
         sh_file.write('#SBATCH -o %s\n'%(err_folder+'/err_'+namestr+'.err'))
-        sh_file.write('#SBATCH -t 2:00:00\n')
+        sh_file.write('#SBATCH -t 4:00:00\n')
         sh_file.write('#SBATCH -p normal\n')
         sh_file.write('#SBATCH -A TG-MTH200003\n')
         sh_file.write('#SBATCH -N %d\n'%node)
