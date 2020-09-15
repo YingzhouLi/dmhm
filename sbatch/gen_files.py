@@ -1,7 +1,7 @@
 import os
 import math
 
-dim = 3
+dim = 2
 
 if dim == 2:
     proc_list   = [2**i for i in range(4, 15)]
