@@ -63,6 +63,7 @@ void Finalize();
 bool Initialized();
 bool Finalized();
 double Time();
+void Abort( Comm comm );
 
 // Communicator manipulation
 int CommRank( Comm comm );

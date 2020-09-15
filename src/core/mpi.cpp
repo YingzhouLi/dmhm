@@ -77,6 +77,14 @@ bool Finalized()
 double Time()
 { return MPI_Wtime(); }
 
+void Abort( Comm comm )
+{
+#ifndef RELEASE
+    CallStackEntry entry("mpi::MPI_Abort");
+#endif
+    SafeMpi( MPI_Abort( comm, 1 ) );
+}
+
 //
 // Communicator manipulation routines
 //

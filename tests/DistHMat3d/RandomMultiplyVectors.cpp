@@ -92,6 +92,7 @@ main( int argc, char* argv[] )
     {
         std::cerr << "Process " << commRank << " caught message: " << e.what()
                   << std::endl;
+        mpi::Abort(mpi::COMM_WORLD);
 #ifndef RELEASE
         DumpCallStack();
 #endif
