@@ -1,18 +1,29 @@
 import os
 import math
 
-proc_list   = [2**i for i in range(4, 15)]
-size_list   = [2**i for i in range(7, 16)] 
-rank_list   = [4, 8] 
-strong_list = [0, 1]
-numVec      = 128
-nmin        = 8
-dim         = 2
+dim = 3
+
+if dim == 2:
+    proc_list   = [2**i for i in range(4, 15)]
+    size_list   = [2**i for i in range(7, 16)] 
+    rank_list   = [4, 8] 
+    strong_list = [0, 1]
+    numVec      = 128
+    nmin        = 8
+    exec_path     = '/work/02539/lyzh588/stampede2/dmhm/build/bin/DistHMat2d/RandomMultiplyVectors'
+else:
+    proc_list   = [2**i for i in range(4, 15)]
+    size_list   = [2**i for i in range(4, 11)] 
+    rank_list   = [4, 8] 
+    strong_list = [0, 1]
+    numVec      = 128
+    nmin        = 4
+    exec_path     = '/work/02539/lyzh588/stampede2/dmhm/build/bin/DistHMat3d/RandomMultiplyVectors'
+
 
 pwd           = os.path.dirname(os.path.realpath(__file__))
 work_folder   = pwd+'/MatVec'+str(dim)+'D'
 sbatch_folder = work_folder+'/sbatch'
-exec_path     = '/work/02539/lyzh588/dmhm/build/bin/DistHMat2d/RandomMultiplyVectors'
 out_folder    = work_folder+'/out'
 err_folder    = work_folder+'/err'
 
@@ -34,7 +45,7 @@ for proc in proc_list:
         sh_file.write('#!/bin/bash\n')
         sh_file.write('#SBATCH -J %s\n'%namestr)
         sh_file.write('#SBATCH -o %s\n'%(out_folder+'/out_'+namestr+'.out'))
-        sh_file.write('#SBATCH -o %s\n'%(err_folder+'/err_'+namestr+'.err'))
+        sh_file.write('#SBATCH -e %s\n'%(err_folder+'/err_'+namestr+'.err'))
         sh_file.write('#SBATCH -t 4:00:00\n')
         sh_file.write('#SBATCH -p normal\n')
         sh_file.write('#SBATCH -A TG-MTH200003\n')
@@ -42,7 +53,7 @@ for proc in proc_list:
         sh_file.write('#SBATCH -n %d\n\n'%proc)
 
     with open(submitfile,'a+') as sh_file:
-        sh_file.write('%s\n'%sbatchfile)
+        sh_file.write('sbatch %s\n'%sbatchfile)
 
     rep = 1
 
