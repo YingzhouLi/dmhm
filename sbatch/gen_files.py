@@ -60,6 +60,8 @@ for proc in proc_list:
     for siz in size_list:
         if (siz//nmin)**dim < proc:
             continue
+        if (siz**dim//proc) > 262144:
+            break
         numL = math.floor(math.log2(siz//nmin)+0.1)
         for strong in strong_list:
             if rep == 1:
