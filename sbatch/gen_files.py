@@ -4,7 +4,7 @@ import math
 dim = 2
 
 if dim == 2:
-    proc_list   = [2**i for i in range(4, 15)]
+    proc_list   = [2**i for i in range(4, 14)]
     size_list   = [2**i for i in range(7, 16)] 
     rank_list   = [4, 8] 
     strong_list = [0, 1]
@@ -12,7 +12,7 @@ if dim == 2:
     nmin        = 8
     exec_path     = '/work/02539/lyzh588/stampede2/dmhm/build/bin/DistHMat2d/RandomMultiplyVectors'
 else:
-    proc_list   = [2**i for i in range(4, 15)]
+    proc_list   = [2**i for i in range(4, 14)]
     size_list   = [2**i for i in range(4, 11)] 
     rank_list   = [4, 8] 
     strong_list = [0, 1]
